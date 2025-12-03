@@ -1,0 +1,31 @@
+name: link_hive
+description: "A new Flutter project."
+
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.10.1
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  cupertino_icons: any
+  hive: any
+  hive_flutter: any
+  path_provider: any
+  receive_sharing_intent: any
+  http: any
+  html: any
+  url_launcher: any
+  rxdart: any
+  firebase_core: any
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+  flutter_lints: any
+
+flutter:
+  uses-material-design: true
