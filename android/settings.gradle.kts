@@ -7,13 +7,13 @@ pluginManagement {
         }
         properties.getProperty("flutter.sdk")
     }
+
     includeBuild("$flutterSdkPath/packages/flutter_tools/gradle")
 
     repositories {
         google()
         mavenCentral()
         gradlePluginPortal()
-        maven { url = uri("https://storage.googleapis.com/download.flutter.io") } // Added this line
     }
 }
 
