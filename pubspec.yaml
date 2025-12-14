@@ -5,21 +5,16 @@ version: 1.0.0+1
 
 environment:
   sdk: ^3.10.1
+  flutter: 3.38.3
 
 dependencies:
   flutter:
     sdk: flutter
 
-  cupertino_icons: any
-  hive: any
-  hive_flutter: any
-  path_provider: any
-  receive_sharing_intent: any
-  http: any
-  html: any
-  url_launcher: any
+  go_router: any
   rxdart: any
   firebase_core: any
+  receive_sharing_intent: any
 
 dev_dependencies:
   flutter_test:
