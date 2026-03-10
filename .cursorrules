@@ -1,0 +1,23 @@
+# Cursor Rules — LinkHive
+
+This project context lives in `.ai/`. Read `.ai/AGENTS.md` first before making any changes.
+
+## TL;DR Rules for Cursor
+
+- State management: flutter_bloc ONLY — no setState for business logic
+- DI: get_it via locator.dart — never instantiate services in widgets
+- Routing: go_router with MyRouteName constants — no Navigator.push
+- Commands: always prefix `flutter` with `fvm` (e.g. `fvm flutter run`)
+- Every screen has a Bloc (event/state/bloc files in a bloc/ subdirectory)
+- Run `fvm flutter analyze` — must be zero warnings before committing
+- Never hardcode route paths — use MyRouteName.xxx constants
+
+## Full Context
+
+- What this project is: `.ai/context/project.md`
+- Architecture & data flow: `.ai/context/architecture.md`
+- Code style rules: `.ai/conventions/code-style.md`
+- What never to do: `.ai/constraints/never-do.md`
+- What to always do: `.ai/constraints/always-do.md`
+- How to run/build/test: `.ai/ops/commands.md`
+- Package rationale: `.ai/ops/dependencies.md`
