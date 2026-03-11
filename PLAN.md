@@ -142,7 +142,7 @@ Dark mode
 
 Use BottomSheets for all pop-ups (NO traditional dialogs allowed)
 
-No heavy Rive animations yet.
+No Rive animations used.
 
 ☁️ 7️⃣ Firestore Structure (Simple)
 users (collection)

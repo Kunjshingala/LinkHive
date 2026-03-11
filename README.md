@@ -1,172 +1,112 @@
- # LinkHive
+# LinkHive 🐝
 
-A Flutter application for managing and sharing links with authentication features.
+A high-performance, **offline-first** Flutter application for capturing, organizing, and syncing links across devices. Built with a bold **Neo-Brutalist** design system and powered by Firebase and Hive.
 
-## Overview
+## 🚀 Overview
 
-LinkHive is a cross-platform Flutter application that allows users to collect, manage, and share links. The app features a complete authentication system with Google Sign-In and email/password authentication, built on Firebase.
+LinkHive is designed for users who need a reliable way to save and categorize links instantly, even without an internet connection. By utilizing a robust local-first architecture, it ensures a lag-free experience while automatically syncing data to the cloud whenever connectivity is available.
 
-## Features
+## ✨ Key Features
 
-- 🔐 **Authentication System**
-  - Email/password sign-in and sign-up
-  - Google Sign-In integration
-  - Auth state management
-  - Secure Firebase authentication
+### 🔗 Link & Category Management (New!)
+- **Instant Capture**: Save links with metadata (title, image, description) automatically fetched.
+- **Offline CRUD**: Create, Update, and Delete links and categories with zero latency.
+- **Global Search**: Find links by title, description, or URL using high-performance local indexing.
+- **Smart Filtering**: Filter links by dynamic categories or custom priority levels (High, Normal, Low).
+- **Dynamic Sorting**: Automatic descending sort by server-confirmed or client-created timestamps.
 
-- 🔗 **Link Management**
-  - Receive and handle shared links from other apps
-  - Home dashboard for link organization
-  - User account management
+### 🔐 Multi-Channel Authentication
+- **Secure Sign-In**: Powered by Firebase Authentication.
+- **Google Integration**: One-tap sign-in with Google OAuth.
+- **Email/Password**: Traditional secure account creation and login.
+- **Guest Mode**: Full functionality for local-only use without an account.
 
-- 🎨 **Modern UI/UX**
-  - Neo-Brutalism design pattern (high contrast, hard shadows, thick borders)
-  - Custom widgets and components
-  - Rive animations
-  - Material Design 3 foundation
+### 🍱 Neo-Brutalist UI/UX
+- **Bold Aesthetics**: High-contrast colors, thick borders, and hard-edge shadows.
+- **Custom Components**: Bespoke widgets including `NeoBrutalistButton`, `LinkCard`, and `CommonAppBar`.
+- **Responsive Design**: Full support for Mobile (Android/iOS), Web, and Desktop.
 
-## Project Structure
+### 🌐 Internationalization
+- **Multi-Language Support**: Full localization for English, Arabic (RTL support), Gujarati, and Hindi.
+- **Locale Persistence**: Remembers your language preference across sessions.
 
-This project follows a feature-based clean architecture pattern:
+## 🏗️ Project Structure
+
+The project follows a **Feature-based Clean Architecture**, ensuring high modularity and testability.
 
 ```
 lib/
-├── core/                           # Core functionality and utilities
-│   ├── services/                   # App-wide services
-│   │   ├── auth_service.dart       # Authentication service
-│   │   ├── firebaseAuth/           # Firebase auth integration
-│   │   └── receiveIntent/          # Handle incoming shared intents
-│   └── utils/                      # Utilities and helpers
-│       ├── bloc.dart               # BLoC exports
-│       ├── locator.dart            # Service locator (GetIt)
-│       ├── navigation/             # Navigation configuration
-│       ├── utils.dart              # General utilities
-│       └── validator/              # Form validators
+├── core/                           # Shared kernel
+│   ├── constants/                  # Firebase, Hive, and UI constants
+│   ├── extensions/                 # BuildContext and String extensions
+│   ├── localization/               # i18n logic and Cubits
+│   ├── services/                   # Auth, Firestore, and Sync logic
+│   ├── theme/                      # Neo-Brutalist design tokens
+│   └── utils/                      # Service locator (GetIt) and helpers
 │
-├── features/                       # Feature modules
-│   ├── account/                    # User account management
-│   │   ├── account.dart
-│   │   └── account_bloc.dart
-│   ├── authentication/             # Auth screens and logic
-│   │   ├── auth_gate.dart          # Auth state router
-│   │   ├── login_screen.dart
-│   │   ├── signup_screen.dart
-│   │   └── widgets/                # Auth-specific widgets
-│   ├── home/                       # Home dashboard
-│   │   ├── home.dart
-│   │   └── home_bloc.dart
-│   ├── login/                      # Login feature
-│   │   └── login.dart
-│   └── splash/                     # Splash screen
-│       ├── splash_screen.dart
-│       └── splash_bloc.dart
+├── features/                       # Independent modules
+│   ├── links/                      # Core: CRUD, Models, Repositories, BLoCs
+│   ├── authentication/             # Auth flow and Guard rails
+│   ├── home/                       # Dashboard and Search
+│   ├── account/                    # User profiling
+│   ├── login/                      # Login interface
+│   └── splash/                     # Brand introduction
 │
-├── sharedWidgets/                  # Reusable widgets
-│   ├── common_app_bar.dart
-│   └── common_text_form_field.dart
-│
-├── firebase_options.dart           # Firebase configuration
-├── main.dart                       # App entry point
-└── my_app.dart                     # Root app widget
-
-assets/
-└── rive/                           # Rive animation files
+├── sharedWidgets/                  # Global Neo-Brutalist component library
+├── firebase_options.dart           # Auto-generated Firebase config
+├── main.dart                       # Entry point
+└── my_app.dart                     # UI Root
 ```
 
-## Tech Stack
+## 🛠️ Tech Stack
 
-### Core
-- **Flutter SDK**: 3.38.3
-- **Dart SDK**: ^3.10.1
+- **Framework**: [Flutter 3.38.3](https://flutter.dev/)
+- **Language**: [Dart 3.10.1+](https://dart.dev/)
+- **Local Storage**: [Hive](https://pub.dev/packages/hive_flutter) (NoSQL, high performance)
+- **Cloud Backend**: [Firebase](https://firebase.google.com/) (Firestore, Auth)
+- **State Management**: [flutter_bloc](https://pub.dev/packages/flutter_bloc) & [RxDart](https://pub.dev/packages/rxdart)
+- **Routing**: [go_router](https://pub.dev/packages/go_router)
+- **Dependency Injection**: [get_it](https://pub.dev/packages/get_it)
 
-### Key Dependencies
-- **Navigation**: `go_router` - Declarative routing
-- **State Management**: `rxdart` - Reactive programming
-- **Backend**: Firebase (`firebase_core`, `firebase_auth`)
-- **Authentication**: `google_sign_in` - Google OAuth
-- **Dependency Injection**: `get_it` - Service locator
-- **Sharing**: `receive_sharing_intent` - Handle shared content
-- **UI**: `flutter_svg`, `font_awesome_flutter` - Icons and graphics
+## 📡 Offline-First Sync Strategy
 
-## Getting Started
+LinkHive uses a sophisticated two-way sync strategy between **Hive** and **Firestore**:
+
+1.  **Writes**: All changes are committed to the local Hive box immediately. If the user is online, the change is mirrored to Firestore asynchronously.
+2.  **Conflict Resolution**: Cloud data acts as the source of truth. On app resume, Firestore data is pulled and merged into Hive.
+3.  **Sync Status**: Every link tracks an `isSynced` flag, displayed in the UI (cloud-off icon for local-only links).
+
+## 🚦 Getting Started
 
 ### Prerequisites
-- Flutter SDK (version 3.38.3)
-- FVM (Flutter Version Management) - recommended
-- Firebase project with Authentication enabled
-- Android Studio / VS Code with Flutter extensions
+- Flutter SDK (v3.38.3)
+- [FVM](https://fvm.app/) (recommended)
+- Firebase Project configured
 
 ### Installation
 
-1. **Clone the repository**
-   ```bash
-   git clone <repository-url>
-   cd linkhive
-   ```
+1.  **Clone & Setup**:
+    ```bash
+    git clone https://github.com/Kunjshingala/LinkHive.git
+    cd linkhive
+    fvm use # if using FVM
+    flutter pub get
+    ```
 
-2. **Set up Flutter version (if using FVM)**
-   ```bash
-   fvm use
-   ```
+2.  **Firebase Config**:
+    - Place `google-services.json` in `android/app/`.
+    - Place `GoogleService-Info.plist` in `ios/Runner/`.
 
-3. **Install dependencies**
-   ```bash
-   flutter pub get
-   ```
+3.  **Run**:
+    ```bash
+    flutter run
+    ```
 
-4. **Configure Firebase**
-   - Add your `google-services.json` (Android) and `GoogleService-Info.plist` (iOS)
-   - Ensure Firebase Authentication is enabled in your Firebase console
-   - Enable Google Sign-In provider
-
-5. **Run the app**
-   ```bash
-   flutter run
-   ```
-
-## Platform Support
-
-- ✅ Android
-- ✅ iOS
-- ✅ Web
-- ✅ macOS
-- ✅ Linux
-- ✅ Windows
-
-## Architecture
-
-The project uses:
-- **Feature-based architecture**: Each feature is self-contained with its own BLoC and UI
-- **BLoC pattern**: For state management
-- **Service layer**: Centralized business logic in core/services
-- **Dependency injection**: Using GetIt for service location
-
-## Development
-
-### Running Tests
+## 🧪 Testing
+We maintain high code quality through unit and widget tests.
 ```bash
 flutter test
 ```
 
-### Building for Production
-```bash
-# Android
-flutter build apk --release
-flutter build appbundle --release
-
-# iOS
-flutter build ios --release
-
-# Web
-flutter build web --release
-```
-
-## License
-
-This project is a private Flutter application.
-
-## Resources
-
-- [Flutter Documentation](https://docs.flutter.dev/)
-- [Firebase Documentation](https://firebase.google.com/docs)
-- [Go Router Documentation](https://pub.dev/packages/go_router)
+## 📄 License
+This is a private project. All rights reserved.
