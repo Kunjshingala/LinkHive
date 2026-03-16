@@ -1,6 +1,6 @@
 {
-    "name": "link_hive",
-    "short_name": "link_hive",
+    "name": "Link Hive",
+    "short_name": "Link Hive",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

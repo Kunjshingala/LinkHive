@@ -7,6 +7,8 @@
 
 #include "flutter/generated_plugin_registrant.h"
 
+constexpr char kAppName[] = "Link Hive";
+
 struct _MyApplication {
   GtkApplication parent_instance;
   char** dart_entrypoint_arguments;
@@ -45,11 +47,11 @@ static void my_application_activate(GApplication* application) {
   if (use_header_bar) {
     GtkHeaderBar* header_bar = GTK_HEADER_BAR(gtk_header_bar_new());
     gtk_widget_show(GTK_WIDGET(header_bar));
-    gtk_header_bar_set_title(header_bar, "link_hive");
+    gtk_header_bar_set_title(header_bar, kAppName);
     gtk_header_bar_set_show_close_button(header_bar, TRUE);
     gtk_window_set_titlebar(window, GTK_WIDGET(header_bar));
   } else {
-    gtk_window_set_title(window, "link_hive");
+    gtk_window_set_title(window, kAppName);
   }
 
   gtk_window_set_default_size(window, 1280, 720);
