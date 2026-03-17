@@ -9,3 +9,9 @@ extension LocalizedContext on BuildContext {
 extension AppNeoBrutalThemeContext on BuildContext {
   AppNeoBrutalTheme get neoBrutal => Theme.of(this).extension<AppNeoBrutalTheme>()!;
 }
+
+extension ThemeContext on BuildContext {
+  ThemeData get theme => Theme.of(this);
+  ColorScheme get colors => theme.colorScheme;
+  TextTheme get text => theme.textTheme;
+}

@@ -93,11 +93,11 @@ ThemeData _buildTheme({
       backgroundColor: background,
       elevation: 0,
       scrolledUnderElevation: 0,
-      surfaceTintColor: Colors.transparent,
+      surfaceTintColor: AppColors.transparent,
       titleTextStyle: AppTypography.titleLarge.copyWith(color: textPrimary),
       iconTheme: IconThemeData(color: textPrimary, size: 24),
       systemOverlayStyle: SystemUiOverlayStyle(
-        statusBarColor: Colors.transparent,
+        statusBarColor: AppColors.transparent,
         statusBarIconBrightness: isDark ? Brightness.light : Brightness.dark,
         statusBarBrightness: isDark ? Brightness.dark : Brightness.light,
       ),

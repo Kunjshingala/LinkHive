@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../theme/app_colors.dart';
 import '../../my_app.dart';
 
 void showSnackBar(String message) {
@@ -7,7 +8,7 @@ void showSnackBar(String message) {
 
   scaffoldMessengerKey.currentState?.showSnackBar(
     SnackBar(
-      content: Container(color: Colors.black, child: Text(message)),
+      content: Container(color: AppColors.black, child: Text(message)),
     ),
   );
 }

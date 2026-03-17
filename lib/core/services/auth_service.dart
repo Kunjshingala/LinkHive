@@ -36,15 +36,11 @@ class AuthService {
     // Trigger the authentication flow
     final googleUser = await _googleSignIn.authenticate();
 
-    // Obtain the authentication detail (idToken)
+    // Obtain tokens
     final googleAuth = googleUser.authentication;
-
-    // Obtain the authorization detail (accessToken)
-    final authorization = await googleUser.authorizationClient.authorizeScopes([]);
 
     // Create a new credential
     final OAuthCredential credential = GoogleAuthProvider.credential(
-      accessToken: authorization.accessToken,
       idToken: googleAuth.idToken,
     );
 

@@ -4,6 +4,7 @@ abstract final class AppColors {
   // ─── Base Palette ────────────────────────────────────────────────
   static const Color black = Color(0xFF1E1E1E);
   static const Color white = Color(0xFFFFFFFF);
+  static const Color transparent = Color(0x00000000);
   static const Color gray50 = Color(0xFFF9FAFB);
   static const Color gray100 = Color(0xFFF3F4F6);
   static const Color gray200 = Color(0xFFE5E7EB);

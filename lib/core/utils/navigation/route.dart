@@ -1,9 +1,9 @@
 import 'package:go_router/go_router.dart';
 
 import '../../../features/account/account.dart';
-import '../../../features/authentication/auth_gate.dart';
 import '../../../features/authentication/login_screen.dart';
 import '../../../features/authentication/signup_screen.dart';
+import '../../../features/home/home.dart';
 import '../../../features/links/ui/add_link_screen.dart';
 import '../../../features/splash/splash_screen.dart';
 import '../../../my_app.dart';
@@ -25,7 +25,7 @@ final router = GoRouter(
   routes: [
     GoRoute(path: '/', name: MyRouteName.splash, builder: (context, state) => const SplashScreen()),
     GoRoute(path: '/login', name: MyRouteName.login, builder: (context, state) => const LoginScreen()),
-    GoRoute(path: '/home', name: MyRouteName.homeScreen, builder: (context, state) => const AuthGate()),
+    GoRoute(path: '/home', name: MyRouteName.homeScreen, builder: (context, state) => const HomeScreen()),
     GoRoute(
       path: '/accountScreen',
       name: MyRouteName.accountScreen,

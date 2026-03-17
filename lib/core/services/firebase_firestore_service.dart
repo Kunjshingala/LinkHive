@@ -62,4 +62,24 @@ class FirebaseFirestoreService {
     final snap = await _categoriesCol(uid).get();
     return snap.docs.map((d) => CategoryModel.fromFirestore(d.id, d.data())).toList();
   }
+
+  // -------- Bulk delete helpers --------
+  Future<void> clearUserData(String uid) async {
+    await _deleteCollection(_linksCol(uid));
+    await _deleteCollection(_categoriesCol(uid));
+  }
+
+  Future<void> _deleteCollection(CollectionReference<Map<String, dynamic>> col) async {
+    const batchSize = 400;
+    while (true) {
+      final snap = await col.limit(batchSize).get();
+      if (snap.docs.isEmpty) return;
+      final batch = _db.batch();
+      for (final doc in snap.docs) {
+        batch.delete(doc.reference);
+      }
+      await batch.commit();
+      if (snap.docs.length < batchSize) return;
+    }
+  }
 }

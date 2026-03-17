@@ -19,11 +19,11 @@ Future<void> main() async {
   // ─── Dependency Injection ────────────────────────────────────────
   setupLocator();
 
-  // ─── Hive (local-first storage) ──────────────────────────────────
-  await locator<HiveHelper>().init();
-
   // ─── BLoC Observer ───────────────────────────────────────────────
   Bloc.observer = AppBlocObserver();
+
+  // ─── Hive (local-first storage) ──────────────────────────────────
+  await locator<HiveHelper>().init();
 
   // ─── Start background sync listener ──────────────────────────────
   locator<SyncService>().startListening();

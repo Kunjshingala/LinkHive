@@ -51,11 +51,11 @@ class LinkRepository {
 
   /// Convenience getter for the links Hive box.
   /// The box stores [LinkModel] objects keyed by their [LinkModel.id].
-  Box<LinkModel> get _links => _hiveHelper.linksBox;
+  Box<LinkModel> get _linksBox => _hiveHelper.linksBox;
 
   /// Convenience getter for the categories Hive box.
   /// The box stores [CategoryModel] objects keyed by their [CategoryModel.id].
-  Box<CategoryModel> get _categories => _hiveHelper.categoriesBox;
+  Box<CategoryModel> get _categoriesBox => _hiveHelper.categoriesBox;
 
   /// UUID generator shared across all repository methods. Stateless and safe
   /// to reuse as a single `static const` instance.
@@ -93,7 +93,7 @@ class LinkRepository {
     final l = link.id.isEmpty ? link.copyWith(id: _uuid.v4()) : link;
 
     // Step 1: Always persist locally first — works offline and for guests.
-    await _links.put(l.id, l);
+    await _linksBox.put(l.id, l);
     printLog(tag: 'LinkRepository', msg: 'Added link: ${l.title}');
 
     // Step 2: Attempt cloud sync only when the user is authenticated.
@@ -104,7 +104,7 @@ class LinkRepository {
       try {
         await _firebaseService.saveLink(_uid!, l.copyWith(isSynced: true));
         // Update the local copy to reflect the successful sync.
-        await _links.put(l.id, l.copyWith(isSynced: true));
+        await _linksBox.put(l.id, l.copyWith(isSynced: true));
       } catch (e) {
         printLog(tag: 'LinkRepository', msg: 'Cloud save failed (will retry): $e');
         // isSynced stays false — SyncService picks it up on reconnect.
@@ -119,7 +119,7 @@ class LinkRepository {
   /// [addLink] applies.
   Future<void> updateLink(LinkModel link) async {
     // Persist the updated link locally first.
-    await _links.put(link.id, link);
+    await _linksBox.put(link.id, link);
 
     // Mirror to Firestore if signed in; silently ignore cloud failures.
     if (_uid != null) {
@@ -139,7 +139,7 @@ class LinkRepository {
   /// the user manually deletes it again when online. A pending-delete
   /// mechanism can be added in the future if this gap is a concern.
   Future<void> deleteLink(String id) async {
-    await _links.delete(id);
+    await _linksBox.delete(id);
 
     if (_uid != null) {
       try {
@@ -185,7 +185,7 @@ class LinkRepository {
     int limit = 20,
     int offset = 0,
   }) {
-    var filtered = _links.values.toList();
+    var filtered = _linksBox.values.toList();
 
     // Sort descending: prefer the server-confirmed syncedAt, fall back to
     // the client-set createdAt for links that haven't been synced yet.
@@ -229,7 +229,7 @@ class LinkRepository {
   ///
   /// No filtering or pagination is applied — the total number of categories
   /// per user is expected to be small (< 100), so loading all at once is fine.
-  List<CategoryModel> getCategories() => _categories.values.toList();
+  List<CategoryModel> getCategories() => _categoriesBox.values.toList();
 
   /// Returns a stream that emits [BoxEvent]s whenever the links Hive box
   /// changes (put, delete, etc.).
@@ -238,7 +238,7 @@ class LinkRepository {
   /// example a save from [AddLinkBloc] running on a different route — triggers
   /// an automatic reload of the home list without requiring cross-route
   /// coordination via `await context.push(...)`.
-  Stream<BoxEvent> watchLinksBox() => _links.watch();
+  Stream<BoxEvent> watchLinksBox() => _linksBox.watch();
 
   /// Persists a new [category] locally and, if authenticated, to Firestore.
   ///
@@ -246,7 +246,7 @@ class LinkRepository {
   Future<void> addCategory(CategoryModel category) async {
     final c = category.id.isEmpty ? CategoryModel(id: _uuid.v4(), name: category.name) : category;
 
-    await _categories.put(c.id, c);
+    await _categoriesBox.put(c.id, c);
 
     // Categories are small and important for UX, so we propagate them to
     // Firestore synchronously (no silenced catch) unlike links.
@@ -263,7 +263,7 @@ class LinkRepository {
   /// to a [CategoryModel]. Consider cleaning orphaned references at the call
   /// site if needed.
   Future<void> deleteCategory(String id) async {
-    await _categories.delete(id);
+    await _categoriesBox.delete(id);
     if (_uid != null) {
       await _firebaseService.deleteCategory(_uid!, id);
     }
@@ -288,12 +288,12 @@ class LinkRepository {
     final uid = _uid;
     if (uid == null) return; // Nothing to sync for guest users.
 
-    final unsynced = _links.values.where((l) => !l.isSynced).toList();
+    final unsynced = _linksBox.values.where((l) => !l.isSynced).toList();
     printLog(tag: 'LinkRepository', msg: '${unsynced.length} links to sync');
 
     for (final link in unsynced) {
       await _firebaseService.saveLink(uid, link);
-      await _links.put(link.id, link.copyWith(isSynced: true));
+      await _linksBox.put(link.id, link.copyWith(isSynced: true));
     }
   }
 
@@ -315,13 +315,13 @@ class LinkRepository {
 
     final cloudLinks = await _firebaseService.fetchLinks(uid);
     for (final link in cloudLinks) {
-      await _links.put(link.id, link); // Overwrite local copy with cloud data.
+      await _linksBox.put(link.id, link); // Overwrite local copy with cloud data.
     }
 
     // Also pull categories so filters stay accurate after a sign-in.
     final cloudCats = await _firebaseService.fetchCategories(uid);
     for (final cat in cloudCats) {
-      await _categories.put(cat.id, cat);
+      await _categoriesBox.put(cat.id, cat);
     }
   }
 
@@ -334,9 +334,16 @@ class LinkRepository {
   /// - User signs out (wipe local data to protect privacy).
   /// - "Clear all data" action in settings.
   Future<void> clearLocalData() async {
-    await _links.clear();
-    await _categories.clear();
+    await _linksBox.clear();
+    await _categoriesBox.clear();
     printLog(tag: 'LinkRepository', msg: 'Cleared local data');
+  }
+
+  /// Deletes all remote links and categories for the signed-in user.
+  Future<void> clearRemoteData() async {
+    if (_uid == null) return;
+    await _firebaseService.clearUserData(_uid!);
+    printLog(tag: 'LinkRepository', msg: 'Cleared remote data for uid=$_uid');
   }
 
   // ─── Stats ─────────────────────────────────────────────────────────────────
@@ -350,7 +357,7 @@ class LinkRepository {
   ///
   /// Used by the sync status UI (e.g. a settings screen badge or debug panel).
   (int total, int synced, int unsynced) getLinkStats() {
-    final all = _links.values;
+    final all = _linksBox.values;
     final total = all.length;
     final synced = all.where((l) => l.isSynced).length;
     final unsynced = total - synced;
