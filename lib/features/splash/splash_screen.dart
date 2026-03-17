@@ -39,7 +39,8 @@ class _SplashScreenContent extends StatelessWidget {
       },
       child: Scaffold(
         backgroundColor: AppColors.brandBackground,
-        appBar: const CommonAppBar(toolbarHeight: 0),
+        extendBodyBehindAppBar: true,
+        appBar: CommonAppBar(toolbarHeight: 0, backgroundColor: AppColors.brandBackground),
         body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,

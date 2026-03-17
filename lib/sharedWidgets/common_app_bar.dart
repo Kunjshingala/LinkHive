@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 
+import '../core/theme/app_colors.dart';
 import '../core/theme/app_spacing.dart';
 import 'custom_button.dart';
 
@@ -17,6 +19,7 @@ class CommonAppBar extends StatelessWidget implements PreferredSizeWidget {
   final bool centerTitle;
   final double? elevation;
   final double? toolbarHeight;
+  final SystemUiOverlayStyle? systemUiOverlayStyle;
 
   const CommonAppBar({
     super.key,
@@ -29,6 +32,7 @@ class CommonAppBar extends StatelessWidget implements PreferredSizeWidget {
     this.centerTitle = true,
     this.elevation = 0,
     this.toolbarHeight,
+    this.systemUiOverlayStyle,
   });
 
   @override
@@ -54,13 +58,13 @@ class CommonAppBar extends StatelessWidget implements PreferredSizeWidget {
       backgroundColor: backgroundColor ?? Theme.of(context).scaffoldBackgroundColor,
       elevation: elevation,
       scrolledUnderElevation: 0,
-      surfaceTintColor: Colors.transparent,
+      surfaceTintColor: AppColors.transparent,
       automaticallyImplyLeading: false, // Handled manually above
       leading: leadingWidget,
       title: customTitle ?? Text(titleText, style: Theme.of(context).textTheme.titleMedium!),
       centerTitle: centerTitle,
       actions: actions,
-      systemOverlayStyle: Theme.of(context).appBarTheme.systemOverlayStyle,
+      systemOverlayStyle: systemUiOverlayStyle ?? Theme.of(context).appBarTheme.systemOverlayStyle,
     );
   }
 
