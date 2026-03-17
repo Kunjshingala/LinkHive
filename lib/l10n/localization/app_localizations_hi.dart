@@ -156,6 +156,13 @@ class AppLocalizationsHi extends AppLocalizations {
   String get accountSignOut => 'साइन आउट करें';
 
   @override
+  String get accountSignOutDesc => 'साइन आउट के बाद क्या साफ करना है, चुनें।';
+
+  @override
+  String get accountDeleteRemoteData =>
+      'क्लाउड डेटा साफ करें (सिंक किए गए लिंक हटाएं)';
+
+  @override
   String get accountSignedOutSuccess => 'सफलतापूर्वक साइन आउट हो गया';
 
   @override

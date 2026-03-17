@@ -390,6 +390,18 @@ abstract class AppLocalizations {
   /// **'Sign Out'**
   String get accountSignOut;
 
+  /// No description provided for @accountSignOutDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose what to clear after signing out.'**
+  String get accountSignOutDesc;
+
+  /// No description provided for @accountDeleteRemoteData.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear cloud data (delete synced links)'**
+  String get accountDeleteRemoteData;
+
   /// No description provided for @accountSignedOutSuccess.
   ///
   /// In en, this message translates to:

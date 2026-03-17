@@ -54,6 +54,8 @@
   "accountAbout": "About",
   "accountVersion": "Version 1.0.0",
   "accountSignOut": "Sign Out",
+  "accountSignOutDesc": "Choose what to clear after signing out.",
+  "accountDeleteRemoteData": "Clear cloud data (delete synced links)",
   "accountSignedOutSuccess": "Signed out successfully",
 
   "authWelcome": "Welcome Back!",

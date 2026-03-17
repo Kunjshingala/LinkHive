@@ -154,6 +154,13 @@ class AppLocalizationsAr extends AppLocalizations {
   String get accountSignOut => 'تسجيل الخروج';
 
   @override
+  String get accountSignOutDesc => 'اختر ما تريد مسحه بعد تسجيل الخروج.';
+
+  @override
+  String get accountDeleteRemoteData =>
+      'مسح بيانات السحابة (حذف الروابط المُزامنة)';
+
+  @override
   String get accountSignedOutSuccess => 'تم تسجيل الخروج بنجاح';
 
   @override

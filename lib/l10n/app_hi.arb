@@ -54,6 +54,8 @@
   "accountAbout": "के बारे में",
   "accountVersion": "संस्करण 1.0.0",
   "accountSignOut": "साइन आउट करें",
+  "accountSignOutDesc": "साइन आउट के बाद क्या साफ करना है, चुनें।",
+  "accountDeleteRemoteData": "क्लाउड डेटा साफ करें (सिंक किए गए लिंक हटाएं)",
   "accountSignedOutSuccess": "सफलतापूर्वक साइन आउट हो गया",
 
   "authWelcome": "वापसी पर स्वागत है!",

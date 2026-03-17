@@ -54,6 +54,8 @@
   "accountAbout": "વિશે",
   "accountVersion": "આવૃત્તિ 1.0.0",
   "accountSignOut": "સાઇન આઉટ કરો",
+  "accountSignOutDesc": "સાઇન આઉટ પછી શું સાફ કરવું તે પસંદ કરો.",
+  "accountDeleteRemoteData": "ક્લાઉડ ડેટા સાફ કરો (સિંક થયેલા લિંક્સ કાઢો)",
   "accountSignedOutSuccess": "સફળતાપૂર્વક સાઇન આઉટ થયું",
 
   "authWelcome": "પાછા સ્વાગત છે!",

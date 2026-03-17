@@ -155,6 +155,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get accountSignOut => 'Sign Out';
 
   @override
+  String get accountSignOutDesc => 'Choose what to clear after signing out.';
+
+  @override
+  String get accountDeleteRemoteData =>
+      'Clear cloud data (delete synced links)';
+
+  @override
   String get accountSignedOutSuccess => 'Signed out successfully';
 
   @override

@@ -54,6 +54,8 @@
   "accountAbout": "حول",
   "accountVersion": "الإصدار ١.٠.٠",
   "accountSignOut": "تسجيل الخروج",
+  "accountSignOutDesc": "اختر ما تريد مسحه بعد تسجيل الخروج.",
+  "accountDeleteRemoteData": "مسح بيانات السحابة (حذف الروابط المُزامنة)",
   "accountSignedOutSuccess": "تم تسجيل الخروج بنجاح",
 
   "authWelcome": "مرحباً بعودتك!",

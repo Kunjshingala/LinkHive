@@ -155,6 +155,13 @@ class AppLocalizationsGu extends AppLocalizations {
   String get accountSignOut => 'સાઇન આઉટ કરો';
 
   @override
+  String get accountSignOutDesc => 'સાઇન આઉટ પછી શું સાફ કરવું તે પસંદ કરો.';
+
+  @override
+  String get accountDeleteRemoteData =>
+      'ક્લાઉડ ડેટા સાફ કરો (સિંક થયેલા લિંક્સ કાઢો)';
+
+  @override
   String get accountSignedOutSuccess => 'સફળતાપૂર્વક સાઇન આઉટ થયું';
 
   @override
