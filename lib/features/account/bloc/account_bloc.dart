@@ -33,13 +33,20 @@ class AccountBloc extends Bloc<AccountEvent, AccountState> {
     if (user != null) {
       emit(AccountAuthenticated(user, totalLinks: total, syncedLinks: synced, unsyncedLinks: unsynced));
     } else {
-      emit(AccountGuest(totalLinks: total, syncedLinks: synced, unsyncedLinks: unsynced));
+      // Guests are always "local only" regardless of past sync flags.
+      emit(AccountGuest(totalLinks: total, syncedLinks: 0, unsyncedLinks: total));
     }
   }
 
   Future<void> _onSignOutRequested(AccountSignOutRequested event, Emitter<AccountState> emit) async {
     emit(const AccountLoading());
     try {
+      if (event.clearRemote) {
+        await _linkRepository.clearRemoteData();
+      }
+      if (event.clearLocal) {
+        await _linkRepository.clearLocalData();
+      }
       await _authService.signOut();
       emit(const AccountSignedOut());
     } catch (e) {
@@ -63,7 +70,7 @@ class AccountBloc extends Bloc<AccountEvent, AccountState> {
       if (user != null) {
         emit(AccountAuthenticated(user, totalLinks: total, syncedLinks: synced, unsyncedLinks: unsynced));
       } else {
-        emit(AccountGuest(totalLinks: total, syncedLinks: synced, unsyncedLinks: unsynced));
+        emit(AccountGuest(totalLinks: total, syncedLinks: 0, unsyncedLinks: total));
       }
     } catch (e) {
       printLog(tag: 'AccountBloc', msg: 'Google sign-in error: $e');

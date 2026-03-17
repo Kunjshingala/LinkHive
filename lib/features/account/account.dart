@@ -17,6 +17,7 @@ import '../../l10n/localization/app_localizations.dart';
 import '../../sharedWidgets/common_app_bar.dart';
 import '../../sharedWidgets/confirmation_bottom_sheet.dart';
 import '../../sharedWidgets/custom_button.dart';
+import '../../sharedWidgets/logout_bottom_sheet.dart';
 import '../../sharedWidgets/options_bottom_sheet.dart';
 import 'bloc/account_bloc.dart';
 import 'bloc/account_event.dart';
@@ -293,7 +294,7 @@ class _SettingsList extends StatelessWidget {
       (Icons.palette_outlined, context.l10n.accountTheme, themeSubtitle, AccountItem.theme),
       (Icons.sync_rounded, context.l10n.accountSyncData, '', AccountItem.syncData),
       (Icons.delete_forever_rounded, context.l10n.accountDeleteLocalData, '', AccountItem.deleteLocalData),
-      (Icons.help_outline_rounded, context.l10n.accountHelpFeedback, '', AccountItem.helpFeedback),
+      // (Icons.help_outline_rounded, context.l10n.accountHelpFeedback, '', AccountItem.helpFeedback),
       if (isAuthenticated)
         (Icons.logout_rounded, context.l10n.accountSignOut, '', AccountItem.auth)
       else
@@ -425,6 +426,9 @@ class _SettingsList extends StatelessWidget {
         showSnackBar(l10n.accountSyncingMsg);
         await locator<LinkRepository>().syncPendingLinks();
         await locator<LinkRepository>().pullFromCloud();
+        if (context.mounted) {
+          context.read<AccountBloc>().add(const AccountLoadRequested());
+        }
         showSnackBar(l10n.accountSyncSuccess);
         break;
 
@@ -457,9 +461,26 @@ class _SettingsList extends StatelessWidget {
 
       case AccountItem.auth:
         if (isAuthenticated) {
-          context.read<AccountBloc>().add(AccountSignOutRequested());
+          final result = await showLogoutBottomSheet(
+            context: context,
+            title: context.l10n.accountSignOut,
+            message: context.l10n.accountSignOutDesc,
+            confirmLabel: context.l10n.accountSignOut,
+            clearLocalLabel: context.l10n.accountDeleteLocalData,
+            clearRemoteLabel: context.l10n.accountDeleteRemoteData,
+            titleIcon: Icons.logout_rounded,
+          );
+          if (result != null && result.$1 && context.mounted) {
+            context.read<AccountBloc>().add(
+                  AccountSignOutRequested(
+                    clearLocal: result.$2,
+                    clearRemote: result.$3,
+                  ),
+                );
+          }
         } else {
-          context.read<AccountBloc>().add(AccountGoogleSignInRequested());
+          // Route the user to the dedicated auth screen so they can choose the sign-in method.
+          context.pushNamed(MyRouteName.login);
         }
         break;
 

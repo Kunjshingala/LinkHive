@@ -12,7 +12,13 @@ class AccountLoadRequested extends AccountEvent {
 }
 
 class AccountSignOutRequested extends AccountEvent {
-  const AccountSignOutRequested();
+  final bool clearLocal;
+  final bool clearRemote;
+
+  const AccountSignOutRequested({this.clearLocal = false, this.clearRemote = false});
+
+  @override
+  List<Object?> get props => [clearLocal, clearRemote];
 }
 
 class AccountGoogleSignInRequested extends AccountEvent {
