@@ -9,6 +9,8 @@ import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/utils/auth_error_handler.dart';
 import '../../core/utils/locator.dart';
+import '../../core/utils/navigation/route.dart';
+import '../../core/utils/utils.dart';
 import '../../sharedWidgets/common_app_bar.dart';
 import '../../sharedWidgets/custom_button.dart';
 import '../../sharedWidgets/custom_text_field.dart';
@@ -52,9 +54,7 @@ class _SignupScreenContentState extends State<_SignupScreenContent> {
   void _signUp(BuildContext context) {
     if (_formKey.currentState!.validate()) {
       if (_passwordController.text != _confirmPasswordController.text) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(context.l10n.signupPasswordMismatch), backgroundColor: AppColors.error));
+        showSnackBar(context.l10n.signupPasswordMismatch);
         return;
       }
 
@@ -73,22 +73,17 @@ class _SignupScreenContentState extends State<_SignupScreenContent> {
           if (state.exception is FirebaseAuthException) {
             errorMessage = AuthErrorHandler.getMessage(context, state.exception as FirebaseAuthException);
           }
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text(errorMessage), backgroundColor: AppColors.error));
+          showSnackBar(errorMessage);
         } else if (state is AuthSuccess) {
-          // On success, pop back to AuthGate which will show home
-          while (context.canPop()) {
-            context.pop();
-          }
+          context.goNamed(MyRouteName.homeScreen);
         }
       },
       child: Scaffold(
         backgroundColor: AppColors.brandBackground,
-        appBar: const CommonAppBar(backgroundColor: Colors.transparent),
+        appBar: const CommonAppBar(backgroundColor: AppColors.transparent),
         body: SafeArea(
           child: SingleChildScrollView(
-            padding: EdgeInsets.all(AppSpacing.xl),
+            padding: const EdgeInsets.all(AppSpacing.xl),
             child: Form(
               key: _formKey,
               child: Column(
@@ -96,15 +91,16 @@ class _SignupScreenContentState extends State<_SignupScreenContent> {
                 children: [
                   Text(
                     context.l10n.signupTitle,
-                    style: Theme.of(
-                      context,
-                    ).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                    style: context.text.headlineMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.textPrimary,
+                    ),
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: AppSpacing.sm),
                   Text(
                     context.l10n.signupDesc,
-                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: AppColors.textSecondary),
+                    style: context.text.bodyLarge?.copyWith(color: AppColors.textSecondary),
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: AppSpacing.xxl),
@@ -114,7 +110,7 @@ class _SignupScreenContentState extends State<_SignupScreenContent> {
                     prefixIcon: Icons.email_outlined,
                     validator: (value) => value != null && value.isNotEmpty ? null : context.l10n.authEmailError,
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: AppSpacing.md),
                   CustomTextField(
                     controller: _passwordController,
                     hintText: context.l10n.authPasswordHint,
@@ -122,7 +118,7 @@ class _SignupScreenContentState extends State<_SignupScreenContent> {
                     prefixIcon: Icons.lock_outline,
                     validator: (value) => value != null && value.length >= 6 ? null : context.l10n.authPasswordError,
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: AppSpacing.md),
                   CustomTextField(
                     controller: _confirmPasswordController,
                     hintText: context.l10n.signupConfirmPasswordHint,
@@ -131,15 +127,18 @@ class _SignupScreenContentState extends State<_SignupScreenContent> {
                     validator: (value) =>
                         value != null && value.isNotEmpty ? null : context.l10n.signupConfirmPasswordError,
                   ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: AppSpacing.lg),
                   BlocBuilder<AuthBloc, AuthState>(
                     builder: (context, state) {
+                      final cs = context.colors;
                       final isLoading = state is AuthLoading;
                       return NeoBrutalistButton(
                         onPressed: () => _signUp(context),
                         text: context.l10n.signupButton,
                         isLoading: isLoading,
-                        backgroundColor: Theme.of(context).colorScheme.primary,
+                        backgroundColor: cs.surface,
+                        textColor: cs.onSurface,
+                        shadowColor: cs.primary,
                       );
                     },
                   ),

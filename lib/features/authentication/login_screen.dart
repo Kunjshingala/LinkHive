@@ -3,14 +3,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 
+import '../../core/constants/app_enums.dart';
 import '../../core/extensions/context_extension.dart';
 import '../../core/services/auth_service.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/utils/auth_error_handler.dart';
 import '../../core/utils/locator.dart';
+import '../../core/utils/navigation/route.dart';
 import '../../core/utils/utils.dart';
+import '../../sharedWidgets/common_app_bar.dart';
 import '../../sharedWidgets/custom_button.dart';
 import '../../sharedWidgets/custom_text_field.dart';
 import 'bloc/auth_bloc.dart';
@@ -67,35 +71,44 @@ class _LoginScreenContentState extends State<_LoginScreenContent> {
         if (state is AuthError) {
           if (state.exception is FirebaseAuthException) {
             showSnackBar(AuthErrorHandler.getMessage(context, state.exception as FirebaseAuthException));
+            printLog(tag: 'Auth', msg: 'FirebaseAuthException: ${state.exception}');
+          } else if (state.exception is GoogleSignInException) {
+            final gex = state.exception as GoogleSignInException;
+            printLog(tag: 'Auth', msg: 'GoogleSignInException: code=${gex.code} details=${gex.details}');
+            showSnackBar('Google sign-in is unavailable right now. Please use email login.');
           } else {
-            showSnackBar(state.message);
+            printLog(tag: 'Auth', msg: 'AuthError: ${state.message}');
+            showSnackBar(context.l10n.authErrDefault(state.message));
           }
+        } else if (state is AuthSuccess) {
+          context.goNamed(MyRouteName.homeScreen);
         }
-        // Navigation is handled by AuthGate stream listener
+        // Navigation is handled via named routes.
       },
       child: Scaffold(
         backgroundColor: AppColors.brandBackground,
+        appBar: const CommonAppBar(backgroundColor: AppColors.transparent),
         body: SafeArea(
           child: SingleChildScrollView(
-            padding: EdgeInsets.all(AppSpacing.xl),
+            padding: const EdgeInsets.all(AppSpacing.xl),
             child: Form(
               key: _formKey,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  const SizedBox(height: 50),
-                  // Logo or Illustration could go here
+                  const SizedBox(height: AppSpacing.lg),
                   Text(
                     context.l10n.authWelcome,
-                    style: Theme.of(
-                      context,
-                    ).textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold, color: AppColors.textPrimary),
+                    style: context.text.headlineMedium?.copyWith(
+                      fontWeight: FontWeight.w800,
+                      color: AppColors.textPrimary,
+                    ),
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: AppSpacing.sm),
                   Text(
                     context.l10n.authSignInDesc,
-                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(color: AppColors.textSecondary),
+                    style: context.text.bodyLarge?.copyWith(color: AppColors.textSecondary),
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: AppSpacing.xxl),
@@ -105,7 +118,7 @@ class _LoginScreenContentState extends State<_LoginScreenContent> {
                     prefixIcon: Icons.email_outlined,
                     validator: (value) => value != null && value.isNotEmpty ? null : context.l10n.authEmailError,
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: AppSpacing.md),
                   CustomTextField(
                     controller: _passwordController,
                     hintText: context.l10n.authPasswordHint,
@@ -113,59 +126,47 @@ class _LoginScreenContentState extends State<_LoginScreenContent> {
                     prefixIcon: Icons.lock_outline,
                     validator: (value) => value != null && value.length >= 6 ? null : context.l10n.authPasswordError,
                   ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: AppSpacing.lg),
                   BlocBuilder<AuthBloc, AuthState>(
                     builder: (context, state) {
+                      final cs = context.colors;
                       final isLoading = state is AuthLoading;
                       return NeoBrutalistButton(
                         onPressed: () => _signIn(context),
                         text: context.l10n.authSignInButton,
                         isLoading: isLoading,
-                        backgroundColor: Theme.of(context).colorScheme.primary,
+                        backgroundColor: cs.surface,
+                        textColor: cs.onSurface,
+                        shadowColor: cs.primary,
                       );
                     },
                   ),
-                  const SizedBox(height: 24),
-                  Row(
-                    children: [
-                      Expanded(child: Divider(color: AppColors.border.withAlpha(50))),
-                      Padding(
-                        padding: EdgeInsets.symmetric(horizontal: AppSpacing.md),
-                        child: Text(context.l10n.authOr, style: TextStyle(color: AppColors.textTertiary)),
-                      ),
-                      Expanded(child: Divider(color: AppColors.border.withAlpha(50))),
-                    ],
+                  const SizedBox(height: AppSpacing.lg),
+                  NeoBrutalistButton(
+                    onPressed: () => _signInWithGoogle(context),
+                    text: context.l10n.authGoogleSignIn,
+                    icon: FontAwesomeIcons.google,
+                    variant: ButtonVariant.outlined,
+                    backgroundColor: context.colors.surface,
+                    textColor: context.colors.onSurface,
+                    shadowColor: context.colors.primary,
                   ),
                   const SizedBox(height: AppSpacing.xl),
-                  SizedBox(height: AppSpacing.xl),
-                  BlocBuilder<AuthBloc, AuthState>(
-                    builder: (context, state) {
-                      final isLoading = state is AuthLoading;
-                      return OutlinedButton.icon(
-                        onPressed: isLoading ? null : () => _signInWithGoogle(context),
-                        icon: const Icon(FontAwesomeIcons.google, color: AppColors.error),
-                        label: Text(
-                          context.l10n.authGoogleSignIn,
-                          style: const TextStyle(color: AppColors.textPrimary),
-                        ),
-                        style: OutlinedButton.styleFrom(
-                          padding: EdgeInsets.symmetric(vertical: AppSpacing.md),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                          side: BorderSide(color: AppColors.border.withAlpha(50)),
-                        ),
-                      );
-                    },
-                  ),
-                  const SizedBox(height: 24),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Text(context.l10n.authNoAccount, style: TextStyle(color: AppColors.textSecondary)),
+                      Text(context.l10n.authNoAccount, style: context.text.bodyMedium),
                       TextButton(
                         onPressed: () {
-                          context.push('/signup');
+                          context.pushNamed(MyRouteName.signup);
                         },
-                        child: Text(context.l10n.authSignUpLink, style: const TextStyle(fontWeight: FontWeight.bold)),
+                        child: Text(
+                          context.l10n.authSignUpLink,
+                          style: context.text.bodyMedium?.copyWith(
+                            fontWeight: FontWeight.w700,
+                            color: context.colors.primary,
+                          ),
+                        ),
                       ),
                     ],
                   ),
