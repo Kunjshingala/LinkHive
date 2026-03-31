@@ -42,6 +42,7 @@ Dive deeper based on the task:
 | [`context/project.md`](context/project.md) | When you need the high-level goals and what the app is supposed to do. |
 | [`context/architecture.md`](context/architecture.md) | When you are creating new features, modifying the app's structural flow, or changing how screens integrate. |
 | [`context/domain.md`](context/domain.md) | When working with core business logic (Links, Hives, Share Intents). |
+| [`plans/clean-architecture-refactor-plan.md`](plans/clean-architecture-refactor-plan.md) | When planning or executing the clean-architecture migration and repository-wide refactor work. |
 | [`conventions/code-style.md`](conventions/code-style.md) | When you are writing new Dart code, making sure naming and Bloc structures match the project standard. |
 | [`conventions/git.md`](conventions/git.md) | When you need to create branches, commits, or PRs. |
 | [`conventions/testing.md`](conventions/testing.md) | When writing tests (especially `bloc_test` for verifying logic). |
