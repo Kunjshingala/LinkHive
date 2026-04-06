@@ -1,0 +1,53 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(**)",
+      "Glob(**)",
+      "Grep(**)",
+      "Bash(fvm flutter pub get)",
+      "Bash(fvm flutter pub get*)",
+      "Bash(fvm flutter analyze)",
+      "Bash(fvm flutter analyze*)",
+      "Bash(fvm flutter test)",
+      "Bash(fvm flutter test*)",
+      "Bash(fvm flutter gen-l10n)",
+      "Bash(fvm flutter build*)",
+      "Bash(fvm flutter run*)",
+      "Bash(fvm flutter devices)",
+      "Bash(fvm flutter --version)",
+      "Bash(fvm flutter pub outdated)",
+      "Bash(fvm flutter pub deps)",
+      "Bash(fvm dart format*)",
+      "Bash(fvm dart run build_runner*)",
+      "Bash(fvm dart --version)",
+      "Bash(ls*)",
+      "Bash(cat*)",
+      "Bash(head*)",
+      "Bash(tail*)",
+      "Bash(wc*)",
+      "Bash(find*)",
+      "Bash(git status*)",
+      "Bash(git log*)",
+      "Bash(git diff*)",
+      "Bash(git branch*)",
+      "Bash(git show*)",
+      "Bash(git stash list*)",
+      "Bash(git add*)",
+      "Bash(git commit*)",
+      "Bash(cd ios && pod install*)",
+      "Bash(cd ios && pod update*)"
+    ],
+    "deny": [
+      "Bash(flutter*)",
+      "Bash(dart*)",
+      "Bash(rm -rf*)",
+      "Bash(git push*)",
+      "Bash(git push --force*)",
+      "Bash(git reset --hard*)",
+      "Bash(git checkout -- *)",
+      "Bash(git clean*)",
+      "Bash(git branch -D*)",
+      "Bash(git rebase*)"
+    ]
+  }
+}

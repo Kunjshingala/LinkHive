@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(find /Users/kunj/Data/Learn/Flutter/LinkHive/Code/LinkHive -path */cloud_firestore/ios/*.podspec)"
+    ]
+  }
+}
