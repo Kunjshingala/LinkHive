@@ -15,9 +15,9 @@ class ThemeCubit extends Cubit<ThemeMode> {
     final String? savedTheme = _hiveHelper.settingsBox.get(HiveConstants.themeKey);
     ThemeMode initial = ThemeMode.system;
 
-    if (savedTheme == 'light') {
+    if (savedTheme == ThemeMode.light.name) {
       initial = ThemeMode.light;
-    } else if (savedTheme == 'dark') {
+    } else if (savedTheme == ThemeMode.dark.name) {
       initial = ThemeMode.dark;
     }
     // If savedTheme is null or 'system', initial remains ThemeMode.system

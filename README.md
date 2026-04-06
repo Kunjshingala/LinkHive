@@ -93,9 +93,19 @@ LinkHive uses a sophisticated two-way sync strategy between **Hive** and **Fires
     flutter pub get
     ```
 
-2.  **Firebase Config**:
-    - Place `google-services.json` in `android/app/`.
-    - Place `GoogleService-Info.plist` in `ios/Runner/`.
+2.  **Firebase Configuration**:
+    LinkHive uses Firebase for Auth and Firestore. To set it up:
+    - Install the [Firebase CLI](https://firebase.google.com/docs/cli#install_the_firebase_cli).
+    - Log in to Firebase: `firebase login`.
+    - Install FlutterFire CLI: `dart pub global activate flutterfire_cli`.
+    - Create a new Firebase project in the [Firebase Console](https://console.firebase.google.com/).
+    - Enable **Email/Password** and **Google** sign-in providers in the Authentication section.
+    - Create a **Cloud Firestore** database.
+    - Run the configuration command:
+      ```bash
+      flutterfire configure
+      ```
+    - Select your project and platforms (Android, iOS, macOS, Web). This will automatically generate `lib/firebase_options.dart` and the necessary native configuration files.
 
 3.  **Run**:
     ```bash
