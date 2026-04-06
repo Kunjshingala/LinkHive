@@ -36,8 +36,9 @@ final router = GoRouter(
       path: '/addLink',
       name: MyRouteName.addLink,
       builder: (context, state) {
-        // Optional prefill URL passed as extra (String?) from share intent or FAB
-        final prefillUrl = state.extra as String?;
+        // Use a type-safe check — extra is String? when passed from share intent/FAB,
+        // null/missing otherwise.
+        final prefillUrl = state.extra is String ? state.extra as String : null;
         return AddLinkScreen(prefillUrl: prefillUrl);
       },
     ),
