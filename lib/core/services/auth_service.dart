@@ -1,6 +1,8 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
+import '../../firebase_options.dart';
+
 class AuthService {
   final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
   final GoogleSignIn _googleSignIn = GoogleSignIn.instance;
@@ -14,7 +16,10 @@ class AuthService {
 
   Future<void> _ensureInitialized() async {
     if (!_isInitialized) {
-      await _googleSignIn.initialize();
+      await _googleSignIn.initialize(
+        clientId: FirebaseConfig.iosClientId,
+        serverClientId: FirebaseConfig.androidClientId,
+      );
       _isInitialized = true;
     }
   }
