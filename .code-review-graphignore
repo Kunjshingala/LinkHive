@@ -1,0 +1,33 @@
+# Flutter build and cache
+build/**
+.dart_tool/**
+.pub/**
+pubspec.lock
+
+# iOS/Pods
+ios/**
+
+# Android
+android/**
+
+# EXCLUDE TESTS - This might be the issue!
+test/**
+
+# Generated files
+*.g.dart
+*.config.dart
+*.freezed.dart
+lib/generated/**
+
+# IDE
+.idea/**
+.vscode/**
+*.iml
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Cache
+.cache/**
+node_modules/**

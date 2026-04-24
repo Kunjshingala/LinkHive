@@ -1,5 +1,5 @@
 # Uncomment this line to define a global platform for your project
-platform :ios, '15.0'
+platform :ios, '16.0'
 
 # CocoaPods analytics sends network stats synchronously affecting flutter build latency.
 ENV['COCOAPODS_DISABLE_STATS'] = 'true'
@@ -27,6 +27,16 @@ require File.expand_path(File.join('packages', 'flutter_tools', 'bin', 'podhelpe
 
 flutter_ios_podfile_setup
 
+# Workaround: Xcode 26 uses object version 70 which CocoaPods doesn't support yet.
+# Temporarily patch the compatibility version map so pod install succeeds.
+require 'xcodeproj'
+unless Xcodeproj::Constants::COMPATIBILITY_VERSION_BY_OBJECT_VERSION.key?(70)
+  map = Xcodeproj::Constants::COMPATIBILITY_VERSION_BY_OBJECT_VERSION.dup
+  map[70] = 'Xcode 16.0'
+  Xcodeproj::Constants.send(:remove_const, :COMPATIBILITY_VERSION_BY_OBJECT_VERSION)
+  Xcodeproj::Constants.const_set(:COMPATIBILITY_VERSION_BY_OBJECT_VERSION, map.freeze)
+end
+
 target 'Runner' do
   use_frameworks!
 
@@ -34,6 +44,11 @@ target 'Runner' do
   target 'RunnerTests' do
     inherit! :search_paths
   end
+end
+
+target 'ShareExtension' do
+  use_frameworks!
+  # No pods needed — Swift source files are included directly in the target
 end
 
 post_install do |installer|
