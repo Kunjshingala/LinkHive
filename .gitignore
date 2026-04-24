@@ -53,4 +53,6 @@ GoogleService-Info.plist
 firebase.json
 firebase_config.json
 firebase_app_id_file.json
-lib/firebase_options.dart
+lib/firebase_options.dart.claude/settings.local.json
+.run/
+.vscode/settings.json
