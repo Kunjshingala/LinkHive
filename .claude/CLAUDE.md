@@ -1,3 +1,7 @@
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
 # LinkHive
 
 > **Mandatory:** Read `.claude/rules.md` before every task. Read `.ai/` for full project context.
@@ -141,13 +145,22 @@ lib/
 ## Commands
 
 ```bash
-fvm flutter analyze               # Must pass with 0 warnings before done
-fvm flutter test                  # Run all tests
-fvm flutter gen-l10n              # Regenerate after ARB changes
+fvm flutter pub get                               # Fetch dependencies
+fvm flutter analyze                               # Must pass with 0 warnings before done
+fvm flutter test                                  # Run all tests
+fvm flutter test test/path/to/file_test.dart      # Run a single test file
+fvm flutter test --name 'partial test name'       # Run tests matching a name
+fvm flutter run                                   # Run app on default device
+fvm flutter run -d <device_id>                    # Run on a specific device (see `flutter devices`)
+fvm flutter gen-l10n                              # Regenerate after ARB changes
 fvm dart run build_runner build --delete-conflicting-outputs  # After Hive model changes
-fvm dart format lib/              # Format all Dart files
-cd ios && pod install             # After iOS dependency changes
+fvm dart format lib/                              # Format all Dart files
+cd ios && pod install                             # After iOS dependency changes
 ```
+
+### Firebase Setup
+
+`firebase_config.json` and `firebase_options.dart` are gitignored. Copy `firebase_config.json.example` → `firebase_config.json` and run `flutterfire configure` to regenerate `lib/firebase_options.dart` locally — never edit it manually.
 
 ---
 
@@ -163,4 +176,9 @@ Full context lives in `.ai/`:
 
 Claude-specific quick references:
 - `.claude/rules.md` — rule index + quick reminders
+- `.claude/rules/workflow.md` — FVM, read-before-edit, analyze-before-done, git discipline
+- `.claude/rules/code-patterns.md` — canonical BLoC / screen / Neo-Brutalism templates
+- `.claude/rules/naming.md` — class, method, file, and route naming conventions
 - `.claude/context/components-ui.md` — widget catalog, AppColors table, AppSpacing table
+
+Root-level agent file: `AGENTS.md` (points to `.ai/AGENTS.md` for non-Claude agents).
