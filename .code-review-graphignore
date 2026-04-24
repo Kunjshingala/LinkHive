@@ -1,33 +1,90 @@
-# Flutter build and cache
-build/**
-.dart_tool/**
-.pub/**
-pubspec.lock
+# ================================
+# Core Flutter build & cache (REMOVE NOISE)
+# ================================
+build/
+.dart_tool/
+.pub/
+.pub-cache/
+.packages
+.packages.generated
+flutter_*.png
 
-# iOS/Pods
-ios/**
+# Flutter internal
+.flutter-plugins
+.flutter-plugins-dependencies
 
-# Android
-android/**
+# ================================
+# Android (KEEP CONFIG, REMOVE BUILD)
+# ================================
+android/.gradle/
+android/app/build/
+**/android/captures/
+**/android/gradle-wrapper.jar
+**/android/gradlew
+**/android/gradlew.bat
+**/android/local.properties
 
-# EXCLUDE TESTS - This might be the issue!
-test/**
+# ================================
+# iOS (KEEP CONFIG, REMOVE BUILD)
+# ================================
+ios/Pods/
+ios/.symlinks/
+**/ios/DerivedData/
+**/ios/Flutter/ephemeral
+**/ios/Flutter/App.framework
+**/ios/Flutter/Flutter.framework
+**/ios/Flutter/flutter_assets/
 
-# Generated files
-*.g.dart
+# ================================
+# macOS / Windows / Linux (REMOVE GENERATED)
+# ================================
+**/macos/Flutter/ephemeral
+**/windows/flutter/generated_*
+**/linux/flutter/generated_*
+
+# ================================
+# Generated files (CRITICAL DECISION)
+# ================================
+# KEEP model + API structure
+# DO NOT IGNORE:
+# *.g.dart
+# *.freezed.dart
+
+# Ignore only low-value generated
 *.config.dart
-*.freezed.dart
-lib/generated/**
+**/generated_plugin_registrant.dart
 
-# IDE
-.idea/**
-.vscode/**
+# ================================
+# Tests (OPTIONAL — CURRENTLY KEPT)
+# ================================
+# test/
+
+# ================================
+# IDE / OS / logs (NO VALUE)
+# ================================
+.idea/
+.vscode/
 *.iml
-
-# OS
 .DS_Store
 Thumbs.db
+*.log
+*.lock
+*.swp
 
-# Cache
-.cache/**
-node_modules/**
+# ================================
+# Cache / irrelevant deps
+# ================================
+.cache/
+node_modules/
+
+# ================================
+# Coverage / symbols (NO VALUE)
+# ================================
+coverage/
+app.*.symbols
+app.*.map.json
+
+# ================================
+# FVM
+# ================================
+.fvm/

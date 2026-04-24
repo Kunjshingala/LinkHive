@@ -79,43 +79,119 @@ LinkHive uses a sophisticated two-way sync strategy between **Hive** and **Fires
 ## 🚦 Getting Started
 
 ### Prerequisites
-- Flutter SDK (v3.38.3)
-- [FVM](https://fvm.app/) (recommended)
-- Firebase Project configured
 
-### Installation
+| Tool | Version | Install |
+|------|---------|---------|
+| Flutter | 3.38.3 | Managed via [FVM](https://fvm.app/) |
+| FVM | latest | `dart pub global activate fvm` |
+| Xcode | latest | Mac App Store (required for iOS) |
+| CocoaPods | latest | `sudo gem install cocoapods` |
+| Android Studio | latest | [Download](https://developer.android.com/studio) (required for Android) |
+| Firebase Project | — | [Firebase Console](https://console.firebase.google.com/) |
 
-1.  **Clone & Setup**:
-    ```bash
-    git clone https://github.com/Kunjshingala/LinkHive.git
-    cd linkhive
-    fvm use # if using FVM
-    flutter pub get
-    ```
+### Minimum Platform Requirements
 
-2.  **Firebase Configuration**:
-    LinkHive uses Firebase for Auth and Firestore. To set it up:
-    - Install the [Firebase CLI](https://firebase.google.com/docs/cli#install_the_firebase_cli).
-    - Log in to Firebase: `firebase login`.
-    - Install FlutterFire CLI: `dart pub global activate flutterfire_cli`.
-    - Create a new Firebase project in the [Firebase Console](https://console.firebase.google.com/).
-    - Enable **Email/Password** and **Google** sign-in providers in the Authentication section.
-    - Create a **Cloud Firestore** database.
-    - Run the configuration command:
-      ```bash
-      flutterfire configure
-      ```
-    - Select your project and platforms (Android, iOS, macOS, Web). This will automatically generate `lib/firebase_options.dart` and the necessary native configuration files.
+| Platform | Minimum Version |
+|----------|----------------|
+| Android | API 24 (Android 7.0 Nougat) |
+| iOS | 16.0 |
 
-3.  **Run**:
-    ```bash
-    flutter run
-    ```
+### Step 1 — Clone & Install Dependencies
+
+```bash
+git clone https://github.com/Kunjshingala/LinkHive.git
+cd LinkHive/Code/LinkHive
+
+# Install the correct Flutter version for this project
+fvm install
+fvm use
+
+# Get Dart dependencies
+fvm flutter pub get
+
+# iOS only — install native pods
+cd ios && pod install && cd ..
+```
+
+### Step 2 — Firebase Configuration
+
+LinkHive uses `--dart-define-from-file` to inject Firebase config at build time. No native config files (`google-services.json`, `GoogleService-Info.plist`) are needed.
+
+1. Copy the example config:
+   ```bash
+   cp firebase_config.json.example firebase_config.json
+   ```
+
+2. Open `firebase_config.json` and fill in your values:
+
+   | Key | Where to find it |
+   |-----|------------------|
+   | `FB_PROJECT_ID` | Firebase Console → Project Settings → General → **Project ID** |
+   | `FB_MESSAGING_SENDER_ID` | Firebase Console → Project Settings → Cloud Messaging → **Sender ID** |
+   | `FB_STORAGE_BUCKET` | Firebase Console → Project Settings → General → **Storage bucket** |
+   | `FB_API_KEY_ANDROID` | Firebase Console → Project Settings → Your Apps → Android → **API key** |
+   | `FB_APP_ID_ANDROID` | Firebase Console → Project Settings → Your Apps → Android → **App ID** |
+   | `FB_API_KEY_IOS` | Firebase Console → Project Settings → Your Apps → iOS → **API key** |
+   | `FB_APP_ID_IOS` | Firebase Console → Project Settings → Your Apps → iOS → **App ID** |
+   | `FB_IOS_BUNDLE_ID` | Your iOS bundle identifier (e.g., `com.link.hive`) |
+   | `FB_ANDROID_CLIENT_ID` | Firebase Console → Authentication → Sign-in method → Google → **Web client ID** |
+   | `FB_IOS_CLIENT_ID` | Firebase Console → Project Settings → Your Apps → iOS → **OAuth client ID** |
+
+   > `firebase_config.json` is gitignored — your secrets stay local.
+
+### Step 3 — Run the App
+
+**Terminal:**
+```bash
+# Run on Android
+fvm flutter run --dart-define-from-file=firebase_config.json
+
+# Run on iOS Simulator
+fvm flutter run -d iPhone --dart-define-from-file=firebase_config.json
+```
+
+**VS Code:** Launch configs are pre-configured in `.vscode/launch.json` — just hit **Run/Debug** (F5).
+
+**Android Studio:** Select the **linkhive** run configuration from `.run/` — just hit **Run** (Shift+F10).
+
+### Firebase Project Setup (First Time Only)
+
+If you don't have a Firebase project yet:
+
+1. Go to the [Firebase Console](https://console.firebase.google.com/) and create a new project.
+2. **Authentication** — Go to Authentication → Sign-in method and enable:
+   - Email/Password
+   - Google
+3. **Firestore** — Go to Firestore Database → Create database → Start in **test mode** (or configure security rules for production).
+4. **Register Apps** — Go to Project Settings → Add app:
+   - Add an **Android** app with package name `com.link.hive`
+   - Add an **iOS** app with bundle ID `com.link.hive`
+5. Copy the generated config values into your `firebase_config.json`.
+
+### Troubleshooting
+
+| Issue | Solution |
+|-------|----------|
+| `No Firebase App '[DEFAULT]' has been created` | Make sure `firebase_config.json` exists and you're passing `--dart-define-from-file` |
+| `google-services.json` not found (Android build error) | Make sure you removed the `com.google.gms.google-services` plugin from `android/app/build.gradle.kts` |
+| Google Sign-In fails on iOS | Verify the reversed client ID URL scheme is in `ios/Runner/Info.plist` |
+| `pod install` fails | Run `cd ios && pod repo update && pod install` |
+| Wrong Flutter version | Run `fvm install && fvm use` in the project root |
+
+## 📚 Documentation
+
+All project documentation lives in the [`docs/`](docs/) directory:
+
+| Document | Description |
+|----------|-------------|
+| [Project Plan](docs/PLAN.md) | Phase 1 scope, architecture decisions, and feature roadmap |
+| [Dart Define & Firebase Setup](docs/setup/dart_define_and_firebase_setup.md) | How `--dart-define-from-file` works, Firebase project setup from scratch, and config file reference |
+| [Receive Sharing Intent](docs/setup/receive_sharing_intent_setup.md) | Android & iOS share sheet integration — how the app receives shared URLs from other apps |
 
 ## 🧪 Testing
-We maintain high code quality through unit and widget tests.
+
 ```bash
-flutter test
+fvm flutter test
 ```
 
 ## 📄 License
