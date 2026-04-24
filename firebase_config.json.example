@@ -1,0 +1,19 @@
+{
+  "_comment_shared": "── Shared (Firebase Console → Project Settings → General) ──",
+  "FB_PROJECT_ID": "",
+  "FB_MESSAGING_SENDER_ID": "",
+  "FB_STORAGE_BUCKET": "",
+
+  "_comment_android": "── Android (Firebase Console → Project Settings → Your Apps → Android) ──",
+  "FB_API_KEY_ANDROID": "",
+  "FB_APP_ID_ANDROID": "",
+
+  "_comment_ios": "── iOS (Firebase Console → Project Settings → Your Apps → iOS) ──",
+  "FB_API_KEY_IOS": "",
+  "FB_APP_ID_IOS": "",
+  "FB_IOS_BUNDLE_ID": "",
+
+  "_comment_google_sign_in": "── Google Sign-In (Firebase Console → Authentication → Sign-in method → Google → Web SDK config) ──",
+  "FB_ANDROID_CLIENT_ID": "",
+  "FB_IOS_CLIENT_ID": ""
+}
