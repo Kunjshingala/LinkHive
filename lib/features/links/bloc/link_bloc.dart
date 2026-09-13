@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:rxdart/rxdart.dart';
 
+import '../../../core/services/sync_engine.dart';
 import '../models/link_model.dart';
 import '../models/category_model.dart';
 import '../repository/link_repository.dart';
@@ -20,6 +21,7 @@ import 'link_state.dart';
 /// needing cross-route `await context.push(...)` hacks.
 class LinkBloc extends Bloc<LinkEvent, LinkState> {
   final LinkRepository _repository;
+  final SyncEngine? _syncEngine;
   static const _limit = 20;
 
   EventTransformer<T> _debounce<T>(Duration duration) {
@@ -34,10 +36,19 @@ class LinkBloc extends Bloc<LinkEvent, LinkState> {
   /// Cancelled in [close] to avoid memory leaks.
   late final StreamSubscription<void> _boxSubscription;
 
-  LinkBloc({required LinkRepository repository}) : _repository = repository, super(const LinkInitial()) {
+  LinkBloc({required LinkRepository repository, SyncEngine? syncEngine})
+    : _repository = repository,
+      _syncEngine = syncEngine,
+      super(const LinkInitial()) {
     on<LinkLoadRequested>(_onLoadRequested);
-    on<LinkLoadNextPageRequested>(_onLoadNextPageRequested, transformer: _droppable());
-    on<LinkSearchChanged>(_onSearchChanged, transformer: _debounce(const Duration(milliseconds: 300)));
+    on<LinkLoadNextPageRequested>(
+      _onLoadNextPageRequested,
+      transformer: _droppable(),
+    );
+    on<LinkSearchChanged>(
+      _onSearchChanged,
+      transformer: _debounce(const Duration(milliseconds: 300)),
+    );
     on<LinkCategoryFilterChanged>(_onCategoryFilterChanged);
     on<LinkPriorityFilterChanged>(_onPriorityFilterChanged);
     on<LinkDeleteRequested>(_onDeleteRequested);
@@ -69,7 +80,10 @@ class LinkBloc extends Bloc<LinkEvent, LinkState> {
 
   // ─── Existing Handlers ────────────────────────────────────────────────────
 
-  Future<void> _onLoadRequested(LinkLoadRequested event, Emitter<LinkState> emit) async {
+  Future<void> _onLoadRequested(
+    LinkLoadRequested event,
+    Emitter<LinkState> emit,
+  ) async {
     emit(const LinkLoading());
     try {
       final links = _repository.queryLinks(limit: _limit, offset: 0);
@@ -86,9 +100,16 @@ class LinkBloc extends Bloc<LinkEvent, LinkState> {
     }
   }
 
-  Future<void> _onLoadNextPageRequested(LinkLoadNextPageRequested event, Emitter<LinkState> emit) async {
+  Future<void> _onLoadNextPageRequested(
+    LinkLoadNextPageRequested event,
+    Emitter<LinkState> emit,
+  ) async {
     final current = state;
-    if (current is! LinksLoaded || current.hasReachedMax || current.isLoadingMore) return;
+    if (current is! LinksLoaded ||
+        current.hasReachedMax ||
+        current.isLoadingMore) {
+      return;
+    }
 
     final loadingState = current.copyWith(isLoadingMore: true);
     emit(loadingState);
@@ -103,7 +124,9 @@ class LinkBloc extends Bloc<LinkEvent, LinkState> {
       );
 
       nextLinks.isEmpty
-          ? emit(loadingState.copyWith(hasReachedMax: true, isLoadingMore: false))
+          ? emit(
+              loadingState.copyWith(hasReachedMax: true, isLoadingMore: false),
+            )
           : emit(
               loadingState.copyWith(
                 links: List.of(current.links)..addAll(nextLinks),
@@ -121,7 +144,13 @@ class LinkBloc extends Bloc<LinkEvent, LinkState> {
     final current = state;
     final cat = current is LinksLoaded ? current.activeCategory : 'All';
     final prio = current is LinksLoaded ? current.activePriority : 'All';
-    final links = _repository.queryLinks(query: event.query, category: cat, priority: prio, limit: _limit, offset: 0);
+    final links = _repository.queryLinks(
+      query: event.query,
+      category: cat,
+      priority: prio,
+      limit: _limit,
+      offset: 0,
+    );
     emit(
       LinksLoaded(
         links: links,
@@ -135,7 +164,10 @@ class LinkBloc extends Bloc<LinkEvent, LinkState> {
     );
   }
 
-  void _onCategoryFilterChanged(LinkCategoryFilterChanged event, Emitter<LinkState> emit) {
+  void _onCategoryFilterChanged(
+    LinkCategoryFilterChanged event,
+    Emitter<LinkState> emit,
+  ) {
     final current = state;
     final query = current is LinksLoaded ? current.searchQuery : '';
     final prio = current is LinksLoaded ? current.activePriority : 'All';
@@ -159,7 +191,10 @@ class LinkBloc extends Bloc<LinkEvent, LinkState> {
     );
   }
 
-  void _onPriorityFilterChanged(LinkPriorityFilterChanged event, Emitter<LinkState> emit) {
+  void _onPriorityFilterChanged(
+    LinkPriorityFilterChanged event,
+    Emitter<LinkState> emit,
+  ) {
     final current = state;
     final query = current is LinksLoaded ? current.searchQuery : '';
     final cat = current is LinksLoaded ? current.activeCategory : 'All';
@@ -183,7 +218,10 @@ class LinkBloc extends Bloc<LinkEvent, LinkState> {
     );
   }
 
-  Future<void> _onDeleteRequested(LinkDeleteRequested event, Emitter<LinkState> emit) async {
+  Future<void> _onDeleteRequested(
+    LinkDeleteRequested event,
+    Emitter<LinkState> emit,
+  ) async {
     try {
       await _repository.deleteLink(event.linkId);
       final current = state;
@@ -195,7 +233,13 @@ class LinkBloc extends Bloc<LinkEvent, LinkState> {
           limit: current.offset,
           offset: 0,
         );
-        emit(current.copyWith(links: links, offset: links.length, hasReachedMax: links.length < current.offset));
+        emit(
+          current.copyWith(
+            links: links,
+            offset: links.length,
+            hasReachedMax: links.length < current.offset,
+          ),
+        );
       } else {
         add(const LinkLoadRequested());
       }
@@ -204,7 +248,10 @@ class LinkBloc extends Bloc<LinkEvent, LinkState> {
     }
   }
 
-  Future<void> _onSyncRequested(LinkSyncRequested event, Emitter<LinkState> emit) async {
+  Future<void> _onSyncRequested(
+    LinkSyncRequested event,
+    Emitter<LinkState> emit,
+  ) async {
     final current = state;
     if (current is! LinksLoaded) {
       emit(const LinkLoading());
@@ -212,10 +259,13 @@ class LinkBloc extends Bloc<LinkEvent, LinkState> {
     try {
       final startTime = DateTime.now();
 
-      // 1. Send local changes to cloud
-      await _repository.syncPendingLinks();
-      // 2. Fetch remote changes
-      await _repository.pullFromCloud();
+      // Push and pull remain one serialized operation when the engine is wired.
+      if (_syncEngine != null) {
+        await _syncEngine.requestSync(pull: true);
+      } else {
+        await _repository.syncPendingLinks();
+        await _repository.pullFromCloud();
+      }
 
       // 3. Reload local links, preserving current filters if possible
       String query = '';
@@ -228,7 +278,13 @@ class LinkBloc extends Bloc<LinkEvent, LinkState> {
         prio = current.activePriority;
       }
 
-      final links = _repository.queryLinks(query: query, category: cat, priority: prio, limit: _limit, offset: 0);
+      final links = _repository.queryLinks(
+        query: query,
+        category: cat,
+        priority: prio,
+        limit: _limit,
+        offset: 0,
+      );
 
       emit(
         LinksLoaded(
@@ -245,7 +301,9 @@ class LinkBloc extends Bloc<LinkEvent, LinkState> {
       // Ensure the spinner shows for at least half a second for UX
       final elapsed = DateTime.now().difference(startTime);
       if (elapsed.inMilliseconds < 500) {
-        await Future.delayed(Duration(milliseconds: 500 - elapsed.inMilliseconds));
+        await Future.delayed(
+          Duration(milliseconds: 500 - elapsed.inMilliseconds),
+        );
       }
     } catch (e) {
       emit(LinkError('Failed to sync links: $e'));
@@ -266,7 +324,10 @@ class LinkBloc extends Bloc<LinkEvent, LinkState> {
   /// list so the UI updates instantly.
   ///
   /// Silently ignores blank names — the UI should validate before dispatching.
-  Future<void> _onCustomCategoryAdded(LinkCustomCategoryAdded event, Emitter<LinkState> emit) async {
+  Future<void> _onCustomCategoryAdded(
+    LinkCustomCategoryAdded event,
+    Emitter<LinkState> emit,
+  ) async {
     final trimmed = event.name.trim();
     if (trimmed.isEmpty) return;
 
@@ -290,7 +351,10 @@ class LinkBloc extends Bloc<LinkEvent, LinkState> {
   /// Removes the category from the repository (Hive + Firestore), then
   /// re-emits [LinksLoaded] with the updated list. If the deleted category was
   /// the active filter, the filter is reset to 'All' and the link list reloads.
-  Future<void> _onCustomCategoryDeleted(LinkCustomCategoryDeleted event, Emitter<LinkState> emit) async {
+  Future<void> _onCustomCategoryDeleted(
+    LinkCustomCategoryDeleted event,
+    Emitter<LinkState> emit,
+  ) async {
     try {
       await _repository.deleteCategory(event.categoryId);
       final current = state;
@@ -301,7 +365,8 @@ class LinkBloc extends Bloc<LinkEvent, LinkState> {
             .map((c) => c.name)
             .firstOrNull;
 
-        final newCategory = (deletedName != null && current.activeCategory == deletedName)
+        final newCategory =
+            (deletedName != null && current.activeCategory == deletedName)
             ? 'All'
             : current.activeCategory;
 

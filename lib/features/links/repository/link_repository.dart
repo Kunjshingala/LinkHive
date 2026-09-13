@@ -6,6 +6,7 @@ import '../../../core/models/sync_operation.dart';
 import '../../../core/models/sync_tombstone.dart';
 import '../../../core/services/firebase_firestore_service.dart';
 import '../../../core/utils/hive_helper.dart';
+import '../../../core/utils/sync_backoff.dart';
 import '../../../core/utils/sync_merge_helper.dart';
 import '../../../core/utils/utils.dart';
 import '../../../core/utils/category_utils.dart';
@@ -203,16 +204,20 @@ class LinkRepository {
           ..sort((a, b) => a.createdAt.compareTo(b.createdAt));
 
     for (final operation in operations) {
+      final processingOperation = operation.copyWith(state: SyncOperation.processing);
+      await _syncOperationsBox.put(operation.operationId, processingOperation);
       try {
-        await _syncOperation(uid, operation);
-        await _syncOperationsBox.delete(operation.operationId);
+        await _syncOperation(uid, processingOperation);
+        await _syncOperationsBox.delete(processingOperation.operationId);
       } catch (e) {
+        final attemptCount = processingOperation.attemptCount + 1;
+        final retryAt = now + SyncBackoff.delayForAttempt(attemptCount).inMilliseconds;
         await _syncOperationsBox.put(
-          operation.operationId,
-          operation.copyWith(
+          processingOperation.operationId,
+          processingOperation.copyWith(
             state: SyncOperation.failed,
-            attemptCount: operation.attemptCount + 1,
-            nextAttemptAt: now,
+            attemptCount: attemptCount,
+            nextAttemptAt: retryAt,
             lastError: e.toString(),
           ),
         );

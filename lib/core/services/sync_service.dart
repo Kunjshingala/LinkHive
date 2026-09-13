@@ -4,7 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:internet_connection_checker_plus/internet_connection_checker_plus.dart';
 
 import '../../features/links/repository/link_repository.dart';
-import '../utils/utils.dart';
+import 'sync_engine.dart';
 
 /// Background sync service that watches real internet connectivity.
 ///
@@ -13,27 +13,38 @@ import '../utils/utils.dart';
 /// When connectivity is restored and user is authenticated, pushes
 /// pending local links to Firestore via [LinkRepository.syncPendingLinks].
 class SyncService {
-  final LinkRepository _linkRepository;
+  final SyncEngine _syncEngine;
   StreamSubscription<InternetStatus>? _subscription;
+  StreamSubscription<User?>? _authSubscription;
+  bool _started = false;
 
-  SyncService({required LinkRepository linkRepository}) : _linkRepository = linkRepository;
+  SyncService({required LinkRepository linkRepository, SyncEngine? syncEngine})
+    : _syncEngine = syncEngine ?? SyncEngine(repository: linkRepository);
 
   void startListening() {
+    if (_started) return;
+    _started = true;
+
+    final currentUser = FirebaseAuth.instance.currentUser;
+    _syncEngine.setCloudWorkEnabled(currentUser != null);
+    if (currentUser != null) _syncEngine.requestSync();
+
+    _authSubscription = FirebaseAuth.instance.authStateChanges().listen((user) {
+      final isAuthenticated = user != null;
+      _syncEngine.setCloudWorkEnabled(isAuthenticated);
+      if (isAuthenticated) _syncEngine.requestSync();
+    });
+
     _subscription = InternetConnection().onStatusChange.listen((status) async {
       if (status == InternetStatus.connected) {
-        printLog(tag: 'SyncService', msg: 'Internet connected — syncing pending links');
-        await _syncIfAuthenticated();
+        await _syncEngine.requestSync();
       }
     });
   }
 
-  Future<void> _syncIfAuthenticated() async {
-    final user = FirebaseAuth.instance.currentUser;
-    if (user == null) return;
-    await _linkRepository.syncPendingLinks();
-  }
-
   void dispose() {
     _subscription?.cancel();
+    _authSubscription?.cancel();
+    _syncEngine.setCloudWorkEnabled(false);
   }
 }

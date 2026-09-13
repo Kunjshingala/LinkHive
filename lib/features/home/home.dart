@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/extensions/context_extension.dart';
+import '../../core/services/sync_engine.dart';
 import '../../core/utils/category_utils.dart';
 import '../../core/utils/navigation/route.dart';
 import '../../core/utils/locator.dart';
@@ -34,7 +35,12 @@ class HomeScreen extends StatelessWidget {
     return MultiBlocProvider(
       providers: [
         BlocProvider(create: (context) => HomeBloc()),
-        BlocProvider(create: (_) => LinkBloc(repository: locator<LinkRepository>())..add(LinkLoadRequested())),
+        BlocProvider(
+          create: (_) => LinkBloc(
+            repository: locator<LinkRepository>(),
+            syncEngine: locator<SyncEngine>(),
+          )..add(const LinkLoadRequested()),
+        ),
       ],
       child: const _HomeScreenContent(),
     );
@@ -71,7 +77,8 @@ class _HomeScreenContentState extends State<_HomeScreenContent> {
     if (linkState is LinksLoaded &&
         !linkState.isLoadingMore &&
         !linkState.hasReachedMax &&
-        _scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 200) {
+        _scrollController.position.pixels >=
+            _scrollController.position.maxScrollExtent - 200) {
       context.read<LinkBloc>().add(LinkLoadNextPageRequested());
     }
   }
@@ -93,7 +100,8 @@ class _HomeScreenContentState extends State<_HomeScreenContent> {
           context.read<HomeBloc>().add(HomeBackPressed());
         },
         child: Scaffold(
-          resizeToAvoidBottomInset: false, // Prevent keyboard from pushing content up
+          resizeToAvoidBottomInset:
+              false, // Prevent keyboard from pushing content up
           backgroundColor: Theme.of(context).scaffoldBackgroundColor,
           body: SafeArea(
             bottom: false,
@@ -106,27 +114,39 @@ class _HomeScreenContentState extends State<_HomeScreenContent> {
                 Expanded(
                   child: BlocConsumer<LinkBloc, LinkState>(
                     listener: (context, state) {
-                      if (state is LinkError && state.code == LinkErrorCode.duplicateCategory) {
+                      if (state is LinkError &&
+                          state.code == LinkErrorCode.duplicateCategory) {
                         showSnackBar(context.l10n.categoryAlreadyExists);
                       }
                     },
                     builder: (context, state) {
                       if (state is LinkLoading) {
-                        return Center(child: CircularProgressIndicator(color: Theme.of(context).colorScheme.primary));
+                        return Center(
+                          child: CircularProgressIndicator(
+                            color: Theme.of(context).colorScheme.primary,
+                          ),
+                        );
                       }
 
                       final links = state is LinksLoaded ? state.links : [];
-                      final searchQuery = state is LinksLoaded ? state.searchQuery : '';
+                      final searchQuery = state is LinksLoaded
+                          ? state.searchQuery
+                          : '';
 
                       if (links.isEmpty) {
-                        return _buildEmptyState(context, state is LinksLoaded && state.hasActiveFilter);
+                        return _buildEmptyState(
+                          context,
+                          state is LinksLoaded && state.hasActiveFilter,
+                        );
                       }
 
                       return RefreshIndicator(
                         color: Theme.of(context).colorScheme.primary,
                         onRefresh: () async {
                           final completer = Completer<void>();
-                          context.read<LinkBloc>().add(LinkSyncRequested(completer: completer));
+                          context.read<LinkBloc>().add(
+                            LinkSyncRequested(completer: completer),
+                          );
                           return completer.future;
                         },
                         child: ListView.separated(
@@ -138,8 +158,12 @@ class _HomeScreenContentState extends State<_HomeScreenContent> {
                             AppSpacing.pageH,
                             AppSpacing.xxl + 20,
                           ),
-                          itemCount: state is LinksLoaded && !state.hasReachedMax ? links.length + 1 : links.length,
-                          separatorBuilder: (context, i) => SizedBox(height: AppSpacing.lg),
+                          itemCount:
+                              state is LinksLoaded && !state.hasReachedMax
+                              ? links.length + 1
+                              : links.length,
+                          separatorBuilder: (context, i) =>
+                              SizedBox(height: AppSpacing.lg),
                           itemBuilder: (context, index) {
                             if (index >= links.length) {
                               return Center(
@@ -149,7 +173,9 @@ class _HomeScreenContentState extends State<_HomeScreenContent> {
                                     width: 24,
                                     height: 24,
                                     child: CircularProgressIndicator(
-                                      color: Theme.of(context).colorScheme.primary,
+                                      color: Theme.of(
+                                        context,
+                                      ).colorScheme.primary,
                                       strokeWidth: 2,
                                     ),
                                   ),
@@ -160,8 +186,13 @@ class _HomeScreenContentState extends State<_HomeScreenContent> {
                               child: LinkCard(
                                 link: links[index],
                                 searchQuery: searchQuery,
-                                onEdit: () => context.push('/editLink', extra: links[index]),
-                                onDelete: () => context.read<LinkBloc>().add(LinkDeleteRequested(links[index].id)),
+                                onEdit: () => context.push(
+                                  '/editLink',
+                                  extra: links[index],
+                                ),
+                                onDelete: () => context.read<LinkBloc>().add(
+                                  LinkDeleteRequested(links[index].id),
+                                ),
                               ),
                             );
                           },
@@ -180,7 +211,10 @@ class _HomeScreenContentState extends State<_HomeScreenContent> {
 
   Widget _buildHeader(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.symmetric(horizontal: AppSpacing.pageH, vertical: AppSpacing.md),
+      padding: EdgeInsets.symmetric(
+        horizontal: AppSpacing.pageH,
+        vertical: AppSpacing.md,
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -215,7 +249,10 @@ class _HomeScreenContentState extends State<_HomeScreenContent> {
             children: [
               const AppLogo(size: 36),
               const SizedBox(width: 12),
-              Text(context.l10n.homeTitle, style: Theme.of(context).textTheme.displayLarge!),
+              Text(
+                context.l10n.homeTitle,
+                style: Theme.of(context).textTheme.displayLarge!,
+              ),
             ],
           ),
           SizedBox(height: AppSpacing.md),
@@ -229,39 +266,48 @@ class _HomeScreenContentState extends State<_HomeScreenContent> {
 
   Widget _buildSearchBar(BuildContext context) {
     return CustomTextField(
-        controller: _searchController,
-        onChanged: (val) {
-          setState(() {});
-          context.read<LinkBloc>().add(LinkSearchChanged(val));
-        },
-        hintText: context.l10n.searchHint,
-        prefixIcon: Icons.search_rounded,
-        suffixIcon: _searchController.text.isEmpty
-            ? null
-            : IconButton(
-                tooltip: context.l10n.searchClearTooltip,
-                icon: const Icon(Icons.clear_rounded),
-                onPressed: () {
-                  _searchController.clear();
-                  setState(() {});
-                  context.read<LinkBloc>().add(const LinkSearchChanged(''));
-                },
-              ),
-        borderRadius: AppSpacing.radiusLg,
-      );
+      controller: _searchController,
+      onChanged: (val) {
+        setState(() {});
+        context.read<LinkBloc>().add(LinkSearchChanged(val));
+      },
+      hintText: context.l10n.searchHint,
+      prefixIcon: Icons.search_rounded,
+      suffixIcon: _searchController.text.isEmpty
+          ? null
+          : IconButton(
+              tooltip: context.l10n.searchClearTooltip,
+              icon: const Icon(Icons.clear_rounded),
+              onPressed: () {
+                _searchController.clear();
+                setState(() {});
+                context.read<LinkBloc>().add(const LinkSearchChanged(''));
+              },
+            ),
+      borderRadius: AppSpacing.radiusLg,
+    );
   }
 
   Widget _buildCategoryFilters(BuildContext context) {
     return BlocBuilder<LinkBloc, LinkState>(
       builder: (context, state) {
-        final activeCategory = state is LinksLoaded ? state.activeCategory : context.l10n.categoryAll;
-        final activePriority = state is LinksLoaded ? state.activePriority : 'All';
+        final activeCategory = state is LinksLoaded
+            ? state.activeCategory
+            : context.l10n.categoryAll;
+        final activePriority = state is LinksLoaded
+            ? state.activePriority
+            : 'All';
 
         // Build the category list: "All" + built-ins + user-created custom ones.
         // Reading customCategories from state (not repository directly) so the
         // row rebuilds reactively after every add/delete.
-        final builtInCategories = [context.l10n.categoryAll, ...CategoryUtils.suggestedCategories];
-        final customCategories = state is LinksLoaded ? state.customCategories : <dynamic>[];
+        final builtInCategories = [
+          context.l10n.categoryAll,
+          ...CategoryUtils.suggestedCategories,
+        ];
+        final customCategories = state is LinksLoaded
+            ? state.customCategories
+            : <dynamic>[];
 
         final priorities = ['All', 'High', 'Normal', 'Low'];
 
@@ -271,7 +317,9 @@ class _HomeScreenContentState extends State<_HomeScreenContent> {
             // --- Categories Label ---
             Text(
               context.l10n.homeCategoriesLabel,
-              style: Theme.of(context).textTheme.labelLarge!.copyWith(fontWeight: FontWeight.w600),
+              style: Theme.of(
+                context,
+              ).textTheme.labelLarge!.copyWith(fontWeight: FontWeight.w600),
             ),
             SizedBox(height: AppSpacing.sm),
             SingleChildScrollView(
@@ -288,7 +336,9 @@ class _HomeScreenContentState extends State<_HomeScreenContent> {
                         label: CategoryUtils.getLocalizedCategory(context, cat),
                         isSelected: activeCategory == cat,
                         onTap: () {
-                          context.read<LinkBloc>().add(LinkCategoryFilterChanged(cat));
+                          context.read<LinkBloc>().add(
+                            LinkCategoryFilterChanged(cat),
+                          );
                         },
                       ),
                     );
@@ -313,14 +363,18 @@ class _HomeScreenContentState extends State<_HomeScreenContent> {
                           );
                           if (confirm == true) {
                             // ignore: use_build_context_synchronously
-                            context.read<LinkBloc>().add(LinkCustomCategoryDeleted(cat.id));
+                            context.read<LinkBloc>().add(
+                              LinkCustomCategoryDeleted(cat.id),
+                            );
                           }
                         },
                         child: CategoryChip(
                           label: cat.name, // shown as-is; user typed it
                           isSelected: activeCategory == cat.name,
                           onTap: () {
-                            context.read<LinkBloc>().add(LinkCategoryFilterChanged(cat.name));
+                            context.read<LinkBloc>().add(
+                              LinkCategoryFilterChanged(cat.name),
+                            );
                           },
                         ),
                       ),
@@ -328,7 +382,11 @@ class _HomeScreenContentState extends State<_HomeScreenContent> {
                   }),
 
                   // "+ New" chip — opens dialog to create a custom category
-                  AddCategoryChip(onAdd: (name) => context.read<LinkBloc>().add(LinkCustomCategoryAdded(name))),
+                  AddCategoryChip(
+                    onAdd: (name) => context.read<LinkBloc>().add(
+                      LinkCustomCategoryAdded(name),
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -336,7 +394,9 @@ class _HomeScreenContentState extends State<_HomeScreenContent> {
             // --- Priorities Label ---
             Text(
               context.l10n.homePrioritiesLabel,
-              style: Theme.of(context).textTheme.labelLarge!.copyWith(fontWeight: FontWeight.w600),
+              style: Theme.of(
+                context,
+              ).textTheme.labelLarge!.copyWith(fontWeight: FontWeight.w600),
             ),
             SizedBox(height: AppSpacing.sm),
             SingleChildScrollView(
@@ -357,7 +417,9 @@ class _HomeScreenContentState extends State<_HomeScreenContent> {
                       label: label,
                       isSelected: activePriority == prio,
                       onTap: () {
-                        context.read<LinkBloc>().add(LinkPriorityFilterChanged(prio));
+                        context.read<LinkBloc>().add(
+                          LinkPriorityFilterChanged(prio),
+                        );
                       },
                     ),
                   );
@@ -378,9 +440,16 @@ class _HomeScreenContentState extends State<_HomeScreenContent> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(Icons.search_off_rounded, color: AppColors.success, size: 48),
+              Icon(
+                Icons.search_off_rounded,
+                color: AppColors.success,
+                size: 48,
+              ),
               SizedBox(height: AppSpacing.md),
-              Text(context.l10n.homeNoResultsTitle, style: Theme.of(context).textTheme.titleLarge!),
+              Text(
+                context.l10n.homeNoResultsTitle,
+                style: Theme.of(context).textTheme.titleLarge!,
+              ),
               SizedBox(height: AppSpacing.xs),
               Text(
                 context.l10n.homeNoResultsSubtitle,
@@ -399,7 +468,10 @@ class _HomeScreenContentState extends State<_HomeScreenContent> {
         children: [
           Icon(Icons.link_rounded, color: AppColors.success, size: 48),
           SizedBox(height: AppSpacing.md),
-          Text(context.l10n.homeEmptyStateTitle, style: Theme.of(context).textTheme.titleLarge!),
+          Text(
+            context.l10n.homeEmptyStateTitle,
+            style: Theme.of(context).textTheme.titleLarge!,
+          ),
           SizedBox(height: AppSpacing.xs),
           Text(
             context.l10n.homeEmptyStateSubtitle,
@@ -445,7 +517,10 @@ class _NeoLinkCardWrapper extends StatelessWidget {
               decoration: BoxDecoration(
                 color: neo.shadowColor,
                 borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-                border: Border.all(color: neo.borderColor, width: neo.borderWidth),
+                border: Border.all(
+                  color: neo.borderColor,
+                  width: neo.borderWidth,
+                ),
               ),
             ),
           ),
