@@ -5,6 +5,7 @@ import '../../../features/authentication/login_screen.dart';
 import '../../../features/authentication/signup_screen.dart';
 import '../../../features/home/home.dart';
 import '../../../features/links/ui/add_link_screen.dart';
+import '../../../features/links/models/link_model.dart';
 import '../../../features/splash/splash_screen.dart';
 import '../../../my_app.dart';
 
@@ -17,6 +18,7 @@ final class MyRouteName {
   static const String accountScreen = 'accountScreen';
   static const String signup = 'signup';
   static const String addLink = 'addLink';
+  static const String editLink = 'editLink';
 }
 
 final router = GoRouter(
@@ -40,6 +42,14 @@ final router = GoRouter(
         // null/missing otherwise.
         final prefillUrl = state.extra is String ? state.extra as String : null;
         return AddLinkScreen(prefillUrl: prefillUrl);
+      },
+    ),
+    GoRoute(
+      path: '/editLink',
+      name: MyRouteName.editLink,
+      builder: (context, state) {
+        final existingLink = state.extra as LinkModel?;
+        return AddLinkScreen(existingLink: existingLink);
       },
     ),
   ],

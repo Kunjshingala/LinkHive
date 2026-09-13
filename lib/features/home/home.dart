@@ -147,6 +147,7 @@ class _HomeScreenContentState extends State<_HomeScreenContent> {
                             return _NeoLinkCardWrapper(
                               child: LinkCard(
                                 link: links[index],
+                                onEdit: () => context.push('/editLink', extra: links[index]),
                                 onDelete: () => context.read<LinkBloc>().add(LinkDeleteRequested(links[index].id)),
                               ),
                             );

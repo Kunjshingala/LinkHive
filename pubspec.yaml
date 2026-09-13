@@ -5,7 +5,7 @@ version: 1.0.1+1
 
 environment:
   sdk: ^3.10.1
-  flutter: 3.38.3
+  flutter: ">=3.38.3"
 
 dependencies:
   flutter:
@@ -40,6 +40,8 @@ dependencies:
   # UI
   flutter_svg: any
   font_awesome_flutter: any
+  url_launcher: ^6.3.2
+  share_plus: ^13.3.0
 
 dev_dependencies:
   flutter_test:
@@ -50,6 +52,7 @@ dev_dependencies:
   mocktail: ^1.0.4
   hive_test: ^1.0.1
   bloc_test: any
+  mocktail_image_network: ^1.3.0
 
 flutter:
   uses-material-design: true

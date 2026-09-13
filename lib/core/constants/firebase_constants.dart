@@ -11,6 +11,9 @@ class FirebaseConstants {
   /// categories
   static const String categoriesCol = 'categories';
 
+  /// deleted_links
+  static const String deletedLinksCol = 'deleted_links';
+
   // Link Fields
   /// url
   static const String linkUrl = 'url';
@@ -35,6 +38,9 @@ class FirebaseConstants {
 
   /// syncedAt — set by Firestore server timestamp on sync
   static const String linkSyncedAt = 'syncedAt';
+
+  /// deletedAt — used in deleted_links collection
+  static const String linkDeletedAt = 'deletedAt';
 
   // Category Fields
   /// name

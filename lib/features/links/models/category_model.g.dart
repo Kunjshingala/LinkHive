@@ -1,35 +1,25 @@
-import 'package:hive_flutter/hive_flutter.dart';
+// GENERATED CODE - DO NOT MODIFY BY HAND
 
-import 'category_model.dart';
+part of 'category_model.dart';
 
-/// Manually written Hive [TypeAdapter] for [CategoryModel].
-///
-/// ## Field Index Map
-/// | Index | Field | Dart type |
-/// |-------|-------|-----------|
-/// | 0     | id    | String    |
-/// | 1     | name  | String    |
+// **************************************************************************
+// TypeAdapterGenerator
+// **************************************************************************
+
 class CategoryModelAdapter extends TypeAdapter<CategoryModel> {
   @override
   final int typeId = 1;
 
-  /// Reads a [CategoryModel] from binary Hive storage.
-  ///
-  /// Wrapped in try/catch for resilience: if the stored bytes are corrupted
-  /// or from an incompatible schema version, a fallback model is returned
-  /// instead of throwing — which would otherwise prevent the entire box from
-  /// opening and crash the app at startup.
   @override
   CategoryModel read(BinaryReader reader) {
-    try {
-      final numOfFields = reader.readByte();
-      final fields = <int, dynamic>{for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read()};
-      return CategoryModel(id: fields[0] as String, name: fields[1] as String? ?? '');
-    } catch (e, stack) {
-      // ignore: avoid_print
-      print('[CategoryModelAdapter] Failed to deserialize record — returning fallback. Error: $e\n$stack');
-      return CategoryModel(id: 'corrupt_${DateTime.now().millisecondsSinceEpoch}', name: '');
-    }
+    final numOfFields = reader.readByte();
+    final fields = <int, dynamic>{
+      for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
+    };
+    return CategoryModel(
+      id: fields[0] as String,
+      name: fields[1] as String,
+    );
   }
 
   @override
@@ -48,5 +38,7 @@ class CategoryModelAdapter extends TypeAdapter<CategoryModel> {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is CategoryModelAdapter && runtimeType == other.runtimeType && typeId == other.typeId;
+      other is CategoryModelAdapter &&
+          runtimeType == other.runtimeType &&
+          typeId == other.typeId;
 }

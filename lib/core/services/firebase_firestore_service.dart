@@ -15,6 +15,9 @@ class FirebaseFirestoreService {
   CollectionReference<Map<String, dynamic>> _categoriesCol(String uid) =>
       _db.collection(FirebaseConstants.usersCol).doc(uid).collection(FirebaseConstants.categoriesCol);
 
+  CollectionReference<Map<String, dynamic>> _deletedLinksCol(String uid) =>
+      _db.collection(FirebaseConstants.usersCol).doc(uid).collection(FirebaseConstants.deletedLinksCol);
+
   // ─── Links ────────────────────────────────────────────────────────
 
   Future<void> saveLink(String uid, LinkModel link) async {
@@ -27,7 +30,21 @@ class FirebaseFirestoreService {
   }
 
   Future<void> deleteLink(String uid, String linkId) async {
-    await _linksCol(uid).doc(linkId).delete();
+    final batch = _db.batch();
+    batch.delete(_linksCol(uid).doc(linkId));
+    batch.set(_deletedLinksCol(uid).doc(linkId), {
+      FirebaseConstants.linkDeletedAt: FieldValue.serverTimestamp(),
+    });
+    await batch.commit();
+  }
+
+  Future<List<String>> fetchDeletedLinks(String uid) async {
+    final snap = await _deletedLinksCol(uid).get();
+    return snap.docs.map((d) => d.id).toList();
+  }
+
+  Future<void> removeDeletedLink(String uid, String linkId) async {
+    await _deletedLinksCol(uid).doc(linkId).delete();
   }
 
   Future<List<LinkModel>> fetchLinks(String uid) async {
@@ -67,6 +84,7 @@ class FirebaseFirestoreService {
   Future<void> clearUserData(String uid) async {
     await _deleteCollection(_linksCol(uid));
     await _deleteCollection(_categoriesCol(uid));
+    await _deleteCollection(_deletedLinksCol(uid));
   }
 
   Future<void> _deleteCollection(CollectionReference<Map<String, dynamic>> col) async {

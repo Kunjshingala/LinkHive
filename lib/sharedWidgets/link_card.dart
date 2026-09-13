@@ -1,5 +1,8 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:share_plus/share_plus.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../core/extensions/context_extension.dart';
 import '../core/theme/app_colors.dart';
@@ -60,20 +63,32 @@ class LinkCard extends StatelessWidget {
     final neo = context.neoBrutal;
 
     return Container(
-      padding: EdgeInsetsDirectional.all(AppSpacing.cardPaddingH),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
         border: Border.all(color: neo.borderColor, width: neo.borderWidth),
       ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _FaviconAvatar(link: link),
-          SizedBox(width: AppSpacing.md - 4),
-          Expanded(child: _LinkContent(link: link)),
-          _MoreMenu(onEdit: onEdit, onDelete: onDelete),
-        ],
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+          onTap: () {
+            onEdit?.call();
+          },
+          child: Padding(
+            padding: EdgeInsetsDirectional.all(AppSpacing.cardPaddingH),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _FaviconAvatar(link: link),
+                SizedBox(width: AppSpacing.md - 4),
+                Expanded(child: _LinkContent(link: link)),
+                _OpenLinkButton(link: link),
+                _MoreMenu(link: link, onEdit: onEdit, onDelete: onDelete),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -321,19 +336,26 @@ class _TagChip extends StatelessWidget {
 /// Deletion requires a user confirmation via [showConfirmationBottomSheet]
 /// before [onDelete] is invoked, preventing accidental data loss.
 class _MoreMenu extends StatelessWidget {
+  final LinkModel link;
   final VoidCallback? onEdit;
   final VoidCallback? onDelete;
-  const _MoreMenu({this.onEdit, this.onDelete});
+  const _MoreMenu({required this.link, this.onEdit, this.onDelete});
 
   @override
   Widget build(BuildContext context) {
-    // If no actions are registered, don't render anything.
-    if (onEdit == null && onDelete == null) return const SizedBox.shrink();
-
     return NeoPopupMenu<String>(
       offset: const Offset(0, 30),
       onSelected: (action) async {
-        if (action == 'edit') {
+        if (action == 'copy') {
+          await Clipboard.setData(ClipboardData(text: link.url));
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Link copied to clipboard')),
+            );
+          }
+        } else if (action == 'share') {
+          await Share.share(link.url);
+        } else if (action == 'edit') {
           onEdit?.call();
         } else if (action == 'delete') {
           final confirm = await showConfirmationBottomSheet(
@@ -351,6 +373,8 @@ class _MoreMenu extends StatelessWidget {
         }
       },
       items: [
+        const NeoPopupMenuItem(label: 'Copy URL', value: 'copy', icon: Icons.copy_rounded),
+        const NeoPopupMenuItem(label: 'Share', value: 'share', icon: Icons.share_rounded),
         if (onEdit != null)
           NeoPopupMenuItem(label: context.l10n.linkEditLabel, value: 'edit', icon: Icons.edit_rounded),
         if (onDelete != null)
@@ -364,6 +388,42 @@ class _MoreMenu extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsetsDirectional.only(start: 8.0, top: 4.0, bottom: 4.0),
         child: Icon(Icons.more_vert_rounded, size: 20, color: Theme.of(context).colorScheme.onSurface),
+      ),
+    );
+  }
+}
+
+// ─── Open Link Button ────────────────────────────────────────────────────────
+
+class _OpenLinkButton extends StatelessWidget {
+  final LinkModel link;
+  const _OpenLinkButton({required this.link});
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
+      onTap: () async {
+        final uri = Uri.parse(link.url);
+        try {
+          if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+            if (context.mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('Could not launch ${link.url}')),
+              );
+            }
+          }
+        } catch (e) {
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text('Could not launch ${link.url}')),
+            );
+          }
+        }
+      },
+      child: Padding(
+        padding: const EdgeInsetsDirectional.only(start: 8.0, end: 8.0, top: 4.0, bottom: 4.0),
+        child: Icon(Icons.open_in_new_rounded, size: 20, color: Theme.of(context).colorScheme.onSurface),
       ),
     );
   }

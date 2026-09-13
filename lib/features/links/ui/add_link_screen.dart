@@ -153,9 +153,18 @@ class _AddLinkContentState extends State<_AddLinkContent> {
                               icon: Icons.auto_fix_high_rounded,
                               shadowColor: AppColors.accentBlue,
                               onPressed: () {
-                                final url = _urlCtrl.text.trim();
-                                if (url.isNotEmpty) {
-                                  context.read<AddLinkBloc>().add(AddLinkFetchMetadata(url));
+                                String rawUrl = _urlCtrl.text.trim();
+                                if (rawUrl.isNotEmpty) {
+                                  if (!rawUrl.startsWith('http://') && !rawUrl.startsWith('https://')) {
+                                    rawUrl = 'https://$rawUrl';
+                                    _urlCtrl.text = rawUrl;
+                                  }
+                                  final uri = Uri.tryParse(rawUrl);
+                                  if (uri != null && uri.hasScheme && uri.host.isNotEmpty && uri.host.contains('.')) {
+                                    context.read<AddLinkBloc>().add(AddLinkFetchMetadata(rawUrl));
+                                  } else {
+                                    showSnackBar('Please enter a valid URL');
+                                  }
                                 }
                               },
                             ),
@@ -282,10 +291,27 @@ class _AddLinkContentState extends State<_AddLinkContent> {
                   text: widget.isEditing ? 'Update Link' : context.l10n.saveLinkButton,
                   isLoading: isSaving,
                   onPressed: () {
+                    String rawUrl = _urlCtrl.text.trim();
+                    if (rawUrl.isEmpty) {
+                      showSnackBar('Please enter a URL');
+                      return;
+                    }
+
+                    if (!rawUrl.startsWith('http://') && !rawUrl.startsWith('https://')) {
+                      rawUrl = 'https://$rawUrl';
+                      _urlCtrl.text = rawUrl;
+                    }
+
+                    final uri = Uri.tryParse(rawUrl);
+                    if (uri == null || !uri.hasScheme || uri.host.isEmpty || !uri.host.contains('.')) {
+                      showSnackBar('Please enter a valid URL');
+                      return;
+                    }
+
                     context.read<AddLinkBloc>()
                       ..add(
                         AddLinkFieldChanged(
-                          url: _urlCtrl.text,
+                          url: rawUrl,
                           title: _titleCtrl.text,
                           description: _descCtrl.text,
                           priority: _priority,

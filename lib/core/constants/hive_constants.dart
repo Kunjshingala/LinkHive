@@ -4,6 +4,8 @@ class HiveConstants {
   // Boxes
   static const String settingsBox = 'settings_box';
   static const String linksBox = 'links_box';
+  static const String baseLinksBox = 'base_links_box';
+  static const String conflictLinksBox = 'conflict_links_box';
   static const String categoriesBox = 'categories_box';
 
   // Settings Keys

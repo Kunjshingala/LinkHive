@@ -1,6 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+import 'package:hive_flutter/hive_flutter.dart';
+
 import '../../../core/constants/firebase_constants.dart';
+
+part 'link_model.g.dart';
 
 /// Domain model representing a single saved link in LinkHive.
 ///
@@ -35,15 +39,18 @@ import '../../../core/constants/firebase_constants.dart';
 /// [LinkModel.fromFirestore reads it back]
 ///   syncedAt  = Timestamp → converted to int ms
 /// ```
+@HiveType(typeId: 0)
 class LinkModel {
   /// Stable unique identifier for the link.
   ///
   /// Generated client-side as a UUID v4 string (e.g. "a1b2c3d4-...").
   /// Used as the Hive box key AND the Firestore document ID so the two
   /// stores stay perfectly in sync with no secondary lookup needed.
+  @HiveField(0)
   final String id;
 
   /// The full URL the user saved (e.g. "https://flutter.dev").
+  @HiveField(1)
   final String url;
 
   /// Human-readable title, either:
@@ -51,21 +58,25 @@ class LinkModel {
   /// - Typed manually by the user.
   ///
   /// Falls back to [url] if left empty (see [AddLinkBloc._onSaveRequested]).
+  @HiveField(2)
   final String title;
 
   /// Optional description or personal notes about the link.
   /// Defaults to an empty string when not provided.
+  @HiveField(3)
   final String description;
 
   /// URL of a preview/thumbnail image (typically the OG:image).
   /// Empty string when no image is available. The UI uses this for the
   /// favicon/avatar shown on each [LinkCard].
+  @HiveField(4)
   final String image;
 
   /// List of category names/IDs that this link belongs to.
   ///
   /// Categories are the unified tag/folder concept in LinkHive — a link
   /// can belong to multiple categories simultaneously.
+  @HiveField(5)
   final List<String> categories;
 
   /// Priority level of the link. One of: `'High'`, `'Normal'`, `'Low'`.
@@ -73,6 +84,7 @@ class LinkModel {
   /// Stored and compared as a plain string so the value can be serialized
   /// to Hive and Firestore without an enum adapter. Always compare using
   /// `.toLowerCase()` to avoid case sensitivity issues.
+  @HiveField(6)
   final String priority;
 
   /// UTC milliseconds since epoch — set by the **device** at the moment the
@@ -80,6 +92,7 @@ class LinkModel {
   ///
   /// This is the primary sort key when [syncedAt] is not yet available.
   /// It is written once on creation and never mutated afterwards.
+  @HiveField(7)
   final int createdAt;
 
   /// UTC milliseconds since epoch — set by the **Firestore server** the
@@ -90,6 +103,7 @@ class LinkModel {
   /// devices, even those with slightly drifted clocks.
   ///
   /// Null until the link has been successfully synced to Firestore.
+  @HiveField(8)
   final int? syncedAt;
 
   /// `true` once the link has been successfully pushed to Firestore.
@@ -98,6 +112,7 @@ class LinkModel {
   /// - [LinkRepository.syncPendingLinks] to identify which links still need
   ///   to be uploaded.
   /// - [LinkCard] to show a "cloud_off" badge for unsynced links.
+  @HiveField(9)
   final bool isSynced;
 
   const LinkModel({

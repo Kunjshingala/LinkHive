@@ -1,4 +1,7 @@
+import 'package:hive_flutter/hive_flutter.dart';
 import '../../../core/constants/firebase_constants.dart';
+
+part 'category_model.g.dart';
 
 /// Domain model representing a user-defined category (tag/folder) in LinkHive.
 ///
@@ -18,12 +21,14 @@ import '../../../core/constants/firebase_constants.dart';
 /// - The model is intentionally kept minimal (id + name) to avoid coupling
 ///   the domain layer to UI concerns like color or icon choices — those can
 ///   be derived in the UI layer from the category name if needed.
+@HiveType(typeId: 1)
 class CategoryModel {
   /// Stable unique identifier for the category.
   ///
   /// A UUID v4 string (e.g. "f47ac10b-58cc-4372-a567-0e02b2c3d479").
   /// Used as the Hive box key AND the Firestore document ID so both stores
   /// stay in sync with no additional ID mapping layer.
+  @HiveField(0)
   final String id;
 
   /// Human-readable display name of the category (e.g. "Design", "Flutter").
@@ -32,6 +37,7 @@ class CategoryModel {
   /// category management screen. It is NOT guaranteed to be unique — two
   /// categories could have the same name but different [id]s. Equality
   /// checks should therefore always compare [id], not [name].
+  @HiveField(1)
   final String name;
 
   const CategoryModel({required this.id, required this.name});
