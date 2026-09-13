@@ -78,5 +78,28 @@ void main() {
       // Fallback letter 'F' (from Flutter Dev) should be there
       expect(find.text('F'), findsWidgets);
     });
+
+    testWidgets('opens the link from the card body instead of editing', (tester) async {
+      var editCalled = false;
+
+      await mockNetworkImages(() async {
+        await tester.pumpWidget(
+          MaterialApp(
+            theme: buildLinkHiveTheme(),
+            home: Scaffold(
+              body: LinkCard(
+                link: testLink,
+                onEdit: () => editCalled = true,
+              ),
+            ),
+          ),
+        );
+
+        await tester.tap(find.text('Flutter Dev'));
+        await tester.pump();
+      });
+
+      expect(editCalled, isFalse);
+    });
   });
 }

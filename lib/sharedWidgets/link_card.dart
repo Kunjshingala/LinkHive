@@ -9,6 +9,7 @@ import '../core/theme/app_colors.dart';
 import '../core/theme/app_spacing.dart';
 import '../core/theme/app_typography.dart';
 import '../core/utils/category_utils.dart';
+import '../core/utils/utils.dart';
 import '../features/links/models/link_model.dart';
 import 'confirmation_bottom_sheet.dart';
 import 'neo_popup_menu.dart';
@@ -72,9 +73,7 @@ class LinkCard extends StatelessWidget {
         color: Colors.transparent,
         child: InkWell(
           borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-          onTap: () {
-            onEdit?.call();
-          },
+          onTap: () => _openLink(context),
           child: Padding(
             padding: EdgeInsetsDirectional.all(AppSpacing.cardPaddingH),
             child: Row(
@@ -83,7 +82,6 @@ class LinkCard extends StatelessWidget {
                 _FaviconAvatar(link: link),
                 SizedBox(width: AppSpacing.md - 4),
                 Expanded(child: _LinkContent(link: link)),
-                _OpenLinkButton(link: link),
                 _MoreMenu(link: link, onEdit: onEdit, onDelete: onDelete),
               ],
             ),
@@ -92,8 +90,19 @@ class LinkCard extends StatelessWidget {
       ),
     );
   }
-}
 
+  Future<void> _openLink(BuildContext context) async {
+    try {
+      final uri = Uri.parse(link.url);
+      final launched = await launchUrl(uri, mode: LaunchMode.externalApplication);
+      if (!launched) {
+        showSnackBar('Could not launch ${link.url}');
+      }
+    } catch (_) {
+      showSnackBar('Could not launch ${link.url}');
+    }
+  }
+}
 // ─── Favicon / Avatar ─────────────────────────────────────────────────────────
 
 /// Displays a 38×38 px avatar at the leading edge of the card.
@@ -126,7 +135,6 @@ class _FaviconAvatar extends StatelessWidget {
     return _LetterAvatar(link: link);
   }
 }
-
 /// Fallback avatar that displays the first character of the link's title (or URL).
 ///
 /// The background color is deterministically derived from the character's
@@ -388,42 +396,6 @@ class _MoreMenu extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsetsDirectional.only(start: 8.0, top: 4.0, bottom: 4.0),
         child: Icon(Icons.more_vert_rounded, size: 20, color: Theme.of(context).colorScheme.onSurface),
-      ),
-    );
-  }
-}
-
-// ─── Open Link Button ────────────────────────────────────────────────────────
-
-class _OpenLinkButton extends StatelessWidget {
-  final LinkModel link;
-  const _OpenLinkButton({required this.link});
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
-      onTap: () async {
-        final uri = Uri.parse(link.url);
-        try {
-          if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
-            if (context.mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('Could not launch ${link.url}')),
-              );
-            }
-          }
-        } catch (e) {
-          if (context.mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text('Could not launch ${link.url}')),
-            );
-          }
-        }
-      },
-      child: Padding(
-        padding: const EdgeInsetsDirectional.only(start: 8.0, end: 8.0, top: 4.0, bottom: 4.0),
-        child: Icon(Icons.open_in_new_rounded, size: 20, color: Theme.of(context).colorScheme.onSurface),
       ),
     );
   }
