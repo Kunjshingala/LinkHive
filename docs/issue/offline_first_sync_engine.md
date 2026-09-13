@@ -39,6 +39,7 @@ This section is the handoff record for continuing the refactor across sessions.
  - Phase 7 — user-facing sync status is ready in the next commit.
   - Added a Bloc-backed Account status card driven by `SyncEngine.statusStream`.
   - Displays idle, syncing, failed, and conflict states.
+  - Implementation commit: `6e0f0aa`.
 
 ### Next work
 
