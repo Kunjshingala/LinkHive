@@ -135,6 +135,10 @@ class _AddLinkContentState extends State<_AddLinkContent> {
                         controller: _urlCtrl,
                         hintText: context.l10n.addLinkUrlHint,
                         keyboardType: TextInputType.url,
+                        // Every URL edit invalidates the previous metadata
+                        // request. The BLoC debounces these events and starts
+                        // one fetch for the latest valid URL after typing
+                        // pauses.
                         onChanged: (value) => context.read<AddLinkBloc>().add(AddLinkFieldChanged(url: value)),
                       ),
                     ),

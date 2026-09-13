@@ -64,6 +64,10 @@ class AddLinkFetchMetadata extends AddLinkEvent {
 /// All parameters are optional — only pass the fields that actually changed.
 /// The BLoC merges the changed values into the current [AddLinkForm] state
 /// using `copyWith`, leaving unchanged fields intact.
+/// When [url] is provided, the active metadata request is invalidated and a
+/// new request is scheduled for the latest valid URL. The BLoC debounces URL
+/// edits, switches to the newest request, and ignores late responses from
+/// older requests.
 ///
 /// Example — user changes only the title:
 /// ```dart

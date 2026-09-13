@@ -69,12 +69,18 @@ class AddLinkBloc extends Bloc<AddLinkEvent, AddLinkState> {
     // Register a handler for every event type. Using named handlers keeps
     // each piece of logic isolated and independently testable.
     on<AddLinkInitialized>(_onInitialized);
+    // Metadata requests are debounced and switched to the latest URL. This
+    // prevents a request per keystroke and stops queued older URLs from
+    // competing with the URL currently being edited.
     on<AddLinkFetchMetadata>(_onFetchMetadata, transformer: _debounce(const Duration(milliseconds: 300)));
     on<AddLinkFieldChanged>(_onFieldChanged);
     on<AddLinkSaveRequested>(_onSaveRequested);
   }
 
   EventTransformer<T> _debounce<T>(Duration duration) {
+    // debounceTime waits until typing pauses; switchMap keeps only the newest
+    // event subscription. A network call already in progress may still finish,
+    // so _metadataGeneration provides the final stale-result safety check.
     return (events, mapper) => events.debounceTime(duration).switchMap(mapper);
   }
 
@@ -132,6 +138,10 @@ class AddLinkBloc extends Bloc<AddLinkEvent, AddLinkState> {
   ///
   /// The loading flag is always cleared (set back to `false`) after the
   /// fetch, regardless of success or failure.
+  /// Each request receives a generation number. If the URL changes or a newer
+  /// fetch starts before this one completes, the response is discarded. The
+  /// latest form state is read after awaiting the service so edits made during
+  /// the request are not replaced by an old snapshot.
   Future<void> _onFetchMetadata(AddLinkFetchMetadata event, Emitter<AddLinkState> emit) async {
     // Snapshot the current form state; fall back to a blank form if for some
     // reason the state isn't AddLinkForm yet (defensive guard).
@@ -181,6 +191,9 @@ class AddLinkBloc extends Bloc<AddLinkEvent, AddLinkState> {
     final current = state is AddLinkForm ? state as AddLinkForm : const AddLinkForm();
 
     if (event.url != null) {
+      // Any URL edit makes the current metadata response obsolete. A valid
+      // URL schedules a new debounced fetch below; an invalid URL only clears
+      // the loading state and waits for the user to finish editing.
       _metadataGeneration++;
     }
 
