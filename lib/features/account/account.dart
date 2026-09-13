@@ -255,12 +255,19 @@ class _StatCard extends StatelessWidget {
           ),
           child: Column(
             children: [
-              Text(
-                value,
-                style: isSmallValue
-                    ? Theme.of(context).textTheme.titleLarge!
-                    : Theme.of(context).textTheme.headlineMedium!,
-                textAlign: TextAlign.center,
+              SizedBox(
+                width: double.infinity,
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text(
+                    value,
+                    style: isSmallValue
+                        ? Theme.of(context).textTheme.titleLarge!
+                        : Theme.of(context).textTheme.headlineMedium!,
+                    maxLines: 1,
+                    textAlign: TextAlign.center,
+                  ),
+                ),
               ),
               SizedBox(height: AppSpacing.xs),
               Text(label, style: Theme.of(context).textTheme.labelLarge!, textAlign: TextAlign.center),
