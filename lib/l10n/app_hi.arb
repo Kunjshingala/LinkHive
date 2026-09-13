@@ -24,6 +24,8 @@
 
   "addLinkUrlLabel": "URL",
   "addLinkUrlHint": "https://example.com",
+  "addLinkUrlEmptyError": "कृपया URL दर्ज करें",
+  "addLinkInvalidUrlError": "कृपया मान्य URL दर्ज करें",
   "addLinkPageTitleLabel": "शीर्षक",
   "addLinkPageTitleHint": "पृष्ठ शीर्षक",
   "addLinkDescLabel": "विवरण",

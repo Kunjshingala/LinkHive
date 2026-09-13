@@ -292,7 +292,7 @@ void main() {
         seed: () => const AddLinkForm(url: '  ', title: 'No URL'),
         act: (bloc) => bloc.add(const AddLinkSaveRequested()),
         expect: () => [
-          const AddLinkError('URL cannot be empty'),
+          const AddLinkError('', code: AddLinkErrorCode.emptyUrl),
           const AddLinkForm(url: '  ', title: 'No URL'),
         ],
       );
@@ -303,7 +303,7 @@ void main() {
         seed: () => const AddLinkForm(url: 'ftp://example.com'),
         act: (bloc) => bloc.add(const AddLinkSaveRequested()),
         expect: () => [
-          const AddLinkError('Please enter a valid URL'),
+          const AddLinkError('', code: AddLinkErrorCode.invalidUrl),
           const AddLinkForm(url: 'ftp://example.com'),
         ],
         verify: (_) {

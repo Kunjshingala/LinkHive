@@ -73,6 +73,12 @@ class AppLocalizationsGu extends AppLocalizations {
   String get addLinkUrlHint => 'https://example.com';
 
   @override
+  String get addLinkUrlEmptyError => 'કૃપા કરીને URL દાખલ કરો';
+
+  @override
+  String get addLinkInvalidUrlError => 'કૃપા કરીને માન્ય URL દાખલ કરો';
+
+  @override
   String get addLinkPageTitleLabel => 'શીર્ષક';
 
   @override

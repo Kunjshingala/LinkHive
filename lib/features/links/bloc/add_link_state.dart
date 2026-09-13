@@ -27,6 +27,8 @@ sealed class AddLinkState extends Equatable {
   List<Object?> get props => [];
 }
 
+enum AddLinkErrorCode { emptyUrl, invalidUrl }
+
 /// The very first state before [AddLinkInitialized] has been processed.
 ///
 /// Typically the UI shows a loading indicator or blank screen while in this
@@ -135,8 +137,10 @@ class AddLinkError extends AddLinkState {
   /// inline form error widget.
   final String message;
 
-  const AddLinkError(this.message);
+  final AddLinkErrorCode? code;
+
+  const AddLinkError(this.message, {this.code});
 
   @override
-  List<Object?> get props => [message];
+  List<Object?> get props => [message, code];
 }

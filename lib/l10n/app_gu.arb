@@ -24,6 +24,8 @@
 
   "addLinkUrlLabel": "URL",
   "addLinkUrlHint": "https://example.com",
+  "addLinkUrlEmptyError": "કૃપા કરીને URL દાખલ કરો",
+  "addLinkInvalidUrlError": "કૃપા કરીને માન્ય URL દાખલ કરો",
   "addLinkPageTitleLabel": "શીર્ષક",
   "addLinkPageTitleHint": "પૃષ્ઠ શીર્ષક",
   "addLinkDescLabel": "વર્ણન",

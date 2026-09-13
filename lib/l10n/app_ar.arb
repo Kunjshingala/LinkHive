@@ -24,6 +24,8 @@
 
   "addLinkUrlLabel": "الرابط",
   "addLinkUrlHint": "https://example.com",
+  "addLinkUrlEmptyError": "يرجى إدخال الرابط",
+  "addLinkInvalidUrlError": "يرجى إدخال رابط صالح",
   "addLinkPageTitleLabel": "العنوان",
   "addLinkPageTitleHint": "عنوان الصفحة",
   "addLinkDescLabel": "الوصف",

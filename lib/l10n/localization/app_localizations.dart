@@ -228,6 +228,12 @@ abstract class AppLocalizations {
   /// **'https://example.com'**
   String get addLinkUrlHint;
 
+  /// No description provided for @addLinkUrlEmptyError.
+  String get addLinkUrlEmptyError;
+
+  /// No description provided for @addLinkInvalidUrlError.
+  String get addLinkInvalidUrlError;
+
   /// No description provided for @addLinkPageTitleLabel.
   ///
   /// In en, this message translates to:

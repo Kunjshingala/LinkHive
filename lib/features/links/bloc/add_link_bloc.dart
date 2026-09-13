@@ -128,7 +128,7 @@ class AddLinkBloc extends Bloc<AddLinkEvent, AddLinkState> {
     final current = state is AddLinkForm ? state as AddLinkForm : const AddLinkForm();
     final normalizedUrl = normalizeUrl(event.url);
     if (normalizedUrl == null) {
-      emit(const AddLinkError('Please enter a valid URL'));
+      emit(const AddLinkError('', code: AddLinkErrorCode.invalidUrl));
       emit(current);
       return;
     }
@@ -196,14 +196,14 @@ class AddLinkBloc extends Bloc<AddLinkEvent, AddLinkState> {
 
     // Validation: a URL is the minimum required field.
     if (current.url.trim().isEmpty) {
-      emit(const AddLinkError('URL cannot be empty'));
+      emit(const AddLinkError('', code: AddLinkErrorCode.emptyUrl));
       emit(current); // Revert to the form so the user can fix the error.
       return;
     }
 
     final normalizedUrl = normalizeUrl(current.url);
     if (normalizedUrl == null) {
-      emit(const AddLinkError('Please enter a valid URL'));
+      emit(const AddLinkError('', code: AddLinkErrorCode.invalidUrl));
       emit(current);
       return;
     }

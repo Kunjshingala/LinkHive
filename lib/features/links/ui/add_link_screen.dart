@@ -105,7 +105,12 @@ class _AddLinkContentState extends State<_AddLinkContent> {
           context.pop();
         }
         if (state is AddLinkError) {
-          showSnackBar(state.message);
+          final message = switch (state.code) {
+            AddLinkErrorCode.emptyUrl => context.l10n.addLinkUrlEmptyError,
+            AddLinkErrorCode.invalidUrl => context.l10n.addLinkInvalidUrlError,
+            null => state.message,
+          };
+          showSnackBar(message);
         }
       },
       builder: (context, state) {
@@ -159,7 +164,7 @@ class _AddLinkContentState extends State<_AddLinkContent> {
                                   _urlCtrl.text = normalizedUrl;
                                   context.read<AddLinkBloc>().add(AddLinkFetchMetadata(normalizedUrl));
                                 } else {
-                                  showSnackBar('Please enter a valid URL');
+                                  showSnackBar(context.l10n.addLinkInvalidUrlError);
                                 }
                               },
                             ),
@@ -288,13 +293,13 @@ class _AddLinkContentState extends State<_AddLinkContent> {
                   onPressed: () {
                     final rawUrl = _urlCtrl.text.trim();
                     if (rawUrl.isEmpty) {
-                      showSnackBar('Please enter a URL');
+                      showSnackBar(context.l10n.addLinkUrlEmptyError);
                       return;
                     }
 
                     final normalizedUrl = normalizeUrl(rawUrl);
                     if (normalizedUrl == null) {
-                      showSnackBar('Please enter a valid URL');
+                      showSnackBar(context.l10n.addLinkInvalidUrlError);
                       return;
                     }
                     _urlCtrl.text = normalizedUrl;

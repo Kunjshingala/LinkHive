@@ -72,6 +72,12 @@ class AppLocalizationsAr extends AppLocalizations {
   String get addLinkUrlHint => 'https://example.com';
 
   @override
+  String get addLinkUrlEmptyError => 'يرجى إدخال الرابط';
+
+  @override
+  String get addLinkInvalidUrlError => 'يرجى إدخال رابط صالح';
+
+  @override
   String get addLinkPageTitleLabel => 'العنوان';
 
   @override

@@ -24,6 +24,8 @@
 
   "addLinkUrlLabel": "URL",
   "addLinkUrlHint": "https://example.com",
+  "addLinkUrlEmptyError": "Please enter a URL",
+  "addLinkInvalidUrlError": "Please enter a valid URL",
   "addLinkPageTitleLabel": "Title",
   "addLinkPageTitleHint": "Page title",
   "addLinkDescLabel": "Description",
