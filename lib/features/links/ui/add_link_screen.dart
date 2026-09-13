@@ -135,6 +135,7 @@ class _AddLinkContentState extends State<_AddLinkContent> {
                         controller: _urlCtrl,
                         hintText: context.l10n.addLinkUrlHint,
                         keyboardType: TextInputType.url,
+                        onChanged: (value) => context.read<AddLinkBloc>().add(AddLinkFieldChanged(url: value)),
                       ),
                     ),
                     SizedBox(width: AppSpacing.sm),

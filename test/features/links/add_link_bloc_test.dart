@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:link_hive/core/services/link_metadata_service.dart';
@@ -246,6 +248,38 @@ void main() {
             url: 'https://bad-url.com',
             isFetchingMetadata: false,
           ),
+        ],
+      );
+
+      late Completer<LinkMetadata> staleResult;
+      blocTest<AddLinkBloc, AddLinkState>(
+        'ignores stale metadata when the URL changes and fetches the new URL',
+        build: () {
+          staleResult = Completer<LinkMetadata>();
+          when(
+            () => mockMetadataService.fetchMetadata('https://old.example'),
+          ).thenAnswer((_) => staleResult.future);
+          when(
+            () => mockMetadataService.fetchMetadata('https://new.example'),
+          ).thenAnswer(
+            (_) async => const LinkMetadata(title: 'New page'),
+          );
+          return buildBloc();
+        },
+        seed: () => const AddLinkForm(url: 'https://old.example'),
+        act: (bloc) async {
+          bloc.add(const AddLinkFetchMetadata('https://old.example'));
+          await Future<void>.delayed(const Duration(milliseconds: 350));
+          bloc.add(const AddLinkFieldChanged(url: 'https://new.example'));
+          await Future<void>.delayed(const Duration(milliseconds: 350));
+          staleResult.complete(const LinkMetadata(title: 'Old page'));
+        },
+        wait: const Duration(milliseconds: 300),
+        expect: () => [
+          const AddLinkForm(url: 'https://old.example', isFetchingMetadata: true),
+          const AddLinkForm(url: 'https://new.example'),
+          const AddLinkForm(url: 'https://new.example', isFetchingMetadata: true),
+          const AddLinkForm(url: 'https://new.example', title: 'New page'),
         ],
       );
     });

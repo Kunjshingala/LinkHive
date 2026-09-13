@@ -1,4 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:rxdart/rxdart.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../../core/services/link_metadata_service.dart';
@@ -56,6 +57,11 @@ class AddLinkBloc extends Bloc<AddLinkEvent, AddLinkState> {
   /// by [_onSaveRequested] to choose between `addLink` and `updateLink`.
   LinkModel? _editingLink;
 
+  /// Increments whenever a metadata request becomes obsolete. The network
+  /// request itself may not be cancellable on every platform, so its result
+  /// is ignored when its generation is no longer current.
+  int _metadataGeneration = 0;
+
   AddLinkBloc({required LinkRepository repository, required LinkMetadataService metadataService})
     : _repository = repository,
       _metadataService = metadataService,
@@ -63,9 +69,13 @@ class AddLinkBloc extends Bloc<AddLinkEvent, AddLinkState> {
     // Register a handler for every event type. Using named handlers keeps
     // each piece of logic isolated and independently testable.
     on<AddLinkInitialized>(_onInitialized);
-    on<AddLinkFetchMetadata>(_onFetchMetadata);
+    on<AddLinkFetchMetadata>(_onFetchMetadata, transformer: _debounce(const Duration(milliseconds: 300)));
     on<AddLinkFieldChanged>(_onFieldChanged);
     on<AddLinkSaveRequested>(_onSaveRequested);
+  }
+
+  EventTransformer<T> _debounce<T>(Duration duration) {
+    return (events, mapper) => events.debounceTime(duration).switchMap(mapper);
   }
 
   // ─── Event Handlers ────────────────────────────────────────────────────────
@@ -128,19 +138,28 @@ class AddLinkBloc extends Bloc<AddLinkEvent, AddLinkState> {
     final current = state is AddLinkForm ? state as AddLinkForm : const AddLinkForm();
     final normalizedUrl = normalizeUrl(event.url);
     if (normalizedUrl == null) {
+      _metadataGeneration++;
       emit(const AddLinkError('', code: AddLinkErrorCode.invalidUrl));
       emit(current);
       return;
     }
+
+    final requestGeneration = ++_metadataGeneration;
 
     // Signal the UI to show a loading indicator while the network call runs.
     emit(current.copyWith(url: normalizedUrl, isFetchingMetadata: true));
 
     final metadata = await _metadataService.fetchMetadata(normalizedUrl);
 
+    // A newer URL change or fetch request makes this response stale. Do not
+    // let an older page overwrite the current form.
+    if (requestGeneration != _metadataGeneration) return;
+
+    final latest = state is AddLinkForm ? state as AddLinkForm : current;
+
     // Merge fetched values: only overwrite a field if it was previously empty.
     // This preserves any content the user may have already typed manually.
-    final updated = current.copyWith(
+    final updated = latest.copyWith(
       url: normalizedUrl,
       title: metadata.title.isNotEmpty ? metadata.title : current.title,
       description: metadata.description.isNotEmpty ? metadata.description : current.description,
@@ -161,6 +180,10 @@ class AddLinkBloc extends Bloc<AddLinkEvent, AddLinkState> {
   void _onFieldChanged(AddLinkFieldChanged event, Emitter<AddLinkState> emit) {
     final current = state is AddLinkForm ? state as AddLinkForm : const AddLinkForm();
 
+    if (event.url != null) {
+      _metadataGeneration++;
+    }
+
     emit(
       current.copyWith(
         url: event.url,
@@ -168,8 +191,12 @@ class AddLinkBloc extends Bloc<AddLinkEvent, AddLinkState> {
         description: event.description,
         priority: event.priority,
         categories: event.categories,
+        isFetchingMetadata: event.url == null ? null : false,
       ),
     );
+
+    final normalizedUrl = event.url == null ? null : normalizeUrl(event.url!);
+    if (normalizedUrl != null) add(AddLinkFetchMetadata(normalizedUrl));
   }
 
   /// Handles [AddLinkSaveRequested].
