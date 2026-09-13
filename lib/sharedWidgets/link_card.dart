@@ -362,7 +362,7 @@ class _MoreMenu extends StatelessWidget {
             );
           }
         } else if (action == 'share') {
-          await Share.share(link.url);
+          await SharePlus.instance.share(ShareParams(text: link.url));
         } else if (action == 'edit') {
           onEdit?.call();
         } else if (action == 'delete') {
