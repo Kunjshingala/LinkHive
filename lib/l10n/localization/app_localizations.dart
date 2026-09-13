@@ -108,6 +108,10 @@ abstract class AppLocalizations {
   /// **'LinkHive'**
   String get appTitle;
 
+  String get homeNoResultsTitle;
+
+  String get homeNoResultsSubtitle;
+
   /// No description provided for @homeTitle.
   ///
   /// In en, this message translates to:

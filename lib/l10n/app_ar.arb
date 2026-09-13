@@ -1,4 +1,6 @@
 {
+  "homeNoResultsTitle": "لا توجد روابط مطابقة",
+  "homeNoResultsSubtitle": "جرّب تغيير البحث أو عوامل التصفية.",
   "@@locale": "ar",
   "appTitle": "LinkHive",
   "homeTitle": "الروابط",

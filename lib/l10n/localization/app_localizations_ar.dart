@@ -12,6 +12,12 @@ class AppLocalizationsAr extends AppLocalizations {
   String get appTitle => 'LinkHive';
 
   @override
+  String get homeNoResultsTitle => 'لا توجد روابط مطابقة';
+
+  @override
+  String get homeNoResultsSubtitle => 'جرّب تغيير البحث أو عوامل التصفية.';
+
+  @override
   String get homeTitle => 'الروابط';
 
   @override

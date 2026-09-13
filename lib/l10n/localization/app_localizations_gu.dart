@@ -12,6 +12,12 @@ class AppLocalizationsGu extends AppLocalizations {
   String get appTitle => 'LinkHive';
 
   @override
+  String get homeNoResultsTitle => 'કોઈ મેળ ખાતી લિંક નથી';
+
+  @override
+  String get homeNoResultsSubtitle => 'તમારી શોધ અથવા ફિલ્ટર બદલીને જુઓ.';
+
+  @override
   String get homeTitle => 'લિંક્સ';
 
   @override

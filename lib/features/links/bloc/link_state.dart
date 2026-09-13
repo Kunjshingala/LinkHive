@@ -46,6 +46,9 @@ class LinksLoaded extends LinkState {
     this.customCategories = const [],
   });
 
+  bool get hasActiveFilter =>
+      searchQuery.trim().isNotEmpty || activeCategory != 'All' || activePriority != 'All';
+
   @override
   List<Object?> get props => [
     links,

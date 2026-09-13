@@ -1,4 +1,6 @@
 {
+  "homeNoResultsTitle": "No matching links",
+  "homeNoResultsSubtitle": "Try changing your search or filters.",
   "@@locale": "en",
   "appTitle": "LinkHive",
   "homeTitle": "Links",

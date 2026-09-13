@@ -1,4 +1,6 @@
 {
+  "homeNoResultsTitle": "કોઈ મેળ ખાતી લિંક નથી",
+  "homeNoResultsSubtitle": "તમારી શોધ અથવા ફિલ્ટર બદલીને જુઓ.",
   "@@locale": "gu",
   "appTitle": "LinkHive",
   "homeTitle": "લિંક્સ",

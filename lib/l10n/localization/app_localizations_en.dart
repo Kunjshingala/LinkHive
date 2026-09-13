@@ -12,6 +12,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get appTitle => 'LinkHive';
 
   @override
+  String get homeNoResultsTitle => 'No matching links';
+
+  @override
+  String get homeNoResultsSubtitle => 'Try changing your search or filters.';
+
+  @override
   String get homeTitle => 'Links';
 
   @override

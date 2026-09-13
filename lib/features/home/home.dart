@@ -107,7 +107,7 @@ class _HomeScreenContentState extends State<_HomeScreenContent> {
                       final links = state is LinksLoaded ? state.links : [];
 
                       if (links.isEmpty) {
-                        return _buildEmptyState(context);
+                        return _buildEmptyState(context, state is LinksLoaded && state.hasActiveFilter);
                       }
 
                       return RefreshIndicator(
@@ -342,7 +342,29 @@ class _HomeScreenContentState extends State<_HomeScreenContent> {
     );
   }
 
-  Widget _buildEmptyState(BuildContext context) {
+  Widget _buildEmptyState(BuildContext context, bool hasActiveFilter) {
+    if (hasActiveFilter) {
+      return Center(
+        child: Padding(
+          padding: EdgeInsets.all(AppSpacing.xl),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.search_off_rounded, color: AppColors.success, size: 48),
+              SizedBox(height: AppSpacing.md),
+              Text(context.l10n.homeNoResultsTitle, style: Theme.of(context).textTheme.titleLarge!),
+              SizedBox(height: AppSpacing.xs),
+              Text(
+                context.l10n.homeNoResultsSubtitle,
+                style: Theme.of(context).textTheme.bodySmall!,
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,

@@ -12,6 +12,12 @@ class AppLocalizationsHi extends AppLocalizations {
   String get appTitle => 'LinkHive';
 
   @override
+  String get homeNoResultsTitle => 'कोई मेल खाता लिंक नहीं';
+
+  @override
+  String get homeNoResultsSubtitle => 'अपनी खोज या फ़िल्टर बदलकर देखें।';
+
+  @override
   String get homeTitle => 'लिंक्स';
 
   @override
