@@ -43,6 +43,12 @@ The sync engine must be:
 
 11. **Authentication transitions are not sync triggers.** Sign-in should pull remote data and upload local pending data. Sign-out should stop cloud work and preserve local-only usage.
 
+    **Required regression scenario:** create an account, save and sync three
+    links, sign out using **delete local data only**, then sign in again. The
+    three links must be restored from Firestore into the local Hive view. The
+    current implementation loses them from the UI because sign-in only calls
+    `syncPendingLinks()` and does not call `pullFromCloud()`.
+
 12. **Metadata fetching is not isolated from saving.** Metadata failure should never block saving a valid URL, and the metadata request should be cancellable or safely ignored if the form changes.
 
 13. **Home pagination is local-only and currently materializes the full Hive box.** `LinkRepository.queryLinks()` reads all local links, sorts and filters them, then applies `skip(offset).take(limit)`. Firestore exposes `fetchPaginatedLinks()`, but Home and `LinkBloc` do not use it. This is correct for offline-first reads, but it will become inefficient for very large local collections.
@@ -321,6 +327,8 @@ Firestore security rules must restrict every collection to the authenticated use
 - App termination during any operation is safe; the operation resumes on restart.
 - Retried operations never create duplicate Firestore documents.
 - A second device’s changes appear without requiring a manual full reload.
+- After three links are synced, signing out with local-data deletion enabled
+  and signing in again restores all three links from the cloud.
 - Conflicts are preserved and actionable, never silently discarded.
 - Local-only users can use the app without Firebase connectivity.
 - Sync runs at most once concurrently per user.
