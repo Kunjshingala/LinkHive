@@ -168,6 +168,12 @@ abstract class AppLocalizations {
   /// **'Search links...'**
   String get searchHint;
 
+  /// No description provided for @searchClearTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear search'**
+  String get searchClearTooltip;
+
   /// No description provided for @categoryAll.
   ///
   /// In en, this message translates to:

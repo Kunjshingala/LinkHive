@@ -43,6 +43,9 @@ class AppLocalizationsHi extends AppLocalizations {
   String get searchHint => 'लिंक खोजें...';
 
   @override
+  String get searchClearTooltip => 'खोज साफ़ करें';
+
+  @override
   String get categoryAll => 'सभी';
 
   @override

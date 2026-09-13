@@ -43,6 +43,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get searchHint => 'Search links...';
 
   @override
+  String get searchClearTooltip => 'Clear search';
+
+  @override
   String get categoryAll => 'All';
 
   @override

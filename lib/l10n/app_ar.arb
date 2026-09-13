@@ -12,6 +12,7 @@
   "homeEmptyStateSubtitle": "ابدأ بحفظ رابط الويب الأول الخاص بك.",
   "addLinkButton": "إضافة رابط",
   "searchHint": "البحث في الروابط...",
+  "searchClearTooltip": "مسح البحث",
   "categoryAll": "الكل",
   "homeCategoriesLabel": "الفئات",
   "homePrioritiesLabel": "الأولويات",

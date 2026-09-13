@@ -43,6 +43,9 @@ class AppLocalizationsGu extends AppLocalizations {
   String get searchHint => 'લિંક્સ શોધો...';
 
   @override
+  String get searchClearTooltip => 'શોધ સાફ કરો';
+
+  @override
   String get categoryAll => 'બધા';
 
   @override

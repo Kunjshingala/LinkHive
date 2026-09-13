@@ -12,6 +12,7 @@
   "homeEmptyStateSubtitle": "अपना पहला वेब लिंक सहेज कर शुरुआत करें।",
   "addLinkButton": "लिंक जोड़ें",
   "searchHint": "लिंक खोजें...",
+  "searchClearTooltip": "खोज साफ़ करें",
   "categoryAll": "सभी",
   "homeCategoriesLabel": "श्रेणियां",
   "homePrioritiesLabel": "प्राथमिकताएं",

@@ -42,6 +42,9 @@ class AppLocalizationsAr extends AppLocalizations {
   String get searchHint => 'البحث في الروابط...';
 
   @override
+  String get searchClearTooltip => 'مسح البحث';
+
+  @override
   String get categoryAll => 'الكل';
 
   @override

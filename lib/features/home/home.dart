@@ -51,6 +51,7 @@ class _HomeScreenContent extends StatefulWidget {
 
 class _HomeScreenContentState extends State<_HomeScreenContent> {
   final ScrollController _scrollController = ScrollController();
+  final TextEditingController _searchController = TextEditingController();
 
   @override
   void initState() {
@@ -61,6 +62,7 @@ class _HomeScreenContentState extends State<_HomeScreenContent> {
   @override
   void dispose() {
     _scrollController.dispose();
+    _searchController.dispose();
     super.dispose();
   }
 
@@ -225,11 +227,26 @@ class _HomeScreenContentState extends State<_HomeScreenContent> {
 
   Widget _buildSearchBar(BuildContext context) {
     return CustomTextField(
-      onChanged: (val) => context.read<LinkBloc>().add(LinkSearchChanged(val)),
-      hintText: context.l10n.searchHint,
-      prefixIcon: Icons.search_rounded,
-      borderRadius: AppSpacing.radiusLg,
-    );
+        controller: _searchController,
+        onChanged: (val) {
+          setState(() {});
+          context.read<LinkBloc>().add(LinkSearchChanged(val));
+        },
+        hintText: context.l10n.searchHint,
+        prefixIcon: Icons.search_rounded,
+        suffixIcon: _searchController.text.isEmpty
+            ? null
+            : IconButton(
+                tooltip: context.l10n.searchClearTooltip,
+                icon: const Icon(Icons.clear_rounded),
+                onPressed: () {
+                  _searchController.clear();
+                  setState(() {});
+                  context.read<LinkBloc>().add(const LinkSearchChanged(''));
+                },
+              ),
+        borderRadius: AppSpacing.radiusLg,
+      );
   }
 
   Widget _buildCategoryFilters(BuildContext context) {

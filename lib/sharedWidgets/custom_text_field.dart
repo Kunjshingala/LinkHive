@@ -9,6 +9,7 @@ class CustomTextField extends StatelessWidget {
   final String hintText;
   final bool obscureText;
   final IconData? prefixIcon;
+  final Widget? suffixIcon;
   final String? Function(String?)? validator;
   final int maxLines;
   final TextInputType? keyboardType;
@@ -21,6 +22,7 @@ class CustomTextField extends StatelessWidget {
     required this.hintText,
     this.obscureText = false,
     this.prefixIcon,
+    this.suffixIcon,
     this.validator,
     this.maxLines = 1,
     this.keyboardType,
@@ -45,6 +47,7 @@ class CustomTextField extends StatelessWidget {
           color: (Theme.of(context).textTheme.bodySmall?.color ?? AppColors.textTertiary),
         ),
         prefixIcon: prefixIcon != null ? Icon(prefixIcon, color: Theme.of(context).colorScheme.onSurface) : null,
+        suffixIcon: suffixIcon,
         filled: true,
         fillColor: Theme.of(context).colorScheme.surface,
         contentPadding: EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.md),

@@ -12,6 +12,7 @@
   "homeEmptyStateSubtitle": "Get started by saving your first Web Link.",
   "addLinkButton": "Add Link",
   "searchHint": "Search links...",
+  "searchClearTooltip": "Clear search",
   "categoryAll": "All",
   "homeCategoriesLabel": "Categories",
   "homePrioritiesLabel": "Priorities",
