@@ -67,5 +67,49 @@ void main() {
         LinksLoaded(links: [testLink], hasReachedMax: true, offset: 1, customCategories: const [testCategory]),
       ],
     );
+
+    blocTest<LinkBloc, LinkState>(
+      'debounces rapid search changes and processes only the latest query',
+      build: () {
+        when(
+          () => mockRepository.queryLinks(
+            query: 'flutter',
+            category: 'All',
+            priority: 'All',
+            limit: 20,
+            offset: 0,
+          ),
+        ).thenReturn([testLink]);
+        return LinkBloc(repository: mockRepository);
+      },
+      seed: () => const LinksLoaded(links: [], hasReachedMax: true, offset: 0, customCategories: []),
+      act: (bloc) {
+        bloc
+          ..add(const LinkSearchChanged('f'))
+          ..add(const LinkSearchChanged('fl'))
+          ..add(const LinkSearchChanged('flutter'));
+      },
+      wait: const Duration(milliseconds: 350),
+      expect: () => [
+        LinksLoaded(
+          links: [testLink],
+          searchQuery: 'flutter',
+          hasReachedMax: true,
+          offset: 1,
+          customCategories: const [testCategory],
+        ),
+      ],
+      verify: (_) {
+        verify(
+          () => mockRepository.queryLinks(
+            query: 'flutter',
+            category: 'All',
+            priority: 'All',
+            limit: 20,
+            offset: 0,
+          ),
+        ).called(1);
+      },
+    );
   });
 }

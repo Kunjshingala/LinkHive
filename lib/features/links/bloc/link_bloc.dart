@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:rxdart/rxdart.dart';
 
 import '../models/link_model.dart';
 import '../models/category_model.dart';
@@ -21,6 +22,10 @@ class LinkBloc extends Bloc<LinkEvent, LinkState> {
   final LinkRepository _repository;
   static const _limit = 20;
 
+  EventTransformer<T> _debounce<T>(Duration duration) {
+    return (events, mapper) => events.debounceTime(duration).switchMap(mapper);
+  }
+
   /// Subscription to the Hive links box stream.
   /// Cancelled in [close] to avoid memory leaks.
   late final StreamSubscription<void> _boxSubscription;
@@ -28,7 +33,7 @@ class LinkBloc extends Bloc<LinkEvent, LinkState> {
   LinkBloc({required LinkRepository repository}) : _repository = repository, super(const LinkInitial()) {
     on<LinkLoadRequested>(_onLoadRequested);
     on<LinkLoadNextPageRequested>(_onLoadNextPageRequested);
-    on<LinkSearchChanged>(_onSearchChanged);
+    on<LinkSearchChanged>(_onSearchChanged, transformer: _debounce(const Duration(milliseconds: 300)));
     on<LinkCategoryFilterChanged>(_onCategoryFilterChanged);
     on<LinkPriorityFilterChanged>(_onPriorityFilterChanged);
     on<LinkDeleteRequested>(_onDeleteRequested);
