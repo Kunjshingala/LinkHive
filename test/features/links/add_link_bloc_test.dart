@@ -298,6 +298,36 @@ void main() {
       );
 
       blocTest<AddLinkBloc, AddLinkState>(
+        'rejects a non-HTTP URL before saving',
+        build: buildBloc,
+        seed: () => const AddLinkForm(url: 'ftp://example.com'),
+        act: (bloc) => bloc.add(const AddLinkSaveRequested()),
+        expect: () => [
+          const AddLinkError('Please enter a valid URL'),
+          const AddLinkForm(url: 'ftp://example.com'),
+        ],
+        verify: (_) {
+          verifyNever(() => mockRepository.addLink(any()));
+        },
+      );
+
+      blocTest<AddLinkBloc, AddLinkState>(
+        'normalizes a scheme-less URL before saving',
+        build: () {
+          when(() => mockRepository.addLink(any())).thenAnswer((_) async {});
+          return buildBloc();
+        },
+        seed: () => const AddLinkForm(url: 'flutter.dev'),
+        act: (bloc) => bloc.add(const AddLinkSaveRequested()),
+        expect: () => [const AddLinkSaving(), const AddLinkSuccess()],
+        verify: (_) {
+          final captured = verify(() => mockRepository.addLink(captureAny())).captured;
+          final savedLink = captured.single as LinkModel;
+          expect(savedLink.url, 'https://flutter.dev');
+        },
+      );
+
+      blocTest<AddLinkBloc, AddLinkState>(
         'emits [AddLinkSaving, AddLinkSuccess] on successful add',
         build: () {
           when(

@@ -8,6 +8,7 @@ import '../../../core/theme/app_spacing.dart';
 import '../../../core/utils/category_utils.dart';
 import '../../../core/utils/locator.dart';
 import '../../../core/utils/utils.dart';
+import '../../../core/utils/validator/validator.dart';
 import '../../../core/extensions/context_extension.dart';
 import '../../../sharedWidgets/add_category_chip.dart';
 import '../../../sharedWidgets/category_chip.dart';
@@ -153,18 +154,12 @@ class _AddLinkContentState extends State<_AddLinkContent> {
                               icon: Icons.auto_fix_high_rounded,
                               shadowColor: AppColors.accentBlue,
                               onPressed: () {
-                                String rawUrl = _urlCtrl.text.trim();
-                                if (rawUrl.isNotEmpty) {
-                                  if (!rawUrl.startsWith('http://') && !rawUrl.startsWith('https://')) {
-                                    rawUrl = 'https://$rawUrl';
-                                    _urlCtrl.text = rawUrl;
-                                  }
-                                  final uri = Uri.tryParse(rawUrl);
-                                  if (uri != null && uri.hasScheme && uri.host.isNotEmpty && uri.host.contains('.')) {
-                                    context.read<AddLinkBloc>().add(AddLinkFetchMetadata(rawUrl));
-                                  } else {
-                                    showSnackBar('Please enter a valid URL');
-                                  }
+                                final normalizedUrl = normalizeUrl(_urlCtrl.text);
+                                if (normalizedUrl != null) {
+                                  _urlCtrl.text = normalizedUrl;
+                                  context.read<AddLinkBloc>().add(AddLinkFetchMetadata(normalizedUrl));
+                                } else {
+                                  showSnackBar('Please enter a valid URL');
                                 }
                               },
                             ),
@@ -291,27 +286,23 @@ class _AddLinkContentState extends State<_AddLinkContent> {
                   text: widget.isEditing ? 'Update Link' : context.l10n.saveLinkButton,
                   isLoading: isSaving,
                   onPressed: () {
-                    String rawUrl = _urlCtrl.text.trim();
+                    final rawUrl = _urlCtrl.text.trim();
                     if (rawUrl.isEmpty) {
                       showSnackBar('Please enter a URL');
                       return;
                     }
 
-                    if (!rawUrl.startsWith('http://') && !rawUrl.startsWith('https://')) {
-                      rawUrl = 'https://$rawUrl';
-                      _urlCtrl.text = rawUrl;
-                    }
-
-                    final uri = Uri.tryParse(rawUrl);
-                    if (uri == null || !uri.hasScheme || uri.host.isEmpty || !uri.host.contains('.')) {
+                    final normalizedUrl = normalizeUrl(rawUrl);
+                    if (normalizedUrl == null) {
                       showSnackBar('Please enter a valid URL');
                       return;
                     }
+                    _urlCtrl.text = normalizedUrl;
 
                     context.read<AddLinkBloc>()
                       ..add(
                         AddLinkFieldChanged(
-                          url: rawUrl,
+                          url: normalizedUrl,
                           title: _titleCtrl.text,
                           description: _descCtrl.text,
                           priority: _priority,

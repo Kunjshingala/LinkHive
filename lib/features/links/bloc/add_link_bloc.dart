@@ -3,6 +3,7 @@ import 'package:uuid/uuid.dart';
 
 import '../../../core/services/link_metadata_service.dart';
 import '../../../core/utils/utils.dart';
+import '../../../core/utils/validator/validator.dart';
 import '../models/link_model.dart';
 import '../repository/link_repository.dart';
 import 'add_link_event.dart';
@@ -99,12 +100,14 @@ class AddLinkBloc extends Bloc<AddLinkEvent, AddLinkState> {
       );
     } else {
       // Add mode: start with a blank form, optionally seeded with a URL.
-      emit(AddLinkForm(url: event.prefillUrl ?? ''));
+      final prefillUrl = event.prefillUrl?.trim() ?? '';
+      final normalizedUrl = normalizeUrl(prefillUrl);
+      emit(AddLinkForm(url: normalizedUrl ?? prefillUrl));
 
       // Auto-fetch metadata when a prefill URL is already available so the
       // user doesn't have to trigger it manually.
-      if (event.prefillUrl != null && event.prefillUrl!.isNotEmpty) {
-        add(AddLinkFetchMetadata(event.prefillUrl!));
+      if (normalizedUrl != null) {
+        add(AddLinkFetchMetadata(normalizedUrl));
       }
     }
   }
@@ -123,16 +126,22 @@ class AddLinkBloc extends Bloc<AddLinkEvent, AddLinkState> {
     // Snapshot the current form state; fall back to a blank form if for some
     // reason the state isn't AddLinkForm yet (defensive guard).
     final current = state is AddLinkForm ? state as AddLinkForm : const AddLinkForm();
+    final normalizedUrl = normalizeUrl(event.url);
+    if (normalizedUrl == null) {
+      emit(const AddLinkError('Please enter a valid URL'));
+      emit(current);
+      return;
+    }
 
     // Signal the UI to show a loading indicator while the network call runs.
-    emit(current.copyWith(isFetchingMetadata: true));
+    emit(current.copyWith(url: normalizedUrl, isFetchingMetadata: true));
 
-    final metadata = await _metadataService.fetchMetadata(event.url);
+    final metadata = await _metadataService.fetchMetadata(normalizedUrl);
 
     // Merge fetched values: only overwrite a field if it was previously empty.
     // This preserves any content the user may have already typed manually.
     final updated = current.copyWith(
-      url: event.url,
+      url: normalizedUrl,
       title: metadata.title.isNotEmpty ? metadata.title : current.title,
       description: metadata.description.isNotEmpty ? metadata.description : current.description,
       image: metadata.image.isNotEmpty ? metadata.image : current.image,
@@ -192,6 +201,13 @@ class AddLinkBloc extends Bloc<AddLinkEvent, AddLinkState> {
       return;
     }
 
+    final normalizedUrl = normalizeUrl(current.url);
+    if (normalizedUrl == null) {
+      emit(const AddLinkError('Please enter a valid URL'));
+      emit(current);
+      return;
+    }
+
     emit(const AddLinkSaving());
 
     try {
@@ -201,8 +217,8 @@ class AddLinkBloc extends Bloc<AddLinkEvent, AddLinkState> {
         // (id, createdAt) and only replacing the user-editable fields.
         // Falls back to the URL as the title if the user left it empty.
         final updatedLink = _editingLink!.copyWith(
-          url: current.url.trim(),
-          title: current.title.trim().isEmpty ? current.url.trim() : current.title.trim(),
+          url: normalizedUrl,
+          title: current.title.trim().isEmpty ? normalizedUrl : current.title.trim(),
           description: current.description.trim(),
           image: current.image,
           categories: current.categories,
@@ -222,8 +238,8 @@ class AddLinkBloc extends Bloc<AddLinkEvent, AddLinkState> {
         //     once the link is successfully pushed to Firestore.
         final link = LinkModel(
           id: _uuid.v4(),
-          url: current.url.trim(),
-          title: current.title.trim().isEmpty ? current.url.trim() : current.title.trim(),
+          url: normalizedUrl,
+          title: current.title.trim().isEmpty ? normalizedUrl : current.title.trim(),
           description: current.description.trim(),
           image: current.image,
           categories: current.categories,
