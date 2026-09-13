@@ -53,14 +53,23 @@ void main() {
   }
 
   void stubEmptyPull() {
+    // Full-fetch variants (used when no cursor exists)
     when(
       () => firebaseService.fetchDeletedLinks('user-1'),
     ).thenAnswer((_) async => []);
     when(
-      () => firebaseService.fetchCategories('user-1'),
+      () => firebaseService.fetchDeletedCategories('user-1'),
+    ).thenAnswer((_) async => []);
+    // Incremental variants (used when cursor is present) — match any since value
+    when(
+      () => firebaseService.fetchDeletedLinksSince('user-1', any()),
     ).thenAnswer((_) async => []);
     when(
-      () => firebaseService.fetchDeletedCategories('user-1'),
+      () => firebaseService.fetchDeletedCategoriesSince('user-1', any()),
+    ).thenAnswer((_) async => []);
+    // Categories always use a full fetch (no server timestamp on CategoryModel)
+    when(
+      () => firebaseService.fetchCategories('user-1'),
     ).thenAnswer((_) async => []);
   }
 
@@ -209,19 +218,71 @@ void main() {
       () => firebaseService.fetchLinksSince('user-1', 100 - 60 * 1000),
     ).thenAnswer((_) async => []);
     when(
-      () => firebaseService.fetchDeletedLinks('user-1'),
+      () => firebaseService.fetchDeletedLinksSince('user-1', 100 - 60 * 1000),
     ).thenAnswer((_) async => [baseLink.id]);
     when(
       () => firebaseService.fetchCategories('user-1'),
     ).thenAnswer((_) async => []);
     when(
-      () => firebaseService.fetchDeletedCategories('user-1'),
+      () => firebaseService.fetchDeletedCategoriesSince(
+        'user-1',
+        100 - 60 * 1000,
+      ),
     ).thenAnswer((_) async => []);
 
     await repository.pullFromCloud();
 
     expect(repository.queryLinks(limit: 10), isEmpty);
   });
+
+  test('subsequent pull uses fetchDeletedLinksSince for tombstones', () async {
+    const cursor = 300000;
+    const expectedSince = cursor - 60 * 1000;
+    await Hive.box(
+      HiveConstants.settingsBox,
+    ).put(HiveConstants.lastPulledAtKey, cursor);
+
+    when(
+      () => firebaseService.fetchLinksSince('user-1', expectedSince),
+    ).thenAnswer((_) async => []);
+    when(
+      () => firebaseService.fetchDeletedLinksSince('user-1', expectedSince),
+    ).thenAnswer((_) async => []);
+    stubEmptyPull();
+
+    await repository.pullFromCloud();
+
+    verify(
+      () => firebaseService.fetchDeletedLinksSince('user-1', expectedSince),
+    ).called(1);
+    verifyNever(() => firebaseService.fetchDeletedLinks(any()));
+  });
+
+  test(
+    'subsequent pull uses fetchDeletedCategoriesSince for category tombstones',
+    () async {
+      const cursor = 300000;
+      const expectedSince = cursor - 60 * 1000;
+      await Hive.box(
+        HiveConstants.settingsBox,
+      ).put(HiveConstants.lastPulledAtKey, cursor);
+
+      when(
+        () => firebaseService.fetchLinksSince('user-1', expectedSince),
+      ).thenAnswer((_) async => []);
+      stubEmptyPull();
+
+      await repository.pullFromCloud();
+
+      verify(
+        () => firebaseService.fetchDeletedCategoriesSince(
+          'user-1',
+          expectedSince,
+        ),
+      ).called(1);
+      verifyNever(() => firebaseService.fetchDeletedCategories(any()));
+    },
+  );
 
   test(
     'overlap window includes records at the exact cursor boundary',

@@ -62,6 +62,29 @@ class FirebaseFirestoreService {
     await _deletedLinksCol(uid).doc(linkId).delete();
   }
 
+  /// Fetches tombstones whose [FirebaseConstants.linkDeletedAt] is at or after
+  /// [sinceMs]. Used for incremental pulls alongside [fetchLinksSince].
+  Future<List<String>> fetchDeletedLinksSince(String uid, int sinceMs) async {
+    final since = Timestamp.fromMillisecondsSinceEpoch(sinceMs);
+    final snap = await _deletedLinksCol(uid)
+        .where(FirebaseConstants.linkDeletedAt, isGreaterThanOrEqualTo: since)
+        .get();
+    return snap.docs.map((d) => d.id).toList();
+  }
+
+  /// Fetches category tombstones whose [FirebaseConstants.linkDeletedAt] is at
+  /// or after [sinceMs]. Mirrors [fetchDeletedLinksSince] for categories.
+  Future<List<String>> fetchDeletedCategoriesSince(
+    String uid,
+    int sinceMs,
+  ) async {
+    final since = Timestamp.fromMillisecondsSinceEpoch(sinceMs);
+    final snap = await _deletedCategoriesCol(uid)
+        .where(FirebaseConstants.linkDeletedAt, isGreaterThanOrEqualTo: since)
+        .get();
+    return snap.docs.map((d) => d.id).toList();
+  }
+
   Future<List<LinkModel>> fetchLinks(String uid) async {
     final snap = await _linksCol(
       uid,

@@ -354,7 +354,15 @@ class LinkRepository {
       );
     }
 
-    final deletedIds = await _firebaseService.fetchDeletedLinks(uid);
+    final List<String> deletedIds;
+    if (cursor == null) {
+      deletedIds = await _firebaseService.fetchDeletedLinks(uid);
+    } else {
+      deletedIds = await _firebaseService.fetchDeletedLinksSince(
+        uid,
+        cursor - _pullOverlapMs,
+      );
+    }
 
     for (final delId in deletedIds) {
       if (_hasLocalTombstone(SyncOperation.linkEntity, delId)) continue;
@@ -458,9 +466,15 @@ class LinkRepository {
       await _categoriesBox.put(category.id, category);
     }
 
-    final deletedCategoryIds = await _firebaseService.fetchDeletedCategories(
-      uid,
-    );
+    final List<String> deletedCategoryIds;
+    if (cursor == null) {
+      deletedCategoryIds = await _firebaseService.fetchDeletedCategories(uid);
+    } else {
+      deletedCategoryIds = await _firebaseService.fetchDeletedCategoriesSince(
+        uid,
+        cursor - _pullOverlapMs,
+      );
+    }
     for (final categoryId in deletedCategoryIds) {
       if (_hasLocalTombstone(SyncOperation.categoryEntity, categoryId) ||
           _hasPendingOperation(SyncOperation.categoryEntity, categoryId)) {

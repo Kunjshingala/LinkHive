@@ -40,7 +40,7 @@ This section is the handoff record for continuing the refactor across sessions.
   - Added a Bloc-backed Account status card driven by `SyncEngine.statusStream`.
   - Displays idle, syncing, failed, and conflict states.
 
-- Phase 8 — incremental pull cursor: pending commit.
+- Phase 8 — incremental pull cursor: `bf67107`.
   - `pullFromCloud()` now uses a `lastPulledAt` cursor stored in the Hive
     settings box.
   - First pull (no cursor) calls `fetchLinks` for a full bootstrap.
@@ -56,21 +56,35 @@ This section is the handoff record for continuing the refactor across sessions.
     bootstrap, cursor advancement, overlap-window argument, cursor reset,
     two-device edit, two-device delete (43 total across focused suite).
 
+- Phase 9 — incremental deleted-links and deleted-categories: pending commit.
+  - `fetchDeletedLinksSince(uid, sinceMs)` and `fetchDeletedCategoriesSince`
+    added to `FirebaseFirestoreService`, filtering on `deletedAt`.
+  - `pullFromCloud()` now fetches deleted-link and deleted-category tombstones
+    incrementally (using the same cursor/overlap window as active links) when a
+    cursor exists; falls back to a full scan on the first pull.
+  - Categories still use a full `fetchCategories` fetch (they have no server
+    timestamp field for range filtering).
+  - Added 2 new deterministic tests (45 total): verify `fetchDeletedLinksSince`
+    and `fetchDeletedCategoriesSince` are called with the correct `since`
+    argument on subsequent pulls; verify the full-fetch fallbacks are never used.
+
 ### Next work
 
-- Tombstone GC: after a successful push, call `removeDeletedLink` on the
-  Firestore `deleted_links` doc; otherwise tombstones accumulate forever.
-- Incremental deleted-links fetch: `fetchDeletedLinks` still does a full scan;
-  add a `fetchDeletedLinksSince` to mirror the active-links cursor approach.
-- Category merge: categories are still last-write-wins on pull; add 3-way
-  merge and conflict tracking matching the link flow.
+- Tombstone GC: safe removal of old Firestore `deleted_links` docs requires
+  per-device acknowledgement tracking or a server-side retention policy. A
+  Cloud Function on a schedule is the right implementation; deferred.
+- Category server timestamp: add a `syncedAt` field to `CategoryModel` and
+  `saveCategory` (similar to links) so `fetchCategories` can also be made
+  incremental.
+- Category rename: currently categories are add/delete-only; a rename
+  operation would need base-category tracking to enable 3-way merge.
 - Metrics and structured sync failure reporting.
 
 ### Resume handoff
 
-Latest completed commit: pending (Phase 8).
+Latest completed commit: pending (Phase 9).
 
-`fvm flutter analyze` passes with 0 issues. The 43 focused sync/conflict/
+`fvm flutter analyze` passes with 0 issues. The 45 focused sync/conflict/
 status/account/cursor tests all pass. Continue incrementally — one phase per
 commit, update this document, run analyzer and focused tests. Do not modify
 unrelated features or include `.claude/settings.local.json`.
