@@ -32,11 +32,13 @@ This section is the handoff record for continuing the refactor across sessions.
   - Recover operations left in `processing` on the next sync attempt.
   - Add app-resume and periodic foreground sync triggers.
   - Route Account manual sync through the serialized engine.
+- Phase 6 — conflict resolution UI is ready in the next commit.
+  - Added a Bloc-backed conflict screen with Keep local and Keep cloud actions.
+  - Kept explicit merged-link resolution available through the repository API.
 
 ### Next work
 
-- Add conflict resolution UI and user-facing sync status.
-- Add app resume/foreground periodic triggers.
+- Add user-facing sync status presentation.
 - Add process-restart recovery for operations left in `processing` state.
 - Add cursor/overlap-window pull strategy and broader two-device/delete-edit tests.
 - Add metrics and structured sync failure reporting.

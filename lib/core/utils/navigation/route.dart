@@ -7,6 +7,7 @@ import '../../../features/home/home.dart';
 import '../../../features/links/ui/add_link_screen.dart';
 import '../../../features/links/models/link_model.dart';
 import '../../../features/splash/splash_screen.dart';
+import '../../../features/sync/conflict_screen.dart';
 import '../../../my_app.dart';
 
 final class MyRouteName {
@@ -19,21 +20,38 @@ final class MyRouteName {
   static const String signup = 'signup';
   static const String addLink = 'addLink';
   static const String editLink = 'editLink';
+  static const String conflicts = 'conflicts';
 }
 
 final router = GoRouter(
   navigatorKey: navigatorKey,
   initialLocation: '/',
   routes: [
-    GoRoute(path: '/', name: MyRouteName.splash, builder: (context, state) => const SplashScreen()),
-    GoRoute(path: '/login', name: MyRouteName.login, builder: (context, state) => const LoginScreen()),
-    GoRoute(path: '/home', name: MyRouteName.homeScreen, builder: (context, state) => const HomeScreen()),
+    GoRoute(
+      path: '/',
+      name: MyRouteName.splash,
+      builder: (context, state) => const SplashScreen(),
+    ),
+    GoRoute(
+      path: '/login',
+      name: MyRouteName.login,
+      builder: (context, state) => const LoginScreen(),
+    ),
+    GoRoute(
+      path: '/home',
+      name: MyRouteName.homeScreen,
+      builder: (context, state) => const HomeScreen(),
+    ),
     GoRoute(
       path: '/accountScreen',
       name: MyRouteName.accountScreen,
       builder: (context, state) => const AccountScreen(),
     ),
-    GoRoute(path: '/signup', name: MyRouteName.signup, builder: (context, state) => const SignupScreen()),
+    GoRoute(
+      path: '/signup',
+      name: MyRouteName.signup,
+      builder: (context, state) => const SignupScreen(),
+    ),
     GoRoute(
       path: '/addLink',
       name: MyRouteName.addLink,
@@ -51,6 +69,11 @@ final router = GoRouter(
         final existingLink = state.extra as LinkModel?;
         return AddLinkScreen(existingLink: existingLink);
       },
+    ),
+    GoRoute(
+      path: '/conflicts',
+      name: MyRouteName.conflicts,
+      builder: (context, state) => const ConflictScreen(),
     ),
   ],
 );

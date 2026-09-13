@@ -1,4 +1,12 @@
-enum AccountItem { language, syncData, deleteLocalData, theme, helpFeedback, auth }
+enum AccountItem {
+  language,
+  syncData,
+  conflicts,
+  deleteLocalData,
+  theme,
+  helpFeedback,
+  auth,
+}
 
 /// Priority levels for a saved link.
 enum LinkPriority { high, normal, low }

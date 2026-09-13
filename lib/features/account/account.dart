@@ -361,6 +361,13 @@ class _SettingsList extends StatelessWidget {
         '',
         AccountItem.syncData,
       ),
+      if (locator<LinkRepository>().conflicts.isNotEmpty)
+        (
+          Icons.warning_amber_rounded,
+          'Resolve conflicts',
+          '',
+          AccountItem.conflicts,
+        ),
       (
         Icons.delete_forever_rounded,
         context.l10n.accountDeleteLocalData,
@@ -555,6 +562,10 @@ class _SettingsList extends StatelessWidget {
           context.read<AccountBloc>().add(const AccountLoadRequested());
         }
         showSnackBar(l10n.accountSyncSuccess);
+        break;
+
+      case AccountItem.conflicts:
+        context.pushNamed(MyRouteName.conflicts);
         break;
 
       case AccountItem.deleteLocalData:
