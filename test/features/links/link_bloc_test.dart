@@ -29,6 +29,10 @@ void main() {
       when(() => mockRepository.getCategories()).thenReturn([testCategory]);
     });
 
+    setUpAll(() {
+      registerFallbackValue(const CategoryModel(id: 'fallback', name: 'fallback'));
+    });
+
     tearDown(() {
       boxStreamController.close();
     });
@@ -144,6 +148,17 @@ void main() {
           customCategories: const [testCategory],
         ),
       ],
+    );
+
+    blocTest<LinkBloc, LinkState>(
+      'emits a duplicate-category error when the repository rejects the name',
+      build: () {
+        when(() => mockRepository.addCategory(any())).thenThrow(const CategoryAlreadyExistsException());
+        return LinkBloc(repository: mockRepository);
+      },
+      seed: () => const LinksLoaded(links: [], hasReachedMax: true, customCategories: []),
+      act: (bloc) => bloc.add(const LinkCustomCategoryAdded('Dev')),
+      expect: () => [const LinkError('', code: LinkErrorCode.duplicateCategory)],
     );
   });
 }

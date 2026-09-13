@@ -64,10 +64,13 @@ class LinksLoaded extends LinkState {
   ];
 }
 
+enum LinkErrorCode { duplicateCategory }
+
 class LinkError extends LinkState {
   final String message;
-  const LinkError(this.message);
+  final LinkErrorCode? code;
+  const LinkError(this.message, {this.code});
 
   @override
-  List<Object?> get props => [message];
+  List<Object?> get props => [message, code];
 }

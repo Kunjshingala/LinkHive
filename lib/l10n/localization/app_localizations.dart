@@ -102,15 +102,29 @@ abstract class AppLocalizations {
     Locale('hi'),
   ];
 
+  /// No description provided for @categoryAlreadyExists.
+  ///
+  /// In en, this message translates to:
+  /// **'This category already exists.'**
+  String get categoryAlreadyExists;
+
+  /// No description provided for @homeNoResultsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'No matching links'**
+  String get homeNoResultsTitle;
+
+  /// No description provided for @homeNoResultsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Try changing your search or filters.'**
+  String get homeNoResultsSubtitle;
+
   /// No description provided for @appTitle.
   ///
   /// In en, this message translates to:
   /// **'LinkHive'**
   String get appTitle;
-
-  String get homeNoResultsTitle;
-
-  String get homeNoResultsSubtitle;
 
   /// No description provided for @homeTitle.
   ///
@@ -233,9 +247,15 @@ abstract class AppLocalizations {
   String get addLinkUrlHint;
 
   /// No description provided for @addLinkUrlEmptyError.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter a URL'**
   String get addLinkUrlEmptyError;
 
   /// No description provided for @addLinkInvalidUrlError.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter a valid URL'**
   String get addLinkInvalidUrlError;
 
   /// No description provided for @addLinkPageTitleLabel.

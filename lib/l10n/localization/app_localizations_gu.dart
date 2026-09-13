@@ -9,13 +9,16 @@ class AppLocalizationsGu extends AppLocalizations {
   AppLocalizationsGu([String locale = 'gu']) : super(locale);
 
   @override
-  String get appTitle => 'LinkHive';
+  String get categoryAlreadyExists => 'આ શ્રેણી પહેલેથી અસ્તિત્વમાં છે.';
 
   @override
   String get homeNoResultsTitle => 'કોઈ મેળ ખાતી લિંક નથી';
 
   @override
   String get homeNoResultsSubtitle => 'તમારી શોધ અથવા ફિલ્ટર બદલીને જુઓ.';
+
+  @override
+  String get appTitle => 'LinkHive';
 
   @override
   String get homeTitle => 'લિંક્સ';

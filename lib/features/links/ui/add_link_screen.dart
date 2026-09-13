@@ -273,12 +273,18 @@ class _AddLinkContentState extends State<_AddLinkContent> {
                       onAdd: (name) async {
                         // Persist directly via repository — no LinkBloc needed.
                         final newCat = CategoryModel(id: '', name: name);
-                        await locator<LinkRepository>().addCategory(newCat);
-                        // Refresh the local list and pre-select the new category.
-                        setState(() {
-                          _customCategories = locator<LinkRepository>().getCategories();
-                          _selectedCategories.add(name);
-                        });
+                        try {
+                          await locator<LinkRepository>().addCategory(newCat);
+                          if (!context.mounted) return;
+                          // Refresh the local list and pre-select the new category.
+                          setState(() {
+                            _customCategories = locator<LinkRepository>().getCategories();
+                            _selectedCategories.add(name);
+                          });
+                        } on CategoryAlreadyExistsException {
+                          if (!context.mounted) return;
+                          showSnackBar(context.l10n.categoryAlreadyExists);
+                        }
                       },
                     ),
                   ],

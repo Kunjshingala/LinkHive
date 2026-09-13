@@ -9,13 +9,16 @@ class AppLocalizationsAr extends AppLocalizations {
   AppLocalizationsAr([String locale = 'ar']) : super(locale);
 
   @override
-  String get appTitle => 'LinkHive';
+  String get categoryAlreadyExists => 'هذه الفئة موجودة بالفعل.';
 
   @override
   String get homeNoResultsTitle => 'لا توجد روابط مطابقة';
 
   @override
   String get homeNoResultsSubtitle => 'جرّب تغيير البحث أو عوامل التصفية.';
+
+  @override
+  String get appTitle => 'LinkHive';
 
   @override
   String get homeTitle => 'الروابط';

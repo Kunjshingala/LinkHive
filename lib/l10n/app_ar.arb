@@ -1,4 +1,5 @@
 {
+  "categoryAlreadyExists": "هذه الفئة موجودة بالفعل.",
   "homeNoResultsTitle": "لا توجد روابط مطابقة",
   "homeNoResultsSubtitle": "جرّب تغيير البحث أو عوامل التصفية.",
   "@@locale": "ar",

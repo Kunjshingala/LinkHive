@@ -9,13 +9,16 @@ class AppLocalizationsHi extends AppLocalizations {
   AppLocalizationsHi([String locale = 'hi']) : super(locale);
 
   @override
-  String get appTitle => 'LinkHive';
+  String get categoryAlreadyExists => 'यह श्रेणी पहले से मौजूद है।';
 
   @override
   String get homeNoResultsTitle => 'कोई मेल खाता लिंक नहीं';
 
   @override
   String get homeNoResultsSubtitle => 'अपनी खोज या फ़िल्टर बदलकर देखें।';
+
+  @override
+  String get appTitle => 'LinkHive';
 
   @override
   String get homeTitle => 'लिंक्स';

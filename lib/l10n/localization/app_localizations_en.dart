@@ -9,13 +9,16 @@ class AppLocalizationsEn extends AppLocalizations {
   AppLocalizationsEn([String locale = 'en']) : super(locale);
 
   @override
-  String get appTitle => 'LinkHive';
+  String get categoryAlreadyExists => 'This category already exists.';
 
   @override
   String get homeNoResultsTitle => 'No matching links';
 
   @override
   String get homeNoResultsSubtitle => 'Try changing your search or filters.';
+
+  @override
+  String get appTitle => 'LinkHive';
 
   @override
   String get homeTitle => 'Links';

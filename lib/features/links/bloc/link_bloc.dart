@@ -278,6 +278,8 @@ class LinkBloc extends Bloc<LinkEvent, LinkState> {
       if (current is LinksLoaded) {
         emit(current.copyWith(customCategories: _customCategories));
       }
+    } on CategoryAlreadyExistsException {
+      emit(const LinkError('', code: LinkErrorCode.duplicateCategory));
     } catch (e) {
       emit(LinkError('Failed to add category: $e'));
     }

@@ -1,4 +1,5 @@
 {
+  "categoryAlreadyExists": "This category already exists.",
   "homeNoResultsTitle": "No matching links",
   "homeNoResultsSubtitle": "Try changing your search or filters.",
   "@@locale": "en",

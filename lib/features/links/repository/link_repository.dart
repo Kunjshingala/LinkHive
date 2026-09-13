@@ -6,8 +6,13 @@ import '../../../core/services/firebase_firestore_service.dart';
 import '../../../core/utils/hive_helper.dart';
 import '../../../core/utils/sync_merge_helper.dart';
 import '../../../core/utils/utils.dart';
+import '../../../core/utils/category_utils.dart';
 import '../models/category_model.dart';
 import '../models/link_model.dart';
+
+class CategoryAlreadyExistsException implements Exception {
+  const CategoryAlreadyExistsException();
+}
 
 /// Repository that manages all [LinkModel] and [CategoryModel] persistence.
 ///
@@ -126,6 +131,13 @@ class LinkRepository {
 
   Future<void> addCategory(CategoryModel category) async {
     final c = category.id.isEmpty ? CategoryModel(id: _uuid.v4(), name: category.name) : category;
+    final normalizedName = c.name.trim().toLowerCase();
+    final existsInBuiltIns = CategoryUtils.suggestedCategories.any((name) => name.toLowerCase() == normalizedName);
+    final existsInCustom = _categoriesBox.values.any((existing) => existing.name.trim().toLowerCase() == normalizedName);
+    if (existsInBuiltIns || existsInCustom) {
+      throw const CategoryAlreadyExistsException();
+    }
+
     await _categoriesBox.put(c.id, c);
     if (_uid != null) {
       await _firebaseService.saveCategory(_uid!, c);

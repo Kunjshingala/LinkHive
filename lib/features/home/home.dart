@@ -102,7 +102,12 @@ class _HomeScreenContentState extends State<_HomeScreenContent> {
 
                 // ─── Body List ──────────────────────────────────────────
                 Expanded(
-                  child: BlocBuilder<LinkBloc, LinkState>(
+                  child: BlocConsumer<LinkBloc, LinkState>(
+                    listener: (context, state) {
+                      if (state is LinkError && state.code == LinkErrorCode.duplicateCategory) {
+                        showSnackBar(context.l10n.categoryAlreadyExists);
+                      }
+                    },
                     builder: (context, state) {
                       if (state is LinkLoading) {
                         return Center(child: CircularProgressIndicator(color: Theme.of(context).colorScheme.primary));

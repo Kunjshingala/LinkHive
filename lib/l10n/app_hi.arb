@@ -1,4 +1,5 @@
 {
+  "categoryAlreadyExists": "यह श्रेणी पहले से मौजूद है।",
   "homeNoResultsTitle": "कोई मेल खाता लिंक नहीं",
   "homeNoResultsSubtitle": "अपनी खोज या फ़िल्टर बदलकर देखें।",
   "@@locale": "hi",
