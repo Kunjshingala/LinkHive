@@ -36,15 +36,15 @@ This section is the handoff record for continuing the refactor across sessions.
   - Added a Bloc-backed conflict screen with Keep local and Keep cloud actions.
   - Kept explicit merged-link resolution available through the repository API.
 
- - Phase 7 — user-facing sync status is ready in the next commit.
+- Phase 7 — user-facing sync status: `6e0f0aa`.
   - Added a Bloc-backed Account status card driven by `SyncEngine.statusStream`.
   - Displays idle, syncing, failed, and conflict states.
-  - Implementation commit: `6e0f0aa`.
 
 ### Next work
 
-- Add cursor/overlap-window pull strategy and broader two-device/delete-edit tests.
-- Add metrics and structured sync failure reporting.
+- Incremental pull cursor/overlap-window strategy and broader two-device/delete-edit tests remain pending.
+- Metrics and structured sync failure reporting remain pending.
+- The attempted cursor schema spike was rolled back before commit; no partial cursor changes remain.
 
 ## Goal
 
