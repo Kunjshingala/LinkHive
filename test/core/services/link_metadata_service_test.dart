@@ -1,5 +1,15 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:link_hive/core/services/link_metadata_service.dart';
+import 'package:link_hive/core/services/metadata/metadata_fetcher.dart';
+
+class _FakeMetadataFetcher implements MetadataFetcher {
+  _FakeMetadataFetcher(this.html);
+
+  final String? html;
+
+  @override
+  Future<String?> fetchHtml(Uri uri) async => html;
+}
 
 void main() {
   group('LinkMetadata', () {
@@ -46,6 +56,24 @@ void main() {
       );
       expect(result, isA<LinkMetadata>());
       expect(result.title, isEmpty);
+    });
+
+    test('parses metadata from the platform fetcher', () async {
+      service = LinkMetadataService(
+        fetcher: _FakeMetadataFetcher('''
+          <html><head>
+            <meta property="og:title" content="Example title">
+            <meta name="og:description" content="Example description">
+            <link rel="icon" href="/favicon.png">
+          </head></html>
+        '''),
+      );
+
+      final result = await service.fetchMetadata('https://example.com/article');
+
+      expect(result.title, 'Example title');
+      expect(result.description, 'Example description');
+      expect(result.image, 'https://example.com/favicon.png');
     });
   });
 }
