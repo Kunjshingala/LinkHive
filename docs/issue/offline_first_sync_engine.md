@@ -46,6 +46,12 @@ This section is the handoff record for continuing the refactor across sessions.
 - Metrics and structured sync failure reporting remain pending.
 - The attempted cursor schema spike was rolled back before commit; no partial cursor changes remain.
 
+### Resume handoff
+
+Latest completed commit: `eb58a9d` (`docs(sync): record cursor phase handoff`).
+
+The implementation is complete through the user-facing sync status phase. `fvm flutter analyze` passes, and the focused sync, conflict, status, and account tests pass (19 tests). The next implementation phase is incremental pull cursors/overlap windows, followed by broader two-device/delete-edit coverage and sync metrics. Continue incrementally, update this document after each phase, run analyzer and focused tests, and create a separate commit per phase. Do not modify unrelated features or include `.claude/settings.local.json`.
+
 ## Goal
 
 Make local Hive data authoritative for the UI while reliably synchronizing changes with Firestore whenever a user is authenticated and connectivity is available.
