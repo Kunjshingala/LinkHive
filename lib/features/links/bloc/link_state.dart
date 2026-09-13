@@ -29,6 +29,7 @@ class LinksLoaded extends LinkState {
   final String activePriority;
   final String searchQuery;
   final bool hasReachedMax;
+  final bool isLoadingMore;
   final int offset;
 
   /// User-created categories, kept in state so the filter row and add-link
@@ -42,12 +43,13 @@ class LinksLoaded extends LinkState {
     this.activePriority = 'All',
     this.searchQuery = '',
     this.hasReachedMax = false,
+    this.isLoadingMore = false,
     this.offset = 20,
     this.customCategories = const [],
   });
 
   bool get hasActiveFilter =>
-      searchQuery.trim().isNotEmpty || activeCategory != 'All' || activePriority != 'All';
+    searchQuery.trim().isNotEmpty || activeCategory != 'All' || activePriority != 'All';
 
   @override
   List<Object?> get props => [
@@ -56,6 +58,7 @@ class LinksLoaded extends LinkState {
     activePriority,
     searchQuery,
     hasReachedMax,
+    isLoadingMore,
     offset,
     customCategories,
   ];

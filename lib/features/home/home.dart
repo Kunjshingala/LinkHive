@@ -65,7 +65,11 @@ class _HomeScreenContentState extends State<_HomeScreenContent> {
   }
 
   void _onScroll() {
-    if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 200) {
+    final linkState = context.read<LinkBloc>().state;
+    if (linkState is LinksLoaded &&
+        !linkState.isLoadingMore &&
+        !linkState.hasReachedMax &&
+        _scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 200) {
       context.read<LinkBloc>().add(LinkLoadNextPageRequested());
     }
   }

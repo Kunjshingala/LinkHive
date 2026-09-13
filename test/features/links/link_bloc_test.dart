@@ -18,6 +18,7 @@ void main() {
     late StreamController<BoxEvent> boxStreamController;
 
     final testLink = LinkModel(id: '1', url: 'https://flutter.dev', title: 'Flutter', createdAt: 123456789);
+    final nextPageLink = LinkModel(id: '2', url: 'https://dart.dev', title: 'Dart', createdAt: 123456788);
     const testCategory = CategoryModel(id: 'cat1', name: 'Dev');
 
     setUp(() {
@@ -110,6 +111,39 @@ void main() {
           ),
         ).called(1);
       },
+    );
+
+    blocTest<LinkBloc, LinkState>(
+      'marks pagination as loading while fetching the next page',
+      build: () {
+        when(
+          () => mockRepository.queryLinks(
+            query: '',
+            category: 'All',
+            priority: 'All',
+            limit: 20,
+            offset: 1,
+          ),
+        ).thenReturn([nextPageLink]);
+        return LinkBloc(repository: mockRepository);
+      },
+      seed: () => LinksLoaded(links: [testLink], hasReachedMax: false, offset: 1, customCategories: const [testCategory]),
+      act: (bloc) => bloc.add(const LinkLoadNextPageRequested()),
+      expect: () => [
+        LinksLoaded(
+          links: [testLink],
+          hasReachedMax: false,
+          isLoadingMore: true,
+          offset: 1,
+          customCategories: const [testCategory],
+        ),
+        LinksLoaded(
+          links: [testLink, nextPageLink],
+          hasReachedMax: true,
+          offset: 2,
+          customCategories: const [testCategory],
+        ),
+      ],
     );
   });
 }

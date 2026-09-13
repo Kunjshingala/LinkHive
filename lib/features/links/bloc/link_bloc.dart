@@ -26,13 +26,17 @@ class LinkBloc extends Bloc<LinkEvent, LinkState> {
     return (events, mapper) => events.debounceTime(duration).switchMap(mapper);
   }
 
+  EventTransformer<T> _droppable<T>() {
+    return (events, mapper) => events.exhaustMap(mapper);
+  }
+
   /// Subscription to the Hive links box stream.
   /// Cancelled in [close] to avoid memory leaks.
   late final StreamSubscription<void> _boxSubscription;
 
   LinkBloc({required LinkRepository repository}) : _repository = repository, super(const LinkInitial()) {
     on<LinkLoadRequested>(_onLoadRequested);
-    on<LinkLoadNextPageRequested>(_onLoadNextPageRequested);
+    on<LinkLoadNextPageRequested>(_onLoadNextPageRequested, transformer: _droppable());
     on<LinkSearchChanged>(_onSearchChanged, transformer: _debounce(const Duration(milliseconds: 300)));
     on<LinkCategoryFilterChanged>(_onCategoryFilterChanged);
     on<LinkPriorityFilterChanged>(_onPriorityFilterChanged);
@@ -84,7 +88,10 @@ class LinkBloc extends Bloc<LinkEvent, LinkState> {
 
   Future<void> _onLoadNextPageRequested(LinkLoadNextPageRequested event, Emitter<LinkState> emit) async {
     final current = state;
-    if (current is! LinksLoaded || current.hasReachedMax) return;
+    if (current is! LinksLoaded || current.hasReachedMax || current.isLoadingMore) return;
+
+    final loadingState = current.copyWith(isLoadingMore: true);
+    emit(loadingState);
 
     try {
       final nextLinks = _repository.queryLinks(
@@ -96,11 +103,12 @@ class LinkBloc extends Bloc<LinkEvent, LinkState> {
       );
 
       nextLinks.isEmpty
-          ? emit(current.copyWith(hasReachedMax: true))
+          ? emit(loadingState.copyWith(hasReachedMax: true, isLoadingMore: false))
           : emit(
-              current.copyWith(
+              loadingState.copyWith(
                 links: List.of(current.links)..addAll(nextLinks),
                 hasReachedMax: nextLinks.length < _limit,
+                isLoadingMore: false,
                 offset: current.offset + nextLinks.length,
               ),
             );
@@ -326,6 +334,7 @@ extension on LinksLoaded {
     String? activePriority,
     String? searchQuery,
     bool? hasReachedMax,
+    bool? isLoadingMore,
     int? offset,
     List<CategoryModel>? customCategories,
   }) {
@@ -335,6 +344,7 @@ extension on LinksLoaded {
       activePriority: activePriority ?? this.activePriority,
       searchQuery: searchQuery ?? this.searchQuery,
       hasReachedMax: hasReachedMax ?? this.hasReachedMax,
+      isLoadingMore: isLoadingMore ?? this.isLoadingMore,
       offset: offset ?? this.offset,
       customCategories: customCategories ?? this.customCategories,
     );
