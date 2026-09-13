@@ -116,6 +116,7 @@ class _HomeScreenContentState extends State<_HomeScreenContent> {
                       }
 
                       final links = state is LinksLoaded ? state.links : [];
+                      final searchQuery = state is LinksLoaded ? state.searchQuery : '';
 
                       if (links.isEmpty) {
                         return _buildEmptyState(context, state is LinksLoaded && state.hasActiveFilter);
@@ -158,6 +159,7 @@ class _HomeScreenContentState extends State<_HomeScreenContent> {
                             return _NeoLinkCardWrapper(
                               child: LinkCard(
                                 link: links[index],
+                                searchQuery: searchQuery,
                                 onEdit: () => context.push('/editLink', extra: links[index]),
                                 onDelete: () => context.read<LinkBloc>().add(LinkDeleteRequested(links[index].id)),
                               ),

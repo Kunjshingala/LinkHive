@@ -26,7 +26,7 @@ void main() {
       );
     });
 
-    Widget buildTestWidget(LinkModel link) {
+    Widget buildTestWidget(LinkModel link, {String searchQuery = ''}) {
       return MaterialApp(
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
@@ -35,6 +35,7 @@ void main() {
         home: Scaffold(
           body: LinkCard(
             link: link,
+            searchQuery: searchQuery,
             onDelete: () {},
             onEdit: () {},
           ),
@@ -65,6 +66,18 @@ void main() {
 
         // Verify cloud_off_rounded icon is present
         expect(find.byIcon(Icons.cloud_off_rounded), findsOneWidget);
+      });
+    });
+
+    testWidgets('highlights matching title and host text', (tester) async {
+      await mockNetworkImages(() async {
+        await tester.pumpWidget(buildTestWidget(testLink, searchQuery: 'flutter'));
+
+        final richTexts = tester.widgetList<RichText>(find.byType(RichText));
+        final highlighted = richTexts.any(
+          (richText) => _containsHighlightedSpan(richText.text),
+        );
+        expect(highlighted, isTrue);
       });
     });
 
@@ -104,4 +117,9 @@ void main() {
       expect(editCalled, isFalse);
     });
   });
+}
+
+bool _containsHighlightedSpan(InlineSpan span) {
+  if (span.style?.backgroundColor != null) return true;
+  return span is TextSpan ? span.children?.any(_containsHighlightedSpan) ?? false : false;
 }

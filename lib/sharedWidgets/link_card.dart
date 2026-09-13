@@ -36,6 +36,7 @@ import 'priority_badge.dart';
 /// ```dart
 /// LinkCard(
 ///   link: myLink,
+///   searchQuery: 'flutter',
 ///   onEdit: () => context.push('/edit/${myLink.id}'),
 ///   onDelete: () => context.read<LinkBloc>().add(LinkDeleted(myLink.id)),
 /// )
@@ -55,7 +56,11 @@ class LinkCard extends StatelessWidget {
   /// Null hides the "Delete" menu item.
   final VoidCallback? onDelete;
 
-  const LinkCard({super.key, required this.link, this.onEdit, this.onDelete});
+  /// Current Home search query. Matching title and host text is highlighted
+  /// only when this value is non-empty.
+  final String searchQuery;
+
+  const LinkCard({super.key, required this.link, this.searchQuery = '', this.onEdit, this.onDelete});
 
   @override
   Widget build(BuildContext context) {
@@ -81,7 +86,7 @@ class LinkCard extends StatelessWidget {
               children: [
                 _FaviconAvatar(link: link),
                 SizedBox(width: AppSpacing.md - 4),
-                Expanded(child: _LinkContent(link: link)),
+                Expanded(child: _LinkContent(link: link, searchQuery: searchQuery)),
                 _MoreMenu(link: link, onEdit: onEdit, onDelete: onDelete),
               ],
             ),
@@ -187,7 +192,9 @@ class _LetterAvatar extends StatelessWidget {
 /// The central content column of the card: title, host URL, and the tags row.
 class _LinkContent extends StatelessWidget {
   final LinkModel link;
-  const _LinkContent({required this.link});
+  final String searchQuery;
+
+  const _LinkContent({required this.link, required this.searchQuery});
 
   @override
   Widget build(BuildContext context) {
@@ -198,11 +205,15 @@ class _LinkContent extends StatelessWidget {
       children: [
         // Title: shows link.title if available, otherwise falls back to the
         // raw URL so the card always has a readable label.
-        Text(
-          link.title.isNotEmpty ? link.title : link.url,
-          style: Theme.of(
+        Text.rich(
+          _highlightText(
+            link.title.isNotEmpty ? link.title : link.url,
+            searchQuery,
+            Theme.of(
+              context,
+            ).textTheme.bodyMedium!.copyWith(fontWeight: FontWeight.w500, color: Theme.of(context).colorScheme.onSurface),
             context,
-          ).textTheme.bodyMedium!.copyWith(fontWeight: FontWeight.w500, color: Theme.of(context).colorScheme.onSurface),
+          ),
           maxLines: 2,
           overflow: TextOverflow.ellipsis,
         ),
@@ -212,9 +223,13 @@ class _LinkContent extends StatelessWidget {
         Row(
           children: [
             Flexible(
-              child: Text(
-                host,
-                style: Theme.of(context).textTheme.labelLarge!.copyWith(color: Theme.of(context).colorScheme.primary),
+              child: Text.rich(
+                _highlightText(
+                  host,
+                  searchQuery,
+                  Theme.of(context).textTheme.labelLarge!.copyWith(color: Theme.of(context).colorScheme.primary),
+                  context,
+                ),
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
               ),
@@ -399,4 +414,38 @@ class _MoreMenu extends StatelessWidget {
       ),
     );
   }
+}
+
+/// Builds text spans for search highlighting without changing the source text.
+///
+/// Matching is case-insensitive and uses simple index lookup instead of a
+/// regular expression. An empty query returns one normal span, so cards that
+/// are not displayed through search retain their original appearance.
+TextSpan _highlightText(String text, String query, TextStyle baseStyle, BuildContext context) {
+  final normalizedQuery = query.trim().toLowerCase();
+  if (normalizedQuery.isEmpty) return TextSpan(text: text, style: baseStyle);
+
+  final lowerText = text.toLowerCase();
+  final highlightStyle = baseStyle.copyWith(
+    backgroundColor: Theme.of(context).colorScheme.secondaryContainer,
+    color: Theme.of(context).colorScheme.onSecondaryContainer,
+  );
+  final spans = <TextSpan>[];
+  var searchStart = 0;
+
+  while (searchStart < text.length) {
+    final matchStart = lowerText.indexOf(normalizedQuery, searchStart);
+    if (matchStart == -1) {
+      spans.add(TextSpan(text: text.substring(searchStart), style: baseStyle));
+      break;
+    }
+    if (matchStart > searchStart) {
+      spans.add(TextSpan(text: text.substring(searchStart, matchStart), style: baseStyle));
+    }
+    final matchEnd = matchStart + normalizedQuery.length;
+    spans.add(TextSpan(text: text.substring(matchStart, matchEnd), style: highlightStyle));
+    searchStart = matchEnd;
+  }
+
+  return TextSpan(children: spans);
 }
