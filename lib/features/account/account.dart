@@ -14,6 +14,10 @@ import '../../core/utils/locator.dart';
 import '../../core/utils/navigation/route.dart';
 import '../../core/utils/utils.dart';
 import '../../features/links/repository/link_repository.dart';
+import '../../features/sync/bloc/sync_status_bloc.dart';
+import '../../features/sync/bloc/sync_status_state.dart';
+import '../../core/services/sync_engine.dart';
+import '../../core/services/sync_status.dart';
 import '../../l10n/localization/app_localizations.dart';
 import '../../sharedWidgets/common_app_bar.dart';
 import '../../sharedWidgets/confirmation_bottom_sheet.dart';
@@ -29,11 +33,18 @@ class AccountScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (context) => AccountBloc(
-        authService: locator<AuthService>(),
-        linkRepository: locator<LinkRepository>(),
-      ),
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(
+          create: (context) => AccountBloc(
+            authService: locator<AuthService>(),
+            linkRepository: locator<LinkRepository>(),
+          ),
+        ),
+        BlocProvider(
+          create: (_) => SyncStatusBloc(syncEngine: locator<SyncEngine>()),
+        ),
+      ],
       child: const _AccountScreenContent(),
     );
   }
@@ -80,6 +91,8 @@ class _AccountScreenContent extends StatelessWidget {
                 // ─── Stats Row ────────────────────────────────────────
                 _StatsRow(state: state),
                 SizedBox(height: AppSpacing.xl),
+                const _SyncStatusCard(),
+                SizedBox(height: AppSpacing.xl),
 
                 // ─── Settings Section ─────────────────────────────────
                 Text(
@@ -90,6 +103,49 @@ class _AccountScreenContent extends StatelessWidget {
                 _SettingsList(state: state),
               ],
             ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _SyncStatusCard extends StatelessWidget {
+  const _SyncStatusCard();
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocBuilder<SyncStatusBloc, SyncStatusState>(
+      builder: (context, state) {
+        final (label, icon) = switch (state.status) {
+          SyncStatus.idle => ('Ready to sync', Icons.cloud_done_rounded),
+          SyncStatus.syncing => ('Syncing…', Icons.sync_rounded),
+          SyncStatus.failed => (
+            'Sync failed — retry later',
+            Icons.cloud_off_rounded,
+          ),
+          SyncStatus.conflict => (
+            'Conflicts need attention',
+            Icons.warning_amber_rounded,
+          ),
+        };
+        return Container(
+          width: double.infinity,
+          padding: EdgeInsets.all(AppSpacing.md),
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.surface,
+            border: Border.all(
+              color: Theme.of(context).colorScheme.outline,
+              width: 2,
+            ),
+            borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+          ),
+          child: Row(
+            children: [
+              Icon(icon),
+              SizedBox(width: AppSpacing.sm),
+              Text(label, style: Theme.of(context).textTheme.titleSmall),
+            ],
           ),
         );
       },

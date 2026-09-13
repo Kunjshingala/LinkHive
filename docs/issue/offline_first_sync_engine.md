@@ -25,7 +25,7 @@ This section is the handoff record for continuing the refactor across sessions.
 ### Current phase
 
 - Phase 4 — conflict resolution and observability: `81e8cfe`
-  - Current uncommitted work adds keep-local, keep-cloud, and explicit merged-link resolution APIs.
+  - Added keep-local, keep-cloud, and explicit merged-link resolution APIs.
   - `SyncEngine` now exposes `SyncStatus` events: `idle`, `syncing`, `failed`, and `conflict`.
 
 - Phase 5 infrastructure hardening: `44af8d3`
@@ -36,10 +36,12 @@ This section is the handoff record for continuing the refactor across sessions.
   - Added a Bloc-backed conflict screen with Keep local and Keep cloud actions.
   - Kept explicit merged-link resolution available through the repository API.
 
+ - Phase 7 — user-facing sync status is ready in the next commit.
+  - Added a Bloc-backed Account status card driven by `SyncEngine.statusStream`.
+  - Displays idle, syncing, failed, and conflict states.
+
 ### Next work
 
-- Add user-facing sync status presentation.
-- Add process-restart recovery for operations left in `processing` state.
 - Add cursor/overlap-window pull strategy and broader two-device/delete-edit tests.
 - Add metrics and structured sync failure reporting.
 
