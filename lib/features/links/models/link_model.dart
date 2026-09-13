@@ -185,6 +185,14 @@ class LinkModel {
     };
   }
 
+  /// Serializes the complete local snapshot used by a sync operation.
+  Map<String, dynamic> toSyncPayload() => {
+    ...toFirestore(),
+    'id': id,
+    'syncedAt': syncedAt,
+    'isSynced': isSynced,
+  };
+
   /// Deserializes a Firestore document snapshot into a [LinkModel].
   ///
   /// [id] is the Firestore document ID (same as [LinkModel.id]).
@@ -214,11 +222,15 @@ class LinkModel {
       title: data[FirebaseConstants.linkTitle] as String? ?? '',
       description: data[FirebaseConstants.linkDescription] as String? ?? '',
       image: data[FirebaseConstants.linkImage] as String? ?? '',
-      categories: List<String>.from(data[FirebaseConstants.linkCategories] as List? ?? []),
+      categories: List<String>.from(
+        data[FirebaseConstants.linkCategories] as List? ?? [],
+      ),
       priority: data[FirebaseConstants.linkPriority] as String? ?? 'Normal',
       // Guard against missing createdAt (e.g. data created before the field
       // was added) by falling back to the current time. This should be rare.
-      createdAt: data[FirebaseConstants.linkCreatedAt] as int? ?? DateTime.now().toUtc().millisecondsSinceEpoch,
+      createdAt:
+          data[FirebaseConstants.linkCreatedAt] as int? ??
+          DateTime.now().toUtc().millisecondsSinceEpoch,
       syncedAt: syncedAtMs,
       isSynced: true, // All links that come from Firestore are already synced.
     );

@@ -7,6 +7,8 @@ class HiveConstants {
   static const String baseLinksBox = 'base_links_box';
   static const String conflictLinksBox = 'conflict_links_box';
   static const String categoriesBox = 'categories_box';
+  static const String syncOperationsBox = 'sync_operations_box';
+  static const String syncTombstonesBox = 'sync_tombstones_box';
 
   // Settings Keys
   static const String themeKey = 'theme_mode';

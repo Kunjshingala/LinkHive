@@ -51,6 +51,9 @@ class CategoryModel {
   /// schema as a single source of truth and prevent typos.
   Map<String, dynamic> toFirestore() => {FirebaseConstants.categoryName: name};
 
+  /// Serializes the complete local snapshot used by a sync operation.
+  Map<String, dynamic> toSyncPayload() => {'id': id, ...toFirestore()};
+
   /// Deserializes a Firestore document snapshot into a [CategoryModel].
   ///
   /// [id] is the Firestore document ID (passed in separately, not read from
@@ -60,7 +63,10 @@ class CategoryModel {
   /// Defensively defaults [name] to an empty string if the Firestore field
   /// is missing or of an unexpected type.
   factory CategoryModel.fromFirestore(String id, Map<String, dynamic> data) {
-    return CategoryModel(id: id, name: data[FirebaseConstants.categoryName] as String? ?? '');
+    return CategoryModel(
+      id: id,
+      name: data[FirebaseConstants.categoryName] as String? ?? '',
+    );
   }
 
   @override
