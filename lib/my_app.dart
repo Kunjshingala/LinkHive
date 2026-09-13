@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'core/localization/locale_cubit.dart';
 import 'core/services/receive_shared_intent.dart';
+import 'core/services/sync_service.dart';
 import 'core/theme/app_theme.dart';
 import 'core/theme/theme_cubit.dart';
 import 'core/utils/hive_helper.dart';
@@ -20,20 +21,29 @@ class MyApp extends StatefulWidget {
   State<MyApp> createState() => _MyAppState();
 }
 
-class _MyAppState extends State<MyApp> {
+class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   ReceiveSharedIntent? _receiveSharedIntent;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     // Initialize the service once from the locator
     _receiveSharedIntent ??= locator<ReceiveSharedIntent>();
     _receiveSharedIntent?.initialize();
   }
 
   @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      locator<SyncService>().requestSync(pull: true);
+    }
+  }
+
+  @override
   void dispose() {
     _receiveSharedIntent?.dispose();
+    WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
 
@@ -41,8 +51,12 @@ class _MyAppState extends State<MyApp> {
   Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [
-        BlocProvider(create: (_) => LocaleCubit(hiveHelper: locator<HiveHelper>())),
-        BlocProvider(create: (_) => ThemeCubit(hiveHelper: locator<HiveHelper>())),
+        BlocProvider(
+          create: (_) => LocaleCubit(hiveHelper: locator<HiveHelper>()),
+        ),
+        BlocProvider(
+          create: (_) => ThemeCubit(hiveHelper: locator<HiveHelper>()),
+        ),
       ],
       child: BlocBuilder<LocaleCubit, Locale>(
         builder: (context, locale) {
@@ -66,7 +80,8 @@ class _MyAppState extends State<MyApp> {
                     data: mediaQuery.copyWith(textScaler: TextScaler.noScaling),
                     child: GestureDetector(
                       behavior: HitTestBehavior.translucent,
-                      onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
+                      onTap: () =>
+                          FocusManager.instance.primaryFocus?.unfocus(),
                       child: child ?? const SizedBox.shrink(),
                     ),
                   );

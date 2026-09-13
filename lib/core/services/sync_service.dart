@@ -16,6 +16,7 @@ class SyncService {
   final SyncEngine _syncEngine;
   StreamSubscription<InternetStatus>? _subscription;
   StreamSubscription<User?>? _authSubscription;
+  Timer? _periodicTimer;
   bool _started = false;
 
   SyncService({required LinkRepository linkRepository, SyncEngine? syncEngine})
@@ -40,11 +41,18 @@ class SyncService {
         await _syncEngine.requestSync();
       }
     });
+    _periodicTimer = Timer.periodic(const Duration(minutes: 5), (_) {
+      requestSync();
+    });
   }
+
+  Future<void> requestSync({bool pull = false}) =>
+      _syncEngine.requestSync(pull: pull);
 
   void dispose() {
     _subscription?.cancel();
     _authSubscription?.cancel();
+    _periodicTimer?.cancel();
     _syncEngine.setCloudWorkEnabled(false);
     _syncEngine.dispose();
   }

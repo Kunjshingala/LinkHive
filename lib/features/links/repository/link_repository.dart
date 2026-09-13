@@ -203,7 +203,8 @@ class LinkRepository {
             .where(
               (operation) =>
                   (operation.state == SyncOperation.pending ||
-                      operation.state == SyncOperation.failed) &&
+                      operation.state == SyncOperation.failed ||
+                      operation.state == SyncOperation.processing) &&
                   operation.nextAttemptAt <= now,
             )
             .toList()

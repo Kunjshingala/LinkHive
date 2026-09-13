@@ -6,6 +6,7 @@ import '../../core/constants/app_enums.dart';
 import '../../core/extensions/context_extension.dart';
 import '../../core/localization/locale_cubit.dart';
 import '../../core/services/auth_service.dart';
+import '../../core/services/sync_service.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/theme/theme_cubit.dart';
@@ -29,7 +30,10 @@ class AccountScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (context) => AccountBloc(authService: locator<AuthService>(), linkRepository: locator<LinkRepository>()),
+      create: (context) => AccountBloc(
+        authService: locator<AuthService>(),
+        linkRepository: locator<LinkRepository>(),
+      ),
       child: const _AccountScreenContent(),
     );
   }
@@ -53,7 +57,11 @@ class _AccountScreenContent extends StatelessWidget {
         if (state is AccountLoading) {
           return Scaffold(
             backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-            body: Center(child: CircularProgressIndicator(color: Theme.of(context).colorScheme.primary)),
+            body: Center(
+              child: CircularProgressIndicator(
+                color: Theme.of(context).colorScheme.primary,
+              ),
+            ),
           );
         }
 
@@ -74,7 +82,10 @@ class _AccountScreenContent extends StatelessWidget {
                 SizedBox(height: AppSpacing.xl),
 
                 // ─── Settings Section ─────────────────────────────────
-                Text(context.l10n.accountSettings, style: Theme.of(context).textTheme.titleLarge!),
+                Text(
+                  context.l10n.accountSettings,
+                  style: Theme.of(context).textTheme.titleLarge!,
+                ),
                 SizedBox(height: AppSpacing.md),
                 _SettingsList(state: state),
               ],
@@ -110,7 +121,10 @@ class _ProfileHeader extends StatelessWidget {
               decoration: BoxDecoration(
                 color: AppColors.shadowMint,
                 borderRadius: BorderRadius.circular(AppSpacing.radiusXl),
-                border: Border.all(color: Theme.of(context).colorScheme.outline, width: 2),
+                border: Border.all(
+                  color: Theme.of(context).colorScheme.outline,
+                  width: 2,
+                ),
               ),
             ),
           ),
@@ -121,7 +135,10 @@ class _ProfileHeader extends StatelessWidget {
           decoration: BoxDecoration(
             color: Theme.of(context).colorScheme.surface,
             borderRadius: BorderRadius.circular(AppSpacing.radiusXl),
-            border: Border.all(color: Theme.of(context).colorScheme.outline, width: 2),
+            border: Border.all(
+              color: Theme.of(context).colorScheme.outline,
+              width: 2,
+            ),
           ),
           child: Row(
             children: [
@@ -132,14 +149,17 @@ class _ProfileHeader extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: AppColors.accentBlue,
                   shape: BoxShape.circle,
-                  border: Border.all(color: Theme.of(context).colorScheme.outline, width: 2),
+                  border: Border.all(
+                    color: Theme.of(context).colorScheme.outline,
+                    width: 2,
+                  ),
                 ),
                 alignment: Alignment.center,
                 child: Text(
                   initial,
-                  style: Theme.of(
-                    context,
-                  ).textTheme.displayLarge!.copyWith(color: Theme.of(context).colorScheme.onSurface),
+                  style: Theme.of(context).textTheme.displayLarge!.copyWith(
+                    color: Theme.of(context).colorScheme.onSurface,
+                  ),
                 ),
               ),
               SizedBox(width: AppSpacing.lg),
@@ -147,7 +167,10 @@ class _ProfileHeader extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(displayName, style: Theme.of(context).textTheme.titleLarge!),
+                    Text(
+                      displayName,
+                      style: Theme.of(context).textTheme.titleLarge!,
+                    ),
                     SizedBox(height: AppSpacing.xs),
                     Text(email, style: Theme.of(context).textTheme.bodySmall!),
                   ],
@@ -205,7 +228,11 @@ class _StatsRow extends StatelessWidget {
     return Row(
       children: [
         Expanded(
-          child: _StatCard(label: context.l10n.navLinks, value: total.toString(), shadowColor: AppColors.shadowSky),
+          child: _StatCard(
+            label: context.l10n.navLinks,
+            value: total.toString(),
+            shadowColor: AppColors.shadowSky,
+          ),
         ),
         SizedBox(width: AppSpacing.md),
         Expanded(
@@ -227,7 +254,12 @@ class _StatCard extends StatelessWidget {
   final Color shadowColor;
   final bool isSmallValue;
 
-  const _StatCard({required this.label, required this.value, required this.shadowColor, this.isSmallValue = false});
+  const _StatCard({
+    required this.label,
+    required this.value,
+    required this.shadowColor,
+    this.isSmallValue = false,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -240,7 +272,10 @@ class _StatCard extends StatelessWidget {
               decoration: BoxDecoration(
                 color: shadowColor,
                 borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-                border: Border.all(color: Theme.of(context).colorScheme.outline, width: 2),
+                border: Border.all(
+                  color: Theme.of(context).colorScheme.outline,
+                  width: 2,
+                ),
               ),
             ),
           ),
@@ -251,7 +286,10 @@ class _StatCard extends StatelessWidget {
           decoration: BoxDecoration(
             color: Theme.of(context).colorScheme.surface,
             borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-            border: Border.all(color: Theme.of(context).colorScheme.outline, width: 2),
+            border: Border.all(
+              color: Theme.of(context).colorScheme.outline,
+              width: 2,
+            ),
           ),
           child: Column(
             children: [
@@ -270,7 +308,11 @@ class _StatCard extends StatelessWidget {
                 ),
               ),
               SizedBox(height: AppSpacing.xs),
-              Text(label, style: Theme.of(context).textTheme.labelLarge!, textAlign: TextAlign.center),
+              Text(
+                label,
+                style: Theme.of(context).textTheme.labelLarge!,
+                textAlign: TextAlign.center,
+              ),
             ],
           ),
         ),
@@ -291,21 +333,55 @@ class _SettingsList extends StatelessWidget {
 
     final currentTheme = context.watch<ThemeCubit>().state;
     String themeSubtitle = context.l10n.accountThemeSystem;
-    if (currentTheme == ThemeMode.light) themeSubtitle = context.l10n.accountThemeLight;
-    if (currentTheme == ThemeMode.dark) themeSubtitle = context.l10n.accountThemeDark;
+    if (currentTheme == ThemeMode.light) {
+      themeSubtitle = context.l10n.accountThemeLight;
+    }
+    if (currentTheme == ThemeMode.dark) {
+      themeSubtitle = context.l10n.accountThemeDark;
+    }
 
     final currentLocale = context.watch<LocaleCubit>().state.languageCode;
 
     final items = [
-      (Icons.language_rounded, context.l10n.accountLanguage, currentLocale, AccountItem.language),
-      (Icons.palette_outlined, context.l10n.accountTheme, themeSubtitle, AccountItem.theme),
-      (Icons.sync_rounded, context.l10n.accountSyncData, '', AccountItem.syncData),
-      (Icons.delete_forever_rounded, context.l10n.accountDeleteLocalData, '', AccountItem.deleteLocalData),
+      (
+        Icons.language_rounded,
+        context.l10n.accountLanguage,
+        currentLocale,
+        AccountItem.language,
+      ),
+      (
+        Icons.palette_outlined,
+        context.l10n.accountTheme,
+        themeSubtitle,
+        AccountItem.theme,
+      ),
+      (
+        Icons.sync_rounded,
+        context.l10n.accountSyncData,
+        '',
+        AccountItem.syncData,
+      ),
+      (
+        Icons.delete_forever_rounded,
+        context.l10n.accountDeleteLocalData,
+        '',
+        AccountItem.deleteLocalData,
+      ),
       // (Icons.help_outline_rounded, context.l10n.accountHelpFeedback, '', AccountItem.helpFeedback),
       if (isAuthenticated)
-        (Icons.logout_rounded, context.l10n.accountSignOut, '', AccountItem.auth)
+        (
+          Icons.logout_rounded,
+          context.l10n.accountSignOut,
+          '',
+          AccountItem.auth,
+        )
       else
-        (Icons.login_rounded, context.l10n.accountSignInPromo, '', AccountItem.auth),
+        (
+          Icons.login_rounded,
+          context.l10n.accountSignInPromo,
+          '',
+          AccountItem.auth,
+        ),
     ];
 
     return Stack(
@@ -317,7 +393,10 @@ class _SettingsList extends StatelessWidget {
               decoration: BoxDecoration(
                 color: AppColors.shadowLemon,
                 borderRadius: BorderRadius.circular(AppSpacing.radiusXl),
-                border: Border.all(color: Theme.of(context).colorScheme.outline, width: 2),
+                border: Border.all(
+                  color: Theme.of(context).colorScheme.outline,
+                  width: 2,
+                ),
               ),
             ),
           ),
@@ -326,7 +405,10 @@ class _SettingsList extends StatelessWidget {
           decoration: BoxDecoration(
             color: Theme.of(context).colorScheme.surface,
             borderRadius: BorderRadius.circular(AppSpacing.radiusXl),
-            border: Border.all(color: Theme.of(context).colorScheme.outline, width: 2),
+            border: Border.all(
+              color: Theme.of(context).colorScheme.outline,
+              width: 2,
+            ),
           ),
           child: ListView.separated(
             shrinkWrap: true,
@@ -334,7 +416,9 @@ class _SettingsList extends StatelessWidget {
             itemCount: items.length,
             separatorBuilder: (context, i) => Divider(
               height: 1,
-              color: Theme.of(context).colorScheme.outline, // Thick black dividers inside the card
+              color: Theme.of(
+                context,
+              ).colorScheme.outline, // Thick black dividers inside the card
               thickness: 2,
             ),
             itemBuilder: (context, index) {
@@ -353,7 +437,10 @@ class _SettingsList extends StatelessWidget {
                   : Theme.of(context).colorScheme.onSurface;
 
               return ListTile(
-                contentPadding: EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.sm),
+                contentPadding: EdgeInsets.symmetric(
+                  horizontal: AppSpacing.md,
+                  vertical: AppSpacing.sm,
+                ),
                 leading: IgnorePointer(
                   child: NeoBrutalistButton(
                     icon: icon,
@@ -364,15 +451,31 @@ class _SettingsList extends StatelessWidget {
                     height: 36,
                   ),
                 ),
-                title: Text(label, style: Theme.of(context).textTheme.titleSmall!.copyWith(color: titleColor)),
+                title: Text(
+                  label,
+                  style: Theme.of(
+                    context,
+                  ).textTheme.titleSmall!.copyWith(color: titleColor),
+                ),
                 trailing: subtitle.isEmpty
-                    ? Icon(Icons.chevron_right_rounded, size: 24, color: Theme.of(context).colorScheme.onSurface)
+                    ? Icon(
+                        Icons.chevron_right_rounded,
+                        size: 24,
+                        color: Theme.of(context).colorScheme.onSurface,
+                      )
                     : Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Text(subtitle, style: Theme.of(context).textTheme.labelLarge!),
+                          Text(
+                            subtitle,
+                            style: Theme.of(context).textTheme.labelLarge!,
+                          ),
                           SizedBox(width: AppSpacing.xs),
-                          Icon(Icons.chevron_right_rounded, size: 24, color: Theme.of(context).colorScheme.onSurface),
+                          Icon(
+                            Icons.chevron_right_rounded,
+                            size: 24,
+                            color: Theme.of(context).colorScheme.onSurface,
+                          ),
                         ],
                       ),
                 onTap: () => _onAccountItemTap(context, item, isAuthenticated),
@@ -384,7 +487,11 @@ class _SettingsList extends StatelessWidget {
     );
   }
 
-  Future<void> _onAccountItemTap(BuildContext context, AccountItem item, bool isAuthenticated) async {
+  Future<void> _onAccountItemTap(
+    BuildContext context,
+    AccountItem item,
+    bool isAuthenticated,
+  ) async {
     switch (item) {
       case AccountItem.language:
         final cubit = context.read<LocaleCubit>();
@@ -395,7 +502,10 @@ class _SettingsList extends StatelessWidget {
           titleIcon: Icons.language_rounded,
           selectedValue: currentLocale,
           options: AppLocalizations.supportedLocales.map((locale) {
-            return BottomSheetOption(label: _getLanguageName(context, locale.languageCode), value: locale.languageCode);
+            return BottomSheetOption(
+              label: _getLanguageName(context, locale.languageCode),
+              value: locale.languageCode,
+            );
           }).toList(),
         );
         if (newLocale != null) {
@@ -413,9 +523,18 @@ class _SettingsList extends StatelessWidget {
           titleIcon: Icons.palette_outlined,
           selectedValue: currentTheme,
           options: [
-            BottomSheetOption(label: context.l10n.accountThemeSystem, value: ThemeMode.system),
-            BottomSheetOption(label: context.l10n.accountThemeLight, value: ThemeMode.light),
-            BottomSheetOption(label: context.l10n.accountThemeDark, value: ThemeMode.dark),
+            BottomSheetOption(
+              label: context.l10n.accountThemeSystem,
+              value: ThemeMode.system,
+            ),
+            BottomSheetOption(
+              label: context.l10n.accountThemeLight,
+              value: ThemeMode.light,
+            ),
+            BottomSheetOption(
+              label: context.l10n.accountThemeDark,
+              value: ThemeMode.dark,
+            ),
           ],
         );
         if (newTheme != null) {
@@ -431,8 +550,7 @@ class _SettingsList extends StatelessWidget {
         }
         final l10n = context.l10n;
         showSnackBar(l10n.accountSyncingMsg);
-        await locator<LinkRepository>().syncPendingLinks();
-        await locator<LinkRepository>().pullFromCloud();
+        await locator<SyncService>().requestSync(pull: true);
         if (context.mounted) {
           context.read<AccountBloc>().add(const AccountLoadRequested());
         }
@@ -479,11 +597,11 @@ class _SettingsList extends StatelessWidget {
           );
           if (result != null && result.$1 && context.mounted) {
             context.read<AccountBloc>().add(
-                  AccountSignOutRequested(
-                    clearLocal: result.$2,
-                    clearRemote: result.$3,
-                  ),
-                );
+              AccountSignOutRequested(
+                clearLocal: result.$2,
+                clearRemote: result.$3,
+              ),
+            );
           }
         } else {
           // Route the user to the dedicated auth screen so they can choose the sign-in method.

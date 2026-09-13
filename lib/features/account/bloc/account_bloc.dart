@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -14,10 +12,12 @@ class AccountBloc extends Bloc<AccountEvent, AccountState> {
   final AuthService _authService;
   final LinkRepository _linkRepository;
 
-  AccountBloc({required AuthService authService, required LinkRepository linkRepository})
-    : _authService = authService,
-      _linkRepository = linkRepository,
-      super(const AccountInitial()) {
+  AccountBloc({
+    required AuthService authService,
+    required LinkRepository linkRepository,
+  }) : _authService = authService,
+       _linkRepository = linkRepository,
+       super(const AccountInitial()) {
     on<AccountLoadRequested>(_onLoad);
     on<AccountSignOutRequested>(_onSignOutRequested);
     on<AccountGoogleSignInRequested>(_onGoogleSignIn);
@@ -31,14 +31,26 @@ class AccountBloc extends Bloc<AccountEvent, AccountState> {
     final (total, synced, unsynced) = _linkRepository.getLinkStats();
 
     if (user != null) {
-      emit(AccountAuthenticated(user, totalLinks: total, syncedLinks: synced, unsyncedLinks: unsynced));
+      emit(
+        AccountAuthenticated(
+          user,
+          totalLinks: total,
+          syncedLinks: synced,
+          unsyncedLinks: unsynced,
+        ),
+      );
     } else {
       // Guests are always "local only" regardless of past sync flags.
-      emit(AccountGuest(totalLinks: total, syncedLinks: 0, unsyncedLinks: total));
+      emit(
+        AccountGuest(totalLinks: total, syncedLinks: 0, unsyncedLinks: total),
+      );
     }
   }
 
-  Future<void> _onSignOutRequested(AccountSignOutRequested event, Emitter<AccountState> emit) async {
+  Future<void> _onSignOutRequested(
+    AccountSignOutRequested event,
+    Emitter<AccountState> emit,
+  ) async {
     emit(const AccountLoading());
     try {
       if (event.clearRemote) {
@@ -54,7 +66,10 @@ class AccountBloc extends Bloc<AccountEvent, AccountState> {
     }
   }
 
-  Future<void> _onGoogleSignIn(AccountGoogleSignInRequested event, Emitter<AccountState> emit) async {
+  Future<void> _onGoogleSignIn(
+    AccountGoogleSignInRequested event,
+    Emitter<AccountState> emit,
+  ) async {
     emit(const AccountLoading());
     try {
       await _authService.signInWithGoogle();
@@ -62,15 +77,21 @@ class AccountBloc extends Bloc<AccountEvent, AccountState> {
 
       // Sync any links the user saved while browsing as a guest.
       // We fire-and-forget here — failures are logged inside syncPendingLinks.
-      if (user != null) {
-        unawaited(_linkRepository.syncPendingLinks());
-      }
 
       final (total, synced, unsynced) = _linkRepository.getLinkStats();
       if (user != null) {
-        emit(AccountAuthenticated(user, totalLinks: total, syncedLinks: synced, unsyncedLinks: unsynced));
+        emit(
+          AccountAuthenticated(
+            user,
+            totalLinks: total,
+            syncedLinks: synced,
+            unsyncedLinks: unsynced,
+          ),
+        );
       } else {
-        emit(AccountGuest(totalLinks: total, syncedLinks: 0, unsyncedLinks: total));
+        emit(
+          AccountGuest(totalLinks: total, syncedLinks: 0, unsyncedLinks: total),
+        );
       }
     } catch (e) {
       printLog(tag: 'AccountBloc', msg: 'Google sign-in error: $e');

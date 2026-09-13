@@ -24,10 +24,14 @@ This section is the handoff record for continuing the refactor across sessions.
 
 ### Current phase
 
-- Phase 4 — conflict resolution and observability is in progress.
+- Phase 4 — conflict resolution and observability: `81e8cfe`
   - Current uncommitted work adds keep-local, keep-cloud, and explicit merged-link resolution APIs.
   - `SyncEngine` now exposes `SyncStatus` events: `idle`, `syncing`, `failed`, and `conflict`.
-  - Remaining before commit: analyzer/tests, documentation verification, and a separate Phase 4 commit.
+
+- Phase 5 infrastructure hardening — completed in the next commit.
+  - Recover operations left in `processing` on the next sync attempt.
+  - Add app-resume and periodic foreground sync triggers.
+  - Route Account manual sync through the serialized engine.
 
 ### Next work
 
