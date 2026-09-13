@@ -451,6 +451,56 @@ class LinkRepository {
       .where((conflict) => conflict.status == ConflictRecord.unresolved)
       .toList();
 
+  /// Keeps the local version and queues it as the new cloud version.
+  Future<void> resolveConflictKeepLocal(String conflictId) async {
+    final conflict = _conflictRecordsBox.get(conflictId);
+    if (conflict == null) return;
+    await resolveConflictWithLink(
+      conflictId,
+      _linkFromPayload(conflict.localVersion),
+    );
+  }
+
+  /// Keeps the cloud version, including accepting a remote deletion.
+  Future<void> resolveConflictKeepCloud(String conflictId) async {
+    final conflict = _conflictRecordsBox.get(conflictId);
+    if (conflict == null) return;
+
+    await _removeOperationsFor(SyncOperation.linkEntity, conflict.linkId);
+    final cloudVersion = conflict.cloudVersion;
+    if (cloudVersion == null) {
+      await _linksBox.delete(conflict.linkId);
+      await _baseLinksBox.delete(conflict.linkId);
+      await _conflictLinksBox.delete(conflict.linkId);
+      await _syncTombstonesBox.put(
+        '${SyncOperation.linkEntity}:${conflict.linkId}',
+        SyncTombstone(
+          entityType: SyncOperation.linkEntity,
+          entityId: conflict.linkId,
+          deletedAt: DateTime.now().toUtc().millisecondsSinceEpoch,
+        ),
+      );
+    } else {
+      final cloudLink = _linkFromPayload(cloudVersion).copyWith(isSynced: true);
+      await _linksBox.put(cloudLink.id, cloudLink);
+      await _baseLinksBox.put(cloudLink.id, cloudLink);
+      await _conflictLinksBox.delete(conflict.linkId);
+    }
+    await _conflictRecordsBox.delete(conflictId);
+  }
+
+  /// Saves an explicit user-selected merge and queues it for upload.
+  Future<void> resolveConflictWithLink(
+    String conflictId,
+    LinkModel resolvedLink,
+  ) async {
+    final conflict = _conflictRecordsBox.get(conflictId);
+    if (conflict == null) return;
+    await updateLink(resolvedLink);
+    await _conflictLinksBox.delete(conflict.linkId);
+    await _conflictRecordsBox.delete(conflictId);
+  }
+
   bool _hasPendingOperation(String entityType, String entityId) =>
       _syncOperationsBox.values.any(
         (operation) =>
@@ -460,6 +510,23 @@ class LinkRepository {
 
   bool _hasLocalTombstone(String entityType, String entityId) =>
       _syncTombstonesBox.containsKey('$entityType:$entityId');
+
+  LinkModel _linkFromPayload(Map<String, dynamic> payload) =>
+      LinkModel.fromFirestore(payload['id'] as String, payload);
+
+  Future<void> _removeOperationsFor(String entityType, String entityId) async {
+    final operationIds = _syncOperationsBox.values
+        .where(
+          (operation) =>
+              operation.entityType == entityType &&
+              operation.entityId == entityId,
+        )
+        .map((operation) => operation.operationId)
+        .toList();
+    for (final operationId in operationIds) {
+      await _syncOperationsBox.delete(operationId);
+    }
+  }
 
   Future<void> _saveConflict({
     required String linkId,

@@ -1,6 +1,9 @@
+import 'dart:async';
+
 import 'package:firebase_auth/firebase_auth.dart';
 
 import '../../features/links/repository/link_repository.dart';
+import 'sync_status.dart';
 
 /// Serializes cloud sync requests so only one push/pull run is active at once.
 class SyncEngine {
@@ -9,6 +12,9 @@ class SyncEngine {
 
   Future<void>? _activeRun;
   bool _cloudWorkEnabled = true;
+  final StreamController<SyncStatus> _statusController =
+      StreamController<SyncStatus>.broadcast();
+  SyncStatus _status = SyncStatus.idle;
 
   SyncEngine({
     required LinkRepository repository,
@@ -21,6 +27,10 @@ class SyncEngine {
   void setCloudWorkEnabled(bool enabled) {
     _cloudWorkEnabled = enabled;
   }
+
+  SyncStatus get status => _status;
+
+  Stream<SyncStatus> get statusStream => _statusController.stream;
 
   /// Requests a sync. Concurrent requests share the same in-flight future.
   Future<void> requestSync({bool pull = false}) {
@@ -43,7 +53,25 @@ class SyncEngine {
   }
 
   Future<void> _run({required bool pull}) async {
-    await _repository.syncPendingLinks();
-    if (pull) await _repository.pullFromCloud();
+    _setStatus(SyncStatus.syncing);
+    try {
+      await _repository.syncPendingLinks();
+      if (pull) await _repository.pullFromCloud();
+      _setStatus(
+        _repository.conflicts.isEmpty ? SyncStatus.idle : SyncStatus.conflict,
+      );
+    } catch (_) {
+      _setStatus(SyncStatus.failed);
+      rethrow;
+    }
+  }
+
+  void _setStatus(SyncStatus status) {
+    _status = status;
+    if (!_statusController.isClosed) _statusController.add(status);
+  }
+
+  Future<void> dispose() async {
+    await _statusController.close();
   }
 }

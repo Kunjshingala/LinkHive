@@ -46,5 +46,6 @@ class SyncService {
     _subscription?.cancel();
     _authSubscription?.cancel();
     _syncEngine.setCloudWorkEnabled(false);
+    _syncEngine.dispose();
   }
 }

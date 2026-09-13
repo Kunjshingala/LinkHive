@@ -3,6 +3,40 @@
 Status: Proposed
 Date: 2026-09-13
 
+## Implementation Progress
+
+This section is the handoff record for continuing the refactor across sessions.
+
+### Completed
+
+- Phase 1 — durable local foundation: `3bc8506`
+  - Added Hive outbox operations and durable tombstones.
+  - Made link/category writes local-first with operation coalescing.
+  - Added restart and repository persistence tests.
+- Phase 2 — serialized push engine: `05cfe14`
+  - Added single-flight `SyncEngine` and deterministic exponential backoff.
+  - Wired startup, auth-state, connectivity, and manual refresh triggers.
+  - Added engine and retry tests.
+- Phase 3 — pull reconciliation: `e83546d`
+  - Added push-then-pull sign-in/startup behavior.
+  - Added remote category tombstones and outbox-aware pull protection.
+  - Added persisted `ConflictRecord`s and pull/conflict tests.
+
+### Current phase
+
+- Phase 4 — conflict resolution and observability is in progress.
+  - Current uncommitted work adds keep-local, keep-cloud, and explicit merged-link resolution APIs.
+  - `SyncEngine` now exposes `SyncStatus` events: `idle`, `syncing`, `failed`, and `conflict`.
+  - Remaining before commit: analyzer/tests, documentation verification, and a separate Phase 4 commit.
+
+### Next work
+
+- Add conflict resolution UI and user-facing sync status.
+- Add app resume/foreground periodic triggers.
+- Add process-restart recovery for operations left in `processing` state.
+- Add cursor/overlap-window pull strategy and broader two-device/delete-edit tests.
+- Add metrics and structured sync failure reporting.
+
 ## Goal
 
 Make local Hive data authoritative for the UI while reliably synchronizing changes with Firestore whenever a user is authenticated and connectivity is available.

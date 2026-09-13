@@ -193,4 +193,43 @@ void main() {
       expect(repository.queryLinks(limit: 10), isEmpty);
     },
   );
+
+  test(
+    'keep-local conflict resolution queues the selected local version',
+    () async {
+      const base = LinkModel(
+        id: 'resolve-link',
+        url: 'https://example.com',
+        title: 'Base title',
+        createdAt: 1,
+        isSynced: true,
+      );
+      final local = base.copyWith(title: 'Local title', isSynced: false);
+      final cloud = base.copyWith(title: 'Cloud title', isSynced: true);
+      await Hive.box<LinkModel>(HiveConstants.linksBox).put(base.id, local);
+      await Hive.box<LinkModel>(HiveConstants.baseLinksBox).put(base.id, base);
+      when(
+        () => firebaseService.fetchLinks('user-1'),
+      ).thenAnswer((_) async => [cloud]);
+      when(
+        () => firebaseService.fetchDeletedLinks('user-1'),
+      ).thenAnswer((_) async => []);
+      when(
+        () => firebaseService.fetchCategories('user-1'),
+      ).thenAnswer((_) async => []);
+      when(
+        () => firebaseService.fetchDeletedCategories('user-1'),
+      ).thenAnswer((_) async => []);
+
+      await repository.pullFromCloud();
+      final conflict = repository.conflicts.single;
+      await repository.resolveConflictKeepLocal(conflict.conflictId);
+
+      expect(repository.conflicts, isEmpty);
+      expect(
+        repository.pendingSyncOperations.single.payload['title'],
+        'Local title',
+      );
+    },
+  );
 }
