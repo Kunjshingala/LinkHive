@@ -27,12 +27,12 @@ class SyncService {
 
     final currentUser = FirebaseAuth.instance.currentUser;
     _syncEngine.setCloudWorkEnabled(currentUser != null);
-    if (currentUser != null) _syncEngine.requestSync();
+    if (currentUser != null) _syncEngine.requestSync(pull: true);
 
     _authSubscription = FirebaseAuth.instance.authStateChanges().listen((user) {
       final isAuthenticated = user != null;
       _syncEngine.setCloudWorkEnabled(isAuthenticated);
-      if (isAuthenticated) _syncEngine.requestSync();
+      if (isAuthenticated) _syncEngine.requestSync(pull: true);
     });
 
     _subscription = InternetConnection().onStatusChange.listen((status) async {

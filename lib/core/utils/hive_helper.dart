@@ -2,6 +2,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 
 import '../../features/links/models/category_model.dart';
 import '../../features/links/models/link_model.dart';
+import '../models/conflict_record.dart';
 import '../models/sync_operation.dart';
 import '../models/sync_tombstone.dart';
 
@@ -18,6 +19,7 @@ class HiveHelper {
     Hive.registerAdapter(CategoryModelAdapter());
     Hive.registerAdapter(SyncOperationAdapter());
     Hive.registerAdapter(SyncTombstoneAdapter());
+    Hive.registerAdapter(ConflictRecordAdapter());
 
     // Open Boxes
     await Hive.openBox(HiveConstants.settingsBox);
@@ -27,6 +29,7 @@ class HiveHelper {
     await Hive.openBox<CategoryModel>(HiveConstants.categoriesBox);
     await Hive.openBox<SyncOperation>(HiveConstants.syncOperationsBox);
     await Hive.openBox<SyncTombstone>(HiveConstants.syncTombstonesBox);
+    await Hive.openBox<ConflictRecord>(HiveConstants.conflictRecordsBox);
   }
 
   // Box Getters
@@ -42,4 +45,6 @@ class HiveHelper {
       Hive.box<SyncOperation>(HiveConstants.syncOperationsBox);
   Box<SyncTombstone> get syncTombstonesBox =>
       Hive.box<SyncTombstone>(HiveConstants.syncTombstonesBox);
+  Box<ConflictRecord> get conflictRecordsBox =>
+      Hive.box<ConflictRecord>(HiveConstants.conflictRecordsBox);
 }

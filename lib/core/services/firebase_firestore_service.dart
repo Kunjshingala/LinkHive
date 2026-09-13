@@ -9,19 +9,32 @@ import '../constants/firebase_constants.dart';
 class FirebaseFirestoreService {
   final _db = FirebaseFirestore.instance;
 
-  CollectionReference<Map<String, dynamic>> _linksCol(String uid) =>
-      _db.collection(FirebaseConstants.usersCol).doc(uid).collection(FirebaseConstants.linksCol);
+  CollectionReference<Map<String, dynamic>> _linksCol(String uid) => _db
+      .collection(FirebaseConstants.usersCol)
+      .doc(uid)
+      .collection(FirebaseConstants.linksCol);
 
-  CollectionReference<Map<String, dynamic>> _categoriesCol(String uid) =>
-      _db.collection(FirebaseConstants.usersCol).doc(uid).collection(FirebaseConstants.categoriesCol);
+  CollectionReference<Map<String, dynamic>> _categoriesCol(String uid) => _db
+      .collection(FirebaseConstants.usersCol)
+      .doc(uid)
+      .collection(FirebaseConstants.categoriesCol);
 
-  CollectionReference<Map<String, dynamic>> _deletedLinksCol(String uid) =>
-      _db.collection(FirebaseConstants.usersCol).doc(uid).collection(FirebaseConstants.deletedLinksCol);
+  CollectionReference<Map<String, dynamic>> _deletedLinksCol(String uid) => _db
+      .collection(FirebaseConstants.usersCol)
+      .doc(uid)
+      .collection(FirebaseConstants.deletedLinksCol);
+
+  CollectionReference<Map<String, dynamic>> _deletedCategoriesCol(String uid) =>
+      _db
+          .collection(FirebaseConstants.usersCol)
+          .doc(uid)
+          .collection(FirebaseConstants.deletedCategoriesCol);
 
   // ─── Links ────────────────────────────────────────────────────────
 
   Future<void> saveLink(String uid, LinkModel link) async {
-    final data = link.toFirestore()..[FirebaseConstants.linkSyncedAt] = FieldValue.serverTimestamp();
+    final data = link.toFirestore()
+      ..[FirebaseConstants.linkSyncedAt] = FieldValue.serverTimestamp();
     await _linksCol(uid).doc(link.id).set(data);
   }
 
@@ -48,11 +61,19 @@ class FirebaseFirestoreService {
   }
 
   Future<List<LinkModel>> fetchLinks(String uid) async {
-    final snap = await _linksCol(uid).orderBy(FirebaseConstants.linkCreatedAt, descending: true).get();
-    return snap.docs.map((d) => LinkModel.fromFirestore(d.id, d.data())).toList();
+    final snap = await _linksCol(
+      uid,
+    ).orderBy(FirebaseConstants.linkCreatedAt, descending: true).get();
+    return snap.docs
+        .map((d) => LinkModel.fromFirestore(d.id, d.data()))
+        .toList();
   }
 
-  Future<Map<String, dynamic>> fetchPaginatedLinks(String uid, {DocumentSnapshot? startAfter, int limit = 20}) async {
+  Future<Map<String, dynamic>> fetchPaginatedLinks(
+    String uid, {
+    DocumentSnapshot? startAfter,
+    int limit = 20,
+  }) async {
     Query<Map<String, dynamic>> query = _linksCol(
       uid,
     ).orderBy(FirebaseConstants.linkCreatedAt, descending: true).limit(limit);
@@ -60,7 +81,9 @@ class FirebaseFirestoreService {
       query = query.startAfterDocument(startAfter);
     }
     final snap = await query.get();
-    final links = snap.docs.map((d) => LinkModel.fromFirestore(d.id, d.data())).toList();
+    final links = snap.docs
+        .map((d) => LinkModel.fromFirestore(d.id, d.data()))
+        .toList();
     final lastDocument = snap.docs.isNotEmpty ? snap.docs.last : null;
     return {'links': links, 'lastDocument': lastDocument};
   }
@@ -72,12 +95,24 @@ class FirebaseFirestoreService {
   }
 
   Future<void> deleteCategory(String uid, String categoryId) async {
-    await _categoriesCol(uid).doc(categoryId).delete();
+    final batch = _db.batch();
+    batch.delete(_categoriesCol(uid).doc(categoryId));
+    batch.set(_deletedCategoriesCol(uid).doc(categoryId), {
+      FirebaseConstants.linkDeletedAt: FieldValue.serverTimestamp(),
+    });
+    await batch.commit();
+  }
+
+  Future<List<String>> fetchDeletedCategories(String uid) async {
+    final snap = await _deletedCategoriesCol(uid).get();
+    return snap.docs.map((d) => d.id).toList();
   }
 
   Future<List<CategoryModel>> fetchCategories(String uid) async {
     final snap = await _categoriesCol(uid).get();
-    return snap.docs.map((d) => CategoryModel.fromFirestore(d.id, d.data())).toList();
+    return snap.docs
+        .map((d) => CategoryModel.fromFirestore(d.id, d.data()))
+        .toList();
   }
 
   // -------- Bulk delete helpers --------
@@ -85,9 +120,12 @@ class FirebaseFirestoreService {
     await _deleteCollection(_linksCol(uid));
     await _deleteCollection(_categoriesCol(uid));
     await _deleteCollection(_deletedLinksCol(uid));
+    await _deleteCollection(_deletedCategoriesCol(uid));
   }
 
-  Future<void> _deleteCollection(CollectionReference<Map<String, dynamic>> col) async {
+  Future<void> _deleteCollection(
+    CollectionReference<Map<String, dynamic>> col,
+  ) async {
     const batchSize = 400;
     while (true) {
       final snap = await col.limit(batchSize).get();

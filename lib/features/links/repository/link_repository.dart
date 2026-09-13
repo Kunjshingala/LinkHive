@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:uuid/uuid.dart';
 
+import '../../../core/models/conflict_record.dart';
 import '../../../core/models/sync_operation.dart';
 import '../../../core/models/sync_tombstone.dart';
 import '../../../core/services/firebase_firestore_service.dart';
@@ -25,12 +26,16 @@ class CategoryAlreadyExistsException implements Exception {
 class LinkRepository {
   final FirebaseFirestoreService _firebaseService;
   final HiveHelper _hiveHelper;
+  final String? Function() _uidProvider;
 
   LinkRepository({
     required FirebaseFirestoreService firebaseService,
     required HiveHelper hiveHelper,
+    String? Function()? uidProvider,
   }) : _firebaseService = firebaseService,
-       _hiveHelper = hiveHelper;
+       _hiveHelper = hiveHelper,
+       _uidProvider =
+           uidProvider ?? (() => FirebaseAuth.instance.currentUser?.uid);
 
   Box<LinkModel> get _linksBox => _hiveHelper.linksBox;
   Box<LinkModel> get _baseLinksBox => _hiveHelper.baseLinksBox;
@@ -38,10 +43,11 @@ class LinkRepository {
   Box<CategoryModel> get _categoriesBox => _hiveHelper.categoriesBox;
   Box<SyncOperation> get _syncOperationsBox => _hiveHelper.syncOperationsBox;
   Box<SyncTombstone> get _syncTombstonesBox => _hiveHelper.syncTombstonesBox;
+  Box<ConflictRecord> get _conflictRecordsBox => _hiveHelper.conflictRecordsBox;
 
   static const _uuid = Uuid();
 
-  String? get _uid => FirebaseAuth.instance.currentUser?.uid;
+  String? get _uid => _uidProvider();
 
   // ─── Link CRUD ─────────────────────────────────────────────────────────────
 
@@ -204,14 +210,17 @@ class LinkRepository {
           ..sort((a, b) => a.createdAt.compareTo(b.createdAt));
 
     for (final operation in operations) {
-      final processingOperation = operation.copyWith(state: SyncOperation.processing);
+      final processingOperation = operation.copyWith(
+        state: SyncOperation.processing,
+      );
       await _syncOperationsBox.put(operation.operationId, processingOperation);
       try {
         await _syncOperation(uid, processingOperation);
         await _syncOperationsBox.delete(processingOperation.operationId);
       } catch (e) {
         final attemptCount = processingOperation.attemptCount + 1;
-        final retryAt = now + SyncBackoff.delayForAttempt(attemptCount).inMilliseconds;
+        final retryAt =
+            now + SyncBackoff.delayForAttempt(attemptCount).inMilliseconds;
         await _syncOperationsBox.put(
           processingOperation.operationId,
           processingOperation.copyWith(
@@ -315,65 +324,161 @@ class LinkRepository {
     await _syncOperationsBox.put(operation.operationId, operation);
   }
 
-  /// Fetches links and tombstones from Firestore and applies the 3-Way Merge strategy.
+  /// Fetches remote records and reconciles them against local state.
   Future<void> pullFromCloud() async {
     final uid = _uid;
     if (uid == null) return;
 
-    // 1. Fetch Cloud Data
     final cloudLinks = await _firebaseService.fetchLinks(uid);
     final deletedIds = await _firebaseService.fetchDeletedLinks(uid);
 
-    // 2. Handle Tombstones (Edge Case 2)
     for (final delId in deletedIds) {
+      if (_hasLocalTombstone(SyncOperation.linkEntity, delId)) continue;
+
       final localLink = _linksBox.get(delId);
       final baseLink = _baseLinksBox.get(delId);
-
-      if (localLink != null) {
-        if (baseLink != null &&
-            SyncMergeHelper.hasLocalEdits(baseLink, localLink)) {
-          // It was deleted on cloud, but edited locally offline. Mark as conflict!
-          await _conflictLinksBox.put(delId, localLink);
-          printLog(
-            tag: 'LinkRepository',
-            msg: 'Tombstone conflict on $delId. Saved to conflict box.',
-          );
-        } else {
-          // No local edits, safe to delete.
-          await _linksBox.delete(delId);
-        }
+      if (localLink == null) {
+        await _baseLinksBox.delete(delId);
+        continue;
       }
-      // Clear base state
+
+      if (_hasPendingOperation(SyncOperation.linkEntity, delId) ||
+          (baseLink != null &&
+              SyncMergeHelper.hasLocalEdits(baseLink, localLink))) {
+        await _saveConflict(
+          linkId: delId,
+          base: baseLink ?? localLink,
+          local: localLink,
+          cloud: null,
+          fields: const ['delete'],
+        );
+        continue;
+      }
+
+      await _linksBox.delete(delId);
       await _baseLinksBox.delete(delId);
     }
 
-    // 3. Handle Active Links (3-Way Merge)
     for (final cloudLink in cloudLinks) {
+      if (_hasLocalTombstone(SyncOperation.linkEntity, cloudLink.id)) {
+        continue;
+      }
+
       final localLink = _linksBox.get(cloudLink.id);
       final baseLink = _baseLinksBox.get(cloudLink.id);
+      if (_hasPendingOperation(SyncOperation.linkEntity, cloudLink.id)) {
+        if (localLink != null && baseLink != null) {
+          final pendingConflicts = SyncMergeHelper.conflictingFields(
+            base: baseLink,
+            local: localLink,
+            cloud: cloudLink,
+          );
+          if (pendingConflicts.isNotEmpty) {
+            await _saveConflict(
+              linkId: cloudLink.id,
+              base: baseLink,
+              local: localLink,
+              cloud: cloudLink,
+              fields: pendingConflicts,
+            );
+          }
+        }
+        continue;
+      }
 
       if (localLink == null || baseLink == null) {
-        // Edge Case 4 (First time sync) or new link created on another device
         await _linksBox.put(cloudLink.id, cloudLink);
         await _baseLinksBox.put(cloudLink.id, cloudLink);
-      } else {
-        // Merge!
-        final mergedLink = SyncMergeHelper.merge(
+        continue;
+      }
+
+      final conflicts = SyncMergeHelper.conflictingFields(
+        base: baseLink,
+        local: localLink,
+        cloud: cloudLink,
+      );
+      if (conflicts.isNotEmpty) {
+        await _saveConflict(
+          linkId: cloudLink.id,
           base: baseLink,
           local: localLink,
           cloud: cloudLink,
+          fields: conflicts,
         );
+        continue;
+      }
 
-        await _linksBox.put(mergedLink.id, mergedLink);
-        await _baseLinksBox.put(cloudLink.id, cloudLink);
+      final mergedLink = SyncMergeHelper.merge(
+        base: baseLink,
+        local: localLink,
+        cloud: cloudLink,
+      );
+      await _linksBox.put(mergedLink.id, mergedLink);
+      await _baseLinksBox.put(cloudLink.id, cloudLink);
+      if (!mergedLink.isSynced) {
+        await _enqueueOperation(
+          entityType: SyncOperation.linkEntity,
+          entityId: mergedLink.id,
+          operationType: SyncOperation.update,
+          payload: mergedLink.toSyncPayload(),
+        );
       }
     }
 
-    // Also pull categories
-    final cloudCats = await _firebaseService.fetchCategories(uid);
-    for (final cat in cloudCats) {
-      await _categoriesBox.put(cat.id, cat);
+    final cloudCategories = await _firebaseService.fetchCategories(uid);
+    for (final category in cloudCategories) {
+      if (_hasLocalTombstone(SyncOperation.categoryEntity, category.id) ||
+          _hasPendingOperation(SyncOperation.categoryEntity, category.id)) {
+        continue;
+      }
+      await _categoriesBox.put(category.id, category);
     }
+
+    final deletedCategoryIds = await _firebaseService.fetchDeletedCategories(
+      uid,
+    );
+    for (final categoryId in deletedCategoryIds) {
+      if (_hasLocalTombstone(SyncOperation.categoryEntity, categoryId) ||
+          _hasPendingOperation(SyncOperation.categoryEntity, categoryId)) {
+        continue;
+      }
+      await _categoriesBox.delete(categoryId);
+    }
+  }
+
+  /// Returns unresolved conflicts for presentation and later user resolution.
+  List<ConflictRecord> get conflicts => _conflictRecordsBox.values
+      .where((conflict) => conflict.status == ConflictRecord.unresolved)
+      .toList();
+
+  bool _hasPendingOperation(String entityType, String entityId) =>
+      _syncOperationsBox.values.any(
+        (operation) =>
+            operation.entityType == entityType &&
+            operation.entityId == entityId,
+      );
+
+  bool _hasLocalTombstone(String entityType, String entityId) =>
+      _syncTombstonesBox.containsKey('$entityType:$entityId');
+
+  Future<void> _saveConflict({
+    required String linkId,
+    required LinkModel base,
+    required LinkModel local,
+    required LinkModel? cloud,
+    required List<String> fields,
+  }) async {
+    final conflict = ConflictRecord(
+      conflictId: '$linkId:${fields.join(',')}',
+      linkId: linkId,
+      conflictingFields: fields,
+      baseVersion: base.toSyncPayload(),
+      localVersion: local.toSyncPayload(),
+      cloudVersion: cloud?.toSyncPayload(),
+      createdAt: DateTime.now().toUtc().millisecondsSinceEpoch,
+    );
+    await _conflictRecordsBox.put(conflict.conflictId, conflict);
+    await _conflictLinksBox.put(linkId, local);
   }
 
   Future<void> clearLocalData() async {
@@ -383,6 +488,7 @@ class LinkRepository {
     await _categoriesBox.clear();
     await _syncOperationsBox.clear();
     await _syncTombstonesBox.clear();
+    await _conflictRecordsBox.clear();
     printLog(tag: 'LinkRepository', msg: 'Cleared local data');
   }
 

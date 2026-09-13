@@ -13,6 +13,7 @@ class FirebaseConstants {
 
   /// deleted_links
   static const String deletedLinksCol = 'deleted_links';
+  static const String deletedCategoriesCol = 'deleted_categories';
 
   // Link Fields
   /// url
