@@ -45,6 +45,8 @@ The sync engine must be:
 
 12. **Metadata fetching is not isolated from saving.** Metadata failure should never block saving a valid URL, and the metadata request should be cancellable or safely ignored if the form changes.
 
+13. **Home pagination is local-only and currently materializes the full Hive box.** `LinkRepository.queryLinks()` reads all local links, sorts and filters them, then applies `skip(offset).take(limit)`. Firestore exposes `fetchPaginatedLinks()`, but Home and `LinkBloc` do not use it. This is correct for offline-first reads, but it will become inefficient for very large local collections.
+
 ## Target Architecture
 
 ```text
@@ -64,6 +66,12 @@ Sync Queue (outbox) ---> Sync Engine <--- Connectivity/Auth triggers
 ```
 
 The UI reads only from the local materialized view. Repository mutations update the view and append an outbox operation in one local transaction-like sequence. The Sync Engine later processes the outbox and pulls remote changes.
+
+### Pagination boundary
+
+Home scrolling should continue to paginate the local materialized view so the UI never depends on network latency. The Sync Engine should pull remote changes independently and write them into that local view. Scrolling must not directly call Firestore.
+
+For larger datasets, replace the current `values.toList()` approach with a real local query/paging mechanism. Remote Firestore pagination can be used inside the pull phase or for bounded backfill, using a cursor, but it should not become the primary source for the Home list. This preserves offline behavior and prevents duplicate or inconsistent pages while sync is running.
 
 ## Record Identity and Matching
 
