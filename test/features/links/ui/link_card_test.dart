@@ -85,6 +85,8 @@ void main() {
       await mockNetworkImages(() async {
         await tester.pumpWidget(
           MaterialApp(
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
             theme: buildLinkHiveTheme(),
             home: Scaffold(
               body: LinkCard(

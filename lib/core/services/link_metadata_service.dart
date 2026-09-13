@@ -33,7 +33,12 @@ class LinkMetadataService {
       final title =
           _extractMeta(html, 'og:title') ?? _extractMeta(html, 'twitter:title') ?? _extractTitle(html) ?? uri.host;
 
-      final image = _extractMeta(html, 'og:image') ?? _extractMeta(html, 'twitter:image') ?? '';
+      final image =
+          _resolveUrl(uri, _extractMeta(html, 'og:image')) ??
+          _resolveUrl(uri, _extractMeta(html, 'twitter:image')) ??
+          _resolveUrl(uri, _extractIcon(html)) ??
+          _defaultFaviconUrl(uri) ??
+          '';
       final description = _extractMeta(html, 'og:description') ?? _extractMeta(html, 'twitter:description') ?? '';
 
       return LinkMetadata(title: title, image: image, description: description);
@@ -73,5 +78,39 @@ class LinkMetadataService {
   String? _extractTitle(String html) {
     final match = RegExp('<title[^>]*>([^<]+)</title>', caseSensitive: false).firstMatch(html);
     return match?.group(1)?.trim();
+  }
+
+  String? _extractIcon(String html) {
+    final linkTags = RegExp(r'<link\b[^>]*>', caseSensitive: false).allMatches(html);
+    for (final match in linkTags) {
+      final tag = match.group(0)!;
+      final rel = _extractAttribute(tag, 'rel')?.toLowerCase().split(RegExp(r'\s+')) ?? const [];
+      if (!rel.contains('icon') && !rel.contains('shortcut')) continue;
+
+      final href = _extractAttribute(tag, 'href');
+      if (href != null && href.isNotEmpty) return href;
+    }
+    return null;
+  }
+
+  String? _extractAttribute(String tag, String attribute) {
+    final match = RegExp(
+      '''${RegExp.escape(attribute)}\\s*=\\s*['"]([^'"]+)['"]''',
+      caseSensitive: false,
+    ).firstMatch(tag);
+    return match?.group(1)?.trim();
+  }
+
+  String? _resolveUrl(Uri baseUri, String? value) {
+    if (value == null || value.isEmpty) return null;
+
+    final resolved = baseUri.resolve(value);
+    if (resolved.scheme != 'http' && resolved.scheme != 'https') return null;
+    return resolved.toString();
+  }
+
+  String? _defaultFaviconUrl(Uri uri) {
+    if (uri.host.isEmpty) return null;
+    return uri.replace(path: '/favicon.ico', query: '', fragment: '').toString();
   }
 }
