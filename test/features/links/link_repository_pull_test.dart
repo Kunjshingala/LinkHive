@@ -43,6 +43,7 @@ void main() {
   });
 
   Future<void> openBoxes() async {
+    await Hive.openBox(HiveConstants.settingsBox);
     await Hive.openBox<LinkModel>(HiveConstants.linksBox);
     await Hive.openBox<LinkModel>(HiveConstants.baseLinksBox);
     await Hive.openBox<LinkModel>(HiveConstants.conflictLinksBox);
@@ -55,6 +56,7 @@ void main() {
   setUp(() async {
     await openBoxes();
     await Future.wait([
+      Hive.box(HiveConstants.settingsBox).clear(),
       Hive.box<LinkModel>(HiveConstants.linksBox).clear(),
       Hive.box<LinkModel>(HiveConstants.baseLinksBox).clear(),
       Hive.box<LinkModel>(HiveConstants.conflictLinksBox).clear(),

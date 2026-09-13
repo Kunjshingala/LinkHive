@@ -40,17 +40,40 @@ This section is the handoff record for continuing the refactor across sessions.
   - Added a Bloc-backed Account status card driven by `SyncEngine.statusStream`.
   - Displays idle, syncing, failed, and conflict states.
 
+- Phase 8 — incremental pull cursor: pending commit.
+  - `pullFromCloud()` now uses a `lastPulledAt` cursor stored in the Hive
+    settings box.
+  - First pull (no cursor) calls `fetchLinks` for a full bootstrap.
+  - Subsequent pulls call `fetchLinksSince(uid, cursor - 60 s)` which queries
+    Firestore for records whose `syncedAt` falls within a conservative 60-second
+    overlap window, preventing missed writes due to clock skew.
+  - `updateLink` in `FirebaseFirestoreService` now refreshes `syncedAt` via
+    `FieldValue.serverTimestamp()` on every update (previously only on create),
+    so edits from a second device are visible to incremental pulls.
+  - `clearLocalData()` deletes the cursor so sign-in after a data-clear
+    triggers a fresh full-fetch bootstrap.
+  - 6 new deterministic tests in `link_repository_cursor_test.dart`: full
+    bootstrap, cursor advancement, overlap-window argument, cursor reset,
+    two-device edit, two-device delete (43 total across focused suite).
+
 ### Next work
 
-- Incremental pull cursor/overlap-window strategy and broader two-device/delete-edit tests remain pending.
-- Metrics and structured sync failure reporting remain pending.
-- The attempted cursor schema spike was rolled back before commit; no partial cursor changes remain.
+- Tombstone GC: after a successful push, call `removeDeletedLink` on the
+  Firestore `deleted_links` doc; otherwise tombstones accumulate forever.
+- Incremental deleted-links fetch: `fetchDeletedLinks` still does a full scan;
+  add a `fetchDeletedLinksSince` to mirror the active-links cursor approach.
+- Category merge: categories are still last-write-wins on pull; add 3-way
+  merge and conflict tracking matching the link flow.
+- Metrics and structured sync failure reporting.
 
 ### Resume handoff
 
-Latest completed commit: `eb58a9d` (`docs(sync): record cursor phase handoff`).
+Latest completed commit: pending (Phase 8).
 
-The implementation is complete through the user-facing sync status phase. `fvm flutter analyze` passes, and the focused sync, conflict, status, and account tests pass (19 tests). The next implementation phase is incremental pull cursors/overlap windows, followed by broader two-device/delete-edit coverage and sync metrics. Continue incrementally, update this document after each phase, run analyzer and focused tests, and create a separate commit per phase. Do not modify unrelated features or include `.claude/settings.local.json`.
+`fvm flutter analyze` passes with 0 issues. The 43 focused sync/conflict/
+status/account/cursor tests all pass. Continue incrementally — one phase per
+commit, update this document, run analyzer and focused tests. Do not modify
+unrelated features or include `.claude/settings.local.json`.
 
 ## Goal
 

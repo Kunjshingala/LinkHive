@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:uuid/uuid.dart';
 
+import '../../../core/constants/hive_constants.dart';
 import '../../../core/models/conflict_record.dart';
 import '../../../core/models/sync_operation.dart';
 import '../../../core/models/sync_tombstone.dart';
@@ -325,12 +326,34 @@ class LinkRepository {
     await _syncOperationsBox.put(operation.operationId, operation);
   }
 
+  // 60-second overlap so records written near the cursor boundary are never
+  // missed due to clock skew between the client and Firestore servers.
+  static const int _pullOverlapMs = 60 * 1000;
+
   /// Fetches remote records and reconciles them against local state.
+  ///
+  /// Uses an incremental cursor strategy: the first pull fetches all records;
+  /// subsequent pulls fetch only records whose [FirebaseConstants.linkSyncedAt]
+  /// is within the overlap window of the previous pull time.
   Future<void> pullFromCloud() async {
     final uid = _uid;
     if (uid == null) return;
 
-    final cloudLinks = await _firebaseService.fetchLinks(uid);
+    // Snapshot the current time before querying so any record written to
+    // Firestore during this pull is caught by the next pull's overlap window.
+    final newCursor = DateTime.now().toUtc().millisecondsSinceEpoch;
+
+    final cursor = _readCursor();
+    final List<LinkModel> cloudLinks;
+    if (cursor == null) {
+      cloudLinks = await _firebaseService.fetchLinks(uid);
+    } else {
+      cloudLinks = await _firebaseService.fetchLinksSince(
+        uid,
+        cursor - _pullOverlapMs,
+      );
+    }
+
     final deletedIds = await _firebaseService.fetchDeletedLinks(uid);
 
     for (final delId in deletedIds) {
@@ -445,7 +468,16 @@ class LinkRepository {
       }
       await _categoriesBox.delete(categoryId);
     }
+
+    // Advance the pull cursor only after all reconciliation succeeds.
+    await _writeCursor(newCursor);
   }
+
+  int? _readCursor() =>
+      _hiveHelper.settingsBox.get(HiveConstants.lastPulledAtKey) as int?;
+
+  Future<void> _writeCursor(int tsMs) =>
+      _hiveHelper.settingsBox.put(HiveConstants.lastPulledAtKey, tsMs);
 
   /// Returns unresolved conflicts for presentation and later user resolution.
   List<ConflictRecord> get conflicts => _conflictRecordsBox.values
@@ -557,6 +589,8 @@ class LinkRepository {
     await _syncOperationsBox.clear();
     await _syncTombstonesBox.clear();
     await _conflictRecordsBox.clear();
+    // Reset the pull cursor so the next sign-in performs a full bootstrap fetch.
+    await _hiveHelper.settingsBox.delete(HiveConstants.lastPulledAtKey);
     printLog(tag: 'LinkRepository', msg: 'Cleared local data');
   }
 

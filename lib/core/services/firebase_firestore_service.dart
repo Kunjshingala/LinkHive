@@ -39,7 +39,9 @@ class FirebaseFirestoreService {
   }
 
   Future<void> updateLink(String uid, LinkModel link) async {
-    await _linksCol(uid).doc(link.id).update(link.toFirestore());
+    final data = link.toFirestore()
+      ..[FirebaseConstants.linkSyncedAt] = FieldValue.serverTimestamp();
+    await _linksCol(uid).doc(link.id).update(data);
   }
 
   Future<void> deleteLink(String uid, String linkId) async {
@@ -64,6 +66,22 @@ class FirebaseFirestoreService {
     final snap = await _linksCol(
       uid,
     ).orderBy(FirebaseConstants.linkCreatedAt, descending: true).get();
+    return snap.docs
+        .map((d) => LinkModel.fromFirestore(d.id, d.data()))
+        .toList();
+  }
+
+  /// Fetches links whose [FirebaseConstants.linkSyncedAt] is at or after [sinceMs].
+  ///
+  /// Used for incremental pulls: [sinceMs] should already include the caller's
+  /// conservative overlap window so records written near the cursor boundary
+  /// are not missed due to clock skew.
+  Future<List<LinkModel>> fetchLinksSince(String uid, int sinceMs) async {
+    final since = Timestamp.fromMillisecondsSinceEpoch(sinceMs);
+    final snap = await _linksCol(uid)
+        .where(FirebaseConstants.linkSyncedAt, isGreaterThanOrEqualTo: since)
+        .orderBy(FirebaseConstants.linkSyncedAt)
+        .get();
     return snap.docs
         .map((d) => LinkModel.fromFirestore(d.id, d.data()))
         .toList();
