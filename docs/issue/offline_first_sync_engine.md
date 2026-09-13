@@ -28,7 +28,7 @@ This section is the handoff record for continuing the refactor across sessions.
   - Current uncommitted work adds keep-local, keep-cloud, and explicit merged-link resolution APIs.
   - `SyncEngine` now exposes `SyncStatus` events: `idle`, `syncing`, `failed`, and `conflict`.
 
-- Phase 5 infrastructure hardening — completed in the next commit.
+- Phase 5 infrastructure hardening: `44af8d3`
   - Recover operations left in `processing` on the next sync attempt.
   - Add app-resume and periodic foreground sync triggers.
   - Route Account manual sync through the serialized engine.
