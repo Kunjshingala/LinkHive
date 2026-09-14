@@ -22,8 +22,14 @@ abstract class FirebaseConfig {
   static const iosBundleId = String.fromEnvironment('FB_IOS_BUNDLE_ID');
   static const iosClientId = String.fromEnvironment('FB_IOS_CLIENT_ID');
 
+  // ─── Web ───────────────────────────────────────────────────────────
+  static const webApiKey = String.fromEnvironment('FB_API_KEY_WEB');
+  static const webAppId = String.fromEnvironment('FB_APP_ID_WEB');
+  static const webAuthDomain = String.fromEnvironment('FB_AUTH_DOMAIN');
+
   // ─── Platform options ──────────────────────────────────────────────
   static FirebaseOptions get currentPlatform {
+    if (kIsWeb) return web;
     switch (defaultTargetPlatform) {
       case TargetPlatform.android:
         return android;
@@ -40,6 +46,15 @@ abstract class FirebaseConfig {
     messagingSenderId: messagingSenderId,
     projectId: projectId,
     storageBucket: storageBucket,
+  );
+
+  static const web = FirebaseOptions(
+    apiKey: webApiKey,
+    appId: webAppId,
+    messagingSenderId: messagingSenderId,
+    projectId: projectId,
+    storageBucket: storageBucket,
+    authDomain: webAuthDomain,
   );
 
   static const ios = FirebaseOptions(
