@@ -13,6 +13,11 @@
   "FB_APP_ID_IOS": "",
   "FB_IOS_BUNDLE_ID": "",
 
+  "_comment_web": "── Web (Firebase Console → Project Settings → Your Apps → Web) ──",
+  "FB_API_KEY_WEB": "",
+  "FB_APP_ID_WEB": "",
+  "FB_AUTH_DOMAIN": "",
+
   "_comment_google_sign_in": "── Google Sign-In (Firebase Console → Authentication → Sign-in method → Google → Web SDK config) ──",
   "FB_ANDROID_CLIENT_ID": "",
   "FB_IOS_CLIENT_ID": ""
