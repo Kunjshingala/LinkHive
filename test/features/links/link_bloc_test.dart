@@ -27,6 +27,8 @@ void main() {
 
       when(() => mockRepository.watchLinksBox()).thenAnswer((_) => boxStreamController.stream);
       when(() => mockRepository.getCategories()).thenReturn([testCategory]);
+      when(() => mockRepository.getUpNextLinks()).thenReturn([]);
+      when(() => mockRepository.unreadCount).thenReturn(0);
     });
 
     setUpAll(() {
@@ -66,9 +68,10 @@ void main() {
       act: (bloc) {
         boxStreamController.add(BoxEvent('new_key', testLink, false));
       },
-      // Since it's seeded with LinksLoaded, the stream event will trigger add(LinkLoadRequested())
+      // The box watch dispatches LinkLoadRequested(silent: true), which skips the
+      // LinkLoading emit to avoid a UI flash on every Hive write. So only the
+      // refreshed LinksLoaded is expected — no leading LinkLoading.
       expect: () => [
-        const LinkLoading(),
         LinksLoaded(links: [testLink], hasReachedMax: true, offset: 1, customCategories: const [testCategory]),
       ],
     );

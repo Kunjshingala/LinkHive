@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:link_hive/core/services/sync_engine.dart';
 import 'package:link_hive/core/utils/locator.dart';
 import 'package:link_hive/features/home/home.dart';
 import 'package:link_hive/features/links/models/link_model.dart';
@@ -16,6 +17,10 @@ import 'package:mocktail_image_network/mocktail_image_network.dart';
 // Mock LinkRepository to isolate HomeScreen from actual database queries
 class MockLinkRepository extends Mock implements LinkRepository {}
 
+// Mock SyncEngine — HomeScreen's LinkBloc resolves it from the locator.
+// These widget tests never trigger a sync, so no stubs are needed.
+class MockSyncEngine extends Mock implements SyncEngine {}
+
 void main() {
   group('HomeScreen Widget Tests', () {
     late MockLinkRepository mockRepository;
@@ -27,9 +32,12 @@ void main() {
       
       // Inject the mocked repository into locator so HomeScreen can build LinkBloc successfully
       locator.registerSingleton<LinkRepository>(mockRepository);
+      locator.registerSingleton<SyncEngine>(MockSyncEngine());
 
       when(() => mockRepository.watchLinksBox()).thenAnswer((_) => boxStreamController.stream);
       when(() => mockRepository.getCategories()).thenReturn(const <CategoryModel>[]);
+      when(() => mockRepository.getUpNextLinks()).thenReturn(const <LinkModel>[]);
+      when(() => mockRepository.unreadCount).thenReturn(0);
     });
 
     tearDown(() {
