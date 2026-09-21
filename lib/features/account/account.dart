@@ -117,17 +117,12 @@ class _SyncStatusCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<SyncStatusBloc, SyncStatusState>(
       builder: (context, state) {
+        final isFailed = state.status == SyncStatus.failed;
         final (label, icon) = switch (state.status) {
           SyncStatus.idle => ('Ready to sync', Icons.cloud_done_rounded),
           SyncStatus.syncing => ('Syncing…', Icons.sync_rounded),
-          SyncStatus.failed => (
-            'Sync failed — retry later',
-            Icons.cloud_off_rounded,
-          ),
-          SyncStatus.conflict => (
-            'Conflicts need attention',
-            Icons.warning_amber_rounded,
-          ),
+          SyncStatus.failed => ('Sync failed', Icons.cloud_off_rounded),
+          SyncStatus.conflict => ('Conflicts need attention', Icons.warning_amber_rounded),
         };
         return Container(
           width: double.infinity,
@@ -144,7 +139,21 @@ class _SyncStatusCard extends StatelessWidget {
             children: [
               Icon(icon),
               SizedBox(width: AppSpacing.sm),
-              Text(label, style: Theme.of(context).textTheme.titleSmall),
+              Expanded(
+                child: Text(label, style: Theme.of(context).textTheme.titleSmall),
+              ),
+              if (isFailed)
+                TextButton.icon(
+                  onPressed: () async {
+                    await locator<SyncService>().requestSync(pull: true);
+                  },
+                  icon: const Icon(Icons.refresh_rounded, size: 16),
+                  label: const Text('Retry'),
+                  style: TextButton.styleFrom(
+                    padding: EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: AppSpacing.xs),
+                    visualDensity: VisualDensity.compact,
+                  ),
+                ),
             ],
           ),
         );
@@ -163,8 +172,10 @@ class _ProfileHeader extends StatelessWidget {
     final isAuth = state is AccountAuthenticated;
     final user = isAuth ? (state as AccountAuthenticated).user : null;
 
-    final displayName = user?.displayName ?? context.l10n.accountLocalUser;
     final email = user?.email ?? context.l10n.accountSignInDesc;
+    final displayName = (user?.displayName?.isNotEmpty == true)
+        ? user!.displayName!
+        : (user?.email?.split('@').firstOrNull ?? context.l10n.accountLocalUser);
     final initial = displayName.isNotEmpty ? displayName[0].toUpperCase() : '?';
 
     return Stack(

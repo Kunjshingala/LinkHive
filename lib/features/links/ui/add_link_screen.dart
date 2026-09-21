@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -179,6 +180,12 @@ class _AddLinkContentState extends State<_AddLinkContent> {
 
                 SizedBox(height: AppSpacing.lg),
 
+                // ─── Image Preview ─────────────────────────────────
+                if (state is AddLinkForm && state.image.isNotEmpty && !_isSvgUrl(state.image)) ...[
+                  _ImagePreview(imageUrl: state.image),
+                  SizedBox(height: AppSpacing.lg),
+                ],
+
                 // ─── Title ─────────────────────────────────────────
                 _SectionLabel(context.l10n.addLinkPageTitleLabel),
                 SizedBox(height: AppSpacing.xs),
@@ -337,6 +344,61 @@ class _AddLinkContentState extends State<_AddLinkContent> {
       },
     );
   }
+}
+
+// ─── Image Preview ───────────────────────────────────────────────────────────
+class _ImagePreview extends StatelessWidget {
+  final String imageUrl;
+  const _ImagePreview({required this.imageUrl});
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      children: [
+        Positioned.fill(
+          child: Transform.translate(
+            offset: const Offset(4, 4),
+            child: Container(
+              decoration: BoxDecoration(
+                color: AppColors.shadowSky,
+                borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+                border: Border.all(color: Theme.of(context).colorScheme.outline, width: 2),
+              ),
+            ),
+          ),
+        ),
+        ClipRRect(
+          borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+          child: Container(
+            height: 140,
+            width: double.infinity,
+            decoration: BoxDecoration(
+              border: Border.all(color: Theme.of(context).colorScheme.outline, width: 2),
+              borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(AppSpacing.radiusMd - 2),
+              child: CachedNetworkImage(
+                imageUrl: imageUrl,
+                fit: BoxFit.cover,
+                placeholder: (context, url) => const Center(
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                ),
+                errorWidget: (context, url, error) => Center(
+                  child: Icon(Icons.broken_image_outlined, color: Theme.of(context).colorScheme.outline),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+bool _isSvgUrl(String url) {
+  final path = url.toLowerCase().split('?').first;
+  return path.endsWith('.svg');
 }
 
 // ─── Section Label ───────────────────────────────────────────────────────────

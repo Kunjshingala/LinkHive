@@ -22,6 +22,9 @@ class ReceiveSharedIntent {
       if (url != null) {
         printLog(tag: _tag, msg: 'Foreground shared URL: $url');
         _navigateToAddLink(url);
+      } else if (_hasContent(event)) {
+        printLog(tag: _tag, msg: 'Non-URL share ignored');
+        showSnackBar('Only URL links can be saved to LinkHive');
       }
     });
   }
@@ -32,6 +35,9 @@ class ReceiveSharedIntent {
       if (url != null) {
         printLog(tag: _tag, msg: 'Cold-start shared URL: $url');
         _navigateToAddLink(url);
+      } else if (_hasContent(event)) {
+        printLog(tag: _tag, msg: 'Non-URL cold-start share ignored');
+        showSnackBar('Only URL links can be saved to LinkHive');
       }
     });
   }
@@ -42,11 +48,17 @@ class ReceiveSharedIntent {
     if (list.isEmpty) return null;
     final first = list.first;
     final path = first?.path as String?;
-    // receive_sharing_intent passes real URL in path for URL shares
+    // receive_sharing_intent passes the real URL in path for URL shares
     if (path != null && (path.startsWith('http://') || path.startsWith('https://'))) {
       return path;
     }
     return null;
+  }
+
+  bool _hasContent(dynamic event) {
+    if (event == null) return false;
+    final list = event as List<dynamic>;
+    return list.isNotEmpty && list.first?.path != null;
   }
 
   void _navigateToAddLink(String url) {
