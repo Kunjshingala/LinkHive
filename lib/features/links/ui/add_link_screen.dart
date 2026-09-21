@@ -122,7 +122,7 @@ class _AddLinkContentState extends State<_AddLinkContent> {
           backgroundColor: Theme.of(context).scaffoldBackgroundColor,
           appBar: CommonAppBar(titleText: widget.isEditing ? 'Update Link' : context.l10n.addLinkTitle),
           body: SingleChildScrollView(
-            padding: EdgeInsets.all(AppSpacing.pageH),
+            padding: AppSpacing.pagePadding,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [

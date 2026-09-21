@@ -44,7 +44,7 @@ class _ConflictScreenContent extends StatelessWidget {
           }
 
           return ListView.separated(
-            padding: const EdgeInsets.all(AppSpacing.pageH),
+            padding: AppSpacing.pagePadding,
             itemCount: state.conflicts.length,
             separatorBuilder: (_, _) => const SizedBox(height: AppSpacing.lg),
             itemBuilder: (context, index) =>

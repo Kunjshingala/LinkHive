@@ -80,7 +80,7 @@ class _AccountScreenContent extends StatelessWidget {
           backgroundColor: Theme.of(context).scaffoldBackgroundColor,
           appBar: CommonAppBar(titleText: context.l10n.accountTitle),
           body: SingleChildScrollView(
-            padding: EdgeInsets.all(AppSpacing.pageH),
+            padding: AppSpacing.pagePadding,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [

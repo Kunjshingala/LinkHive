@@ -41,14 +41,16 @@ class CommonAppBar extends StatelessWidget implements PreferredSizeWidget {
     final bool canPop = parentRoute?.canPop ?? false;
 
     Widget? leadingWidget = leading;
+    bool usesAutoLeading = false;
     if (leadingWidget == null && automaticallyImplyLeading && canPop) {
+      usesAutoLeading = true;
       leadingWidget = Padding(
-        padding: const EdgeInsetsDirectional.only(start: AppSpacing.sm, top: 4, bottom: 4),
+        // Match the Home header buttons: pageH inset, default (44px) size.
+        padding: const EdgeInsetsDirectional.only(start: AppSpacing.pageH),
         child: NeoBrutalistButton(
           icon: Icons.chevron_left_rounded,
           onPressed: () => context.pop(),
           shape: BoxShape.circle,
-          height: 36, // Smaller for app bar
         ),
       );
     }
@@ -61,6 +63,8 @@ class CommonAppBar extends StatelessWidget implements PreferredSizeWidget {
       surfaceTintColor: AppColors.transparent,
       automaticallyImplyLeading: false, // Handled manually above
       leading: leadingWidget,
+      // Widen the leading slot so the full-size button at pageH doesn't clip.
+      leadingWidth: usesAutoLeading ? AppSpacing.appBarLeadingWidth : null,
       title: customTitle ?? Text(titleText, style: Theme.of(context).textTheme.titleMedium!),
       centerTitle: centerTitle,
       actions: actions,

@@ -1,3 +1,5 @@
+import 'package:flutter/widgets.dart';
+
 /// Consistent spacing rhythm for LinkHive
 abstract final class AppSpacing {
   static const double xs = 4;
@@ -20,4 +22,14 @@ abstract final class AppSpacing {
 
   // ─── Page Horizontal Padding ─────────────────────────────────────
   static const double pageH = 20;
+
+  /// Standard page body padding — a single source of truth so every screen's
+  /// content aligns to the same [pageH] inset (and matches the app bar's
+  /// leading button and the Home header buttons).
+  static const EdgeInsets pagePadding = EdgeInsets.all(pageH);
+
+  /// Width reserved for the [CommonAppBar] leading slot so a full-size 44px
+  /// button (matching the Home header buttons) sits at [pageH] from the edge
+  /// without clipping: pageH + button width (44) + shadow (4).
+  static const double appBarLeadingWidth = pageH + 48;
 }
