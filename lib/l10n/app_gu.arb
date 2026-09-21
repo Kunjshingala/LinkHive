@@ -19,6 +19,8 @@
   "homeSectionToday": "આજે",
   "homeSectionThisWeek": "આ અઠવાડિયે",
   "homeSectionOlder": "જૂના",
+  "homeAllCaughtUpTitle": "બધું પૂરું થઈ ગયું!",
+  "homeAllCaughtUpSubtitle": "તમે દરેક સાચવેલી લિંક ખોલી છે.",
 
   "catDev": "ડેવ",
   "catDesign": "ડિઝાઇન",
@@ -116,6 +118,7 @@
   "authErrWeakPassword": "આપેલ પાસવર્ડ ખૂબ નબળો છે.",
   "authErrInvalidEmail": "ઇમેઇલ સરનામું અમાન્ય છે.",
   "authErrDefault": "પ્રમાણીકરણ ભૂલ આવી: {message}",
+  "authErrGoogleUnavailable": "Google સાઇન-ઇન અત્યારે ઉપલબ્ધ નથી. કૃપા કરીને તમારા ઇમેઇલથી સાઇન ઇન કરો."
 
   "newCategoryTitle": "નવી શ્રેણી",
   "newCategoryHint": "શ્રેણીનું નામ (જેમ કે ગેમિંગ)",

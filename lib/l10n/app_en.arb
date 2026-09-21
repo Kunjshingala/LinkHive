@@ -19,6 +19,8 @@
   "homeSectionToday": "Today",
   "homeSectionThisWeek": "This week",
   "homeSectionOlder": "Older",
+  "homeAllCaughtUpTitle": "All caught up!",
+  "homeAllCaughtUpSubtitle": "You've opened every saved link.",
 
   "catDev": "Dev",
   "catDesign": "Design",
@@ -116,6 +118,7 @@
   "authErrWeakPassword": "The password provided is too weak.",
   "authErrInvalidEmail": "The email address is malformed.",
   "authErrDefault": "An authentication error occurred: {message}",
+  "authErrGoogleUnavailable": "Google sign-in isn't available right now. Please sign in with your email."
 
   "newCategoryTitle": "New Category",
   "newCategoryHint": "Category name (e.g. Gaming)",

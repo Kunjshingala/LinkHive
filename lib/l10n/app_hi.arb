@@ -19,6 +19,8 @@
   "homeSectionToday": "आज",
   "homeSectionThisWeek": "इस सप्ताह",
   "homeSectionOlder": "पुराने",
+  "homeAllCaughtUpTitle": "सब पूरा हो गया!",
+  "homeAllCaughtUpSubtitle": "आपने हर सहेजा गया लिंक खोल लिया है।",
 
   "catDev": "डेव",
   "catDesign": "डिज़ाइन",
@@ -116,6 +118,7 @@
   "authErrWeakPassword": "दिए गए पासवर्ड बहुत कमजोर है।",
   "authErrInvalidEmail": "ईमेल पता अमान्य है।",
   "authErrDefault": "प्रमाणीकरण त्रुटि हुई: {message}",
+  "authErrGoogleUnavailable": "Google साइन-इन अभी उपलब्ध नहीं है। कृपया अपने ईमेल से साइन इन करें।"
 
   "newCategoryTitle": "नई श्रेणी",
   "newCategoryHint": "श्रेणी का नाम (जैसे गेमिंग)",

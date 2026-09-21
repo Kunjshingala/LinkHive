@@ -64,6 +64,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get homeSectionOlder => 'Older';
 
   @override
+  String get homeAllCaughtUpTitle => 'All caught up!';
+
+  @override
+  String get homeAllCaughtUpSubtitle => 'You\'ve opened every saved link.';
+
+  @override
   String get catDev => 'Dev';
 
   @override

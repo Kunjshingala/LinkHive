@@ -210,6 +210,18 @@ abstract class AppLocalizations {
   /// **'Older'**
   String get homeSectionOlder;
 
+  /// No description provided for @homeAllCaughtUpTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'All caught up!'**
+  String get homeAllCaughtUpTitle;
+
+  /// No description provided for @homeAllCaughtUpSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'ve opened every saved link.'**
+  String get homeAllCaughtUpSubtitle;
+
   /// No description provided for @catDev.
   ///
   /// In en, this message translates to:

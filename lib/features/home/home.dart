@@ -145,10 +145,16 @@ class _HomeScreenContentState extends State<_HomeScreenContent> {
                       final upNextLinks = state is LinksLoaded
                           ? state.upNextLinks
                           : <LinkModel>[];
-                      final showUpNext = upNextLinks.isNotEmpty &&
-                          state is LinksLoaded &&
-                          !state.hasActiveFilter;
-                      final upNextOffset = showUpNext ? 1 : 0;
+                      final unreadCount =
+                          state is LinksLoaded ? state.unreadCount : 0;
+                      final noFilter =
+                          state is LinksLoaded && !state.hasActiveFilter;
+                      final showUpNext = upNextLinks.isNotEmpty && noFilter;
+                      // When there are links but none are unread, the Up Next
+                      // strip is replaced by an "All caught up" banner.
+                      final showAllCaughtUp =
+                          noFilter && unreadCount == 0 && links.isNotEmpty;
+                      final topOffset = (showUpNext || showAllCaughtUp) ? 1 : 0;
 
                       // Group the list under Today / This week / Older headers.
                       // Disabled during an active search so short result sets
@@ -179,33 +185,36 @@ class _HomeScreenContentState extends State<_HomeScreenContent> {
                             AppSpacing.xxl + 20,
                           ),
                           itemCount: rows.length +
-                              upNextOffset +
+                              topOffset +
                               (state is LinksLoaded && !state.hasReachedMax
                                   ? 1
                                   : 0),
                           separatorBuilder: (context, i) =>
                               SizedBox(height: AppSpacing.lg),
                           itemBuilder: (context, index) {
-                            // ── Up Next strip ──
-                            if (showUpNext && index == 0) {
-                              return _UpNextStrip(
-                                links: upNextLinks,
-                                onLinkTap: (link) async {
-                                  final uri = Uri.tryParse(link.url);
-                                  if (uri != null) {
-                                    final launched = await launchUrl(uri, mode: LaunchMode.externalApplication);
-                                    if (!launched && context.mounted) {
-                                      showSnackBar('Could not open link');
+                            // ── Top slot: Up Next strip or All caught up ──
+                            if (topOffset == 1 && index == 0) {
+                              if (showUpNext) {
+                                return _UpNextStrip(
+                                  links: upNextLinks,
+                                  onLinkTap: (link) async {
+                                    final uri = Uri.tryParse(link.url);
+                                    if (uri != null) {
+                                      final launched = await launchUrl(uri, mode: LaunchMode.externalApplication);
+                                      if (!launched && context.mounted) {
+                                        showSnackBar('Could not open link');
+                                      }
                                     }
-                                  }
-                                  if (context.mounted) {
-                                    context.read<LinkBloc>().add(LinkMarkAsRead(link.id));
-                                  }
-                                },
-                              );
+                                    if (context.mounted) {
+                                      context.read<LinkBloc>().add(LinkMarkAsRead(link.id));
+                                    }
+                                  },
+                                );
+                              }
+                              return const _AllCaughtUpBanner();
                             }
 
-                            final rowIndex = index - upNextOffset;
+                            final rowIndex = index - topOffset;
 
                             // ── Load-more indicator ──
                             if (rowIndex >= rows.length) {
@@ -659,6 +668,73 @@ List<_HomeRow> _buildHomeRows(
     rows.add(_LinkRow(link));
   }
   return rows;
+}
+
+// ─── All Caught Up Banner ─────────────────────────────────────────────────────
+
+/// Shown at the top of the Home list (in place of the Up Next strip) when the
+/// user has links saved but has opened every one of them.
+class _AllCaughtUpBanner extends StatelessWidget {
+  const _AllCaughtUpBanner();
+
+  @override
+  Widget build(BuildContext context) {
+    final neo = context.neoBrutal;
+    return Stack(
+      children: [
+        Positioned.fill(
+          child: Transform.translate(
+            offset: Offset(neo.shadowOffset - 1, neo.shadowOffset),
+            child: Container(
+              decoration: BoxDecoration(
+                color: AppColors.success,
+                borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+                border: Border.all(color: neo.borderColor, width: neo.borderWidth),
+              ),
+            ),
+          ),
+        ),
+        Container(
+          width: double.infinity,
+          padding: EdgeInsets.all(AppSpacing.md),
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.surface,
+            borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+            border: Border.all(color: neo.borderColor, width: neo.borderWidth),
+          ),
+          child: Row(
+            children: [
+              Icon(
+                Icons.check_circle_rounded,
+                color: AppColors.success,
+                size: 28,
+              ),
+              SizedBox(width: AppSpacing.md),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      context.l10n.homeAllCaughtUpTitle,
+                      style: Theme.of(context)
+                          .textTheme
+                          .titleSmall!
+                          .copyWith(fontWeight: FontWeight.w700),
+                    ),
+                    SizedBox(height: AppSpacing.xs),
+                    Text(
+                      context.l10n.homeAllCaughtUpSubtitle,
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
 }
 
 // ─── Up Next Strip ────────────────────────────────────────────────────────────

@@ -64,6 +64,12 @@ class AppLocalizationsHi extends AppLocalizations {
   String get homeSectionOlder => 'पुराने';
 
   @override
+  String get homeAllCaughtUpTitle => 'सब पूरा हो गया!';
+
+  @override
+  String get homeAllCaughtUpSubtitle => 'आपने हर सहेजा गया लिंक खोल लिया है।';
+
+  @override
   String get catDev => 'डेव';
 
   @override

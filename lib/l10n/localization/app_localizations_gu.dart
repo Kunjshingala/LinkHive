@@ -64,6 +64,12 @@ class AppLocalizationsGu extends AppLocalizations {
   String get homeSectionOlder => 'જૂના';
 
   @override
+  String get homeAllCaughtUpTitle => 'બધું પૂરું થઈ ગયું!';
+
+  @override
+  String get homeAllCaughtUpSubtitle => 'તમે દરેક સાચવેલી લિંક ખોલી છે.';
+
+  @override
   String get catDev => 'ડેવ';
 
   @override

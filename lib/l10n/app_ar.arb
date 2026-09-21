@@ -19,6 +19,8 @@
   "homeSectionToday": "اليوم",
   "homeSectionThisWeek": "هذا الأسبوع",
   "homeSectionOlder": "أقدم",
+  "homeAllCaughtUpTitle": "أنت على اطلاع تام!",
+  "homeAllCaughtUpSubtitle": "لقد فتحت كل رابط محفوظ.",
 
   "catDev": "برمجة",
   "catDesign": "تصميم",
@@ -116,6 +118,7 @@
   "authErrWeakPassword": "كلمة المرور المقدمة ضعيفة جدًا.",
   "authErrInvalidEmail": "عنوان البريد الإلكتروني غير صحيح.",
   "authErrDefault": "حدث خطأ في المصادقة: {message}",
+  "authErrGoogleUnavailable": "تسجيل الدخول عبر جوجل غير متاح حالياً. يرجى تسجيل الدخول باستخدام بريدك الإلكتروني."
 
   "newCategoryTitle": "فئة جديدة",
   "newCategoryHint": "اسم الفئة (مثل الألعاب)",

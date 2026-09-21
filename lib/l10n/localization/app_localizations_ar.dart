@@ -63,6 +63,12 @@ class AppLocalizationsAr extends AppLocalizations {
   String get homeSectionOlder => 'أقدم';
 
   @override
+  String get homeAllCaughtUpTitle => 'أنت على اطلاع تام!';
+
+  @override
+  String get homeAllCaughtUpSubtitle => 'لقد فتحت كل رابط محفوظ.';
+
+  @override
   String get catDev => 'برمجة';
 
   @override
