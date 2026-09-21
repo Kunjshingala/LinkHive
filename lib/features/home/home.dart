@@ -253,18 +253,66 @@ class _HomeScreenContentState extends State<_HomeScreenContent> {
                             }
 
                             final link = (row as _LinkRow).link;
-                            return Opacity(
-                              opacity: link.isRead ? 0.55 : 1.0,
-                              child: _NeoLinkCardWrapper(
-                                child: LinkCard(
-                                  link: link,
-                                  searchQuery: searchQuery,
-                                  onEdit: () => context.push(
-                                    '/editLink',
-                                    extra: link,
-                                  ),
-                                  onDelete: () => context.read<LinkBloc>().add(
+                            return Dismissible(
+                              key: ValueKey('dismiss_${link.id}'),
+                              // Right swipe (startToEnd): toggle read/unread.
+                              background: _SwipeActionBackground(
+                                alignment: AlignmentDirectional.centerStart,
+                                color: AppColors.success,
+                                icon: link.isRead
+                                    ? Icons.mark_email_unread_rounded
+                                    : Icons.check_circle_rounded,
+                              ),
+                              // Left swipe (endToStart): delete.
+                              secondaryBackground: _SwipeActionBackground(
+                                alignment: AlignmentDirectional.centerEnd,
+                                color: Theme.of(context).colorScheme.error,
+                                icon: Icons.delete_outline_rounded,
+                              ),
+                              // Return false in every branch: the card never
+                              // dismisses itself. Read toggles rebuild in place;
+                              // delete removes the row via the bloc's list update,
+                              // avoiding Flutter's "dismissed widget still in tree".
+                              confirmDismiss: (direction) async {
+                                if (direction ==
+                                    DismissDirection.startToEnd) {
+                                  context.read<LinkBloc>().add(
+                                    link.isRead
+                                        ? LinkMarkAsUnread(link.id)
+                                        : LinkMarkAsRead(link.id),
+                                  );
+                                  return false;
+                                }
+                                final confirm =
+                                    await showConfirmationBottomSheet(
+                                  context: context,
+                                  title: context.l10n.linkDeleteTitle,
+                                  message: context.l10n.linkDeleteMessage,
+                                  confirmLabel: context.l10n.linkDeleteLabel,
+                                  cancelLabel: context.l10n.accountCancel,
+                                  titleIcon: Icons.warning_amber_rounded,
+                                  isDestructive: true,
+                                );
+                                if (confirm == true && context.mounted) {
+                                  context.read<LinkBloc>().add(
                                     LinkDeleteRequested(link.id),
+                                  );
+                                }
+                                return false;
+                              },
+                              child: Opacity(
+                                opacity: link.isRead ? 0.55 : 1.0,
+                                child: _NeoLinkCardWrapper(
+                                  child: LinkCard(
+                                    link: link,
+                                    searchQuery: searchQuery,
+                                    onEdit: () => context.push(
+                                      '/editLink',
+                                      extra: link,
+                                    ),
+                                    onDelete: () => context.read<LinkBloc>().add(
+                                      LinkDeleteRequested(link.id),
+                                    ),
                                   ),
                                 ),
                               ),
@@ -853,6 +901,37 @@ class _UpNextCard extends StatelessWidget {
     } catch (_) {
       return url;
     }
+  }
+}
+
+// ─── Swipe Action Background ──────────────────────────────────────────────────
+
+/// The colored panel revealed behind a link card during a swipe. [alignment]
+/// controls which edge the icon hugs so it appears from the swiped side.
+class _SwipeActionBackground extends StatelessWidget {
+  final AlignmentGeometry alignment;
+  final Color color;
+  final IconData icon;
+
+  const _SwipeActionBackground({
+    required this.alignment,
+    required this.color,
+    required this.icon,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final neo = context.neoBrutal;
+    return Container(
+      alignment: alignment,
+      padding: EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+      decoration: BoxDecoration(
+        color: color,
+        borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+        border: Border.all(color: neo.borderColor, width: neo.borderWidth),
+      ),
+      child: Icon(icon, color: AppColors.black, size: 26),
+    );
   }
 }
 

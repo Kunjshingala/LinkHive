@@ -165,6 +165,21 @@ class LinkRepository {
     );
   }
 
+  /// Marks a link as unread and queues a sync update to Firestore.
+  /// No-op if the link is already unread or doesn't exist.
+  Future<void> markLinkAsUnread(String id) async {
+    final link = _linksBox.get(id);
+    if (link == null || !link.isRead) return;
+    final updated = link.copyWith(isRead: false, isSynced: false);
+    await _linksBox.put(id, updated);
+    await _enqueueOperation(
+      entityType: SyncOperation.linkEntity,
+      entityId: id,
+      operationType: SyncOperation.update,
+      payload: updated.toSyncPayload(),
+    );
+  }
+
   /// Returns up to [count] oldest unread links for the "Up Next" strip.
   /// Sorted by [LinkModel.createdAt] ascending so the oldest saved (most
   /// likely forgotten) links are surfaced first.

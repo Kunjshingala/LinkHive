@@ -85,6 +85,16 @@ class LinkMarkAsRead extends LinkEvent {
   List<Object?> get props => [linkId];
 }
 
+/// Fired when the user swipes a read card right to mark it unread again,
+/// bringing it back into the "Up Next" strip.
+class LinkMarkAsUnread extends LinkEvent {
+  final String linkId;
+  const LinkMarkAsUnread(this.linkId);
+
+  @override
+  List<Object?> get props => [linkId];
+}
+
 /// Fired when the user confirms deletion of a custom category.
 /// The BLoC removes it from Hive and Firestore, then re-emits with the
 /// updated [LinksLoaded.customCategories] list and resets the active category

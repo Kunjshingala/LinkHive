@@ -57,6 +57,7 @@ class LinkBloc extends Bloc<LinkEvent, LinkState> {
     on<LinkCustomCategoryAdded>(_onCustomCategoryAdded);
     on<LinkCustomCategoryDeleted>(_onCustomCategoryDeleted);
     on<LinkMarkAsRead>(_onMarkAsRead);
+    on<LinkMarkAsUnread>(_onMarkAsUnread);
 
     // Subscribe to the Hive box stream so any external write (e.g. AddLinkBloc
     // saving a link on a different route) triggers a reload automatically.
@@ -354,6 +355,29 @@ class LinkBloc extends Bloc<LinkEvent, LinkState> {
       }
     } catch (e) {
       printLog(tag: 'LinkBloc', msg: 'Failed to mark link as read: $e');
+    }
+  }
+
+  Future<void> _onMarkAsUnread(
+    LinkMarkAsUnread event,
+    Emitter<LinkState> emit,
+  ) async {
+    try {
+      await _repository.markLinkAsUnread(event.linkId);
+      final current = state;
+      if (current is LinksLoaded) {
+        // Optimistically update the link in the list and refresh the strip.
+        final updatedLinks = current.links
+            .map((l) => l.id == event.linkId ? l.copyWith(isRead: false) : l)
+            .toList();
+        emit(current.copyWith(
+          links: updatedLinks,
+          upNextLinks: _repository.getUpNextLinks(),
+          unreadCount: _repository.unreadCount,
+        ));
+      }
+    } catch (e) {
+      printLog(tag: 'LinkBloc', msg: 'Failed to mark link as unread: $e');
     }
   }
 
