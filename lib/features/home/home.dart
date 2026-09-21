@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/theme/app_colors.dart';
@@ -15,6 +16,7 @@ import '../../core/utils/utils.dart';
 import '../../features/links/bloc/link_bloc.dart';
 import '../../features/links/bloc/link_event.dart';
 import '../../features/links/bloc/link_state.dart';
+import '../../features/links/models/link_model.dart';
 import '../../features/links/repository/link_repository.dart';
 import '../../sharedWidgets/add_category_chip.dart';
 import '../../sharedWidgets/category_chip.dart';
@@ -140,6 +142,14 @@ class _HomeScreenContentState extends State<_HomeScreenContent> {
                         );
                       }
 
+                      final upNextLinks = state is LinksLoaded
+                          ? state.upNextLinks
+                          : <LinkModel>[];
+                      final showUpNext = upNextLinks.isNotEmpty &&
+                          state is LinksLoaded &&
+                          !state.hasActiveFilter;
+                      final upNextOffset = showUpNext ? 1 : 0;
+
                       return RefreshIndicator(
                         color: Theme.of(context).colorScheme.primary,
                         onRefresh: () async {
@@ -158,14 +168,37 @@ class _HomeScreenContentState extends State<_HomeScreenContent> {
                             AppSpacing.pageH,
                             AppSpacing.xxl + 20,
                           ),
-                          itemCount:
-                              state is LinksLoaded && !state.hasReachedMax
-                              ? links.length + 1
-                              : links.length,
+                          itemCount: links.length +
+                              upNextOffset +
+                              (state is LinksLoaded && !state.hasReachedMax
+                                  ? 1
+                                  : 0),
                           separatorBuilder: (context, i) =>
                               SizedBox(height: AppSpacing.lg),
                           itemBuilder: (context, index) {
-                            if (index >= links.length) {
+                            // ── Up Next strip ──
+                            if (showUpNext && index == 0) {
+                              return _UpNextStrip(
+                                links: upNextLinks,
+                                onLinkTap: (link) async {
+                                  final uri = Uri.tryParse(link.url);
+                                  if (uri != null) {
+                                    final launched = await launchUrl(uri, mode: LaunchMode.externalApplication);
+                                    if (!launched && context.mounted) {
+                                      showSnackBar('Could not open link');
+                                    }
+                                  }
+                                  if (context.mounted) {
+                                    context.read<LinkBloc>().add(LinkMarkAsRead(link.id));
+                                  }
+                                },
+                              );
+                            }
+
+                            final linkIndex = index - upNextOffset;
+
+                            // ── Load-more indicator ──
+                            if (linkIndex >= links.length) {
                               return Center(
                                 child: Padding(
                                   padding: EdgeInsets.all(AppSpacing.md),
@@ -173,25 +206,27 @@ class _HomeScreenContentState extends State<_HomeScreenContent> {
                                     width: 24,
                                     height: 24,
                                     child: CircularProgressIndicator(
-                                      color: Theme.of(
-                                        context,
-                                      ).colorScheme.primary,
+                                      color: Theme.of(context).colorScheme.primary,
                                       strokeWidth: 2,
                                     ),
                                   ),
                                 ),
                               );
                             }
-                            return _NeoLinkCardWrapper(
-                              child: LinkCard(
-                                link: links[index],
-                                searchQuery: searchQuery,
-                                onEdit: () => context.push(
-                                  '/editLink',
-                                  extra: links[index],
-                                ),
-                                onDelete: () => context.read<LinkBloc>().add(
-                                  LinkDeleteRequested(links[index].id),
+
+                            return Opacity(
+                              opacity: links[linkIndex].isRead ? 0.55 : 1.0,
+                              child: _NeoLinkCardWrapper(
+                                child: LinkCard(
+                                  link: links[linkIndex],
+                                  searchQuery: searchQuery,
+                                  onEdit: () => context.push(
+                                    '/editLink',
+                                    extra: links[linkIndex],
+                                  ),
+                                  onDelete: () => context.read<LinkBloc>().add(
+                                    LinkDeleteRequested(links[linkIndex].id),
+                                  ),
                                 ),
                               ),
                             );
@@ -245,15 +280,46 @@ class _HomeScreenContentState extends State<_HomeScreenContent> {
             ],
           ),
           SizedBox(height: AppSpacing.lg),
-          Row(
-            children: [
-              const AppLogo(size: 36),
-              const SizedBox(width: 12),
-              Text(
-                context.l10n.homeTitle,
-                style: Theme.of(context).textTheme.displayLarge!,
-              ),
-            ],
+          BlocBuilder<LinkBloc, LinkState>(
+            buildWhen: (prev, next) {
+              final p = prev is LinksLoaded ? prev.unreadCount : 0;
+              final n = next is LinksLoaded ? next.unreadCount : 0;
+              return p != n;
+            },
+            builder: (context, state) {
+              final unread = state is LinksLoaded ? state.unreadCount : 0;
+              return Row(
+                children: [
+                  const AppLogo(size: 36),
+                  const SizedBox(width: 12),
+                  Text(
+                    context.l10n.homeTitle,
+                    style: Theme.of(context).textTheme.displayLarge!,
+                  ),
+                  if (unread > 0) ...[
+                    const SizedBox(width: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                      decoration: BoxDecoration(
+                        color: AppColors.accentOrange,
+                        borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
+                        border: Border.all(
+                          color: Theme.of(context).colorScheme.outline,
+                          width: 1.5,
+                        ),
+                      ),
+                      child: Text(
+                        '$unread',
+                        style: Theme.of(context).textTheme.labelSmall!.copyWith(
+                          fontWeight: FontWeight.w700,
+                          color: Theme.of(context).colorScheme.onSurface,
+                        ),
+                      ),
+                    ),
+                  ],
+                ],
+              );
+            },
           ),
           SizedBox(height: AppSpacing.md),
           _buildSearchBar(context),
@@ -496,6 +562,125 @@ class _HomeScreenContentState extends State<_HomeScreenContent> {
         ],
       ),
     );
+  }
+}
+
+// ─── Up Next Strip ────────────────────────────────────────────────────────────
+
+class _UpNextStrip extends StatelessWidget {
+  final List<LinkModel> links;
+  final void Function(LinkModel) onLinkTap;
+
+  const _UpNextStrip({required this.links, required this.onLinkTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Icon(Icons.bolt_rounded, size: 16, color: AppColors.accentOrange),
+            SizedBox(width: AppSpacing.xs),
+            Text(
+              'Up Next',
+              style: Theme.of(context).textTheme.labelLarge!.copyWith(
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ],
+        ),
+        SizedBox(height: AppSpacing.sm),
+        SizedBox(
+          height: 100,
+          child: ListView.separated(
+            scrollDirection: Axis.horizontal,
+            clipBehavior: Clip.none,
+            itemCount: links.length,
+            separatorBuilder: (context, i) => SizedBox(width: AppSpacing.sm),
+            itemBuilder: (context, index) =>
+                _UpNextCard(link: links[index], onTap: () => onLinkTap(links[index])),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _UpNextCard extends StatelessWidget {
+  final LinkModel link;
+  final VoidCallback onTap;
+
+  const _UpNextCard({required this.link, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    final neo = context.neoBrutal;
+    final host = _host(link.url);
+
+    return Stack(
+      children: [
+        Positioned.fill(
+          child: Transform.translate(
+            offset: Offset(neo.shadowOffset - 1, neo.shadowOffset),
+            child: Container(
+              width: 160,
+              decoration: BoxDecoration(
+                color: AppColors.shadowLemon,
+                borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+                border: Border.all(color: neo.borderColor, width: neo.borderWidth),
+              ),
+            ),
+          ),
+        ),
+        Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: onTap,
+            borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+            child: Container(
+              width: 160,
+              padding: EdgeInsets.all(AppSpacing.sm),
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.surface,
+                borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+                border: Border.all(color: neo.borderColor, width: neo.borderWidth),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    link.title.isNotEmpty ? link.title : link.url,
+                    maxLines: 3,
+                    overflow: TextOverflow.ellipsis,
+                    style: Theme.of(context).textTheme.bodySmall!.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const Spacer(),
+                  Text(
+                    host,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: Theme.of(context).textTheme.labelSmall!.copyWith(
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  String _host(String url) {
+    try {
+      return Uri.parse(url).host.replaceFirst('www.', '');
+    } catch (_) {
+      return url;
+    }
   }
 }
 

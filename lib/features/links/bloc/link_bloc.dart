@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:rxdart/rxdart.dart';
 
 import '../../../core/services/sync_engine.dart';
+import '../../../core/utils/utils.dart';
 import '../models/link_model.dart';
 import '../models/category_model.dart';
 import '../repository/link_repository.dart';
@@ -55,14 +56,15 @@ class LinkBloc extends Bloc<LinkEvent, LinkState> {
     on<LinkSyncRequested>(_onSyncRequested);
     on<LinkCustomCategoryAdded>(_onCustomCategoryAdded);
     on<LinkCustomCategoryDeleted>(_onCustomCategoryDeleted);
+    on<LinkMarkAsRead>(_onMarkAsRead);
 
     // Subscribe to the Hive box stream so any external write (e.g. AddLinkBloc
     // saving a link on a different route) triggers a reload automatically.
+    // Uses silent:true to avoid the LinkLoading flash on small updates like
+    // markLinkAsRead.
     _boxSubscription = _repository.watchLinksBox().listen((_) {
-      // Only reload when the list is visible. Ignore duplicate events that
-      // arrive while a reload is already in progress (LinkLoading state).
       if (state is LinksLoaded) {
-        add(const LinkLoadRequested());
+        add(const LinkLoadRequested(silent: true));
       }
     });
   }
@@ -84,7 +86,7 @@ class LinkBloc extends Bloc<LinkEvent, LinkState> {
     LinkLoadRequested event,
     Emitter<LinkState> emit,
   ) async {
-    emit(const LinkLoading());
+    if (!event.silent) emit(const LinkLoading());
     try {
       final links = _repository.queryLinks(limit: _limit, offset: 0);
       emit(
@@ -93,6 +95,8 @@ class LinkBloc extends Bloc<LinkEvent, LinkState> {
           hasReachedMax: links.length < _limit,
           offset: links.length,
           customCategories: _customCategories,
+          upNextLinks: _repository.getUpNextLinks(),
+          unreadCount: _repository.unreadCount,
         ),
       );
     } catch (e) {
@@ -160,6 +164,10 @@ class LinkBloc extends Bloc<LinkEvent, LinkState> {
         hasReachedMax: links.length < _limit,
         offset: links.length,
         customCategories: _customCategories,
+        upNextLinks: event.query.trim().isEmpty && cat == 'All' && prio == 'All'
+            ? _repository.getUpNextLinks()
+            : const [],
+        unreadCount: _repository.unreadCount,
       ),
     );
   }
@@ -187,6 +195,10 @@ class LinkBloc extends Bloc<LinkEvent, LinkState> {
         hasReachedMax: links.length < _limit,
         offset: links.length,
         customCategories: _customCategories,
+        upNextLinks: event.category == 'All' && prio == 'All' && query.trim().isEmpty
+            ? _repository.getUpNextLinks()
+            : const [],
+        unreadCount: _repository.unreadCount,
       ),
     );
   }
@@ -214,6 +226,10 @@ class LinkBloc extends Bloc<LinkEvent, LinkState> {
         hasReachedMax: links.length < _limit,
         offset: links.length,
         customCategories: _customCategories,
+        upNextLinks: cat == 'All' && event.priority == 'All' && query.trim().isEmpty
+            ? _repository.getUpNextLinks()
+            : const [],
+        unreadCount: _repository.unreadCount,
       ),
     );
   }
@@ -294,7 +310,9 @@ class LinkBloc extends Bloc<LinkEvent, LinkState> {
           searchQuery: query,
           hasReachedMax: links.length < _limit,
           offset: links.length,
-          customCategories: _customCategories, // refresh after cloud pull
+          customCategories: _customCategories,
+          upNextLinks: _repository.getUpNextLinks(),
+          unreadCount: _repository.unreadCount,
         ),
       );
 
@@ -311,6 +329,31 @@ class LinkBloc extends Bloc<LinkEvent, LinkState> {
       if (!(event.completer?.isCompleted ?? true)) {
         event.completer?.complete();
       }
+    }
+  }
+
+  // ─── Mark As Read ──────────────────────────────────────────────────────────
+
+  Future<void> _onMarkAsRead(
+    LinkMarkAsRead event,
+    Emitter<LinkState> emit,
+  ) async {
+    try {
+      await _repository.markLinkAsRead(event.linkId);
+      final current = state;
+      if (current is LinksLoaded) {
+        // Optimistically update the link in the list and refresh the strip.
+        final updatedLinks = current.links
+            .map((l) => l.id == event.linkId ? l.copyWith(isRead: true) : l)
+            .toList();
+        emit(current.copyWith(
+          links: updatedLinks,
+          upNextLinks: _repository.getUpNextLinks(),
+          unreadCount: _repository.unreadCount,
+        ));
+      }
+    } catch (e) {
+      printLog(tag: 'LinkBloc', msg: 'Failed to mark link as read: $e');
     }
   }
 
@@ -404,6 +447,8 @@ extension on LinksLoaded {
     bool? isLoadingMore,
     int? offset,
     List<CategoryModel>? customCategories,
+    List<LinkModel>? upNextLinks,
+    int? unreadCount,
   }) {
     return LinksLoaded(
       links: links ?? this.links,
@@ -414,6 +459,8 @@ extension on LinksLoaded {
       isLoadingMore: isLoadingMore ?? this.isLoadingMore,
       offset: offset ?? this.offset,
       customCategories: customCategories ?? this.customCategories,
+      upNextLinks: upNextLinks ?? this.upNextLinks,
+      unreadCount: unreadCount ?? this.unreadCount,
     );
   }
 }

@@ -9,7 +9,13 @@ sealed class LinkEvent extends Equatable {
 }
 
 class LinkLoadRequested extends LinkEvent {
-  const LinkLoadRequested();
+  /// When true, the BLoC skips emitting [LinkLoading] and refreshes in place.
+  /// Used by the Hive box watch so external writes don't cause a visible flash.
+  final bool silent;
+  const LinkLoadRequested({this.silent = false});
+
+  @override
+  List<Object?> get props => [silent];
 }
 
 class LinkSearchChanged extends LinkEvent {
@@ -67,6 +73,16 @@ class LinkCustomCategoryAdded extends LinkEvent {
 
   @override
   List<Object?> get props => [name];
+}
+
+/// Fired when the user taps a link in the "Up Next" strip to open it.
+/// Marks the link as read locally so it's removed from the strip.
+class LinkMarkAsRead extends LinkEvent {
+  final String linkId;
+  const LinkMarkAsRead(this.linkId);
+
+  @override
+  List<Object?> get props => [linkId];
 }
 
 /// Fired when the user confirms deletion of a custom category.

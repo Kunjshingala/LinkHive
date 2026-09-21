@@ -68,31 +68,48 @@ class LinkCard extends StatelessWidget {
     // from the current theme via the context extension.
     final neo = context.neoBrutal;
 
-    return Container(
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
-        borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-        border: Border.all(color: neo.borderColor, width: neo.borderWidth),
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-          onTap: () => _openLink(context),
-          child: Padding(
-            padding: EdgeInsetsDirectional.all(AppSpacing.cardPaddingH),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _FaviconAvatar(link: link),
-                SizedBox(width: AppSpacing.md - 4),
-                Expanded(child: _LinkContent(link: link, searchQuery: searchQuery)),
-                _MoreMenu(link: link, onEdit: onEdit, onDelete: onDelete),
-              ],
+    return Stack(
+      children: [
+        Container(
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.surface,
+            borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+            border: Border.all(color: neo.borderColor, width: neo.borderWidth),
+          ),
+          child: Material(
+            color: Colors.transparent,
+            child: InkWell(
+              borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+              onTap: () => _openLink(context),
+              child: Padding(
+                padding: EdgeInsetsDirectional.all(AppSpacing.cardPaddingH),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _FaviconAvatar(link: link),
+                    SizedBox(width: AppSpacing.md - 4),
+                    Expanded(child: _LinkContent(link: link, searchQuery: searchQuery)),
+                    _MoreMenu(link: link, onEdit: onEdit, onDelete: onDelete),
+                  ],
+                ),
+              ),
             ),
           ),
         ),
-      ),
+        if (!link.isRead)
+          Positioned(
+            top: 10,
+            right: 10,
+            child: Container(
+              width: 8,
+              height: 8,
+              decoration: const BoxDecoration(
+                color: AppColors.accentOrange,
+                shape: BoxShape.circle,
+              ),
+            ),
+          ),
+      ],
     );
   }
 
@@ -123,7 +140,7 @@ class _FaviconAvatar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (link.image.isNotEmpty) {
+    if (link.image.isNotEmpty && !_isSvgUrl(link.image)) {
       return ClipRRect(
         borderRadius: BorderRadius.circular(AppSpacing.radiusMd - 2),
         child: CachedNetworkImage(
@@ -131,12 +148,10 @@ class _FaviconAvatar extends StatelessWidget {
           width: 38,
           height: 38,
           fit: BoxFit.cover,
-          // Fall back to the letter avatar if the image cannot be loaded.
           errorWidget: (ctx, url, err) => _LetterAvatar(link: link),
         ),
       );
     }
-    // No image URL — render the letter avatar directly without a network call.
     return _LetterAvatar(link: link);
   }
 }
@@ -448,4 +463,9 @@ TextSpan _highlightText(String text, String query, TextStyle baseStyle, BuildCon
   }
 
   return TextSpan(children: spans);
+}
+
+bool _isSvgUrl(String url) {
+  final path = url.toLowerCase().split('?').first;
+  return path.endsWith('.svg');
 }

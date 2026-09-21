@@ -115,6 +115,14 @@ class LinkModel {
   @HiveField(9)
   final bool isSynced;
 
+  /// `true` once the user has opened this link at least once.
+  ///
+  /// Persisted in Hive and synced to Firestore so read status survives
+  /// reinstalls and transfers across devices.
+  /// Drives the "Up Next" surfacing strip on the Home screen.
+  @HiveField(10)
+  final bool isRead;
+
   const LinkModel({
     required this.id,
     required this.url,
@@ -126,6 +134,7 @@ class LinkModel {
     required this.createdAt,
     this.syncedAt,
     this.isSynced = false,
+    this.isRead = false,
   });
 
   /// Returns a copy of this [LinkModel] with the specified fields replaced.
@@ -148,6 +157,7 @@ class LinkModel {
     int? createdAt,
     int? syncedAt,
     bool? isSynced,
+    bool? isRead,
   }) {
     return LinkModel(
       id: id ?? this.id,
@@ -160,6 +170,7 @@ class LinkModel {
       createdAt: createdAt ?? this.createdAt,
       syncedAt: syncedAt ?? this.syncedAt,
       isSynced: isSynced ?? this.isSynced,
+      isRead: isRead ?? this.isRead,
     );
   }
 
@@ -180,6 +191,7 @@ class LinkModel {
       FirebaseConstants.linkCategories: categories,
       FirebaseConstants.linkPriority: priority,
       FirebaseConstants.linkCreatedAt: createdAt,
+      FirebaseConstants.linkIsRead: isRead,
       // syncedAt is NOT written here — the service writes it as
       // FieldValue.serverTimestamp() to get the authoritative server time.
     };
@@ -232,7 +244,8 @@ class LinkModel {
           data[FirebaseConstants.linkCreatedAt] as int? ??
           DateTime.now().toUtc().millisecondsSinceEpoch,
       syncedAt: syncedAtMs,
-      isSynced: true, // All links that come from Firestore are already synced.
+      isSynced: true,
+      isRead: data[FirebaseConstants.linkIsRead] as bool? ?? false,
     );
   }
 

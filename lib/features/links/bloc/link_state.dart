@@ -37,6 +37,13 @@ class LinksLoaded extends LinkState {
   /// repository directly in a widget.
   final List<CategoryModel> customCategories;
 
+  /// The oldest unread links shown in the "Up Next" surfacing strip.
+  /// Empty when all links have been read or when an active filter is in use.
+  final List<LinkModel> upNextLinks;
+
+  /// Total number of unread links across the full collection (not capped).
+  final int unreadCount;
+
   const LinksLoaded({
     required this.links,
     this.activeCategory = 'All',
@@ -46,6 +53,8 @@ class LinksLoaded extends LinkState {
     this.isLoadingMore = false,
     this.offset = 20,
     this.customCategories = const [],
+    this.upNextLinks = const [],
+    this.unreadCount = 0,
   });
 
   bool get hasActiveFilter =>
@@ -61,6 +70,8 @@ class LinksLoaded extends LinkState {
     isLoadingMore,
     offset,
     customCategories,
+    upNextLinks,
+    unreadCount,
   ];
 }
 

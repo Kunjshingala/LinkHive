@@ -150,6 +150,33 @@ class LinkRepository {
 
   Stream<BoxEvent> watchLinksBox() => _linksBox.watch();
 
+  /// Marks a link as read and queues a sync update to Firestore.
+  /// No-op if the link is already read or doesn't exist.
+  Future<void> markLinkAsRead(String id) async {
+    final link = _linksBox.get(id);
+    if (link == null || link.isRead) return;
+    final updated = link.copyWith(isRead: true, isSynced: false);
+    await _linksBox.put(id, updated);
+    await _enqueueOperation(
+      entityType: SyncOperation.linkEntity,
+      entityId: id,
+      operationType: SyncOperation.update,
+      payload: updated.toSyncPayload(),
+    );
+  }
+
+  /// Returns up to [count] oldest unread links for the "Up Next" strip.
+  /// Sorted by [LinkModel.createdAt] ascending so the oldest saved (most
+  /// likely forgotten) links are surfaced first.
+  List<LinkModel> getUpNextLinks({int count = 3}) {
+    final unread = _linksBox.values.where((l) => !l.isRead).toList();
+    unread.sort((a, b) => a.createdAt.compareTo(b.createdAt));
+    return unread.take(count).toList();
+  }
+
+  /// Total number of unread links — used for the Up Next strip label.
+  int get unreadCount => _linksBox.values.where((l) => !l.isRead).length;
+
   Future<void> addCategory(CategoryModel category) async {
     final c = category.id.isEmpty
         ? CategoryModel(id: _uuid.v4(), name: category.name)

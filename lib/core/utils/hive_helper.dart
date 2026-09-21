@@ -21,11 +21,22 @@ class HiveHelper {
     Hive.registerAdapter(SyncTombstoneAdapter());
     Hive.registerAdapter(ConflictRecordAdapter());
 
-    // Open Boxes
+    // Open Boxes — link boxes wrapped in migration guard: if a schema change
+    // causes a type error on old records, clear the affected boxes and reopen
+    // them empty. Authenticated users recover data via Firestore re-sync.
     await Hive.openBox(HiveConstants.settingsBox);
-    await Hive.openBox<LinkModel>(HiveConstants.linksBox);
-    await Hive.openBox<LinkModel>(HiveConstants.baseLinksBox);
-    await Hive.openBox<LinkModel>(HiveConstants.conflictLinksBox);
+    try {
+      await Hive.openBox<LinkModel>(HiveConstants.linksBox);
+      await Hive.openBox<LinkModel>(HiveConstants.baseLinksBox);
+      await Hive.openBox<LinkModel>(HiveConstants.conflictLinksBox);
+    } catch (_) {
+      await Hive.deleteBoxFromDisk(HiveConstants.linksBox);
+      await Hive.deleteBoxFromDisk(HiveConstants.baseLinksBox);
+      await Hive.deleteBoxFromDisk(HiveConstants.conflictLinksBox);
+      await Hive.openBox<LinkModel>(HiveConstants.linksBox);
+      await Hive.openBox<LinkModel>(HiveConstants.baseLinksBox);
+      await Hive.openBox<LinkModel>(HiveConstants.conflictLinksBox);
+    }
     await Hive.openBox<CategoryModel>(HiveConstants.categoriesBox);
     await Hive.openBox<SyncOperation>(HiveConstants.syncOperationsBox);
     await Hive.openBox<SyncTombstone>(HiveConstants.syncTombstonesBox);

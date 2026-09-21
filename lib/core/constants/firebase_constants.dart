@@ -40,6 +40,9 @@ class FirebaseConstants {
   /// syncedAt — set by Firestore server timestamp on sync
   static const String linkSyncedAt = 'syncedAt';
 
+  /// isRead — true once the user has opened the link at least once
+  static const String linkIsRead = 'isRead';
+
   /// deletedAt — used in deleted_links collection
   static const String linkDeletedAt = 'deletedAt';
 
