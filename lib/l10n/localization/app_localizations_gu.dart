@@ -55,6 +55,15 @@ class AppLocalizationsGu extends AppLocalizations {
   String get homePrioritiesLabel => 'પ્રાધાન્યતા';
 
   @override
+  String get homeSectionToday => 'આજે';
+
+  @override
+  String get homeSectionThisWeek => 'આ અઠવાડિયે';
+
+  @override
+  String get homeSectionOlder => 'જૂના';
+
+  @override
   String get catDev => 'ડેવ';
 
   @override

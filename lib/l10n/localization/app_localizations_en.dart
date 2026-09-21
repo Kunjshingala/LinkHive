@@ -55,6 +55,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get homePrioritiesLabel => 'Priorities';
 
   @override
+  String get homeSectionToday => 'Today';
+
+  @override
+  String get homeSectionThisWeek => 'This week';
+
+  @override
+  String get homeSectionOlder => 'Older';
+
+  @override
   String get catDev => 'Dev';
 
   @override

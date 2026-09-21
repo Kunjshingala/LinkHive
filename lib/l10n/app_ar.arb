@@ -16,6 +16,9 @@
   "categoryAll": "الكل",
   "homeCategoriesLabel": "الفئات",
   "homePrioritiesLabel": "الأولويات",
+  "homeSectionToday": "اليوم",
+  "homeSectionThisWeek": "هذا الأسبوع",
+  "homeSectionOlder": "أقدم",
 
   "catDev": "برمجة",
   "catDesign": "تصميم",

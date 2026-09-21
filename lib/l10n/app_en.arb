@@ -16,6 +16,9 @@
   "categoryAll": "All",
   "homeCategoriesLabel": "Categories",
   "homePrioritiesLabel": "Priorities",
+  "homeSectionToday": "Today",
+  "homeSectionThisWeek": "This week",
+  "homeSectionOlder": "Older",
 
   "catDev": "Dev",
   "catDesign": "Design",

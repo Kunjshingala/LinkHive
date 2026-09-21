@@ -16,6 +16,9 @@
   "categoryAll": "सभी",
   "homeCategoriesLabel": "श्रेणियां",
   "homePrioritiesLabel": "प्राथमिकताएं",
+  "homeSectionToday": "आज",
+  "homeSectionThisWeek": "इस सप्ताह",
+  "homeSectionOlder": "पुराने",
 
   "catDev": "डेव",
   "catDesign": "डिज़ाइन",

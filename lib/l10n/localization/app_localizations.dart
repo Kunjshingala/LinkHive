@@ -192,6 +192,24 @@ abstract class AppLocalizations {
   /// **'Priorities'**
   String get homePrioritiesLabel;
 
+  /// No description provided for @homeSectionToday.
+  ///
+  /// In en, this message translates to:
+  /// **'Today'**
+  String get homeSectionToday;
+
+  /// No description provided for @homeSectionThisWeek.
+  ///
+  /// In en, this message translates to:
+  /// **'This week'**
+  String get homeSectionThisWeek;
+
+  /// No description provided for @homeSectionOlder.
+  ///
+  /// In en, this message translates to:
+  /// **'Older'**
+  String get homeSectionOlder;
+
   /// No description provided for @catDev.
   ///
   /// In en, this message translates to:

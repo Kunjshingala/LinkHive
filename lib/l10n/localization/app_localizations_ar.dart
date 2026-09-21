@@ -54,6 +54,15 @@ class AppLocalizationsAr extends AppLocalizations {
   String get homePrioritiesLabel => 'الأولويات';
 
   @override
+  String get homeSectionToday => 'اليوم';
+
+  @override
+  String get homeSectionThisWeek => 'هذا الأسبوع';
+
+  @override
+  String get homeSectionOlder => 'أقدم';
+
+  @override
   String get catDev => 'برمجة';
 
   @override

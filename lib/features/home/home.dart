@@ -150,6 +150,16 @@ class _HomeScreenContentState extends State<_HomeScreenContent> {
                           !state.hasActiveFilter;
                       final upNextOffset = showUpNext ? 1 : 0;
 
+                      // Group the list under Today / This week / Older headers.
+                      // Disabled during an active search so short result sets
+                      // aren't cluttered with section labels.
+                      final grouped = searchQuery.trim().isEmpty;
+                      final rows = _buildHomeRows(
+                        context,
+                        List<LinkModel>.from(links),
+                        grouped: grouped,
+                      );
+
                       return RefreshIndicator(
                         color: Theme.of(context).colorScheme.primary,
                         onRefresh: () async {
@@ -168,7 +178,7 @@ class _HomeScreenContentState extends State<_HomeScreenContent> {
                             AppSpacing.pageH,
                             AppSpacing.xxl + 20,
                           ),
-                          itemCount: links.length +
+                          itemCount: rows.length +
                               upNextOffset +
                               (state is LinksLoaded && !state.hasReachedMax
                                   ? 1
@@ -195,10 +205,10 @@ class _HomeScreenContentState extends State<_HomeScreenContent> {
                               );
                             }
 
-                            final linkIndex = index - upNextOffset;
+                            final rowIndex = index - upNextOffset;
 
                             // ── Load-more indicator ──
-                            if (linkIndex >= links.length) {
+                            if (rowIndex >= rows.length) {
                               return Center(
                                 child: Padding(
                                   padding: EdgeInsets.all(AppSpacing.md),
@@ -214,18 +224,38 @@ class _HomeScreenContentState extends State<_HomeScreenContent> {
                               );
                             }
 
+                            final row = rows[rowIndex];
+
+                            // ── Time-group section header ──
+                            if (row is _HeaderRow) {
+                              return Padding(
+                                padding: EdgeInsets.only(
+                                  top: rowIndex == 0 ? 0 : AppSpacing.sm,
+                                  bottom: AppSpacing.xs,
+                                ),
+                                child: Text(
+                                  row.label,
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .labelLarge!
+                                      .copyWith(fontWeight: FontWeight.w700),
+                                ),
+                              );
+                            }
+
+                            final link = (row as _LinkRow).link;
                             return Opacity(
-                              opacity: links[linkIndex].isRead ? 0.55 : 1.0,
+                              opacity: link.isRead ? 0.55 : 1.0,
                               child: _NeoLinkCardWrapper(
                                 child: LinkCard(
-                                  link: links[linkIndex],
+                                  link: link,
                                   searchQuery: searchQuery,
                                   onEdit: () => context.push(
                                     '/editLink',
-                                    extra: links[linkIndex],
+                                    extra: link,
                                   ),
                                   onDelete: () => context.read<LinkBloc>().add(
-                                    LinkDeleteRequested(links[linkIndex].id),
+                                    LinkDeleteRequested(link.id),
                                   ),
                                 ),
                               ),
@@ -563,6 +593,72 @@ class _HomeScreenContentState extends State<_HomeScreenContent> {
       ),
     );
   }
+}
+
+// ─── Time Grouping ────────────────────────────────────────────────────────────
+
+/// A single row in the Home list — either a time-section header or a link.
+sealed class _HomeRow {
+  const _HomeRow();
+}
+
+class _HeaderRow extends _HomeRow {
+  final String label;
+  const _HeaderRow(this.label);
+}
+
+class _LinkRow extends _HomeRow {
+  final LinkModel link;
+  const _LinkRow(this.link);
+}
+
+/// Buckets a link by save time: 0 = today, 1 = this week (last 7 days),
+/// 2 = older. Uses the same `syncedAt ?? createdAt` timestamp the list is
+/// sorted by, so headers appear in order with no repeats.
+int _timeBucket(LinkModel link) {
+  final ts = link.syncedAt ?? link.createdAt;
+  final dt = DateTime.fromMillisecondsSinceEpoch(ts, isUtc: true).toLocal();
+  final now = DateTime.now();
+  final today = DateTime(now.year, now.month, now.day);
+  final linkDay = DateTime(dt.year, dt.month, dt.day);
+  if (!linkDay.isBefore(today)) return 0;
+  final weekAgo = today.subtract(const Duration(days: 7));
+  if (linkDay.isAfter(weekAgo)) return 1;
+  return 2;
+}
+
+String _bucketLabel(BuildContext context, int bucket) {
+  switch (bucket) {
+    case 0:
+      return context.l10n.homeSectionToday;
+    case 1:
+      return context.l10n.homeSectionThisWeek;
+    default:
+      return context.l10n.homeSectionOlder;
+  }
+}
+
+/// Flattens [links] into header + link rows. When [grouped] is false, returns
+/// plain link rows with no headers (used while searching).
+List<_HomeRow> _buildHomeRows(
+  BuildContext context,
+  List<LinkModel> links, {
+  required bool grouped,
+}) {
+  if (!grouped) {
+    return links.map<_HomeRow>((l) => _LinkRow(l)).toList();
+  }
+  final rows = <_HomeRow>[];
+  int? currentBucket;
+  for (final link in links) {
+    final bucket = _timeBucket(link);
+    if (bucket != currentBucket) {
+      currentBucket = bucket;
+      rows.add(_HeaderRow(_bucketLabel(context, bucket)));
+    }
+    rows.add(_LinkRow(link));
+  }
+  return rows;
 }
 
 // ─── Up Next Strip ────────────────────────────────────────────────────────────

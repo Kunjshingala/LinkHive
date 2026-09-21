@@ -55,6 +55,15 @@ class AppLocalizationsHi extends AppLocalizations {
   String get homePrioritiesLabel => 'प्राथमिकताएं';
 
   @override
+  String get homeSectionToday => 'आज';
+
+  @override
+  String get homeSectionThisWeek => 'इस सप्ताह';
+
+  @override
+  String get homeSectionOlder => 'पुराने';
+
+  @override
   String get catDev => 'डेव';
 
   @override
