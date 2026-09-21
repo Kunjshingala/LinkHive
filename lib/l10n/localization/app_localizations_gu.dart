@@ -340,9 +340,17 @@ class AppLocalizationsGu extends AppLocalizations {
   String get authErrInvalidEmail => 'ઇમેઇલ સરનામું અમાન્ય છે.';
 
   @override
+  String get authErrInvalidCredential =>
+      'ઇમેઇલ અથવા પાસવર્ડ ખોટો છે. કૃપા કરીને ફરી પ્રયાસ કરો.';
+
+  @override
   String authErrDefault(Object message) {
     return 'પ્રમાણીકરણ ભૂલ આવી: $message';
   }
+
+  @override
+  String get authErrGoogleUnavailable =>
+      'Google સાઇન-ઇન અત્યારે ઉપલબ્ધ નથી. કૃપા કરીને તમારા ઇમેઇલથી સાઇન ઇન કરો.';
 
   @override
   String get newCategoryTitle => 'નવી શ્રેણી';

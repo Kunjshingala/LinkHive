@@ -8,7 +8,9 @@ import 'auth_state.dart';
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final AuthService _authService;
 
-  AuthBloc({required AuthService authService}) : _authService = authService, super(const AuthInitial()) {
+  AuthBloc({required AuthService authService})
+    : _authService = authService,
+      super(const AuthInitial()) {
     // Register event handlers
     on<AuthSignInRequested>(_onSignInRequested);
     on<AuthSignUpRequested>(_onSignUpRequested);
@@ -17,7 +19,10 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   }
 
   /// Handle email/password sign in
-  Future<void> _onSignInRequested(AuthSignInRequested event, Emitter<AuthState> emit) async {
+  Future<void> _onSignInRequested(
+    AuthSignInRequested event,
+    Emitter<AuthState> emit,
+  ) async {
     emit(const AuthLoading());
     try {
       await _authService.signInWithEmailPassword(event.email, event.password);
@@ -30,7 +35,10 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   }
 
   /// Handle email/password sign up
-  Future<void> _onSignUpRequested(AuthSignUpRequested event, Emitter<AuthState> emit) async {
+  Future<void> _onSignUpRequested(
+    AuthSignUpRequested event,
+    Emitter<AuthState> emit,
+  ) async {
     emit(const AuthLoading());
     try {
       await _authService.signUpWithEmailPassword(event.email, event.password);
@@ -43,10 +51,18 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   }
 
   /// Handle Google sign in
-  Future<void> _onGoogleSignInRequested(AuthGoogleSignInRequested event, Emitter<AuthState> emit) async {
+  Future<void> _onGoogleSignInRequested(
+    AuthGoogleSignInRequested event,
+    Emitter<AuthState> emit,
+  ) async {
     emit(const AuthLoading());
     try {
-      await _authService.signInWithGoogle();
+      final credential = await _authService.signInWithGoogle();
+      if (credential == null) {
+        // User dismissed the Google sheet — return to idle, no error.
+        emit(const AuthInitial());
+        return;
+      }
       emit(const AuthSuccess());
     } on Exception catch (e) {
       emit(AuthError(message: e.toString(), exception: e));
@@ -56,7 +72,10 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   }
 
   /// Handle sign out
-  Future<void> _onSignOutRequested(AuthSignOutRequested event, Emitter<AuthState> emit) async {
+  Future<void> _onSignOutRequested(
+    AuthSignOutRequested event,
+    Emitter<AuthState> emit,
+  ) async {
     emit(const AuthLoading());
     try {
       await _authService.signOut();

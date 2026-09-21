@@ -339,9 +339,17 @@ class AppLocalizationsEn extends AppLocalizations {
   String get authErrInvalidEmail => 'The email address is malformed.';
 
   @override
+  String get authErrInvalidCredential =>
+      'Incorrect email or password. Please try again.';
+
+  @override
   String authErrDefault(Object message) {
     return 'An authentication error occurred: $message';
   }
+
+  @override
+  String get authErrGoogleUnavailable =>
+      'Google sign-in isn\'t available right now. Please sign in with your email.';
 
   @override
   String get newCategoryTitle => 'New Category';

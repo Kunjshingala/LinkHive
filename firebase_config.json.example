@@ -18,7 +18,7 @@
   "FB_APP_ID_WEB": "",
   "FB_AUTH_DOMAIN": "",
 
-  "_comment_google_sign_in": "── Google Sign-In (Firebase Console → Authentication → Sign-in method → Google → Web SDK config) ──",
-  "FB_ANDROID_CLIENT_ID": "",
+  "_comment_google_sign_in": "── Google Sign-In ── FB_WEB_CLIENT_ID = the OAuth **Web** client (Firebase Console → Authentication → Sign-in method → Google → Web SDK config), NOT the Android client",
+  "FB_WEB_CLIENT_ID": "",
   "FB_IOS_CLIENT_ID": ""
 }

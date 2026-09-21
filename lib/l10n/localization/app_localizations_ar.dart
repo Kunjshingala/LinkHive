@@ -340,9 +340,17 @@ class AppLocalizationsAr extends AppLocalizations {
   String get authErrInvalidEmail => 'عنوان البريد الإلكتروني غير صحيح.';
 
   @override
+  String get authErrInvalidCredential =>
+      'البريد الإلكتروني أو كلمة المرور غير صحيحة. يرجى المحاولة مرة أخرى.';
+
+  @override
   String authErrDefault(Object message) {
     return 'حدث خطأ في المصادقة: $message';
   }
+
+  @override
+  String get authErrGoogleUnavailable =>
+      'تسجيل الدخول عبر جوجل غير متاح حالياً. يرجى تسجيل الدخول باستخدام بريدك الإلكتروني.';
 
   @override
   String get newCategoryTitle => 'فئة جديدة';

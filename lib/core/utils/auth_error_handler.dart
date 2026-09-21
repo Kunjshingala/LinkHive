@@ -6,6 +6,11 @@ import '../extensions/context_extension.dart';
 class AuthErrorHandler {
   static String getMessage(BuildContext context, FirebaseAuthException e) {
     switch (e.code) {
+      // Firebase's Email Enumeration Protection (on by default) reports both a
+      // missing account and a bad password as 'invalid-credential', so the two
+      // cases below only fire on projects where that protection is disabled.
+      case 'invalid-credential':
+        return context.l10n.authErrInvalidCredential;
       case 'user-not-found':
         return context.l10n.authErrUserNotFound;
       case 'wrong-password':

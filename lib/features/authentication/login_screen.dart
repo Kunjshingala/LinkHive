@@ -55,7 +55,10 @@ class _LoginScreenContentState extends State<_LoginScreenContent> {
   void _signIn(BuildContext context) {
     if (_formKey.currentState!.validate()) {
       context.read<AuthBloc>().add(
-        AuthSignInRequested(email: _emailController.text.trim(), password: _passwordController.text.trim()),
+        AuthSignInRequested(
+          email: _emailController.text.trim(),
+          password: _passwordController.text.trim(),
+        ),
       );
     }
   }
@@ -70,12 +73,24 @@ class _LoginScreenContentState extends State<_LoginScreenContent> {
       listener: (context, state) {
         if (state is AuthError) {
           if (state.exception is FirebaseAuthException) {
-            showSnackBar(AuthErrorHandler.getMessage(context, state.exception as FirebaseAuthException));
-            printLog(tag: 'Auth', msg: 'FirebaseAuthException: ${state.exception}');
+            showSnackBar(
+              AuthErrorHandler.getMessage(
+                context,
+                state.exception as FirebaseAuthException,
+              ),
+            );
+            printLog(
+              tag: 'Auth',
+              msg: 'FirebaseAuthException: ${state.exception}',
+            );
           } else if (state.exception is GoogleSignInException) {
             final gex = state.exception as GoogleSignInException;
-            printLog(tag: 'Auth', msg: 'GoogleSignInException: code=${gex.code} details=${gex.details}');
-            showSnackBar('Google sign-in is unavailable right now. Please use email login.');
+            printLog(
+              tag: 'Auth',
+              msg:
+                  'GoogleSignInException: code=${gex.code} details=${gex.details}',
+            );
+            showSnackBar(context.l10n.authErrGoogleUnavailable);
           } else {
             printLog(tag: 'Auth', msg: 'AuthError: ${state.message}');
             showSnackBar(context.l10n.authErrDefault(state.message));
@@ -108,7 +123,9 @@ class _LoginScreenContentState extends State<_LoginScreenContent> {
                   const SizedBox(height: AppSpacing.sm),
                   Text(
                     context.l10n.authSignInDesc,
-                    style: context.text.bodyLarge?.copyWith(color: AppColors.textSecondary),
+                    style: context.text.bodyLarge?.copyWith(
+                      color: AppColors.textSecondary,
+                    ),
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: AppSpacing.xxl),
@@ -116,7 +133,9 @@ class _LoginScreenContentState extends State<_LoginScreenContent> {
                     controller: _emailController,
                     hintText: context.l10n.authEmailHint,
                     prefixIcon: Icons.email_outlined,
-                    validator: (value) => value != null && value.isNotEmpty ? null : context.l10n.authEmailError,
+                    validator: (value) => value != null && value.isNotEmpty
+                        ? null
+                        : context.l10n.authEmailError,
                   ),
                   const SizedBox(height: AppSpacing.md),
                   CustomTextField(
@@ -124,7 +143,9 @@ class _LoginScreenContentState extends State<_LoginScreenContent> {
                     hintText: context.l10n.authPasswordHint,
                     obscureText: true,
                     prefixIcon: Icons.lock_outline,
-                    validator: (value) => value != null && value.length >= 6 ? null : context.l10n.authPasswordError,
+                    validator: (value) => value != null && value.length >= 6
+                        ? null
+                        : context.l10n.authPasswordError,
                   ),
                   const SizedBox(height: AppSpacing.lg),
                   BlocBuilder<AuthBloc, AuthState>(
@@ -155,7 +176,10 @@ class _LoginScreenContentState extends State<_LoginScreenContent> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Text(context.l10n.authNoAccount, style: context.text.bodyMedium),
+                      Text(
+                        context.l10n.authNoAccount,
+                        style: context.text.bodyMedium,
+                      ),
                       TextButton(
                         onPressed: () {
                           context.pushNamed(MyRouteName.signup);

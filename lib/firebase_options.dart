@@ -8,19 +8,27 @@ import 'package:flutter/foundation.dart';
 abstract class FirebaseConfig {
   // ─── Shared ────────────────────────────────────────────────────────
   static const projectId = String.fromEnvironment('FB_PROJECT_ID');
-  static const messagingSenderId = String.fromEnvironment('FB_MESSAGING_SENDER_ID');
+  static const messagingSenderId = String.fromEnvironment(
+    'FB_MESSAGING_SENDER_ID',
+  );
   static const storageBucket = String.fromEnvironment('FB_STORAGE_BUCKET');
 
   // ─── Android ───────────────────────────────────────────────────────
   static const androidApiKey = String.fromEnvironment('FB_API_KEY_ANDROID');
   static const androidAppId = String.fromEnvironment('FB_APP_ID_ANDROID');
-  static const androidClientId = String.fromEnvironment('FB_ANDROID_CLIENT_ID');
 
   // ─── iOS ───────────────────────────────────────────────────────────
   static const iosApiKey = String.fromEnvironment('FB_API_KEY_IOS');
   static const iosAppId = String.fromEnvironment('FB_APP_ID_IOS');
   static const iosBundleId = String.fromEnvironment('FB_IOS_BUNDLE_ID');
   static const iosClientId = String.fromEnvironment('FB_IOS_CLIENT_ID');
+
+  // ─── Google Sign-In ────────────────────────────────────────────────
+  /// OAuth **Web** client ID (`client_type: 3` in `google-services.json`),
+  /// used as `serverClientId` by Google Sign-In on Android.
+  /// Never the Android client (`client_type: 1`) — Credential Manager
+  /// rejects it and the sign-in sheet closes with a `canceled` error.
+  static const webClientId = String.fromEnvironment('FB_WEB_CLIENT_ID');
 
   // ─── Web ───────────────────────────────────────────────────────────
   static const webApiKey = String.fromEnvironment('FB_API_KEY_WEB');
@@ -36,7 +44,9 @@ abstract class FirebaseConfig {
       case TargetPlatform.iOS:
         return ios;
       default:
-        throw UnsupportedError('FirebaseConfig: unsupported platform $defaultTargetPlatform');
+        throw UnsupportedError(
+          'FirebaseConfig: unsupported platform $defaultTargetPlatform',
+        );
     }
   }
 

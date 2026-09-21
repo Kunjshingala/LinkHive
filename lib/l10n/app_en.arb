@@ -117,9 +117,9 @@
   "authErrEmailAlreadyInUse": "The account already exists for that email.",
   "authErrWeakPassword": "The password provided is too weak.",
   "authErrInvalidEmail": "The email address is malformed.",
+  "authErrInvalidCredential": "Incorrect email or password. Please try again.",
   "authErrDefault": "An authentication error occurred: {message}",
-  "authErrGoogleUnavailable": "Google sign-in isn't available right now. Please sign in with your email."
-
+  "authErrGoogleUnavailable": "Google sign-in isn't available right now. Please sign in with your email.",
   "newCategoryTitle": "New Category",
   "newCategoryHint": "Category name (e.g. Gaming)",
   "newCategoryAdd": "Add",

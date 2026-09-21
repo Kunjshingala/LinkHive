@@ -134,7 +134,7 @@ LinkHive uses `--dart-define-from-file` to inject Firebase config at build time.
    | `FB_API_KEY_IOS` | Firebase Console → Project Settings → Your Apps → iOS → **API key** |
    | `FB_APP_ID_IOS` | Firebase Console → Project Settings → Your Apps → iOS → **App ID** |
    | `FB_IOS_BUNDLE_ID` | Your iOS bundle identifier (e.g., `com.link.hive`) |
-   | `FB_ANDROID_CLIENT_ID` | Firebase Console → Authentication → Sign-in method → Google → **Web client ID** |
+   | `FB_WEB_CLIENT_ID` | Firebase Console → Authentication → Sign-in method → Google → **Web client ID** (not the Android client) |
    | `FB_IOS_CLIENT_ID` | Firebase Console → Project Settings → Your Apps → iOS → **OAuth client ID** |
 
    > `firebase_config.json` is gitignored — your secrets stay local.
