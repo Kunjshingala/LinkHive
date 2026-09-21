@@ -52,30 +52,36 @@ bloc/
 |---|---|
 | `AuthService` | Firebase Auth wrapper (email/password + Google) |
 | `FirebaseFirestoreService` | Firestore CRUD, always scoped to `/users/{uid}/` |
-| `LinkMetadataService` | Open Graph scraper via HTTP, 8s timeout |
-| `SyncService` | Background connectivity listener → sync pending links |
+| `LinkMetadataService` | OG + Twitter metadata scraper; platform-aware IO/Web fetcher |
+| `SyncEngine` | Serializes push/pull; emits `SyncStatus` stream (idle/syncing/failed/conflict) |
+| `SyncService` | Watches connectivity + `authStateChanges()`; triggers `SyncEngine`; 5-min periodic timer |
+| `ReceiveSharedIntent` | OS share-sheet listener; extracts URL; opens AddLink screen via GoRouter |
 
 ### DI: get_it (`lib/core/utils/locator.dart`)
 
 ```dart
 locator<AuthService>()
-locator<LinkRepository>()
-locator<HiveHelper>()
-locator<SyncService>()
-locator<LinkMetadataService>()
 locator<FirebaseFirestoreService>()
+locator<HiveHelper>()
+locator<LinkMetadataService>()
+locator<LinkRepository>()
+locator<SyncEngine>()
+locator<SyncService>()
+locator<ReceiveSharedIntent>()
 ```
 
 ### Routing: go_router (`lib/core/utils/navigation/route.dart`)
 
-| Constant | Path | Screen |
-|---|---|---|
-| `MyRouteName.splash` | `/` | `SplashScreen` |
-| `MyRouteName.login` | `/login` | `LoginScreen` |
-| `MyRouteName.homeScreen` | `/home` | `HomeScreen` |
-| `MyRouteName.accountScreen` | `/accountScreen` | `AccountScreen` |
-| `MyRouteName.signup` | `/signup` | `SignupScreen` |
-| `MyRouteName.addLink` | `/addLink` | `AddLinkScreen` (extra: `String? prefillUrl`) |
+| Constant | Path | Screen | Extra |
+|---|---|---|---|
+| `MyRouteName.splash` | `/` | `SplashScreen` | — |
+| `MyRouteName.login` | `/login` | `LoginScreen` | — |
+| `MyRouteName.homeScreen` | `/home` | `HomeScreen` | — |
+| `MyRouteName.accountScreen` | `/accountScreen` | `AccountScreen` | — |
+| `MyRouteName.signup` | `/signup` | `SignupScreen` | — |
+| `MyRouteName.addLink` | `/addLink` | `AddLinkScreen` | `String? prefillUrl` |
+| `MyRouteName.editLink` | `/editLink` | `AddLinkScreen` | `LinkModel existingLink` |
+| `MyRouteName.conflicts` | `/conflicts` | `ConflictScreen` | — |
 
 Always use `context.goNamed(MyRouteName.xxx)` — never raw strings or `Navigator`.
 

@@ -66,16 +66,22 @@ App Start
 
 ## Dependency Injection (get_it)
 
-All singleton services are wired in `core/utils/locator.dart`:
+All singleton services are wired in `core/utils/locator.dart` (all `registerLazySingleton`):
 
-```dart
-locator.registerLazySingleton<AuthService>(() => AuthService());
-locator.registerLazySingleton<ReceiveSharedIntent>(() => ReceiveSharedIntent());
-```
+| Service | Depends on |
+|---|---|
+| `AuthService` | — |
+| `ReceiveSharedIntent` | — |
+| `FirebaseFirestoreService` | — |
+| `HiveHelper` | — |
+| `LinkMetadataService` | — |
+| `LinkRepository` | `FirebaseFirestoreService`, `HiveHelper` |
+| `SyncEngine` | `LinkRepository` |
+| `SyncService` | `LinkRepository`, `SyncEngine` |
 
 - **Blocs** receive services via constructor: `AuthBloc(authService: locator<AuthService>())`
 - **Screens** obtain blocs via `BlocProvider` wrapping the content widget
-- **AuthGate** and `MyApp` use `locator<T>()` directly for services
+- `MyApp` uses `locator<T>()` directly for services
 
 ---
 
@@ -83,13 +89,16 @@ locator.registerLazySingleton<ReceiveSharedIntent>(() => ReceiveSharedIntent());
 
 Defined in `core/utils/navigation/route.dart`. All routes use **named navigation**:
 
-| Name | Path | Widget |
-|---|---|---|
-| `splash` | `/` | `SplashScreen` |
-| `login` | `/login` | `LoginScreen` |
-| `homeScreen` | `/home` | `AuthGate` |
-| `accountScreen` | `/accountScreen` | `AccountScreen` |
-| `signup` | `/signup` | `SignupScreen` |
+| Name | Path | Widget | Extra |
+|---|---|---|---|
+| `splash` | `/` | `SplashScreen` | — |
+| `login` | `/login` | `LoginScreen` | — |
+| `homeScreen` | `/home` | `HomeScreen` | — |
+| `accountScreen` | `/accountScreen` | `AccountScreen` | — |
+| `signup` | `/signup` | `SignupScreen` | — |
+| `addLink` | `/addLink` | `AddLinkScreen` | `String? prefillUrl` |
+| `editLink` | `/editLink` | `AddLinkScreen` | `LinkModel existingLink` |
+| `conflicts` | `/conflicts` | `ConflictScreen` | — |
 
 Use `context.goNamed(MyRouteName.xxx)` or `context.pushNamed(MyRouteName.xxx)` — never raw string paths.
 

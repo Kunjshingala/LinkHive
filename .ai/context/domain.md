@@ -38,11 +38,21 @@ Currently a **single-user, personal app** — no multi-user or collaboration fea
 
 ---
 
-## Planned Features (not yet built)
+## Feature Status
 
-1. **Local-First Storage** — persist links locally (Hive/SQLite) immediately.
-2. **Cloud Sync** — background sync local data to Firestore when authenticated & connected.
-3. **Link display** — list/grid view of saved links on HomeScreen.
-4. **Link metadata** — title, description, favicon auto-extracted from the URL via Share Intent or manual entry.
-5. **Unified Categories** — flexible organization combining folders and tags into one priority-based system (High, Normal, Low).
-6. **Search** — full-text search over saved links.
+### Done
+1. **Local-First Storage** — Hive boxes persist links, categories, and settings immediately offline.
+2. **Cloud Sync** — background sync via pending operations queue; pushed to Firestore on connectivity restore or sign-in.
+3. **Link display** — paginated list on HomeScreen (20/page); reactive to Hive writes without manual reload.
+4. **Link metadata** — OG/Twitter title, description, image auto-extracted on URL entry in AddLink screen (debounced 300ms).
+5. **Unified Categories** — built-in suggested categories + user-created custom; multi-select; long-press delete from home filter chips.
+6. **Priority** — High / Normal / Low per link; filter chip on home screen; defaults to Normal.
+7. **Search** — debounced full-text search across title, description, and URL; combined with category and priority filters.
+8. **Share intent** — foreground and cold-start; extracts URL and opens AddLink screen pre-filled.
+9. **Edit / Delete** — edit pre-populates AddLink form; delete removes from Hive and queues a remote delete tombstone.
+10. **Conflict resolution** — detect and record field-level conflicts; keep-local / keep-cloud / custom merge flows.
+
+### Remaining Gaps
+- **Image preview** — OG image URL is fetched and stored but not rendered anywhere in the UI.
+- **Sync retry** — failed sync operations stay in the queue and retry on next periodic trigger (5 min) or manual sync; no exponential back-off retry loop.
+- **Non-URL share handling** — file and plain-text shares are silently ignored; only `http://` / `https://` shares are accepted.

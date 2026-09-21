@@ -174,7 +174,7 @@ The refactor should preserve current behavior first, then fix the architectural 
 - Add safe metadata fetch behavior for invalid URLs, unsupported schemes, and timeouts.
 - Add share-intent handling for duplicate open events and malformed payloads.
 - Add app-resume/session-change sync trigger policy.
-- Add explicit guest-to-authenticated transition rules for locally created content.
+- ~~Add explicit guest-to-authenticated transition rules for locally created content.~~ **Already implemented** — local writes always enqueue a `SyncOperation.create`; `SyncService` listens to `authStateChanges()` and flushes the pending queue on sign-in automatically.
 
 ### Phase 7: Testing and acceptance hardening
 

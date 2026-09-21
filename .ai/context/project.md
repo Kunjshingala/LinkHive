@@ -55,12 +55,26 @@ LinkHive strictly uses the **Neo-Brutalism UI Pattern**. Future AI developers mu
 
 ## Current State
 
-- ✅ Auth (email/password + Google Sign-In) — complete
-- ✅ Routing — complete (5 named routes)
-- ✅ DI setup — complete
-- ✅ Splash screen — complete (Bloc-driven)
-- ✅ Share intent service — wired, logging received links
-- 🔲 Home screen — shell only, body empty (needs Local-Only indicator)
-- 🔲 Account screen — shell only (needs fast login flow)
-- 🔲 Link storage/retrieval (Hive for local, Firestore for cloud sync) — not started
-- 🔲 Link display/organization (Unified Categories & Priorities) — not started
+- ✅ Auth — email/password + Google Sign-In, sign-out with local/remote clear options
+- ✅ Routing — 8 named routes via go_router (splash, login, signup, home, account, addLink, editLink, conflicts)
+- ✅ DI — 8 lazy singletons registered in locator
+- ✅ Splash screen — Bloc-driven auth-check transition
+- ✅ Share intent — fully wired; foreground + cold-start; opens AddLink with prefilled URL
+- ✅ Local storage — 8 Hive boxes (links, baseLinks, conflictLinks, categories, syncOperations, syncTombstones, conflictRecords, settings)
+- ✅ Cloud sync — offline-first pending operations queue pushed to Firestore on connectivity/auth
+- ✅ Incremental pull — cursor-based with 60-second overlap window
+- ✅ Deleted items sync — `deleted-links` and `deleted-categories` tracked via tombstones
+- ✅ Guest → auth migration — pending ops queue auto-flushed on sign-in via `authStateChanges()`
+- ✅ Conflict detection + resolution — ConflictRecord tracking, keep-local / keep-cloud / custom merge
+- ✅ Home screen — link list with pagination (20/page), reactive Hive watch, edit/delete actions, FAB
+- ✅ Search — debounced 300ms full-text across title, description, URL; combined with filters
+- ✅ Category filtering — built-in suggested + user-created custom categories; long-press delete
+- ✅ Priority filtering — High / Normal / Low chips; combined with search + category filter
+- ✅ Add Link screen — URL form, OG/Twitter metadata auto-fetch (debounced 300ms), category picker, priority selector
+- ✅ Edit Link — same screen as Add Link; pre-populates all fields
+- ✅ Link metadata service — OG + Twitter extraction; platform-aware (IO / Web fetcher)
+- ✅ Account screen — user info, link stats, real-time sync status (idle/syncing/failed/conflict), language + theme settings
+- ✅ Sync status UI — SyncStatusBloc drives idle / syncing / failed / conflict states in Account screen
+- 🔲 Image preview — OG image fetched and stored in state, not rendered in Add Link UI
+- 🔲 Sync retry — no automatic retry on failure; status shows `failed` until next manual or periodic trigger
+- 🔲 Non-URL share handling — file/text shares silently ignored (URL-only guard in place)
