@@ -341,9 +341,17 @@ class AppLocalizationsHi extends AppLocalizations {
   String get authErrInvalidEmail => 'ईमेल पता अमान्य है।';
 
   @override
+  String get authErrInvalidCredential =>
+      'ईमेल या पासवर्ड गलत है। कृपया पुनः प्रयास करें।';
+
+  @override
   String authErrDefault(Object message) {
     return 'प्रमाणीकरण त्रुटि हुई: $message';
   }
+
+  @override
+  String get authErrGoogleUnavailable =>
+      'Google साइन-इन अभी उपलब्ध नहीं है। कृपया अपने ईमेल से साइन इन करें।';
 
   @override
   String get newCategoryTitle => 'नई श्रेणी';

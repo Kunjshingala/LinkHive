@@ -117,8 +117,9 @@
   "authErrEmailAlreadyInUse": "उस ईमेल के लिए खाता पहले से मौजूद है।",
   "authErrWeakPassword": "दिए गए पासवर्ड बहुत कमजोर है।",
   "authErrInvalidEmail": "ईमेल पता अमान्य है।",
+  "authErrInvalidCredential": "ईमेल या पासवर्ड गलत है। कृपया पुनः प्रयास करें।",
   "authErrDefault": "प्रमाणीकरण त्रुटि हुई: {message}",
-  "authErrGoogleUnavailable": "Google साइन-इन अभी उपलब्ध नहीं है। कृपया अपने ईमेल से साइन इन करें।"
+  "authErrGoogleUnavailable": "Google साइन-इन अभी उपलब्ध नहीं है। कृपया अपने ईमेल से साइन इन करें।",
 
   "newCategoryTitle": "नई श्रेणी",
   "newCategoryHint": "श्रेणी का नाम (जैसे गेमिंग)",

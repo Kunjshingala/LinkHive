@@ -750,11 +750,23 @@ abstract class AppLocalizations {
   /// **'The email address is malformed.'**
   String get authErrInvalidEmail;
 
+  /// No description provided for @authErrInvalidCredential.
+  ///
+  /// In en, this message translates to:
+  /// **'Incorrect email or password. Please try again.'**
+  String get authErrInvalidCredential;
+
   /// No description provided for @authErrDefault.
   ///
   /// In en, this message translates to:
   /// **'An authentication error occurred: {message}'**
   String authErrDefault(Object message);
+
+  /// No description provided for @authErrGoogleUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Google sign-in isn\'t available right now. Please sign in with your email.'**
+  String get authErrGoogleUnavailable;
 
   /// No description provided for @newCategoryTitle.
   ///

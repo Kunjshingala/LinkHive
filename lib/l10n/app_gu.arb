@@ -117,8 +117,9 @@
   "authErrEmailAlreadyInUse": "તે ઇમેઇલ માટે ખાતું પહેલેથી જ અસ્તિત્વમાં છે.",
   "authErrWeakPassword": "આપેલ પાસવર્ડ ખૂબ નબળો છે.",
   "authErrInvalidEmail": "ઇમેઇલ સરનામું અમાન્ય છે.",
+  "authErrInvalidCredential": "ઇમેઇલ અથવા પાસવર્ડ ખોટો છે. કૃપા કરીને ફરી પ્રયાસ કરો.",
   "authErrDefault": "પ્રમાણીકરણ ભૂલ આવી: {message}",
-  "authErrGoogleUnavailable": "Google સાઇન-ઇન અત્યારે ઉપલબ્ધ નથી. કૃપા કરીને તમારા ઇમેઇલથી સાઇન ઇન કરો."
+  "authErrGoogleUnavailable": "Google સાઇન-ઇન અત્યારે ઉપલબ્ધ નથી. કૃપા કરીને તમારા ઇમેઇલથી સાઇન ઇન કરો.",
 
   "newCategoryTitle": "નવી શ્રેણી",
   "newCategoryHint": "શ્રેણીનું નામ (જેમ કે ગેમિંગ)",

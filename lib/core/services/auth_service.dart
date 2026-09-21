@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
 import '../../firebase_options.dart';
+import '../utils/utils.dart';
 
 class AuthService {
   final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
@@ -18,28 +19,53 @@ class AuthService {
     if (!_isInitialized) {
       await _googleSignIn.initialize(
         clientId: FirebaseConfig.iosClientId,
-        serverClientId: FirebaseConfig.androidClientId,
+        serverClientId: FirebaseConfig.webClientId,
       );
       _isInitialized = true;
     }
   }
 
   // Sign in with Email and Password
-  Future<UserCredential?> signInWithEmailPassword(String email, String password) async {
-    return await _firebaseAuth.signInWithEmailAndPassword(email: email, password: password);
+  Future<UserCredential?> signInWithEmailPassword(
+    String email,
+    String password,
+  ) async {
+    return await _firebaseAuth.signInWithEmailAndPassword(
+      email: email,
+      password: password,
+    );
   }
 
   // Sign up with Email and Password
-  Future<UserCredential?> signUpWithEmailPassword(String email, String password) async {
-    return await _firebaseAuth.createUserWithEmailAndPassword(email: email, password: password);
+  Future<UserCredential?> signUpWithEmailPassword(
+    String email,
+    String password,
+  ) async {
+    return await _firebaseAuth.createUserWithEmailAndPassword(
+      email: email,
+      password: password,
+    );
   }
 
-  // Sign in with Google
+  /// Sign in with Google.
+  ///
+  /// Returns `null` when the user dismisses the Google sheet — a cancel is a
+  /// normal outcome, not a failure, so callers should stay where they are
+  /// instead of surfacing an error.
   Future<UserCredential?> signInWithGoogle() async {
     await _ensureInitialized();
 
     // Trigger the authentication flow
-    final googleUser = await _googleSignIn.authenticate();
+    final GoogleSignInAccount googleUser;
+    try {
+      googleUser = await _googleSignIn.authenticate();
+    } on GoogleSignInException catch (e) {
+      if (e.code == GoogleSignInExceptionCode.canceled) {
+        printLog(tag: 'AuthService', msg: 'Google sign-in cancelled by user');
+        return null;
+      }
+      rethrow;
+    }
 
     // Obtain tokens
     final googleAuth = googleUser.authentication;

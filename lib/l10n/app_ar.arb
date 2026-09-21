@@ -117,8 +117,9 @@
   "authErrEmailAlreadyInUse": "الحساب موجود بالفعل لهذا البريد الإلكتروني.",
   "authErrWeakPassword": "كلمة المرور المقدمة ضعيفة جدًا.",
   "authErrInvalidEmail": "عنوان البريد الإلكتروني غير صحيح.",
+  "authErrInvalidCredential": "البريد الإلكتروني أو كلمة المرور غير صحيحة. يرجى المحاولة مرة أخرى.",
   "authErrDefault": "حدث خطأ في المصادقة: {message}",
-  "authErrGoogleUnavailable": "تسجيل الدخول عبر جوجل غير متاح حالياً. يرجى تسجيل الدخول باستخدام بريدك الإلكتروني."
+  "authErrGoogleUnavailable": "تسجيل الدخول عبر جوجل غير متاح حالياً. يرجى تسجيل الدخول باستخدام بريدك الإلكتروني.",
 
   "newCategoryTitle": "فئة جديدة",
   "newCategoryHint": "اسم الفئة (مثل الألعاب)",

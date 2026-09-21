@@ -163,7 +163,7 @@ If you're setting up LinkHive for the first time and don't have a Firebase proje
    - Click on it > Toggle **Enable**
    - Select a support email
    - Click **Save**
-   - **Important:** After enabling Google sign-in, note the **Web client ID** shown under "Web SDK configuration" — you'll need this as `FB_ANDROID_CLIENT_ID`
+   - **Important:** After enabling Google sign-in, note the **Web client ID** shown under "Web SDK configuration" — you'll need this as `FB_WEB_CLIENT_ID`
 
 ### Step 5: Set Up Firestore
 
@@ -201,8 +201,9 @@ Now collect all the values you need for `firebase_config.json`.
 **Google Sign-In values:**
 1. Go to **Authentication** > **Sign-in method** > **Google**
 2. Expand **"Web SDK configuration"**
-3. Note the **Web client ID** → `FB_ANDROID_CLIENT_ID`
+3. Note the **Web client ID** → `FB_WEB_CLIENT_ID`
    - This is used as the `serverClientId` for Google Sign-In on Android
+   - It must be the **Web** client (`client_type: 3` in `google-services.json`). The Android client (`client_type: 1`) is rejected by Credential Manager and the sign-in sheet closes with a `canceled` error.
 4. For `FB_IOS_CLIENT_ID`:
    - Go to [Google Cloud Console](https://console.cloud.google.com/) > **APIs & Services** > **Credentials**
    - Find the **iOS client** OAuth 2.0 Client ID
@@ -254,7 +255,7 @@ Look for the `SHA1` value under the `debug` variant.
      "FB_IOS_BUNDLE_ID": "com.link.hive",
 
      "_comment_google_sign_in": "── Google Sign-In ──",
-     "FB_ANDROID_CLIENT_ID": "123456789-xxxxx.apps.googleusercontent.com",
+     "FB_WEB_CLIENT_ID": "123456789-xxxxx.apps.googleusercontent.com",
      "FB_IOS_CLIENT_ID": "123456789-yyyyy.apps.googleusercontent.com"
    }
    ```
@@ -330,7 +331,7 @@ abstract class FirebaseConfig {
   // Platform-specific values
   static const androidApiKey = String.fromEnvironment('FB_API_KEY_ANDROID');
   static const androidAppId = String.fromEnvironment('FB_APP_ID_ANDROID');
-  static const androidClientId = String.fromEnvironment('FB_ANDROID_CLIENT_ID');
+  static const webClientId = String.fromEnvironment('FB_WEB_CLIENT_ID');
 
   static const iosApiKey = String.fromEnvironment('FB_API_KEY_IOS');
   static const iosAppId = String.fromEnvironment('FB_APP_ID_IOS');
@@ -391,7 +392,7 @@ static const projectId = String.fromEnvironment('FB_PROJECT_ID');
 | `FB_API_KEY_IOS` | `FirebaseConfig.ios` | iOS API key for Firebase services |
 | `FB_APP_ID_IOS` | `FirebaseConfig.ios` | iOS app registration ID |
 | `FB_IOS_BUNDLE_ID` | `FirebaseConfig.ios` | iOS bundle identifier |
-| `FB_ANDROID_CLIENT_ID` | `AuthService` | Google Sign-In `serverClientId` (Android) |
+| `FB_WEB_CLIENT_ID` | `AuthService` | Google Sign-In `serverClientId` (Android) — **Web** OAuth client |
 | `FB_IOS_CLIENT_ID` | `AuthService` | Google Sign-In `clientId` (iOS) |
 
 ---
@@ -431,6 +432,6 @@ If these print empty strings, the `--dart-define-from-file` flag isn't being pas
 | `firebase_config.json` | Your actual values — **gitignored, never commit** |
 | `lib/firebase_options.dart` | `FirebaseConfig` class — reads dart-define values |
 | `lib/main.dart` | Calls `Firebase.initializeApp(options: FirebaseConfig.currentPlatform)` |
-| `lib/core/services/auth_service.dart` | Uses `FirebaseConfig.iosClientId` and `androidClientId` for Google Sign-In |
+| `lib/core/services/auth_service.dart` | Uses `FirebaseConfig.iosClientId` and `webClientId` for Google Sign-In |
 | `.vscode/launch.json` | VS Code run configs with `--dart-define-from-file` |
 | `.run/linkhive.run.xml` | Android Studio run config with `--dart-define-from-file` |
