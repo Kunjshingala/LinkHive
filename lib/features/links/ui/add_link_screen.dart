@@ -209,31 +209,13 @@ class _AddLinkContentState extends State<_AddLinkContent> {
                     final selected = _priority == p || (isNormalKey && _priority == 'Normal');
                     return Padding(
                       padding: EdgeInsets.only(right: AppSpacing.sm),
-                      child: GestureDetector(
+                      // Reuse CategoryChip so priority chips share the exact
+                      // Neo-Brutalist border/shadow as the category chips below
+                      // and the Home filter chips.
+                      child: CategoryChip(
+                        label: p,
+                        isSelected: selected,
                         onTap: () => setState(() => _priority = p),
-                        child: AnimatedContainer(
-                          duration: Duration(milliseconds: 200),
-                          padding: EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.sm),
-                          decoration: BoxDecoration(
-                            color: selected
-                                ? Theme.of(context).colorScheme.primary
-                                : Theme.of(context).colorScheme.surfaceContainerHighest,
-                            borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
-                            border: Border.all(
-                              color: selected
-                                  ? Theme.of(context).colorScheme.primary
-                                  : Theme.of(context).colorScheme.outline,
-                            ),
-                          ),
-                          child: Text(
-                            p,
-                            style: Theme.of(context).textTheme.labelLarge!.copyWith(
-                              color: selected
-                                  ? Theme.of(context).colorScheme.onPrimary
-                                  : (Theme.of(context).textTheme.bodyMedium?.color ?? AppColors.textSecondary),
-                            ),
-                          ),
-                        ),
                       ),
                     );
                   }).toList(),
@@ -353,45 +335,40 @@ class _ImagePreview extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        Positioned.fill(
-          child: Transform.translate(
+    final neo = context.neoBrutal;
+    // Single border on all sides (matching the text fields), with a hard
+    // offset shadow that appears only on the bottom-right — no double border.
+    // The image is clipped to the full rounded box (clipBehavior) and the
+    // border is painted on top (foregroundDecoration) so the image sits flush
+    // against the border with no inset gap.
+    return Container(
+      height: 140,
+      width: double.infinity,
+      clipBehavior: Clip.antiAlias,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.shadowSky,
             offset: const Offset(4, 4),
-            child: Container(
-              decoration: BoxDecoration(
-                color: AppColors.shadowSky,
-                borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-                border: Border.all(color: Theme.of(context).colorScheme.outline, width: 2),
-              ),
-            ),
+            blurRadius: 0,
           ),
+        ],
+      ),
+      foregroundDecoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+        border: Border.all(color: neo.borderColor, width: neo.borderWidth),
+      ),
+      child: CachedNetworkImage(
+        imageUrl: imageUrl,
+        fit: BoxFit.cover,
+        placeholder: (context, url) => const Center(
+          child: CircularProgressIndicator(strokeWidth: 2),
         ),
-        ClipRRect(
-          borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-          child: Container(
-            height: 140,
-            width: double.infinity,
-            decoration: BoxDecoration(
-              border: Border.all(color: Theme.of(context).colorScheme.outline, width: 2),
-              borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-            ),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(AppSpacing.radiusMd - 2),
-              child: CachedNetworkImage(
-                imageUrl: imageUrl,
-                fit: BoxFit.cover,
-                placeholder: (context, url) => const Center(
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                ),
-                errorWidget: (context, url, error) => Center(
-                  child: Icon(Icons.broken_image_outlined, color: Theme.of(context).colorScheme.outline),
-                ),
-              ),
-            ),
-          ),
+        errorWidget: (context, url, error) => Center(
+          child: Icon(Icons.broken_image_outlined, color: neo.borderColor),
         ),
-      ],
+      ),
     );
   }
 }
