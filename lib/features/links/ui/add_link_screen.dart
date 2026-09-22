@@ -336,37 +336,33 @@ class _ImagePreview extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final neo = context.neoBrutal;
-    // Single border on all sides (matching the text fields), with a hard
-    // offset shadow that appears only on the bottom-right — no double border.
-    // The image is clipped to the full rounded box (clipBehavior) and the
-    // border is painted on top (foregroundDecoration) so the image sits flush
-    // against the border with no inset gap.
+    // Single border on all sides (matching the text fields). The border lives
+    // in `decoration`, which insets the child by its width, and the image is
+    // clipped to the inner radius (outer - borderWidth) so it nests inside the
+    // border and never spills over the rounded corners.
     return Container(
       height: 140,
       width: double.infinity,
-      clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.shadowSky,
-            offset: const Offset(4, 4),
-            blurRadius: 0,
-          ),
-        ],
-      ),
-      foregroundDecoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
         border: Border.all(color: neo.borderColor, width: neo.borderWidth),
       ),
-      child: CachedNetworkImage(
-        imageUrl: imageUrl,
-        fit: BoxFit.cover,
-        placeholder: (context, url) => const Center(
-          child: CircularProgressIndicator(strokeWidth: 2),
-        ),
-        errorWidget: (context, url, error) => Center(
-          child: Icon(Icons.broken_image_outlined, color: neo.borderColor),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(AppSpacing.radiusMd - neo.borderWidth),
+        child: CachedNetworkImage(
+          imageUrl: imageUrl,
+          fit: BoxFit.cover,
+          // Fill the inner box so BoxFit.cover has bounds to cover — without
+          // explicit sizing the image lays out at its intrinsic size.
+          width: double.infinity,
+          height: double.infinity,
+          placeholder: (context, url) => const Center(
+            child: CircularProgressIndicator(strokeWidth: 2),
+          ),
+          errorWidget: (context, url, error) => Center(
+            child: Icon(Icons.broken_image_outlined, color: neo.borderColor),
+          ),
         ),
       ),
     );
