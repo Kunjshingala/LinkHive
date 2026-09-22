@@ -18,7 +18,6 @@ import '../../features/links/bloc/link_event.dart';
 import '../../features/links/bloc/link_state.dart';
 import '../../features/links/models/link_model.dart';
 import '../../features/links/repository/link_repository.dart';
-import '../../sharedWidgets/add_category_chip.dart';
 import '../../sharedWidgets/category_chip.dart';
 import '../../sharedWidgets/confirmation_bottom_sheet.dart';
 import '../../sharedWidgets/custom_button.dart';
@@ -107,223 +106,37 @@ class _HomeScreenContentState extends State<_HomeScreenContent> {
           backgroundColor: Theme.of(context).scaffoldBackgroundColor,
           body: SafeArea(
             bottom: false,
-            child: Column(
-              children: [
-                // ─── Header ─────────────────────────────────────────────
-                _buildHeader(context),
-
-                // ─── Body List ──────────────────────────────────────────
-                Expanded(
-                  child: BlocConsumer<LinkBloc, LinkState>(
-                    listener: (context, state) {
-                      if (state is LinkError &&
-                          state.code == LinkErrorCode.duplicateCategory) {
-                        showSnackBar(context.l10n.categoryAlreadyExists);
-                      }
-                    },
-                    builder: (context, state) {
-                      if (state is LinkLoading) {
-                        return Center(
-                          child: CircularProgressIndicator(
-                            color: Theme.of(context).colorScheme.primary,
-                          ),
-                        );
-                      }
-
-                      final links = state is LinksLoaded ? state.links : [];
-                      final searchQuery = state is LinksLoaded
-                          ? state.searchQuery
-                          : '';
-
-                      if (links.isEmpty) {
-                        return _buildEmptyState(
-                          context,
-                          state is LinksLoaded && state.hasActiveFilter,
-                        );
-                      }
-
-                      final upNextLinks = state is LinksLoaded
-                          ? state.upNextLinks
-                          : <LinkModel>[];
-                      final unreadCount =
-                          state is LinksLoaded ? state.unreadCount : 0;
-                      final noFilter =
-                          state is LinksLoaded && !state.hasActiveFilter;
-                      final showUpNext = upNextLinks.isNotEmpty && noFilter;
-                      // When there are links but none are unread, the Up Next
-                      // strip is replaced by an "All caught up" banner.
-                      final showAllCaughtUp =
-                          noFilter && unreadCount == 0 && links.isNotEmpty;
-                      final topOffset = (showUpNext || showAllCaughtUp) ? 1 : 0;
-
-                      // Group the list under Today / This week / Older headers.
-                      // Disabled during an active search so short result sets
-                      // aren't cluttered with section labels.
-                      final grouped = searchQuery.trim().isEmpty;
-                      final rows = _buildHomeRows(
-                        context,
-                        List<LinkModel>.from(links),
-                        grouped: grouped,
-                      );
-
-                      return RefreshIndicator(
-                        color: Theme.of(context).colorScheme.primary,
-                        onRefresh: () async {
-                          final completer = Completer<void>();
-                          context.read<LinkBloc>().add(
-                            LinkSyncRequested(completer: completer),
-                          );
-                          return completer.future;
-                        },
-                        child: ListView.separated(
-                          controller: _scrollController,
-                          physics: const AlwaysScrollableScrollPhysics(),
-                          padding: EdgeInsets.fromLTRB(
-                            AppSpacing.pageH,
-                            AppSpacing.md,
-                            AppSpacing.pageH,
-                            AppSpacing.xxl + 20,
-                          ),
-                          itemCount: rows.length +
-                              topOffset +
-                              (state is LinksLoaded && !state.hasReachedMax
-                                  ? 1
-                                  : 0),
-                          separatorBuilder: (context, i) =>
-                              SizedBox(height: AppSpacing.lg),
-                          itemBuilder: (context, index) {
-                            // ── Top slot: Up Next strip or All caught up ──
-                            if (topOffset == 1 && index == 0) {
-                              if (showUpNext) {
-                                return _UpNextStrip(
-                                  links: upNextLinks,
-                                  onLinkTap: (link) async {
-                                    final uri = Uri.tryParse(link.url);
-                                    if (uri != null) {
-                                      final launched = await launchUrl(uri, mode: LaunchMode.externalApplication);
-                                      if (!launched && context.mounted) {
-                                        showSnackBar('Could not open link');
-                                      }
-                                    }
-                                    if (context.mounted) {
-                                      context.read<LinkBloc>().add(LinkMarkAsRead(link.id));
-                                    }
-                                  },
-                                );
-                              }
-                              return const _AllCaughtUpBanner();
-                            }
-
-                            final rowIndex = index - topOffset;
-
-                            // ── Load-more indicator ──
-                            if (rowIndex >= rows.length) {
-                              return Center(
-                                child: Padding(
-                                  padding: EdgeInsets.all(AppSpacing.md),
-                                  child: SizedBox(
-                                    width: 24,
-                                    height: 24,
-                                    child: CircularProgressIndicator(
-                                      color: Theme.of(context).colorScheme.primary,
-                                      strokeWidth: 2,
-                                    ),
-                                  ),
-                                ),
-                              );
-                            }
-
-                            final row = rows[rowIndex];
-
-                            // ── Time-group section header ──
-                            if (row is _HeaderRow) {
-                              return Padding(
-                                padding: EdgeInsets.only(
-                                  top: rowIndex == 0 ? 0 : AppSpacing.sm,
-                                  bottom: AppSpacing.xs,
-                                ),
-                                child: Text(
-                                  row.label,
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .labelLarge!
-                                      .copyWith(fontWeight: FontWeight.w700),
-                                ),
-                              );
-                            }
-
-                            final link = (row as _LinkRow).link;
-                            return Dismissible(
-                              key: ValueKey('dismiss_${link.id}'),
-                              // Right swipe (startToEnd): toggle read/unread.
-                              background: _SwipeActionBackground(
-                                alignment: AlignmentDirectional.centerStart,
-                                color: AppColors.success,
-                                icon: link.isRead
-                                    ? Icons.mark_email_unread_rounded
-                                    : Icons.check_circle_rounded,
-                              ),
-                              // Left swipe (endToStart): delete.
-                              secondaryBackground: _SwipeActionBackground(
-                                alignment: AlignmentDirectional.centerEnd,
-                                color: Theme.of(context).colorScheme.error,
-                                icon: Icons.delete_outline_rounded,
-                              ),
-                              // Return false in every branch: the card never
-                              // dismisses itself. Read toggles rebuild in place;
-                              // delete removes the row via the bloc's list update,
-                              // avoiding Flutter's "dismissed widget still in tree".
-                              confirmDismiss: (direction) async {
-                                if (direction ==
-                                    DismissDirection.startToEnd) {
-                                  context.read<LinkBloc>().add(
-                                    link.isRead
-                                        ? LinkMarkAsUnread(link.id)
-                                        : LinkMarkAsRead(link.id),
-                                  );
-                                  return false;
-                                }
-                                final confirm =
-                                    await showConfirmationBottomSheet(
-                                  context: context,
-                                  title: context.l10n.linkDeleteTitle,
-                                  message: context.l10n.linkDeleteMessage,
-                                  confirmLabel: context.l10n.linkDeleteLabel,
-                                  cancelLabel: context.l10n.accountCancel,
-                                  titleIcon: Icons.warning_amber_rounded,
-                                  isDestructive: true,
-                                );
-                                if (confirm == true && context.mounted) {
-                                  context.read<LinkBloc>().add(
-                                    LinkDeleteRequested(link.id),
-                                  );
-                                }
-                                return false;
-                              },
-                              child: Opacity(
-                                opacity: link.isRead ? 0.55 : 1.0,
-                                child: _NeoLinkCardWrapper(
-                                  child: LinkCard(
-                                    link: link,
-                                    searchQuery: searchQuery,
-                                    onEdit: () => context.push(
-                                      '/editLink',
-                                      extra: link,
-                                    ),
-                                    onDelete: () => context.read<LinkBloc>().add(
-                                      LinkDeleteRequested(link.id),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            );
-                          },
-                        ),
-                      );
-                    },
-                  ),
-                ),
-              ],
+            child: RefreshIndicator(
+              color: Theme.of(context).colorScheme.primary,
+              onRefresh: () async {
+                final completer = Completer<void>();
+                context.read<LinkBloc>().add(
+                  LinkSyncRequested(completer: completer),
+                );
+                return completer.future;
+              },
+              child: BlocConsumer<LinkBloc, LinkState>(
+                listener: (context, state) {
+                  if (state is LinkError &&
+                      state.code == LinkErrorCode.duplicateCategory) {
+                    showSnackBar(context.l10n.categoryAlreadyExists);
+                  }
+                },
+                builder: (context, state) {
+                  return CustomScrollView(
+                    controller: _scrollController,
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    slivers: [
+                      _buildSliverAppBar(context, state),
+                      SliverPersistentHeader(
+                        pinned: true,
+                        delegate: _buildFiltersDelegate(context, state),
+                      ),
+                      ..._buildContentSlivers(context, state),
+                    ],
+                  );
+                },
+              ),
             ),
           ),
         ),
@@ -331,90 +144,417 @@ class _HomeScreenContentState extends State<_HomeScreenContent> {
     );
   }
 
-  Widget _buildHeader(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.symmetric(
-        horizontal: AppSpacing.pageH,
-        vertical: AppSpacing.md,
+  // ─── Sliver App Bar ─────────────────────────────────────────────────────
+  /// Collapsing app bar: the logo + "Links" title sits low when expanded and
+  /// rises to the centre of the toolbar as the list scrolls up. The account
+  /// and add buttons stay pinned as leading/action.
+  Widget _buildSliverAppBar(BuildContext context, LinkState state) {
+    final unread = state is LinksLoaded ? state.unreadCount : 0;
+    return SliverAppBar(
+      pinned: true,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      surfaceTintColor: AppColors.transparent,
+      elevation: 0,
+      scrolledUnderElevation: 0,
+      automaticallyImplyLeading: false,
+      expandedHeight: 132,
+      leadingWidth: AppSpacing.appBarLeadingWidth,
+      leading: Padding(
+        padding: const EdgeInsetsDirectional.only(start: AppSpacing.pageH),
+        child: NeoBrutalistButton(
+          icon: Icons.person_outline_rounded,
+          onPressed: () => context.pushNamed(MyRouteName.accountScreen),
+          shape: BoxShape.circle,
+        ),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              // Account Button
-              NeoBrutalistButton(
-                icon: Icons.person_outline_rounded,
-                onPressed: () => context.pushNamed(MyRouteName.accountScreen),
-                shape: BoxShape.circle,
+      actions: [
+        NeoBrutalistButton(
+          icon: Icons.add_rounded,
+          shadowColor: AppColors.success,
+          onPressed: () {
+            context.pushNamed(MyRouteName.addLink).then((value) {
+              // ignore: use_build_context_synchronously
+              if (context.mounted) {
+                context.read<LinkBloc>().add(LinkLoadRequested());
+              }
+            });
+          },
+          shape: BoxShape.circle,
+        ),
+        const SizedBox(width: AppSpacing.pageH),
+      ],
+      flexibleSpace: LayoutBuilder(
+        builder: (context, constraints) {
+          final settings = context
+              .dependOnInheritedWidgetOfExactType<FlexibleSpaceBarSettings>();
+          final maxE = settings?.maxExtent ?? constraints.maxHeight;
+          final minE = settings?.minExtent ?? kToolbarHeight;
+          // Clamp the extent so a top overscroll (currentExtent > maxExtent)
+          // can't stretch the flexible space and drag the title down — it
+          // stays put at the fully-expanded position.
+          final currentE = (settings?.currentExtent ?? maxE)
+              .clamp(minE, maxE)
+              .toDouble();
+          final delta = maxE - minE;
+          // t = 0 fully expanded, t = 1 fully collapsed.
+          final t = delta > 0 ? (1 - (currentE - minE) / delta) : 0.0;
+          // f = 1 expanded → 0 collapsed. The title/logo shrink and the row
+          // moves from bottom-left (aligned with the list) to the toolbar
+          // centre. Bottom padding fades to 0 when collapsed so the row lands
+          // on the same vertical line as the leading/action buttons.
+          final f = 1 - t;
+          final fontSize = 22 + 12 * f; // 34 expanded → 22 collapsed
+          final logoSize = 24 + 10 * f; // 34 expanded → 24 collapsed
+          // A fixed-height box pinned to the top of the (possibly stretched)
+          // app bar, so its contents never follow an overscroll stretch.
+          return Align(
+            alignment: Alignment.topCenter,
+            child: SizedBox(
+              height: currentE,
+              child: Padding(
+                padding: EdgeInsets.only(
+                  left: AppSpacing.pageH,
+                  right: AppSpacing.pageH,
+                  bottom: AppSpacing.sm * f,
+                ),
+                child: Align(
+                  alignment: Alignment(-1 + t, 1 - t),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      AppLogo(size: logoSize),
+                      const SizedBox(width: 8),
+                      Text(
+                        context.l10n.homeTitle,
+                        style: Theme.of(context)
+                            .textTheme
+                            .headlineMedium!
+                            .copyWith(fontSize: fontSize),
+                      ),
+                      if (unread > 0) ...[
+                        const SizedBox(width: 8),
+                        _unreadBadge(context, unread),
+                      ],
+                    ],
+                  ),
+                ),
               ),
-              // Plus icon
-              NeoBrutalistButton(
-                icon: Icons.add_rounded,
-                shadowColor: AppColors.success,
-                onPressed: () {
-                  context.pushNamed(MyRouteName.addLink).then((value) {
-                    // Reload the list when AddLinkScreen pops (save or cancel).
-                    // ignore: use_build_context_synchronously
-                    if (context.mounted) {
-                      context.read<LinkBloc>().add(LinkLoadRequested());
-                    }
-                  });
-                },
-                shape: BoxShape.circle,
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _unreadBadge(BuildContext context, int unread) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      decoration: BoxDecoration(
+        color: AppColors.accentOrange,
+        borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
+        border: Border.all(
+          color: Theme.of(context).colorScheme.outline,
+          width: 1.5,
+        ),
+      ),
+      child: Text(
+        '$unread',
+        style: Theme.of(context).textTheme.labelSmall!.copyWith(
+          fontWeight: FontWeight.w700,
+          color: Theme.of(context).colorScheme.onSurface,
+        ),
+      ),
+    );
+  }
+
+  // ─── Pinned Filters ─────────────────────────────────────────────────────
+  /// The pinned search + category + priority header. When collapsed by scroll
+  /// the "Categories"/"Priorities" labels fade out, leaving just the search bar
+  /// and the two horizontal chip rows.
+  _PinnedFiltersDelegate _buildFiltersDelegate(
+    BuildContext context,
+    LinkState state,
+  ) {
+    final activeCategory = state is LinksLoaded
+        ? state.activeCategory
+        : context.l10n.categoryAll;
+    final activePriority = state is LinksLoaded ? state.activePriority : 'All';
+    final builtInCategories = [
+      context.l10n.categoryAll,
+      ...CategoryUtils.suggestedCategories,
+    ];
+    final customCategories = state is LinksLoaded
+        ? state.customCategories
+        : <dynamic>[];
+
+    return _PinnedFiltersDelegate(
+      background: Theme.of(context).scaffoldBackgroundColor,
+      builder: (context, t) {
+        return Padding(
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.pageH,
+            vertical: _kFilterVPad,
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SizedBox(height: _kSearchH, child: _buildSearchBar(context)),
+              const SizedBox(height: _kFilterGap),
+              _collapsibleFilterLabel(context, context.l10n.homeCategoriesLabel, t),
+              SizedBox(
+                height: _kChipsH,
+                child: _categoryChipsRow(
+                  context,
+                  builtInCategories,
+                  customCategories,
+                  activeCategory,
+                ),
+              ),
+              // Gap between the two chip rows tightens as the header collapses.
+              SizedBox(
+                height: _kFilterGapCollapsed +
+                    (_kFilterGap - _kFilterGapCollapsed) * (1 - t),
+              ),
+              _collapsibleFilterLabel(context, context.l10n.homePrioritiesLabel, t),
+              SizedBox(
+                height: _kChipsH,
+                child: _priorityChipsRow(context, activePriority),
               ),
             ],
           ),
-          SizedBox(height: AppSpacing.lg),
-          BlocBuilder<LinkBloc, LinkState>(
-            buildWhen: (prev, next) {
-              final p = prev is LinksLoaded ? prev.unreadCount : 0;
-              final n = next is LinksLoaded ? next.unreadCount : 0;
-              return p != n;
-            },
-            builder: (context, state) {
-              final unread = state is LinksLoaded ? state.unreadCount : 0;
-              return Row(
-                children: [
-                  const AppLogo(size: 36),
-                  const SizedBox(width: 12),
-                  Text(
-                    context.l10n.homeTitle,
-                    style: Theme.of(context).textTheme.displayLarge!,
-                  ),
-                  if (unread > 0) ...[
-                    const SizedBox(width: 8),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                      decoration: BoxDecoration(
-                        color: AppColors.accentOrange,
-                        borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
-                        border: Border.all(
-                          color: Theme.of(context).colorScheme.outline,
-                          width: 1.5,
-                        ),
-                      ),
-                      child: Text(
-                        '$unread',
-                        style: Theme.of(context).textTheme.labelSmall!.copyWith(
-                          fontWeight: FontWeight.w700,
-                          color: Theme.of(context).colorScheme.onSurface,
-                        ),
-                      ),
-                    ),
-                  ],
-                ],
-              );
-            },
+        );
+      },
+    );
+  }
+
+  /// A filter section label that collapses its height and fades out as the
+  /// pinned header shrinks ([t] goes 0 → 1).
+  Widget _collapsibleFilterLabel(BuildContext context, String text, double t) {
+    final f = (1 - t).clamp(0.0, 1.0);
+    return ClipRect(
+      child: Align(
+        alignment: Alignment.topLeft,
+        heightFactor: f,
+        child: Opacity(
+          opacity: f,
+          child: SizedBox(
+            height: _kFilterLabelH,
+            width: double.infinity,
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                text,
+                style: Theme.of(
+                  context,
+                ).textTheme.labelLarge!.copyWith(fontWeight: FontWeight.w600),
+              ),
+            ),
           ),
-          SizedBox(height: AppSpacing.md),
-          _buildSearchBar(context),
-          SizedBox(height: AppSpacing.md),
-          _buildCategoryFilters(context),
-        ],
+        ),
       ),
     );
+  }
+
+  // ─── Content Slivers ────────────────────────────────────────────────────
+  List<Widget> _buildContentSlivers(BuildContext context, LinkState state) {
+    if (state is LinkLoading) {
+      return [
+        SliverFillRemaining(
+          hasScrollBody: false,
+          child: Center(
+            child: CircularProgressIndicator(
+              color: Theme.of(context).colorScheme.primary,
+            ),
+          ),
+        ),
+      ];
+    }
+
+    final links = state is LinksLoaded ? state.links : const <LinkModel>[];
+    final searchQuery = state is LinksLoaded ? state.searchQuery : '';
+
+    if (links.isEmpty) {
+      return [
+        SliverFillRemaining(
+          hasScrollBody: false,
+          child: _buildEmptyState(
+            context,
+            state is LinksLoaded && state.hasActiveFilter,
+          ),
+        ),
+      ];
+    }
+
+    final upNextLinks = state is LinksLoaded
+        ? state.upNextLinks
+        : const <LinkModel>[];
+    final unreadCount = state is LinksLoaded ? state.unreadCount : 0;
+    final noFilter = state is LinksLoaded && !state.hasActiveFilter;
+    final showUpNext = upNextLinks.isNotEmpty && noFilter;
+    final showAllCaughtUp = noFilter && unreadCount == 0 && links.isNotEmpty;
+    final grouped = searchQuery.trim().isEmpty;
+    final rows = _buildHomeRows(
+      context,
+      List<LinkModel>.from(links),
+      grouped: grouped,
+    );
+    final hasMore = state is LinksLoaded && !state.hasReachedMax;
+
+    return [
+      if (showUpNext)
+        SliverToBoxAdapter(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(
+              AppSpacing.pageH,
+              AppSpacing.md,
+              AppSpacing.pageH,
+              AppSpacing.lg,
+            ),
+            child: _UpNextStrip(
+              links: upNextLinks,
+              onLinkTap: (link) => _openUpNextLink(context, link),
+            ),
+          ),
+        )
+      else if (showAllCaughtUp)
+        const SliverToBoxAdapter(
+          child: Padding(
+            padding: EdgeInsets.fromLTRB(
+              AppSpacing.pageH,
+              AppSpacing.md,
+              AppSpacing.pageH,
+              AppSpacing.lg,
+            ),
+            child: _AllCaughtUpBanner(),
+          ),
+        )
+      else
+        const SliverToBoxAdapter(child: SizedBox(height: AppSpacing.md)),
+      SliverPadding(
+        padding: const EdgeInsets.fromLTRB(
+          AppSpacing.pageH,
+          0,
+          AppSpacing.pageH,
+          AppSpacing.xxl + 20,
+        ),
+        sliver: SliverList(
+          delegate: SliverChildBuilderDelegate((context, index) {
+            if (index >= rows.length) {
+              return const Padding(
+                padding: EdgeInsets.all(AppSpacing.md),
+                child: Center(
+                  child: SizedBox(
+                    width: 24,
+                    height: 24,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  ),
+                ),
+              );
+            }
+            return _buildListItem(context, rows[index], searchQuery, index == 0);
+          }, childCount: rows.length + (hasMore ? 1 : 0)),
+        ),
+      ),
+    ];
+  }
+
+  Widget _buildListItem(
+    BuildContext context,
+    _HomeRow row,
+    String searchQuery,
+    bool isFirst,
+  ) {
+    // ── Time-group section header ──
+    if (row is _HeaderRow) {
+      return Padding(
+        padding: EdgeInsets.only(
+          top: isFirst ? 0 : AppSpacing.sm,
+          bottom: AppSpacing.sm,
+        ),
+        child: Text(
+          row.label,
+          style: Theme.of(
+            context,
+          ).textTheme.labelLarge!.copyWith(fontWeight: FontWeight.w700),
+        ),
+      );
+    }
+
+    final link = (row as _LinkRow).link;
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppSpacing.lg),
+      child: Dismissible(
+        key: ValueKey('dismiss_${link.id}'),
+        // Right swipe (startToEnd): toggle read/unread.
+        background: _SwipeActionBackground(
+          alignment: AlignmentDirectional.centerStart,
+          color: AppColors.success,
+          icon: link.isRead
+              ? Icons.mark_email_unread_rounded
+              : Icons.check_circle_rounded,
+        ),
+        // Left swipe (endToStart): delete.
+        secondaryBackground: _SwipeActionBackground(
+          alignment: AlignmentDirectional.centerEnd,
+          color: Theme.of(context).colorScheme.error,
+          icon: Icons.delete_outline_rounded,
+        ),
+        // Return false in every branch: the card never dismisses itself. Read
+        // toggles rebuild in place; delete removes the row via the bloc's list
+        // update, avoiding Flutter's "dismissed widget still in tree".
+        confirmDismiss: (direction) async {
+          if (direction == DismissDirection.startToEnd) {
+            context.read<LinkBloc>().add(
+              link.isRead
+                  ? LinkMarkAsUnread(link.id)
+                  : LinkMarkAsRead(link.id),
+            );
+            return false;
+          }
+          final confirm = await showConfirmationBottomSheet(
+            context: context,
+            title: context.l10n.linkDeleteTitle,
+            message: context.l10n.linkDeleteMessage,
+            confirmLabel: context.l10n.linkDeleteLabel,
+            cancelLabel: context.l10n.accountCancel,
+            titleIcon: Icons.warning_amber_rounded,
+            isDestructive: true,
+          );
+          if (confirm == true && context.mounted) {
+            context.read<LinkBloc>().add(LinkDeleteRequested(link.id));
+          }
+          return false;
+        },
+        child: Opacity(
+          opacity: link.isRead ? 0.55 : 1.0,
+          child: _NeoLinkCardWrapper(
+            child: LinkCard(
+              link: link,
+              searchQuery: searchQuery,
+              onEdit: () => context.push('/editLink', extra: link),
+              onDelete: () =>
+                  context.read<LinkBloc>().add(LinkDeleteRequested(link.id)),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _openUpNextLink(BuildContext context, LinkModel link) async {
+    final uri = Uri.tryParse(link.url);
+    if (uri != null) {
+      final launched = await launchUrl(
+        uri,
+        mode: LaunchMode.externalApplication,
+      );
+      if (!launched && context.mounted) {
+        showSnackBar('Could not open link');
+      }
+    }
+    if (context.mounted) {
+      context.read<LinkBloc>().add(LinkMarkAsRead(link.id));
+    }
   }
 
   Widget _buildSearchBar(BuildContext context) {
@@ -441,147 +581,101 @@ class _HomeScreenContentState extends State<_HomeScreenContent> {
     );
   }
 
-  Widget _buildCategoryFilters(BuildContext context) {
-    return BlocBuilder<LinkBloc, LinkState>(
-      builder: (context, state) {
-        final activeCategory = state is LinksLoaded
-            ? state.activeCategory
-            : context.l10n.categoryAll;
-        final activePriority = state is LinksLoaded
-            ? state.activePriority
-            : 'All';
-
-        // Build the category list: "All" + built-ins + user-created custom ones.
-        // Reading customCategories from state (not repository directly) so the
-        // row rebuilds reactively after every add/delete.
-        final builtInCategories = [
-          context.l10n.categoryAll,
-          ...CategoryUtils.suggestedCategories,
-        ];
-        final customCategories = state is LinksLoaded
-            ? state.customCategories
-            : <dynamic>[];
-
-        final priorities = ['All', 'High', 'Normal', 'Low'];
-
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // --- Categories Label ---
-            Text(
-              context.l10n.homeCategoriesLabel,
-              style: Theme.of(
-                context,
-              ).textTheme.labelLarge!.copyWith(fontWeight: FontWeight.w600),
-            ),
-            SizedBox(height: AppSpacing.sm),
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              clipBehavior: Clip.none,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
-                  // Built-in chips (All + suggested)
-                  ...builtInCategories.map((cat) {
-                    return Padding(
-                      padding: EdgeInsets.only(right: AppSpacing.sm),
-                      child: CategoryChip(
-                        label: CategoryUtils.getLocalizedCategory(context, cat),
-                        isSelected: activeCategory == cat,
-                        onTap: () {
-                          context.read<LinkBloc>().add(
-                            LinkCategoryFilterChanged(cat),
-                          );
-                        },
-                      ),
-                    );
-                  }),
-
-                  // User-created custom category chips with long-press to delete
-                  ...customCategories.map((cat) {
-                    return Padding(
-                      padding: EdgeInsets.only(right: AppSpacing.sm),
-                      child: GestureDetector(
-                        onLongPress: () async {
-                          // Uses the project-standard confirmation bottom sheet
-                          // (not AlertDialog — all popups must be bottom sheets).
-                          final confirm = await showConfirmationBottomSheet(
-                            context: context,
-                            title: cat.name,
-                            message: context.l10n.deleteCategoryConfirm,
-                            confirmLabel: context.l10n.accountDelete,
-                            cancelLabel: context.l10n.accountCancel,
-                            titleIcon: Icons.label_off_rounded,
-                            isDestructive: true,
-                          );
-                          if (confirm == true) {
-                            // ignore: use_build_context_synchronously
-                            context.read<LinkBloc>().add(
-                              LinkCustomCategoryDeleted(cat.id),
-                            );
-                          }
-                        },
-                        child: CategoryChip(
-                          label: cat.name, // shown as-is; user typed it
-                          isSelected: activeCategory == cat.name,
-                          onTap: () {
-                            context.read<LinkBloc>().add(
-                              LinkCategoryFilterChanged(cat.name),
-                            );
-                          },
-                        ),
-                      ),
-                    );
-                  }),
-
-                  // "+ New" chip — opens dialog to create a custom category
-                  AddCategoryChip(
-                    onAdd: (name) => context.read<LinkBloc>().add(
-                      LinkCustomCategoryAdded(name),
-                    ),
-                  ),
-                ],
+  /// Horizontal row of category filter chips (built-in + custom + "New").
+  Widget _categoryChipsRow(
+    BuildContext context,
+    List builtInCategories,
+    List customCategories,
+    String activeCategory,
+  ) {
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      clipBehavior: Clip.none,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.start,
+        children: [
+          // Built-in chips (All + suggested)
+          ...builtInCategories.map((cat) {
+            return Padding(
+              padding: EdgeInsets.only(right: AppSpacing.sm),
+              child: CategoryChip(
+                label: CategoryUtils.getLocalizedCategory(context, cat),
+                isSelected: activeCategory == cat,
+                onTap: () {
+                  context.read<LinkBloc>().add(LinkCategoryFilterChanged(cat));
+                },
               ),
-            ),
-            SizedBox(height: AppSpacing.md),
-            // --- Priorities Label ---
-            Text(
-              context.l10n.homePrioritiesLabel,
-              style: Theme.of(
-                context,
-              ).textTheme.labelLarge!.copyWith(fontWeight: FontWeight.w600),
-            ),
-            SizedBox(height: AppSpacing.sm),
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              clipBehavior: Clip.none,
-              child: Row(
-                children: priorities.map((prio) {
-                  final label = switch (prio) {
-                    'All' => context.l10n.categoryAll,
-                    'High' => context.l10n.priorityHigh,
-                    'Normal' => context.l10n.priorityNormal,
-                    'Low' => context.l10n.priorityLow,
-                    _ => prio,
-                  };
-                  return Padding(
-                    padding: EdgeInsets.only(right: AppSpacing.sm),
-                    child: CategoryChip(
-                      label: label,
-                      isSelected: activePriority == prio,
-                      onTap: () {
-                        context.read<LinkBloc>().add(
-                          LinkPriorityFilterChanged(prio),
-                        );
-                      },
-                    ),
+            );
+          }),
+
+          // User-created custom category chips with long-press to delete
+          ...customCategories.map((cat) {
+            return Padding(
+              padding: EdgeInsets.only(right: AppSpacing.sm),
+              child: GestureDetector(
+                onLongPress: () async {
+                  // Uses the project-standard confirmation bottom sheet
+                  // (not AlertDialog — all popups must be bottom sheets).
+                  final confirm = await showConfirmationBottomSheet(
+                    context: context,
+                    title: cat.name,
+                    message: context.l10n.deleteCategoryConfirm,
+                    confirmLabel: context.l10n.accountDelete,
+                    cancelLabel: context.l10n.accountCancel,
+                    titleIcon: Icons.label_off_rounded,
+                    isDestructive: true,
                   );
-                }).toList(),
+                  if (confirm == true) {
+                    // ignore: use_build_context_synchronously
+                    context.read<LinkBloc>().add(
+                      LinkCustomCategoryDeleted(cat.id),
+                    );
+                  }
+                },
+                child: CategoryChip(
+                  label: cat.name, // shown as-is; user typed it
+                  isSelected: activeCategory == cat.name,
+                  onTap: () {
+                    context.read<LinkBloc>().add(
+                      LinkCategoryFilterChanged(cat.name),
+                    );
+                  },
+                ),
               ),
+            );
+          }),
+        ],
+      ),
+    );
+  }
+
+  /// Horizontal row of priority filter chips.
+  Widget _priorityChipsRow(BuildContext context, String activePriority) {
+    final priorities = ['All', 'High', 'Normal', 'Low'];
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      clipBehavior: Clip.none,
+      child: Row(
+        children: priorities.map((prio) {
+          final label = switch (prio) {
+            'All' => context.l10n.categoryAll,
+            'High' => context.l10n.priorityHigh,
+            'Normal' => context.l10n.priorityNormal,
+            'Low' => context.l10n.priorityLow,
+            _ => prio,
+          };
+          return Padding(
+            padding: EdgeInsets.only(right: AppSpacing.sm),
+            child: CategoryChip(
+              label: label,
+              isSelected: activePriority == prio,
+              onTap: () {
+                context.read<LinkBloc>().add(LinkPriorityFilterChanged(prio));
+              },
             ),
-          ],
-        );
-      },
+          );
+        }).toList(),
+      ),
     );
   }
 
@@ -827,71 +921,91 @@ class _UpNextStrip extends StatelessWidget {
   }
 }
 
-class _UpNextCard extends StatelessWidget {
+class _UpNextCard extends StatefulWidget {
   final LinkModel link;
   final VoidCallback onTap;
 
   const _UpNextCard({required this.link, required this.onTap});
 
   @override
+  State<_UpNextCard> createState() => _UpNextCardState();
+}
+
+class _UpNextCardState extends State<_UpNextCard> {
+  bool _pressed = false;
+
+  void _setPressed(bool value) {
+    if (_pressed != value) setState(() => _pressed = value);
+  }
+
+  @override
   Widget build(BuildContext context) {
     final neo = context.neoBrutal;
-    final host = _host(link.url);
+    final host = _host(widget.link.url);
+    final dx = neo.shadowOffset - 1;
+    final dy = neo.shadowOffset;
 
-    return Stack(
-      children: [
-        Positioned.fill(
-          child: Transform.translate(
-            offset: Offset(neo.shadowOffset - 1, neo.shadowOffset),
-            child: Container(
-              width: 160,
-              decoration: BoxDecoration(
-                color: AppColors.shadowLemon,
-                borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-                border: Border.all(color: neo.borderColor, width: neo.borderWidth),
+    return GestureDetector(
+      onTapDown: (_) => _setPressed(true),
+      onTapUp: (_) {
+        _setPressed(false);
+        widget.onTap();
+      },
+      onTapCancel: () => _setPressed(false),
+      child: Stack(
+        children: [
+          Positioned.fill(
+            child: Transform.translate(
+              offset: Offset(dx, dy),
+              child: Container(
+                width: 160,
+                decoration: BoxDecoration(
+                  color: AppColors.shadowLemon,
+                  borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+                  border: Border.all(color: neo.borderColor, width: neo.borderWidth),
+                ),
               ),
             ),
           ),
-        ),
-        Material(
-          color: Colors.transparent,
-          child: InkWell(
-            onTap: onTap,
-            borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-            child: Container(
-              width: 160,
-              padding: EdgeInsets.all(AppSpacing.sm),
-              decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.surface,
-                borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-                border: Border.all(color: neo.borderColor, width: neo.borderWidth),
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    link.title.isNotEmpty ? link.title : link.url,
-                    maxLines: 3,
-                    overflow: TextOverflow.ellipsis,
-                    style: Theme.of(context).textTheme.bodySmall!.copyWith(
-                      fontWeight: FontWeight.w600,
-                    ),
+          // Slides onto the shadow when pressed, matching the link cards.
+          AnimatedContainer(
+            duration: const Duration(milliseconds: 100),
+            curve: Curves.easeOut,
+            width: 160,
+            padding: EdgeInsets.all(AppSpacing.sm),
+            transform: _pressed
+                ? Matrix4.translationValues(dx, dy, 0)
+                : Matrix4.identity(),
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.surface,
+              borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
+              border: Border.all(color: neo.borderColor, width: neo.borderWidth),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  widget.link.title.isNotEmpty ? widget.link.title : widget.link.url,
+                  maxLines: 3,
+                  overflow: TextOverflow.ellipsis,
+                  style: Theme.of(context).textTheme.bodySmall!.copyWith(
+                    fontWeight: FontWeight.w600,
                   ),
-                  const Spacer(),
-                  Text(
-                    host,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: Theme.of(context).textTheme.labelSmall!.copyWith(
-                      color: Theme.of(context).colorScheme.primary,
-                    ),
+                ),
+                const Spacer(),
+                Text(
+                  host,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: Theme.of(context).textTheme.labelSmall!.copyWith(
+                    color: Theme.of(context).colorScheme.primary,
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
@@ -936,35 +1050,140 @@ class _SwipeActionBackground extends StatelessWidget {
 }
 
 // ─── Neo Brutalist Card Wrapper ───────────────────────────────────────
-class _NeoLinkCardWrapper extends StatelessWidget {
+
+/// Wraps a card with the Neo-Brutalist offset shadow and the same press
+/// effect as [NeoBrutalistButton]: on tap the card slides down-right onto the
+/// shadow so the offset gap collapses.
+///
+/// The press is driven by a [Listener] (pointer events) rather than a gesture
+/// recognizer, so it doesn't steal taps from the card's inner InkWell / 3-dot
+/// menu or the surrounding Dismissible swipe. Movement past a small threshold
+/// cancels the press so scrolling and swiping don't trigger a false press.
+class _NeoLinkCardWrapper extends StatefulWidget {
   final Widget child;
 
   const _NeoLinkCardWrapper({required this.child});
 
   @override
+  State<_NeoLinkCardWrapper> createState() => _NeoLinkCardWrapperState();
+}
+
+class _NeoLinkCardWrapperState extends State<_NeoLinkCardWrapper> {
+  bool _pressed = false;
+  Offset? _downPosition;
+
+  void _setPressed(bool value) {
+    if (_pressed != value) setState(() => _pressed = value);
+  }
+
+  @override
   Widget build(BuildContext context) {
     final neo = context.neoBrutal;
-    return Stack(
-      children: [
-        Positioned.fill(
-          child: Transform.translate(
-            offset: Offset(neo.shadowOffset - 1, neo.shadowOffset),
-            child: Container(
-              decoration: BoxDecoration(
-                color: neo.shadowColor,
-                borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-                border: Border.all(
-                  color: neo.borderColor,
-                  width: neo.borderWidth,
+    final dx = neo.shadowOffset - 1;
+    final dy = neo.shadowOffset;
+
+    return Listener(
+      onPointerDown: (event) {
+        _downPosition = event.position;
+        _setPressed(true);
+      },
+      onPointerMove: (event) {
+        // Cancel the press once the finger moves (a scroll or swipe), so the
+        // effect only fires on genuine taps.
+        if (_pressed &&
+            _downPosition != null &&
+            (event.position - _downPosition!).distance > 12) {
+          _setPressed(false);
+        }
+      },
+      onPointerUp: (_) => _setPressed(false),
+      onPointerCancel: (_) => _setPressed(false),
+      child: Stack(
+        children: [
+          Positioned.fill(
+            child: Transform.translate(
+              offset: Offset(dx, dy),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: neo.shadowColor,
+                  borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+                  border: Border.all(
+                    color: neo.borderColor,
+                    width: neo.borderWidth,
+                  ),
                 ),
               ),
             ),
           ),
-        ),
-        child,
-      ],
+          // Slides onto the shadow when pressed (transform is visual only, so
+          // the Stack still sizes to the card's resting bounds).
+          AnimatedContainer(
+            duration: const Duration(milliseconds: 100),
+            curve: Curves.easeOut,
+            transform: _pressed
+                ? Matrix4.translationValues(dx, dy, 0)
+                : Matrix4.identity(),
+            child: widget.child,
+          ),
+        ],
+      ),
     );
   }
+}
+
+// ─── Pinned Filters Delegate ──────────────────────────────────────────────────
+
+// Fixed heights used to compute the pinned filter header's extents. Kept a bit
+// generous so the search field and chip rows never overflow their slots.
+const double _kSearchH = 60;
+const double _kChipsH = 44;
+const double _kFilterLabelH = 28; // label text + its bottom gap
+const double _kFilterGap = 16;
+const double _kFilterGapCollapsed = 8; // gap between the two chip rows, pinned
+const double _kFilterVPad = 8;
+
+// Expanded height (labels shown, full gaps) and collapsed height (labels hidden
+// and the category↔priority gap tightened).
+const double _kFiltersMaxExtent = _kFilterVPad * 2 +
+    _kSearchH +
+    _kFilterGap +
+    _kFilterLabelH +
+    _kChipsH +
+    _kFilterGap +
+    _kFilterLabelH +
+    _kChipsH;
+const double _kFiltersMinExtent = _kFiltersMaxExtent -
+    2 * _kFilterLabelH -
+    (_kFilterGap - _kFilterGapCollapsed);
+
+/// Pinned header holding the search bar + category/priority chip rows. Shrinks
+/// from [_kFiltersMaxExtent] to [_kFiltersMinExtent] as it scrolls, collapsing
+/// the section labels (driven via the `t` progress passed to [builder]).
+class _PinnedFiltersDelegate extends SliverPersistentHeaderDelegate {
+  final Color background;
+  final Widget Function(BuildContext context, double t) builder;
+
+  _PinnedFiltersDelegate({required this.background, required this.builder});
+
+  @override
+  double get minExtent => _kFiltersMinExtent;
+
+  @override
+  double get maxExtent => _kFiltersMaxExtent;
+
+  @override
+  Widget build(
+    BuildContext context,
+    double shrinkOffset,
+    bool overlapsContent,
+  ) {
+    const range = _kFiltersMaxExtent - _kFiltersMinExtent;
+    final t = (shrinkOffset / range).clamp(0.0, 1.0);
+    return Container(color: background, child: builder(context, t));
+  }
+
+  @override
+  bool shouldRebuild(_PinnedFiltersDelegate oldDelegate) => true;
 }
 
 // Nav Pill functionality removed
