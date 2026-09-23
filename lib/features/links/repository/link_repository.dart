@@ -111,11 +111,10 @@ class LinkRepository {
   }) {
     var filtered = _linksBox.values.toList();
 
-    filtered.sort((a, b) {
-      final aTime = a.syncedAt ?? a.createdAt;
-      final bTime = b.syncedAt ?? b.createdAt;
-      return bTime.compareTo(aTime);
-    });
+    // Sort by save time (createdAt), newest first. Not syncedAt — that is a
+    // server write timestamp that changes on every sync (e.g. marking a link
+    // read), which would otherwise reshuffle the list.
+    filtered.sort((a, b) => b.createdAt.compareTo(a.createdAt));
 
     if (category.isNotEmpty && category != 'All') {
       filtered = filtered

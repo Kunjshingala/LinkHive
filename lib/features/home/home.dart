@@ -710,11 +710,11 @@ class _LinkRow extends _HomeRow {
 }
 
 /// Buckets a link by save time: 0 = today, 1 = this week (last 7 days),
-/// 2 = older. Uses the same `syncedAt ?? createdAt` timestamp the list is
-/// sorted by, so headers appear in order with no repeats.
+/// 2 = older. Uses createdAt (the save time) — the same key the list is sorted
+/// by — so headers stay in order and marking a link read doesn't move it.
 int _timeBucket(LinkModel link) {
-  final ts = link.syncedAt ?? link.createdAt;
-  final dt = DateTime.fromMillisecondsSinceEpoch(ts, isUtc: true).toLocal();
+  final dt =
+      DateTime.fromMillisecondsSinceEpoch(link.createdAt, isUtc: true).toLocal();
   final now = DateTime.now();
   final today = DateTime(now.year, now.month, now.day);
   final linkDay = DateTime(dt.year, dt.month, dt.day);

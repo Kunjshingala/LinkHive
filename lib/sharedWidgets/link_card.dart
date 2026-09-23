@@ -282,9 +282,10 @@ class _TagsRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Use syncedAt as the display time when available (server-authoritative),
-    // otherwise fall back to the local createdAt.
-    final timeAgo = _formatTime(link.syncedAt ?? link.createdAt);
+    // Show time since the link was saved (createdAt), not syncedAt — the latter
+    // is a server write timestamp that changes on every sync (e.g. marking a
+    // link read), which would make the "x ago" label jump to "just now".
+    final timeAgo = _formatTime(link.createdAt);
 
     return Row(
       children: [
