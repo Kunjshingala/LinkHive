@@ -19,6 +19,10 @@ class SplashBloc extends Bloc<SplashEvent, SplashState> {
   ) async {
     emit(const SplashLoading());
     await Future.delayed(_splashDuration);
+    // The splash can be replaced before the timer fires — e.g. a cold-start
+    // share routes to Home + AddLink. Don't emit (which would navigate Home and
+    // clobber that screen) once this bloc has been closed.
+    if (isClosed) return;
     emit(const SplashComplete());
   }
 }

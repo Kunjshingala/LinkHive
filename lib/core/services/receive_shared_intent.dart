@@ -34,7 +34,7 @@ class ReceiveSharedIntent {
       final url = _extractUrl(event);
       if (url != null) {
         printLog(tag: _tag, msg: 'Cold-start shared URL: $url');
-        _navigateToAddLink(url);
+        _navigateToAddLink(url, resetToHome: true);
       } else if (_hasContent(event)) {
         printLog(tag: _tag, msg: 'Non-URL cold-start share ignored');
         showSnackBar('Only URL links can be saved to LinkHive');
@@ -61,7 +61,14 @@ class ReceiveSharedIntent {
     return list.isNotEmpty && list.first?.path != null;
   }
 
-  void _navigateToAddLink(String url) {
+  void _navigateToAddLink(String url, {bool resetToHome = false}) {
+    // On a cold-start share the app is still on the splash screen. Put Home at
+    // the base of the stack first, so the splash's timer can't replace the
+    // AddLink screen (see SplashBloc) and closing AddLink returns to Home
+    // rather than the splash. Foreground shares (app already on Home) just push.
+    if (resetToHome) {
+      router.goNamed(MyRouteName.homeScreen);
+    }
     router.pushNamed(MyRouteName.addLink, extra: url);
   }
 
