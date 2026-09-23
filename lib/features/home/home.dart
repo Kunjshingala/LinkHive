@@ -1068,16 +1068,31 @@ class _SwipeableNeoCardState extends State<_SwipeableNeoCard> {
             if (mounted) _setDirection(null);
             return false;
           },
-          child: Opacity(
-            opacity: link.isRead ? 0.55 : 1.0,
-            child: _PressableCard(
-              child: LinkCard(
-                link: link,
-                searchQuery: widget.searchQuery,
-                onEdit: () => context.push('/editLink', extra: link),
-                onDelete: () =>
-                    context.read<LinkBloc>().add(LinkDeleteRequested(link.id)),
-              ),
+          child: _PressableCard(
+            child: Stack(
+              children: [
+                // Opaque base so a read (dimmed) card fades against the
+                // scaffold, not the colored back box behind it.
+                Positioned.fill(
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).scaffoldBackgroundColor,
+                      borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+                    ),
+                  ),
+                ),
+                Opacity(
+                  opacity: link.isRead ? 0.55 : 1.0,
+                  child: LinkCard(
+                    link: link,
+                    searchQuery: widget.searchQuery,
+                    onEdit: () => context.push('/editLink', extra: link),
+                    onDelete: () => context
+                        .read<LinkBloc>()
+                        .add(LinkDeleteRequested(link.id)),
+                  ),
+                ),
+              ],
             ),
           ),
         ),
