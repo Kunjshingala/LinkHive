@@ -483,61 +483,7 @@ class _HomeScreenContentState extends State<_HomeScreenContent> {
     final link = (row as _LinkRow).link;
     return Padding(
       padding: const EdgeInsets.only(bottom: AppSpacing.lg),
-      child: Dismissible(
-        key: ValueKey('dismiss_${link.id}'),
-        // Right swipe (startToEnd): toggle read/unread.
-        background: _SwipeActionBackground(
-          alignment: AlignmentDirectional.centerStart,
-          color: AppColors.success,
-          icon: link.isRead
-              ? Icons.mark_email_unread_rounded
-              : Icons.check_circle_rounded,
-        ),
-        // Left swipe (endToStart): delete.
-        secondaryBackground: _SwipeActionBackground(
-          alignment: AlignmentDirectional.centerEnd,
-          color: Theme.of(context).colorScheme.error,
-          icon: Icons.delete_outline_rounded,
-        ),
-        // Return false in every branch: the card never dismisses itself. Read
-        // toggles rebuild in place; delete removes the row via the bloc's list
-        // update, avoiding Flutter's "dismissed widget still in tree".
-        confirmDismiss: (direction) async {
-          if (direction == DismissDirection.startToEnd) {
-            context.read<LinkBloc>().add(
-              link.isRead
-                  ? LinkMarkAsUnread(link.id)
-                  : LinkMarkAsRead(link.id),
-            );
-            return false;
-          }
-          final confirm = await showConfirmationBottomSheet(
-            context: context,
-            title: context.l10n.linkDeleteTitle,
-            message: context.l10n.linkDeleteMessage,
-            confirmLabel: context.l10n.linkDeleteLabel,
-            cancelLabel: context.l10n.accountCancel,
-            titleIcon: Icons.warning_amber_rounded,
-            isDestructive: true,
-          );
-          if (confirm == true && context.mounted) {
-            context.read<LinkBloc>().add(LinkDeleteRequested(link.id));
-          }
-          return false;
-        },
-        child: Opacity(
-          opacity: link.isRead ? 0.55 : 1.0,
-          child: _NeoLinkCardWrapper(
-            child: LinkCard(
-              link: link,
-              searchQuery: searchQuery,
-              onEdit: () => context.push('/editLink', extra: link),
-              onDelete: () =>
-                  context.read<LinkBloc>().add(LinkDeleteRequested(link.id)),
-            ),
-          ),
-        ),
-      ),
+      child: _SwipeableNeoCard(link: link, searchQuery: searchQuery),
     );
   }
 
@@ -1018,57 +964,146 @@ class _UpNextCardState extends State<_UpNextCard> {
   }
 }
 
-// ─── Swipe Action Background ──────────────────────────────────────────────────
+// ─── Swipeable Neo Card ───────────────────────────────────────────────────────
 
-/// The colored panel revealed behind a link card during a swipe. [alignment]
-/// controls which edge the icon hugs so it appears from the swiped side.
-class _SwipeActionBackground extends StatelessWidget {
-  final AlignmentGeometry alignment;
-  final Color color;
-  final IconData icon;
+/// A link card with the Neo-Brutalist two-box look plus swipe actions.
+///
+/// The back (offset) box is the mint shadow at rest; while swiping it turns
+/// green (mark read/unread) or red (delete) and shows the action icon — so the
+/// action exactly follows the background box's border/offset while the
+/// foreground card slides over it. confirmDismiss always returns false: reads
+/// toggle in place, deletes remove the row via the bloc (no self-dismiss).
+class _SwipeableNeoCard extends StatefulWidget {
+  final LinkModel link;
+  final String searchQuery;
 
-  const _SwipeActionBackground({
-    required this.alignment,
-    required this.color,
-    required this.icon,
-  });
+  const _SwipeableNeoCard({required this.link, required this.searchQuery});
+
+  @override
+  State<_SwipeableNeoCard> createState() => _SwipeableNeoCardState();
+}
+
+class _SwipeableNeoCardState extends State<_SwipeableNeoCard> {
+  DismissDirection? _direction;
+
+  void _setDirection(DismissDirection? value) {
+    if (_direction != value) setState(() => _direction = value);
+  }
 
   @override
   Widget build(BuildContext context) {
     final neo = context.neoBrutal;
-    return Container(
-      alignment: alignment,
-      padding: EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-      decoration: BoxDecoration(
-        color: color,
-        borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-        border: Border.all(color: neo.borderColor, width: neo.borderWidth),
-      ),
-      child: Icon(icon, color: AppColors.black, size: 26),
+    final cs = Theme.of(context).colorScheme;
+    final link = widget.link;
+
+    // The back (offset) box: mint shadow at rest, green/red while swiping.
+    Color boxColor = neo.shadowColor;
+    IconData? actionIcon;
+    AlignmentGeometry iconAlignment = Alignment.center;
+    if (_direction == DismissDirection.startToEnd) {
+      boxColor = AppColors.success;
+      actionIcon = link.isRead
+          ? Icons.mark_email_unread_rounded
+          : Icons.check_circle_rounded;
+      iconAlignment = AlignmentDirectional.centerStart;
+    } else if (_direction == DismissDirection.endToStart) {
+      boxColor = cs.error;
+      actionIcon = Icons.delete_outline_rounded;
+      iconAlignment = AlignmentDirectional.centerEnd;
+    }
+
+    return Stack(
+      children: [
+        // Back box (offset): the shadow, or the colored action while swiping.
+        Positioned.fill(
+          child: Transform.translate(
+            offset: Offset(neo.shadowOffset - 1, neo.shadowOffset),
+            child: Container(
+              alignment: iconAlignment,
+              padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+              decoration: BoxDecoration(
+                color: boxColor,
+                borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+                border: Border.all(
+                  color: neo.borderColor,
+                  width: neo.borderWidth,
+                ),
+              ),
+              child: actionIcon == null
+                  ? null
+                  : Icon(actionIcon, color: AppColors.black, size: 26),
+            ),
+          ),
+        ),
+        // Foreground card slides over the back box. The Dismissible's own
+        // backgrounds are empty — the colored reveal is the back box behind it.
+        Dismissible(
+          key: ValueKey('dismiss_${link.id}'),
+          onUpdate: (details) =>
+              _setDirection(details.progress > 0 ? details.direction : null),
+          background: const SizedBox.shrink(),
+          secondaryBackground: const SizedBox.shrink(),
+          confirmDismiss: (direction) async {
+            if (direction == DismissDirection.startToEnd) {
+              context.read<LinkBloc>().add(
+                link.isRead
+                    ? LinkMarkAsUnread(link.id)
+                    : LinkMarkAsRead(link.id),
+              );
+              _setDirection(null);
+              return false;
+            }
+            final confirm = await showConfirmationBottomSheet(
+              context: context,
+              title: context.l10n.linkDeleteTitle,
+              message: context.l10n.linkDeleteMessage,
+              confirmLabel: context.l10n.linkDeleteLabel,
+              cancelLabel: context.l10n.accountCancel,
+              titleIcon: Icons.warning_amber_rounded,
+              isDestructive: true,
+            );
+            if (confirm == true && context.mounted) {
+              context.read<LinkBloc>().add(LinkDeleteRequested(link.id));
+            }
+            if (mounted) _setDirection(null);
+            return false;
+          },
+          child: Opacity(
+            opacity: link.isRead ? 0.55 : 1.0,
+            child: _PressableCard(
+              child: LinkCard(
+                link: link,
+                searchQuery: widget.searchQuery,
+                onEdit: () => context.push('/editLink', extra: link),
+                onDelete: () =>
+                    context.read<LinkBloc>().add(LinkDeleteRequested(link.id)),
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
 
-// ─── Neo Brutalist Card Wrapper ───────────────────────────────────────
-
-/// Wraps a card with the Neo-Brutalist offset shadow and the same press
-/// effect as [NeoBrutalistButton]: on tap the card slides down-right onto the
-/// shadow so the offset gap collapses.
+/// Adds the same press effect as [NeoBrutalistButton]: on tap the card slides
+/// down-right onto its shadow so the offset gap collapses. The shadow itself is
+/// drawn by [_SwipeableNeoCard] behind it.
 ///
 /// The press is driven by a [Listener] (pointer events) rather than a gesture
 /// recognizer, so it doesn't steal taps from the card's inner InkWell / 3-dot
 /// menu or the surrounding Dismissible swipe. Movement past a small threshold
 /// cancels the press so scrolling and swiping don't trigger a false press.
-class _NeoLinkCardWrapper extends StatefulWidget {
+class _PressableCard extends StatefulWidget {
   final Widget child;
 
-  const _NeoLinkCardWrapper({required this.child});
+  const _PressableCard({required this.child});
 
   @override
-  State<_NeoLinkCardWrapper> createState() => _NeoLinkCardWrapperState();
+  State<_PressableCard> createState() => _PressableCardState();
 }
 
-class _NeoLinkCardWrapperState extends State<_NeoLinkCardWrapper> {
+class _PressableCardState extends State<_PressableCard> {
   bool _pressed = false;
   Offset? _downPosition;
 
@@ -1098,34 +1133,13 @@ class _NeoLinkCardWrapperState extends State<_NeoLinkCardWrapper> {
       },
       onPointerUp: (_) => _setPressed(false),
       onPointerCancel: (_) => _setPressed(false),
-      child: Stack(
-        children: [
-          Positioned.fill(
-            child: Transform.translate(
-              offset: Offset(dx, dy),
-              child: Container(
-                decoration: BoxDecoration(
-                  color: neo.shadowColor,
-                  borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-                  border: Border.all(
-                    color: neo.borderColor,
-                    width: neo.borderWidth,
-                  ),
-                ),
-              ),
-            ),
-          ),
-          // Slides onto the shadow when pressed (transform is visual only, so
-          // the Stack still sizes to the card's resting bounds).
-          AnimatedContainer(
-            duration: const Duration(milliseconds: 100),
-            curve: Curves.easeOut,
-            transform: _pressed
-                ? Matrix4.translationValues(dx, dy, 0)
-                : Matrix4.identity(),
-            child: widget.child,
-          ),
-        ],
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 100),
+        curve: Curves.easeOut,
+        transform: _pressed
+            ? Matrix4.translationValues(dx, dy, 0)
+            : Matrix4.identity(),
+        child: widget.child,
       ),
     );
   }
