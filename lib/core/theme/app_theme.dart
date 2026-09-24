@@ -32,7 +32,11 @@ ThemeData buildLinkHiveDarkTheme() {
     textPrimary: AppColors.textPrimaryDark,
     textSecondary: AppColors.textSecondaryDark,
     textTertiary: AppColors.textTertiaryDark,
-    shadowColor: AppColors.gray800, // Subtler shadow for dark mode
+    // gray800 used to live here, but it's barely distinguishable from
+    // backgroundDark/surfaceDark — the signature hard-offset shadow (e.g. the
+    // swipe-card box in home.dart) needs real contrast against near-black,
+    // so dark mode keeps the same signature mint used in light mode.
+    shadowColor: AppColors.shadowMint,
   );
 }
 

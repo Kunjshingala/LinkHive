@@ -222,7 +222,9 @@ class _ProfileHeader extends StatelessWidget {
                 child: Text(
                   initial,
                   style: Theme.of(context).textTheme.displayLarge!.copyWith(
-                    color: Theme.of(context).colorScheme.onSurface,
+                    // Fixed: accentBlue stays light in dark mode too, so the
+                    // initial must stay a fixed black rather than flip to onSurface.
+                    color: AppColors.black,
                   ),
                 ),
               ),

@@ -279,7 +279,9 @@ class _HomeScreenContentState extends State<_HomeScreenContent> {
                 style: Theme.of(context).textTheme.labelSmall!.copyWith(
                   fontWeight: FontWeight.w700,
                   fontSize: 10,
-                  color: Theme.of(context).colorScheme.onSurface,
+                  // Fixed: accentOrange stays light in dark mode too, so the
+                  // text must stay a fixed black rather than flip to onSurface.
+                  color: AppColors.black,
                 ),
               ),
             ),
@@ -303,7 +305,8 @@ class _HomeScreenContentState extends State<_HomeScreenContent> {
         '$unread',
         style: Theme.of(context).textTheme.labelSmall!.copyWith(
           fontWeight: FontWeight.w700,
-          color: Theme.of(context).colorScheme.onSurface,
+          // Fixed: same accentOrange-background badge as above.
+          color: AppColors.black,
         ),
       ),
     );
@@ -882,7 +885,7 @@ class _UpNextStrip extends StatelessWidget {
       children: [
         Row(
           children: [
-            Icon(Icons.bolt_rounded, size: 16, color: AppColors.accentOrange),
+            Icon(Icons.bolt_rounded, size: 16, color: AppColors.warning),
             SizedBox(width: AppSpacing.xs),
             Text(
               'Up Next',

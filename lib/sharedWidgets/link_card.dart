@@ -104,7 +104,7 @@ class LinkCard extends StatelessWidget {
               width: 8,
               height: 8,
               decoration: const BoxDecoration(
-                color: AppColors.accentOrange,
+                color: AppColors.warning,
                 shape: BoxShape.circle,
               ),
             ),
@@ -193,11 +193,15 @@ class _LetterAvatar extends StatelessWidget {
   (Color, Color) _avatarColor(String letter, BuildContext context) {
     final code = letter.codeUnitAt(0);
     final onSurface = Theme.of(context).colorScheme.onSurface;
+    // The four accent pastels are fixed light colors in both themes, so their
+    // letter needs fixed black text — onSurface flips to light gray in dark
+    // mode and would be unreadable against them. The neutral fallback uses a
+    // theme-aware surface, so it correctly keeps onSurface.
     final palette = [
-      (AppColors.accentBlue, onSurface),
-      (AppColors.accentGreen, onSurface),
-      (AppColors.accentOrange, onSurface),
-      (AppColors.accentPurple, onSurface),
+      (AppColors.accentBlue, AppColors.black),
+      (AppColors.accentGreen, AppColors.black),
+      (AppColors.accentOrange, AppColors.black),
+      (AppColors.accentPurple, AppColors.black),
       (Theme.of(context).colorScheme.surfaceContainerHighest, onSurface),
     ];
     return palette[code % palette.length];
