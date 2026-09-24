@@ -22,7 +22,11 @@ Future<(bool confirmed, bool clearLocal, bool clearRemote)?> showLogoutBottomShe
     backgroundColor: Theme.of(context).colorScheme.surface,
     shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(AppSpacing.radiusXl))),
     builder: (context) {
-      bool clearLocal = false;
+      // Local data is offline-first storage that's fully re-downloadable from
+      // the cloud on next sign-in (when it hasn't also been cleared remotely),
+      // so pre-checking it is the safe, expected default for a sign-out flow.
+      // Clearing cloud data is destructive and irreversible, so it stays opt-in.
+      bool clearLocal = true;
       bool clearRemote = false;
 
       return SafeArea(
