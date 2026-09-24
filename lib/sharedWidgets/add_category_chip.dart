@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 
+import '../core/constants/app_enums.dart';
 import '../core/theme/app_spacing.dart';
 import '../core/extensions/context_extension.dart';
 import '../l10n/localization/app_localizations.dart';
 import '../features/links/bloc/link_bloc.dart';
 import '../features/links/bloc/link_event.dart';
+import 'custom_button.dart';
+import 'custom_text_field.dart';
 
 /// A "＋ New" pill chip that opens a **bottom sheet** for the user to
 /// create a custom category on the fly.
@@ -145,21 +148,31 @@ class _AddCategorySheetContentState extends State<_AddCategorySheetContent> {
           ),
           const SizedBox(height: AppSpacing.md),
 
-          TextField(
+          CustomTextField(
             controller: _ctrl,
+            hintText: widget.l10n.newCategoryHint,
             autofocus: true,
             textCapitalization: TextCapitalization.words,
-            decoration: InputDecoration(hintText: widget.l10n.newCategoryHint, border: const OutlineInputBorder()),
-            onSubmitted: (_) => _submit(context),
+            onFieldSubmitted: (_) => _submit(context),
           ),
           const SizedBox(height: AppSpacing.md),
 
           Row(
-            mainAxisAlignment: MainAxisAlignment.end,
             children: [
-              TextButton(onPressed: () => Navigator.of(context).pop(), child: Text(widget.l10n.accountCancel)),
-              const SizedBox(width: AppSpacing.sm),
-              FilledButton(onPressed: () => _submit(context), child: Text(widget.l10n.newCategoryAdd)),
+              Expanded(
+                child: NeoBrutalistButton(
+                  text: widget.l10n.accountCancel,
+                  variant: ButtonVariant.outlined,
+                  onPressed: () => Navigator.of(context).pop(),
+                ),
+              ),
+              const SizedBox(width: AppSpacing.md),
+              Expanded(
+                child: NeoBrutalistButton(
+                  text: widget.l10n.newCategoryAdd,
+                  onPressed: () => _submit(context),
+                ),
+              ),
             ],
           ),
         ],

@@ -117,11 +117,13 @@ class LinkCard extends StatelessWidget {
     try {
       final uri = Uri.parse(link.url);
       final launched = await launchUrl(uri, mode: LaunchMode.externalApplication);
-      if (!launched) {
-        showSnackBar('Could not launch ${link.url}');
+      if (!launched && context.mounted) {
+        showSnackBar(context.l10n.linkOpenFailed(link.url));
       }
     } catch (_) {
-      showSnackBar('Could not launch ${link.url}');
+      if (context.mounted) {
+        showSnackBar(context.l10n.linkOpenFailed(link.url));
+      }
     }
   }
 }
@@ -388,9 +390,7 @@ class _MoreMenu extends StatelessWidget {
         if (action == 'copy') {
           await Clipboard.setData(ClipboardData(text: link.url));
           if (context.mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Link copied to clipboard')),
-            );
+            showSnackBar(context.l10n.linkUrlCopied);
           }
         } else if (action == 'share') {
           await SharePlus.instance.share(ShareParams(text: link.url));

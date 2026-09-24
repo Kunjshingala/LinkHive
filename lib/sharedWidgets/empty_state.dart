@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../core/theme/app_colors.dart';
 import '../core/theme/app_spacing.dart';
+import 'custom_button.dart';
 
 /// Generic empty state widget with icon, title, optional subtitle, and action button.
 class EmptyState extends StatelessWidget {
@@ -48,7 +49,7 @@ class EmptyState extends StatelessWidget {
             ],
             if (actionLabel != null && onAction != null) ...[
               SizedBox(height: AppSpacing.lg),
-              ElevatedButton(onPressed: onAction, child: Text(actionLabel!)),
+              NeoBrutalistButton(text: actionLabel!, onPressed: onAction!),
             ],
           ],
         ),
