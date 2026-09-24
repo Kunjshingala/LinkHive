@@ -129,6 +129,25 @@ class AppLocalizationsAr extends AppLocalizations {
   String get linkSavedSuccess => 'تم حفظ الرابط!';
 
   @override
+  String get sharedSaveConfirm => 'تم الحفظ في LinkHive';
+
+  @override
+  String get sharedAddDetails => 'إضافة التفاصيل';
+
+  @override
+  String get sharedUndo => 'تراجع';
+
+  @override
+  String get inboxTitle => 'الوارد';
+
+  @override
+  String get inboxEmptyTitle => 'لا شيء في الوارد';
+
+  @override
+  String get inboxEmptySubtitle =>
+      'الروابط التي تحفظها بسرعة تظهر هنا. أضف التفاصيل لتنظيمها.';
+
+  @override
   String get priorityHigh => 'عالي';
 
   @override
@@ -290,6 +309,35 @@ class AppLocalizationsAr extends AppLocalizations {
   String get accountSyncSuccess => 'تمت مزامنة البيانات بنجاح';
 
   @override
+  String get accountSyncFail => 'فشلت المزامنة. حاول مرة أخرى.';
+
+  @override
+  String get accountSyncStatusReady => 'جاهز للمزامنة';
+
+  @override
+  String get accountSyncStatusSyncing => 'جارٍ المزامنة…';
+
+  @override
+  String get accountSyncStatusFailed => 'فشلت المزامنة';
+
+  @override
+  String get accountSyncStatusConflict => 'تعارضات تحتاج إلى انتباه';
+
+  @override
+  String get accountRetry => 'إعادة المحاولة';
+
+  @override
+  String get accountSyncStatusLabel => 'حالة المزامنة';
+
+  @override
+  String accountPendingCount(Object count) {
+    return '$count معلّق';
+  }
+
+  @override
+  String get accountResolveConflicts => 'حل التعارضات';
+
+  @override
   String get accountDeleteTitle => 'حذف البيانات المحلية؟';
 
   @override
@@ -376,4 +424,12 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get linkDeleteMessage => 'لا يمكن التراجع عن هذا الإجراء.';
+
+  @override
+  String get linkUrlCopied => 'تم نسخ الرابط إلى الحافظة';
+
+  @override
+  String linkOpenFailed(Object url) {
+    return 'تعذر فتح $url';
+  }
 }

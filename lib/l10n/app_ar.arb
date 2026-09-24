@@ -43,6 +43,12 @@
   "addLinkCategoriesLabel": "الفئات",
   "saveLinkButton": "حفظ الرابط",
   "linkSavedSuccess": "تم حفظ الرابط!",
+  "sharedSaveConfirm": "تم الحفظ في LinkHive",
+  "sharedAddDetails": "إضافة التفاصيل",
+  "sharedUndo": "تراجع",
+  "inboxTitle": "الوارد",
+  "inboxEmptyTitle": "لا شيء في الوارد",
+  "inboxEmptySubtitle": "الروابط التي تحفظها بسرعة تظهر هنا. أضف التفاصيل لتنظيمها.",
 
   "priorityHigh": "عالي",
   "priorityNormal": "عادي",
@@ -102,6 +108,15 @@
   "accountSyncSignInMsg": "سجل الدخول لمزامنة البيانات",
   "accountSyncingMsg": "جاري مزامنة البيانات...",
   "accountSyncSuccess": "تمت مزامنة البيانات بنجاح",
+  "accountSyncFail": "فشلت المزامنة. حاول مرة أخرى.",
+  "accountSyncStatusReady": "جاهز للمزامنة",
+  "accountSyncStatusSyncing": "جارٍ المزامنة…",
+  "accountSyncStatusFailed": "فشلت المزامنة",
+  "accountSyncStatusConflict": "تعارضات تحتاج إلى انتباه",
+  "accountRetry": "إعادة المحاولة",
+  "accountSyncStatusLabel": "حالة المزامنة",
+  "accountPendingCount": "{count} معلّق",
+  "accountResolveConflicts": "حل التعارضات",
   "accountDeleteTitle": "حذف البيانات المحلية؟",
   "accountDeleteConfirm": "سيؤدي هذا إلى مسح جميع الروابط المحفوظة محليًا. سيتم استعادة الروابط المتزامنة مع السحابة في المزامنة التالية.",
   "accountCancel": "إلغاء",
@@ -129,5 +144,7 @@
   "linkEditLabel": "تعديل",
   "linkDeleteLabel": "حذف",
   "linkDeleteTitle": "حذف الرابط؟",
-  "linkDeleteMessage": "لا يمكن التراجع عن هذا الإجراء."
+  "linkDeleteMessage": "لا يمكن التراجع عن هذا الإجراء.",
+  "linkUrlCopied": "تم نسخ الرابط إلى الحافظة",
+  "linkOpenFailed": "تعذر فتح {url}"
 }

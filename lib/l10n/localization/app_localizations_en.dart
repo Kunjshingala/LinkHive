@@ -130,6 +130,25 @@ class AppLocalizationsEn extends AppLocalizations {
   String get linkSavedSuccess => 'Link saved!';
 
   @override
+  String get sharedSaveConfirm => 'Saved to LinkHive';
+
+  @override
+  String get sharedAddDetails => 'Add details';
+
+  @override
+  String get sharedUndo => 'Undo';
+
+  @override
+  String get inboxTitle => 'Inbox';
+
+  @override
+  String get inboxEmptyTitle => 'Inbox zero';
+
+  @override
+  String get inboxEmptySubtitle =>
+      'Links you save in a hurry land here. Add details to file them away.';
+
+  @override
   String get priorityHigh => 'High';
 
   @override
@@ -291,6 +310,35 @@ class AppLocalizationsEn extends AppLocalizations {
   String get accountSyncSuccess => 'Data synced successfully';
 
   @override
+  String get accountSyncFail => 'Sync failed. Please try again.';
+
+  @override
+  String get accountSyncStatusReady => 'Ready to sync';
+
+  @override
+  String get accountSyncStatusSyncing => 'Syncing…';
+
+  @override
+  String get accountSyncStatusFailed => 'Sync failed';
+
+  @override
+  String get accountSyncStatusConflict => 'Conflicts need attention';
+
+  @override
+  String get accountRetry => 'Retry';
+
+  @override
+  String get accountSyncStatusLabel => 'Sync Status';
+
+  @override
+  String accountPendingCount(Object count) {
+    return '$count Pending';
+  }
+
+  @override
+  String get accountResolveConflicts => 'Resolve conflicts';
+
+  @override
   String get accountDeleteTitle => 'Delete Local Data?';
 
   @override
@@ -375,4 +423,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get linkDeleteMessage => 'This action cannot be undone.';
+
+  @override
+  String get linkUrlCopied => 'Link copied to clipboard';
+
+  @override
+  String linkOpenFailed(Object url) {
+    return 'Could not open $url';
+  }
 }

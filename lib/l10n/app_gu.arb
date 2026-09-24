@@ -43,6 +43,12 @@
   "addLinkCategoriesLabel": "શ્રેણીઓ",
   "saveLinkButton": "લિંક સંગ્રહિત કરો",
   "linkSavedSuccess": "લિંક સંગ્રહિત થઈ ગઈ!",
+  "sharedSaveConfirm": "LinkHive માં સંગ્રહિત થયું",
+  "sharedAddDetails": "વિગતો ઉમેરો",
+  "sharedUndo": "પૂર્વવત્ કરો",
+  "inboxTitle": "ઇનબૉક્સ",
+  "inboxEmptyTitle": "ઇનબૉક્સ ખાલી છે",
+  "inboxEmptySubtitle": "ઉતાવળમાં સાચવેલી લિંક અહીં આવે છે. વિગતો ઉમેરીને તેમને ગોઠવો.",
 
   "priorityHigh": "ઉચ્ચ",
   "priorityNormal": "સામાન્ય",
@@ -102,6 +108,15 @@
   "accountSyncSignInMsg": "ડેટા સમન્વયિત કરવા માટે સાઇન ઇન કરો",
   "accountSyncingMsg": "ડેટા સમન્વયિત થઈ રહ્યો છે...",
   "accountSyncSuccess": "ડેટા સફળતાપૂર્વક સમન્વયિત થયો",
+  "accountSyncFail": "સમન્વયન નિષ્ફળ થયું. કૃપા કરી ફરી પ્રયાસ કરો.",
+  "accountSyncStatusReady": "સમન્વયન માટે તૈયાર",
+  "accountSyncStatusSyncing": "સમન્વયન થઈ રહ્યું છે…",
+  "accountSyncStatusFailed": "સમન્વયન નિષ્ફળ",
+  "accountSyncStatusConflict": "વિરોધો પર ધ્યાન આપવાની જરૂર છે",
+  "accountRetry": "ફરી પ્રયાસ કરો",
+  "accountSyncStatusLabel": "સમન્વયન સ્થિતિ",
+  "accountPendingCount": "{count} બાકી",
+  "accountResolveConflicts": "વિરોધ ઉકેલો",
   "accountDeleteTitle": "સ્થાનિક ડેટા ભૂંસી નાખવો છે?",
   "accountDeleteConfirm": "આ સ્થાનિક રીતે સાચવેલી બધી કડીઓ ભૂંસી નાખશે. ક્લાઉડ સાથે સમન્વયિત કડીઓ આગામી સમન્વય વખતે પુનઃસ્થાપિત થશે.",
   "accountCancel": "રદ કરો",
@@ -129,5 +144,7 @@
   "linkEditLabel": "સંપાદિત કરો",
   "linkDeleteLabel": "કાઢી નાખો",
   "linkDeleteTitle": "લિંક કાઢી નાખવી?",
-  "linkDeleteMessage": "આ ક્રિયા પૂર્વવત કરી શકાશે નહીં."
+  "linkDeleteMessage": "આ ક્રિયા પૂર્વવત કરી શકાશે નહીં.",
+  "linkUrlCopied": "લિંક ક્લિપબોર્ડ પર કૉપિ થઈ",
+  "linkOpenFailed": "{url} ખોલી શકાયું નથી"
 }

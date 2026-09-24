@@ -43,6 +43,12 @@
   "addLinkCategoriesLabel": "Categories",
   "saveLinkButton": "Save Link",
   "linkSavedSuccess": "Link saved!",
+  "sharedSaveConfirm": "Saved to LinkHive",
+  "sharedAddDetails": "Add details",
+  "sharedUndo": "Undo",
+  "inboxTitle": "Inbox",
+  "inboxEmptyTitle": "Inbox zero",
+  "inboxEmptySubtitle": "Links you save in a hurry land here. Add details to file them away.",
 
   "priorityHigh": "High",
   "priorityNormal": "Normal",
@@ -102,6 +108,15 @@
   "accountSyncSignInMsg": "Sign in to sync data",
   "accountSyncingMsg": "Syncing data...",
   "accountSyncSuccess": "Data synced successfully",
+  "accountSyncFail": "Sync failed. Please try again.",
+  "accountSyncStatusReady": "Ready to sync",
+  "accountSyncStatusSyncing": "Syncing…",
+  "accountSyncStatusFailed": "Sync failed",
+  "accountSyncStatusConflict": "Conflicts need attention",
+  "accountRetry": "Retry",
+  "accountSyncStatusLabel": "Sync Status",
+  "accountPendingCount": "{count} Pending",
+  "accountResolveConflicts": "Resolve conflicts",
   "accountDeleteTitle": "Delete Local Data?",
   "accountDeleteConfirm": "This will clear all links saved locally. Links synced continuously with the cloud will be restored on next sync.",
   "accountCancel": "Cancel",
@@ -128,5 +143,7 @@
   "linkEditLabel": "Edit",
   "linkDeleteLabel": "Delete",
   "linkDeleteTitle": "Delete Link?",
-  "linkDeleteMessage": "This action cannot be undone."
+  "linkDeleteMessage": "This action cannot be undone.",
+  "linkUrlCopied": "Link copied to clipboard",
+  "linkOpenFailed": "Could not open {url}"
 }

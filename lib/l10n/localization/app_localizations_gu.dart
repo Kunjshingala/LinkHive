@@ -130,6 +130,25 @@ class AppLocalizationsGu extends AppLocalizations {
   String get linkSavedSuccess => 'લિંક સંગ્રહિત થઈ ગઈ!';
 
   @override
+  String get sharedSaveConfirm => 'LinkHive માં સંગ્રહિત થયું';
+
+  @override
+  String get sharedAddDetails => 'વિગતો ઉમેરો';
+
+  @override
+  String get sharedUndo => 'પૂર્વવત્ કરો';
+
+  @override
+  String get inboxTitle => 'ઇનબૉક્સ';
+
+  @override
+  String get inboxEmptyTitle => 'ઇનબૉક્સ ખાલી છે';
+
+  @override
+  String get inboxEmptySubtitle =>
+      'ઉતાવળમાં સાચવેલી લિંક અહીં આવે છે. વિગતો ઉમેરીને તેમને ગોઠવો.';
+
+  @override
   String get priorityHigh => 'ઉચ્ચ';
 
   @override
@@ -291,6 +310,35 @@ class AppLocalizationsGu extends AppLocalizations {
   String get accountSyncSuccess => 'ડેટા સફળતાપૂર્વક સમન્વયિત થયો';
 
   @override
+  String get accountSyncFail => 'સમન્વયન નિષ્ફળ થયું. કૃપા કરી ફરી પ્રયાસ કરો.';
+
+  @override
+  String get accountSyncStatusReady => 'સમન્વયન માટે તૈયાર';
+
+  @override
+  String get accountSyncStatusSyncing => 'સમન્વયન થઈ રહ્યું છે…';
+
+  @override
+  String get accountSyncStatusFailed => 'સમન્વયન નિષ્ફળ';
+
+  @override
+  String get accountSyncStatusConflict => 'વિરોધો પર ધ્યાન આપવાની જરૂર છે';
+
+  @override
+  String get accountRetry => 'ફરી પ્રયાસ કરો';
+
+  @override
+  String get accountSyncStatusLabel => 'સમન્વયન સ્થિતિ';
+
+  @override
+  String accountPendingCount(Object count) {
+    return '$count બાકી';
+  }
+
+  @override
+  String get accountResolveConflicts => 'વિરોધ ઉકેલો';
+
+  @override
   String get accountDeleteTitle => 'સ્થાનિક ડેટા ભૂંસી નાખવો છે?';
 
   @override
@@ -376,4 +424,12 @@ class AppLocalizationsGu extends AppLocalizations {
 
   @override
   String get linkDeleteMessage => 'આ ક્રિયા પૂર્વવત કરી શકાશે નહીં.';
+
+  @override
+  String get linkUrlCopied => 'લિંક ક્લિપબોર્ડ પર કૉપિ થઈ';
+
+  @override
+  String linkOpenFailed(Object url) {
+    return '$url ખોલી શકાયું નથી';
+  }
 }
