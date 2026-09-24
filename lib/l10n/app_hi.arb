@@ -43,6 +43,12 @@
   "addLinkCategoriesLabel": "श्रेणियां",
   "saveLinkButton": "लिंक सहेजें",
   "linkSavedSuccess": "लिंक सहेजा गया!",
+  "sharedSaveConfirm": "LinkHive में सहेजा गया",
+  "sharedAddDetails": "विवरण जोड़ें",
+  "sharedUndo": "पूर्ववत करें",
+  "inboxTitle": "इनबॉक्स",
+  "inboxEmptyTitle": "इनबॉक्स खाली है",
+  "inboxEmptySubtitle": "जल्दी में सहेजे गए लिंक यहाँ आते हैं। विवरण जोड़कर उन्हें व्यवस्थित करें।",
 
   "priorityHigh": "उच्च",
   "priorityNormal": "सामान्य",
@@ -102,6 +108,15 @@
   "accountSyncSignInMsg": "डेटा सिंक करने के लिए साइन इन करें",
   "accountSyncingMsg": "डेटा सिंक हो रहा है...",
   "accountSyncSuccess": "डेटा सफलतापूर्वक सिंक हो गया",
+  "accountSyncFail": "सिंक विफल हुआ। कृपया पुनः प्रयास करें।",
+  "accountSyncStatusReady": "सिंक के लिए तैयार",
+  "accountSyncStatusSyncing": "सिंक हो रहा है…",
+  "accountSyncStatusFailed": "सिंक विफल",
+  "accountSyncStatusConflict": "विरोधों पर ध्यान देने की आवश्यकता है",
+  "accountRetry": "पुनः प्रयास करें",
+  "accountSyncStatusLabel": "सिंक स्थिति",
+  "accountPendingCount": "{count} लंबित",
+  "accountResolveConflicts": "विरोध हल करें",
   "accountDeleteTitle": "स्थानीय डेटा हटाएं?",
   "accountDeleteConfirm": "यह स्थानीय रूप से सहेजे गए सभी लिंक हटा देगा। क्लाउड के साथ सिंक किए गए लिंक अगली सिंक पर पुनर्स्थापित हो जाएंगे।",
   "accountCancel": "रद्द करें",
@@ -129,5 +144,7 @@
   "linkEditLabel": "संपादित करें",
   "linkDeleteLabel": "हटाएं",
   "linkDeleteTitle": "लिंक हटाएं?",
-  "linkDeleteMessage": "यह क्रिया पूर्ववत नहीं की जा सकती।"
+  "linkDeleteMessage": "यह क्रिया पूर्ववत नहीं की जा सकती।",
+  "linkUrlCopied": "लिंक क्लिपबोर्ड पर कॉपी हो गया",
+  "linkOpenFailed": "{url} नहीं खोला जा सका"
 }

@@ -180,8 +180,8 @@ class _LoginScreenContentState extends State<_LoginScreenContent> {
                         context.l10n.authNoAccount,
                         style: context.text.bodyMedium,
                       ),
-                      TextButton(
-                        onPressed: () {
+                      GestureDetector(
+                        onTap: () {
                           context.pushNamed(MyRouteName.signup);
                         },
                         child: Text(

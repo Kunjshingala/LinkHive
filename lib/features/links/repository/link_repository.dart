@@ -109,7 +109,9 @@ class LinkRepository {
     int limit = 20,
     int offset = 0,
   }) {
-    var filtered = _linksBox.values.toList();
+    // Quick (instant-saved, unorganized) links are excluded here — they live
+    // in the Inbox, not the main Home collection, until the user adds details.
+    var filtered = _linksBox.values.where((l) => !l.isQuickSaved).toList();
 
     // Sort by save time (createdAt), newest first. Not syncedAt — that is a
     // server write timestamp that changes on every sync (e.g. marking a link
@@ -142,6 +144,25 @@ class LinkRepository {
 
     return filtered.skip(offset).take(limit).toList();
   }
+
+  /// Returns the locally stored link with [id], or null if it doesn't exist.
+  /// Used by the share-intent instant-save flow to re-read a link before
+  /// enriching it with background-fetched metadata.
+  LinkModel? getLinkById(String id) => _linksBox.get(id);
+
+  /// Returns all quick-saved (unorganized) links for the Inbox, newest first.
+  ///
+  /// These are the instant share-saves that haven't been given details yet.
+  /// They are intentionally kept out of [queryLinks] so the Inbox and the Home
+  /// list never show the same link twice.
+  List<LinkModel> queryQuickLinks() {
+    final quick = _linksBox.values.where((l) => l.isQuickSaved).toList();
+    quick.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+    return quick;
+  }
+
+  /// Number of quick-saved links waiting in the Inbox — drives the Home badge.
+  int get quickCount => _linksBox.values.where((l) => l.isQuickSaved).length;
 
   // ─── Categories ────────────────────────────────────────────────────────────
 
@@ -183,13 +204,16 @@ class LinkRepository {
   /// Sorted by [LinkModel.createdAt] ascending so the oldest saved (most
   /// likely forgotten) links are surfaced first.
   List<LinkModel> getUpNextLinks({int count = 3}) {
-    final unread = _linksBox.values.where((l) => !l.isRead).toList();
+    // Exclude quick-saved links — they belong to the Inbox, not the managed
+    // reading queue surfaced on Home.
+    final unread = _linksBox.values.where((l) => !l.isRead && !l.isQuickSaved).toList();
     unread.sort((a, b) => a.createdAt.compareTo(b.createdAt));
     return unread.take(count).toList();
   }
 
   /// Total number of unread links — used for the Up Next strip label.
-  int get unreadCount => _linksBox.values.where((l) => !l.isRead).length;
+  /// Quick-saved (Inbox) links are excluded; they are counted by [quickCount].
+  int get unreadCount => _linksBox.values.where((l) => !l.isRead && !l.isQuickSaved).length;
 
   Future<void> addCategory(CategoryModel category) async {
     final c = category.id.isEmpty

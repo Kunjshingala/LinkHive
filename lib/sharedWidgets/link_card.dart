@@ -104,7 +104,7 @@ class LinkCard extends StatelessWidget {
               width: 8,
               height: 8,
               decoration: const BoxDecoration(
-                color: AppColors.accentOrange,
+                color: AppColors.warning,
                 shape: BoxShape.circle,
               ),
             ),
@@ -117,11 +117,13 @@ class LinkCard extends StatelessWidget {
     try {
       final uri = Uri.parse(link.url);
       final launched = await launchUrl(uri, mode: LaunchMode.externalApplication);
-      if (!launched) {
-        showSnackBar('Could not launch ${link.url}');
+      if (!launched && context.mounted) {
+        showSnackBar(context.l10n.linkOpenFailed(link.url));
       }
     } catch (_) {
-      showSnackBar('Could not launch ${link.url}');
+      if (context.mounted) {
+        showSnackBar(context.l10n.linkOpenFailed(link.url));
+      }
     }
   }
 }
@@ -191,11 +193,15 @@ class _LetterAvatar extends StatelessWidget {
   (Color, Color) _avatarColor(String letter, BuildContext context) {
     final code = letter.codeUnitAt(0);
     final onSurface = Theme.of(context).colorScheme.onSurface;
+    // The four accent pastels are fixed light colors in both themes, so their
+    // letter needs fixed black text — onSurface flips to light gray in dark
+    // mode and would be unreadable against them. The neutral fallback uses a
+    // theme-aware surface, so it correctly keeps onSurface.
     final palette = [
-      (AppColors.accentBlue, onSurface),
-      (AppColors.accentGreen, onSurface),
-      (AppColors.accentOrange, onSurface),
-      (AppColors.accentPurple, onSurface),
+      (AppColors.accentBlue, AppColors.black),
+      (AppColors.accentGreen, AppColors.black),
+      (AppColors.accentOrange, AppColors.black),
+      (AppColors.accentPurple, AppColors.black),
       (Theme.of(context).colorScheme.surfaceContainerHighest, onSurface),
     ];
     return palette[code % palette.length];
@@ -388,9 +394,7 @@ class _MoreMenu extends StatelessWidget {
         if (action == 'copy') {
           await Clipboard.setData(ClipboardData(text: link.url));
           if (context.mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Link copied to clipboard')),
-            );
+            showSnackBar(context.l10n.linkUrlCopied);
           }
         } else if (action == 'share') {
           await SharePlus.instance.share(ShareParams(text: link.url));

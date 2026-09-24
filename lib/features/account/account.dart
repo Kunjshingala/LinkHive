@@ -119,10 +119,10 @@ class _SyncStatusCard extends StatelessWidget {
       builder: (context, state) {
         final isFailed = state.status == SyncStatus.failed;
         final (label, icon) = switch (state.status) {
-          SyncStatus.idle => ('Ready to sync', Icons.cloud_done_rounded),
-          SyncStatus.syncing => ('Syncing…', Icons.sync_rounded),
-          SyncStatus.failed => ('Sync failed', Icons.cloud_off_rounded),
-          SyncStatus.conflict => ('Conflicts need attention', Icons.warning_amber_rounded),
+          SyncStatus.idle => (context.l10n.accountSyncStatusReady, Icons.cloud_done_rounded),
+          SyncStatus.syncing => (context.l10n.accountSyncStatusSyncing, Icons.sync_rounded),
+          SyncStatus.failed => (context.l10n.accountSyncStatusFailed, Icons.cloud_off_rounded),
+          SyncStatus.conflict => (context.l10n.accountSyncStatusConflict, Icons.warning_amber_rounded),
         };
         return Container(
           width: double.infinity,
@@ -143,16 +143,13 @@ class _SyncStatusCard extends StatelessWidget {
                 child: Text(label, style: Theme.of(context).textTheme.titleSmall),
               ),
               if (isFailed)
-                TextButton.icon(
+                NeoBrutalistButton(
+                  text: context.l10n.accountRetry,
+                  icon: Icons.refresh_rounded,
+                  height: 36,
                   onPressed: () async {
                     await locator<SyncService>().requestSync(pull: true);
                   },
-                  icon: const Icon(Icons.refresh_rounded, size: 16),
-                  label: const Text('Retry'),
-                  style: TextButton.styleFrom(
-                    padding: EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: AppSpacing.xs),
-                    visualDensity: VisualDensity.compact,
-                  ),
                 ),
             ],
           ),
@@ -225,7 +222,9 @@ class _ProfileHeader extends StatelessWidget {
                 child: Text(
                   initial,
                   style: Theme.of(context).textTheme.displayLarge!.copyWith(
-                    color: Theme.of(context).colorScheme.onSurface,
+                    // Fixed: accentBlue stays light in dark mode too, so the
+                    // initial must stay a fixed black rather than flip to onSurface.
+                    color: AppColors.black,
                   ),
                 ),
               ),
@@ -288,7 +287,7 @@ class _StatsRow extends StatelessWidget {
       syncStatus = context.l10n.accountStatLocal; // Fully local
       syncShadowColor = AppColors.shadowPeach;
     } else {
-      syncStatus = '$unsynced Pending'; // Mixed
+      syncStatus = context.l10n.accountPendingCount(unsynced); // Mixed
       syncShadowColor = AppColors.shadowLemon;
     }
 
@@ -298,13 +297,13 @@ class _StatsRow extends StatelessWidget {
           child: _StatCard(
             label: context.l10n.navLinks,
             value: total.toString(),
-            shadowColor: AppColors.shadowSky,
+            shadowColor: AppColors.shadowMint,
           ),
         ),
         SizedBox(width: AppSpacing.md),
         Expanded(
           child: _StatCard(
-            label: 'Sync Status',
+            label: context.l10n.accountSyncStatusLabel,
             value: syncStatus,
             shadowColor: syncShadowColor,
             isSmallValue: total > 0, // Make text smaller if it's a long status
@@ -431,7 +430,7 @@ class _SettingsList extends StatelessWidget {
       if (locator<LinkRepository>().conflicts.isNotEmpty)
         (
           Icons.warning_amber_rounded,
-          'Resolve conflicts',
+          context.l10n.accountResolveConflicts,
           '',
           AccountItem.conflicts,
         ),
@@ -465,7 +464,7 @@ class _SettingsList extends StatelessWidget {
             offset: Offset(4, 5),
             child: Container(
               decoration: BoxDecoration(
-                color: AppColors.shadowLemon,
+                color: AppColors.shadowMint,
                 borderRadius: BorderRadius.circular(AppSpacing.radiusXl),
                 border: Border.all(
                   color: Theme.of(context).colorScheme.outline,
@@ -624,11 +623,17 @@ class _SettingsList extends StatelessWidget {
         }
         final l10n = context.l10n;
         showSnackBar(l10n.accountSyncingMsg);
-        await locator<SyncService>().requestSync(pull: true);
-        if (context.mounted) {
-          context.read<AccountBloc>().add(const AccountLoadRequested());
+        try {
+          await locator<SyncService>().requestSync(pull: true);
+          if (context.mounted) {
+            context.read<AccountBloc>().add(const AccountLoadRequested());
+            showSnackBar(l10n.accountSyncSuccess);
+          }
+        } catch (e) {
+          if (context.mounted) {
+            showSnackBar(l10n.accountSyncFail);
+          }
         }
-        showSnackBar(l10n.accountSyncSuccess);
         break;
 
       case AccountItem.conflicts:
@@ -652,6 +657,7 @@ class _SettingsList extends StatelessWidget {
           try {
             await repo.clearLocalData();
             if (context.mounted) {
+              context.read<AccountBloc>().add(const AccountLoadRequested());
               showSnackBar(l10n.accountDeleteSuccess);
             }
           } catch (e) {

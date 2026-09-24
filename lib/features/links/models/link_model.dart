@@ -123,6 +123,22 @@ class LinkModel {
   @HiveField(10)
   final bool isRead;
 
+  /// `true` when the link was captured via the instant share-save flow and has
+  /// not yet been organized.
+  ///
+  /// Quick links live in the **Inbox**, kept separate from the main Home list,
+  /// until the user adds details through the edit form — saving there flips this
+  /// to `false` and promotes the link into the normal collection.
+  ///
+  /// Defaults to `false` so every link created through the form, and every link
+  /// stored before this field existed, is treated as already managed.
+  /// `defaultValue: false` tells the generated adapter to substitute `false`
+  /// when this field is absent, instead of casting a missing value straight
+  /// to `bool` — which is exactly the case for every link written before this
+  /// field existed, and would otherwise crash `HiveHelper.init()` on launch.
+  @HiveField(11, defaultValue: false)
+  final bool isQuickSaved;
+
   const LinkModel({
     required this.id,
     required this.url,
@@ -135,6 +151,7 @@ class LinkModel {
     this.syncedAt,
     this.isSynced = false,
     this.isRead = false,
+    this.isQuickSaved = false,
   });
 
   /// Returns a copy of this [LinkModel] with the specified fields replaced.
@@ -158,6 +175,7 @@ class LinkModel {
     int? syncedAt,
     bool? isSynced,
     bool? isRead,
+    bool? isQuickSaved,
   }) {
     return LinkModel(
       id: id ?? this.id,
@@ -171,6 +189,7 @@ class LinkModel {
       syncedAt: syncedAt ?? this.syncedAt,
       isSynced: isSynced ?? this.isSynced,
       isRead: isRead ?? this.isRead,
+      isQuickSaved: isQuickSaved ?? this.isQuickSaved,
     );
   }
 
@@ -192,6 +211,7 @@ class LinkModel {
       FirebaseConstants.linkPriority: priority,
       FirebaseConstants.linkCreatedAt: createdAt,
       FirebaseConstants.linkIsRead: isRead,
+      FirebaseConstants.linkIsQuickSaved: isQuickSaved,
       // syncedAt is NOT written here — the service writes it as
       // FieldValue.serverTimestamp() to get the authoritative server time.
     };
@@ -246,6 +266,7 @@ class LinkModel {
       syncedAt: syncedAtMs,
       isSynced: true,
       isRead: data[FirebaseConstants.linkIsRead] as bool? ?? false,
+      isQuickSaved: data[FirebaseConstants.linkIsQuickSaved] as bool? ?? false,
     );
   }
 

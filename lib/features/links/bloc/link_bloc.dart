@@ -98,6 +98,7 @@ class LinkBloc extends Bloc<LinkEvent, LinkState> {
           customCategories: _customCategories,
           upNextLinks: _repository.getUpNextLinks(),
           unreadCount: _repository.unreadCount,
+          quickCount: _repository.quickCount,
         ),
       );
     } catch (e) {
@@ -169,6 +170,7 @@ class LinkBloc extends Bloc<LinkEvent, LinkState> {
             ? _repository.getUpNextLinks()
             : const [],
         unreadCount: _repository.unreadCount,
+        quickCount: _repository.quickCount,
       ),
     );
   }
@@ -200,6 +202,7 @@ class LinkBloc extends Bloc<LinkEvent, LinkState> {
             ? _repository.getUpNextLinks()
             : const [],
         unreadCount: _repository.unreadCount,
+        quickCount: _repository.quickCount,
       ),
     );
   }
@@ -231,6 +234,7 @@ class LinkBloc extends Bloc<LinkEvent, LinkState> {
             ? _repository.getUpNextLinks()
             : const [],
         unreadCount: _repository.unreadCount,
+        quickCount: _repository.quickCount,
       ),
     );
   }
@@ -314,6 +318,7 @@ class LinkBloc extends Bloc<LinkEvent, LinkState> {
           customCategories: _customCategories,
           upNextLinks: _repository.getUpNextLinks(),
           unreadCount: _repository.unreadCount,
+          quickCount: _repository.quickCount,
         ),
       );
 
@@ -473,6 +478,7 @@ extension on LinksLoaded {
     List<CategoryModel>? customCategories,
     List<LinkModel>? upNextLinks,
     int? unreadCount,
+    int? quickCount,
   }) {
     return LinksLoaded(
       links: links ?? this.links,
@@ -485,6 +491,7 @@ extension on LinksLoaded {
       customCategories: customCategories ?? this.customCategories,
       upNextLinks: upNextLinks ?? this.upNextLinks,
       unreadCount: unreadCount ?? this.unreadCount,
+      quickCount: quickCount ?? this.quickCount,
     );
   }
 }

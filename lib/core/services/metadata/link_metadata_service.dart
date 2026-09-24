@@ -60,14 +60,40 @@ class LinkMetadataService {
     for (final pattern in patterns) {
       final match = pattern.firstMatch(html);
       final value = match?.group(1)?.trim();
-      if (value != null && value.isNotEmpty) return value;
+      if (value != null && value.isNotEmpty) return _decodeHtmlEntities(value);
     }
     return null;
   }
 
   String? _extractTitle(String html) {
     final match = RegExp('<title[^>]*>([^<]+)</title>', caseSensitive: false).firstMatch(html);
-    return match?.group(1)?.trim();
+    final value = match?.group(1)?.trim();
+    return value == null ? null : _decodeHtmlEntities(value);
+  }
+
+  /// Decodes the small set of HTML entities that routinely show up inside
+  /// attribute values and titles (e.g. `og:image` URLs escape `&` as `&amp;`,
+  /// which breaks query strings like `?format=webp&amp;name=large` if left
+  /// undecoded; titles commonly carry `&quot;`/`&#39;` around quoted text).
+  /// Not a full HTML entity decoder — just the handful that matter here.
+  String _decodeHtmlEntities(String value) {
+    return value
+        .replaceAllMapped(
+          RegExp(r'&#x([0-9a-fA-F]+);'),
+          (m) => String.fromCharCode(int.parse(m.group(1)!, radix: 16)),
+        )
+        .replaceAllMapped(
+          RegExp(r'&#(\d+);'),
+          (m) => String.fromCharCode(int.parse(m.group(1)!)),
+        )
+        .replaceAll('&quot;', '"')
+        .replaceAll('&#39;', "'")
+        .replaceAll('&apos;', "'")
+        .replaceAll('&lt;', '<')
+        .replaceAll('&gt;', '>')
+        // &amp; must be decoded last — otherwise "&amp;lt;" would incorrectly
+        // become "<" instead of the literal text "&lt;" the page intended.
+        .replaceAll('&amp;', '&');
   }
 
   String? _extractIcon(String html) {
@@ -78,7 +104,7 @@ class LinkMetadataService {
       if (!rel.contains('icon') && !rel.contains('shortcut')) continue;
 
       final href = _extractAttribute(tag, 'href');
-      if (href != null && href.isNotEmpty) return href;
+      if (href != null && href.isNotEmpty) return _decodeHtmlEntities(href);
     }
     return null;
   }

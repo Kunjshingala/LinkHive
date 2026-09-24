@@ -4,6 +4,7 @@ import '../../../features/account/account.dart';
 import '../../../features/authentication/login_screen.dart';
 import '../../../features/authentication/signup_screen.dart';
 import '../../../features/home/home.dart';
+import '../../../features/inbox/inbox_screen.dart';
 import '../../../features/links/ui/add_link_screen.dart';
 import '../../../features/links/models/link_model.dart';
 import '../../../features/splash/splash_screen.dart';
@@ -21,6 +22,7 @@ final class MyRouteName {
   static const String addLink = 'addLink';
   static const String editLink = 'editLink';
   static const String conflicts = 'conflicts';
+  static const String inbox = 'inbox';
 }
 
 final router = GoRouter(
@@ -74,6 +76,11 @@ final router = GoRouter(
       path: '/conflicts',
       name: MyRouteName.conflicts,
       builder: (context, state) => const ConflictScreen(),
+    ),
+    GoRoute(
+      path: '/inbox',
+      name: MyRouteName.inbox,
+      builder: (context, state) => const InboxScreen(),
     ),
   ],
 );

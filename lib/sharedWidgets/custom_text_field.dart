@@ -15,6 +15,9 @@ class CustomTextField extends StatelessWidget {
   final TextInputType? keyboardType;
   final ValueChanged<String>? onChanged;
   final double borderRadius;
+  final bool autofocus;
+  final TextCapitalization textCapitalization;
+  final ValueChanged<String>? onFieldSubmitted;
 
   const CustomTextField({
     super.key,
@@ -28,6 +31,9 @@ class CustomTextField extends StatelessWidget {
     this.keyboardType,
     this.onChanged,
     this.borderRadius = AppSpacing.radiusMd,
+    this.autofocus = false,
+    this.textCapitalization = TextCapitalization.none,
+    this.onFieldSubmitted,
   });
 
   @override
@@ -40,6 +46,9 @@ class CustomTextField extends StatelessWidget {
       maxLines: maxLines,
       keyboardType: keyboardType,
       onChanged: onChanged,
+      autofocus: autofocus,
+      textCapitalization: textCapitalization,
+      onFieldSubmitted: onFieldSubmitted,
       style: Theme.of(context).textTheme.bodyMedium!,
       decoration: InputDecoration(
         hintText: hintText,

@@ -130,6 +130,25 @@ class AppLocalizationsHi extends AppLocalizations {
   String get linkSavedSuccess => 'लिंक सहेजा गया!';
 
   @override
+  String get sharedSaveConfirm => 'LinkHive में सहेजा गया';
+
+  @override
+  String get sharedAddDetails => 'विवरण जोड़ें';
+
+  @override
+  String get sharedUndo => 'पूर्ववत करें';
+
+  @override
+  String get inboxTitle => 'इनबॉक्स';
+
+  @override
+  String get inboxEmptyTitle => 'इनबॉक्स खाली है';
+
+  @override
+  String get inboxEmptySubtitle =>
+      'जल्दी में सहेजे गए लिंक यहाँ आते हैं। विवरण जोड़कर उन्हें व्यवस्थित करें।';
+
+  @override
   String get priorityHigh => 'उच्च';
 
   @override
@@ -292,6 +311,36 @@ class AppLocalizationsHi extends AppLocalizations {
   String get accountSyncSuccess => 'डेटा सफलतापूर्वक सिंक हो गया';
 
   @override
+  String get accountSyncFail => 'सिंक विफल हुआ। कृपया पुनः प्रयास करें।';
+
+  @override
+  String get accountSyncStatusReady => 'सिंक के लिए तैयार';
+
+  @override
+  String get accountSyncStatusSyncing => 'सिंक हो रहा है…';
+
+  @override
+  String get accountSyncStatusFailed => 'सिंक विफल';
+
+  @override
+  String get accountSyncStatusConflict =>
+      'विरोधों पर ध्यान देने की आवश्यकता है';
+
+  @override
+  String get accountRetry => 'पुनः प्रयास करें';
+
+  @override
+  String get accountSyncStatusLabel => 'सिंक स्थिति';
+
+  @override
+  String accountPendingCount(Object count) {
+    return '$count लंबित';
+  }
+
+  @override
+  String get accountResolveConflicts => 'विरोध हल करें';
+
+  @override
   String get accountDeleteTitle => 'स्थानीय डेटा हटाएं?';
 
   @override
@@ -377,4 +426,12 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get linkDeleteMessage => 'यह क्रिया पूर्ववत नहीं की जा सकती।';
+
+  @override
+  String get linkUrlCopied => 'लिंक क्लिपबोर्ड पर कॉपी हो गया';
+
+  @override
+  String linkOpenFailed(Object url) {
+    return '$url नहीं खोला जा सका';
+  }
 }

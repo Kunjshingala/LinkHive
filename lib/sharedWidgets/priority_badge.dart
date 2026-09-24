@@ -28,9 +28,12 @@ class PriorityBadge extends StatelessWidget {
   (Color, Color, String) _resolve(String p, BuildContext context) {
     switch (p.toLowerCase()) {
       case 'high':
-        return (AppColors.accentOrange, Theme.of(context).colorScheme.onSurface, context.l10n.priorityHigh);
+        // Fixed black text: accentOrange is a fixed light pastel in both
+        // themes, so the text must stay fixed too — colorScheme.onSurface
+        // flips to light gray in dark mode and becomes unreadable here.
+        return (AppColors.accentOrange, AppColors.black, context.l10n.priorityHigh);
       case 'low':
-        return (AppColors.accentBlue, Theme.of(context).colorScheme.onSurface, context.l10n.priorityLow);
+        return (AppColors.accentBlue, AppColors.black, context.l10n.priorityLow);
       default:
         return (
           Theme.of(context).colorScheme.surfaceContainerHighest,

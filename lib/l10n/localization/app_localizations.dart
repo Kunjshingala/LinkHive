@@ -342,6 +342,42 @@ abstract class AppLocalizations {
   /// **'Link saved!'**
   String get linkSavedSuccess;
 
+  /// No description provided for @sharedSaveConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved to LinkHive'**
+  String get sharedSaveConfirm;
+
+  /// No description provided for @sharedAddDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Add details'**
+  String get sharedAddDetails;
+
+  /// No description provided for @sharedUndo.
+  ///
+  /// In en, this message translates to:
+  /// **'Undo'**
+  String get sharedUndo;
+
+  /// No description provided for @inboxTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Inbox'**
+  String get inboxTitle;
+
+  /// No description provided for @inboxEmptyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Inbox zero'**
+  String get inboxEmptyTitle;
+
+  /// No description provided for @inboxEmptySubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Links you save in a hurry land here. Add details to file them away.'**
+  String get inboxEmptySubtitle;
+
   /// No description provided for @priorityHigh.
   ///
   /// In en, this message translates to:
@@ -660,6 +696,60 @@ abstract class AppLocalizations {
   /// **'Data synced successfully'**
   String get accountSyncSuccess;
 
+  /// No description provided for @accountSyncFail.
+  ///
+  /// In en, this message translates to:
+  /// **'Sync failed. Please try again.'**
+  String get accountSyncFail;
+
+  /// No description provided for @accountSyncStatusReady.
+  ///
+  /// In en, this message translates to:
+  /// **'Ready to sync'**
+  String get accountSyncStatusReady;
+
+  /// No description provided for @accountSyncStatusSyncing.
+  ///
+  /// In en, this message translates to:
+  /// **'Syncing…'**
+  String get accountSyncStatusSyncing;
+
+  /// No description provided for @accountSyncStatusFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Sync failed'**
+  String get accountSyncStatusFailed;
+
+  /// No description provided for @accountSyncStatusConflict.
+  ///
+  /// In en, this message translates to:
+  /// **'Conflicts need attention'**
+  String get accountSyncStatusConflict;
+
+  /// No description provided for @accountRetry.
+  ///
+  /// In en, this message translates to:
+  /// **'Retry'**
+  String get accountRetry;
+
+  /// No description provided for @accountSyncStatusLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Sync Status'**
+  String get accountSyncStatusLabel;
+
+  /// No description provided for @accountPendingCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} Pending'**
+  String accountPendingCount(Object count);
+
+  /// No description provided for @accountResolveConflicts.
+  ///
+  /// In en, this message translates to:
+  /// **'Resolve conflicts'**
+  String get accountResolveConflicts;
+
   /// No description provided for @accountDeleteTitle.
   ///
   /// In en, this message translates to:
@@ -815,6 +905,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'This action cannot be undone.'**
   String get linkDeleteMessage;
+
+  /// No description provided for @linkUrlCopied.
+  ///
+  /// In en, this message translates to:
+  /// **'Link copied to clipboard'**
+  String get linkUrlCopied;
+
+  /// No description provided for @linkOpenFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not open {url}'**
+  String linkOpenFailed(Object url);
 }
 
 class _AppLocalizationsDelegate
