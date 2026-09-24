@@ -221,6 +221,13 @@ Fixed: `link_metadata_service.dart` now decodes `&amp; &lt; &gt; &quot; &#39;
 title, meta-content, and icon-href value.
 Verified: `fvm flutter analyze` clean, `fvm flutter test` 108 passed.
 
+## Future: web/desktop
+
+Out of scope for now (guarded so it can't crash a stray build — see
+`ReceiveSharedIntent.initialize()`). If desktop ever matters, capture there
+doesn't need mobile-level frictionlessness — start with manual paste or a
+bookmarklet, not a full browser extension or native share integration.
+
 ## The only success metric that matters
 
 Not downloads. Not features. **Do YOU, personally, keep using it for 2 weeks?**

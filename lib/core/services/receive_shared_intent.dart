@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart' show TargetPlatform, defaultTargetPlatform, kIsWeb;
 import 'package:receive_sharing_intent/receive_sharing_intent.dart';
 import 'package:uuid/uuid.dart';
 
@@ -41,6 +42,16 @@ class ReceiveSharedIntent {
   StreamSubscription<dynamic>? _intentBackGroundSubscription;
 
   void initialize() {
+    // receive_sharing_intent only ships Android and iOS implementations (see
+    // its pubspec's plugin.platforms). Calling getMediaStream()/getInitialMedia()
+    // on web/Windows/macOS/Linux has no platform-channel backing and throws.
+    // Desktop/web are out of scope for now (see CLAUDE.md); guard so a build
+    // for those platforms doesn't crash on startup instead of silently no-op.
+    if (kIsWeb ||
+        (defaultTargetPlatform != TargetPlatform.android && defaultTargetPlatform != TargetPlatform.iOS)) {
+      printLog(tag: _tag, msg: 'Share intent unsupported on this platform — skipping');
+      return;
+    }
     _startListen();
     _startBGListen();
   }
