@@ -150,6 +150,7 @@ class _HomeScreenContentState extends State<_HomeScreenContent> {
   /// and add buttons stay pinned as leading/action.
   Widget _buildSliverAppBar(BuildContext context, LinkState state) {
     final unread = state is LinksLoaded ? state.unreadCount : 0;
+    final quick = state is LinksLoaded ? state.quickCount : 0;
     return SliverAppBar(
       pinned: true,
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
@@ -168,6 +169,8 @@ class _HomeScreenContentState extends State<_HomeScreenContent> {
         ),
       ),
       actions: [
+        _inboxAction(context, quick),
+        const SizedBox(width: AppSpacing.sm),
         NeoBrutalistButton(
           icon: Icons.add_rounded,
           shadowColor: AppColors.success,
@@ -243,6 +246,45 @@ class _HomeScreenContentState extends State<_HomeScreenContent> {
           );
         },
       ),
+    );
+  }
+
+  /// The Inbox entry button for the app bar, with a count badge showing how
+  /// many quick-saved links are waiting to be organized.
+  Widget _inboxAction(BuildContext context, int quickCount) {
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        NeoBrutalistButton(
+          icon: Icons.inbox_rounded,
+          shape: BoxShape.circle,
+          onPressed: () => context.pushNamed(MyRouteName.inbox),
+        ),
+        if (quickCount > 0)
+          Positioned(
+            top: -4,
+            right: -4,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+              decoration: BoxDecoration(
+                color: AppColors.accentOrange,
+                borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
+                border: Border.all(
+                  color: Theme.of(context).colorScheme.outline,
+                  width: 1.5,
+                ),
+              ),
+              child: Text(
+                '$quickCount',
+                style: Theme.of(context).textTheme.labelSmall!.copyWith(
+                  fontWeight: FontWeight.w700,
+                  fontSize: 10,
+                  color: Theme.of(context).colorScheme.onSurface,
+                ),
+              ),
+            ),
+          ),
+      ],
     );
   }
 
@@ -906,7 +948,7 @@ class _UpNextCardState extends State<_UpNextCard> {
               child: Container(
                 width: 160,
                 decoration: BoxDecoration(
-                  color: AppColors.shadowLemon,
+                  color: AppColors.shadowMint,
                   borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
                   border: Border.all(color: neo.borderColor, width: neo.borderWidth),
                 ),

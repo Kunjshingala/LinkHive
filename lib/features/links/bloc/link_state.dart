@@ -44,6 +44,10 @@ class LinksLoaded extends LinkState {
   /// Total number of unread links across the full collection (not capped).
   final int unreadCount;
 
+  /// Number of quick-saved links waiting in the Inbox — drives the Home
+  /// app-bar Inbox badge. Independent of Home filters.
+  final int quickCount;
+
   const LinksLoaded({
     required this.links,
     this.activeCategory = 'All',
@@ -55,6 +59,7 @@ class LinksLoaded extends LinkState {
     this.customCategories = const [],
     this.upNextLinks = const [],
     this.unreadCount = 0,
+    this.quickCount = 0,
   });
 
   bool get hasActiveFilter =>
@@ -72,6 +77,7 @@ class LinksLoaded extends LinkState {
     customCategories,
     upNextLinks,
     unreadCount,
+    quickCount,
   ];
 }
 

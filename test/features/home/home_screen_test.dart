@@ -38,6 +38,7 @@ void main() {
       when(() => mockRepository.getCategories()).thenReturn(const <CategoryModel>[]);
       when(() => mockRepository.getUpNextLinks()).thenReturn(const <LinkModel>[]);
       when(() => mockRepository.unreadCount).thenReturn(0);
+      when(() => mockRepository.quickCount).thenReturn(0);
     });
 
     tearDown(() {

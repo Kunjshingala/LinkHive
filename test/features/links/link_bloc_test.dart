@@ -29,6 +29,7 @@ void main() {
       when(() => mockRepository.getCategories()).thenReturn([testCategory]);
       when(() => mockRepository.getUpNextLinks()).thenReturn([]);
       when(() => mockRepository.unreadCount).thenReturn(0);
+      when(() => mockRepository.quickCount).thenReturn(0);
     });
 
     setUpAll(() {

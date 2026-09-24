@@ -27,17 +27,15 @@ class LinkModelAdapter extends TypeAdapter<LinkModel> {
       createdAt: fields[7] as int,
       syncedAt: fields[8] as int?,
       isSynced: fields[9] as bool,
-      // Null-safe fallback: field 10 is absent in records written before isRead
-      // was added. build_runner generates a non-nullable cast (as bool) which
-      // crashes on those old records, so we use `as bool? ?? false` here.
-      isRead: fields[10] as bool? ?? false,
+      isRead: fields[10] as bool,
+      isQuickSaved: fields[11] == null ? false : fields[11] as bool,
     );
   }
 
   @override
   void write(BinaryWriter writer, LinkModel obj) {
     writer
-      ..writeByte(11)
+      ..writeByte(12)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -59,7 +57,9 @@ class LinkModelAdapter extends TypeAdapter<LinkModel> {
       ..writeByte(9)
       ..write(obj.isSynced)
       ..writeByte(10)
-      ..write(obj.isRead);
+      ..write(obj.isRead)
+      ..writeByte(11)
+      ..write(obj.isQuickSaved);
   }
 
   @override

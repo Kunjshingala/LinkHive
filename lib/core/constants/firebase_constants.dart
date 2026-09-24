@@ -43,6 +43,9 @@ class FirebaseConstants {
   /// isRead — true once the user has opened the link at least once
   static const String linkIsRead = 'isRead';
 
+  /// isQuickSaved — true for instant share-saves not yet organized (Inbox)
+  static const String linkIsQuickSaved = 'isQuickSaved';
+
   /// deletedAt — used in deleted_links collection
   static const String linkDeletedAt = 'deletedAt';
 

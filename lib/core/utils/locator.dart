@@ -14,8 +14,13 @@ final locator = GetIt.instance;
 void setupLocator() {
   // ─── Auth & Intent services ─────────────────────────────────────
   locator.registerLazySingleton<AuthService>(() => AuthService());
+  // Lazy singleton: the factory runs on first resolve (in MyApp.initState),
+  // by which point LinkRepository and LinkMetadataService are registered.
   locator.registerLazySingleton<ReceiveSharedIntent>(
-    () => ReceiveSharedIntent(),
+    () => ReceiveSharedIntent(
+      repository: locator<LinkRepository>(),
+      metadataService: locator<LinkMetadataService>(),
+    ),
   );
 
   // ─── Firebase / Cloud ───────────────────────────────────────────

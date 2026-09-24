@@ -114,6 +114,17 @@ class AddLinkBloc extends Bloc<AddLinkEvent, AddLinkState> {
           categories: _editingLink!.categories,
         ),
       );
+
+      // A quick-saved link opened via "Add details" may still have a blank
+      // title if the share flow's background metadata fetch hasn't finished
+      // (or failed) yet — normal edits never hit this, since every link used
+      // to get its metadata before it could ever reach the form. An empty
+      // title is the signal that fetch never completed, so retry it here
+      // instead of leaving the user to find the manual fetch button.
+      final normalizedUrl = normalizeUrl(_editingLink!.url);
+      if (_editingLink!.title.trim().isEmpty && normalizedUrl != null) {
+        add(AddLinkFetchMetadata(normalizedUrl));
+      }
     } else {
       // Add mode: start with a blank form, optionally seeded with a URL.
       final prefillUrl = event.prefillUrl?.trim() ?? '';
@@ -263,6 +274,10 @@ class AddLinkBloc extends Bloc<AddLinkEvent, AddLinkState> {
           image: current.image,
           categories: current.categories,
           priority: current.priority,
+          // Adding details through the form organizes the link: it leaves the
+          // Inbox and joins the managed Home collection. No-op for links that
+          // were already managed.
+          isQuickSaved: false,
         );
 
         await _repository.updateLink(updatedLink);
