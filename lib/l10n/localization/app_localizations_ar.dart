@@ -148,6 +148,30 @@ class AppLocalizationsAr extends AppLocalizations {
       'الروابط التي تحفظها بسرعة تظهر هنا. أضف التفاصيل لتنظيمها.';
 
   @override
+  String get todayTitle => 'اليوم';
+
+  @override
+  String get todayEmptyTitle => 'كل شيء منجز';
+
+  @override
+  String get todayEmptySubtitle => 'لا يوجد شيء بانتظار القراءة الآن.';
+
+  @override
+  String get todayOpen => 'فتح';
+
+  @override
+  String get todayArchive => 'أرشفة';
+
+  @override
+  String get todaySnooze => 'تأجيل';
+
+  @override
+  String get todaySnoozedConfirm => 'تم التأجيل لوقت لاحق';
+
+  @override
+  String get todayArchivedConfirm => 'تمت الأرشفة';
+
+  @override
   String get priorityHigh => 'عالي';
 
   @override

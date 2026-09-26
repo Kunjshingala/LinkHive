@@ -149,6 +149,30 @@ class AppLocalizationsHi extends AppLocalizations {
       'जल्दी में सहेजे गए लिंक यहाँ आते हैं। विवरण जोड़कर उन्हें व्यवस्थित करें।';
 
   @override
+  String get todayTitle => 'आज';
+
+  @override
+  String get todayEmptyTitle => 'सब पूरा हो गया';
+
+  @override
+  String get todayEmptySubtitle => 'अभी पढ़ने के लिए कुछ बाकी नहीं है।';
+
+  @override
+  String get todayOpen => 'खोलें';
+
+  @override
+  String get todayArchive => 'संग्रहित करें';
+
+  @override
+  String get todaySnooze => 'स्नूज़ करें';
+
+  @override
+  String get todaySnoozedConfirm => 'बाद के लिए स्नूज़ किया गया';
+
+  @override
+  String get todayArchivedConfirm => 'संग्रहित किया गया';
+
+  @override
   String get priorityHigh => 'उच्च';
 
   @override
