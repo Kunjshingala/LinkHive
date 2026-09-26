@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'core/localization/locale_cubit.dart';
 import 'core/services/receive_shared_intent.dart';
+import 'core/services/resurface_notification_service.dart';
 import 'core/services/sync_service.dart';
 import 'core/theme/app_theme.dart';
 import 'core/theme/theme_cubit.dart';
@@ -31,6 +32,11 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
     // Initialize the service once from the locator
     _receiveSharedIntent ??= locator<ReceiveSharedIntent>();
     _receiveSharedIntent?.initialize();
+    // Fire-and-forget: schedules the Daily Resurface notification. Runs after
+    // the router is attached (needed for a cold-start notification tap to
+    // navigate), fails silently on its own — see
+    // ResurfaceNotificationService.initialize().
+    locator<ResurfaceNotificationService>().initialize();
   }
 
   @override

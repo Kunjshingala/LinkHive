@@ -9,6 +9,7 @@ import '../../../features/links/ui/add_link_screen.dart';
 import '../../../features/links/models/link_model.dart';
 import '../../../features/splash/splash_screen.dart';
 import '../../../features/sync/conflict_screen.dart';
+import '../../../features/today/today_screen.dart';
 import '../../../my_app.dart';
 
 final class MyRouteName {
@@ -23,6 +24,7 @@ final class MyRouteName {
   static const String editLink = 'editLink';
   static const String conflicts = 'conflicts';
   static const String inbox = 'inbox';
+  static const String today = 'today';
 }
 
 final router = GoRouter(
@@ -81,6 +83,11 @@ final router = GoRouter(
       path: '/inbox',
       name: MyRouteName.inbox,
       builder: (context, state) => const InboxScreen(),
+    ),
+    GoRoute(
+      path: '/today',
+      name: MyRouteName.today,
+      builder: (context, state) => const TodayScreen(),
     ),
   ],
 );

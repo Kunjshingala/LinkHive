@@ -164,6 +164,64 @@ class LinkRepository {
   /// Number of quick-saved links waiting in the Inbox — drives the Home badge.
   int get quickCount => _linksBox.values.where((l) => l.isQuickSaved).length;
 
+  // ─── Daily Resurface ───────────────────────────────────────────────────────
+
+  /// Picks the single link the Daily Resurface engine should show today.
+  ///
+  /// Candidates are every unread link — quick-saved or organized, the engine
+  /// doesn't care which; the point is to fight rot on anything not yet
+  /// consumed. Priority:
+  /// 1. A link with a **due** [LinkModel.resurfaceAt] (a "when should this
+  ///    come back?" schedule that has arrived), earliest due first.
+  /// 2. Otherwise, the general pool ordered by [LinkModel.lastResurfacedAt]
+  ///    ascending (nulls — never shown — first), then [LinkModel.createdAt]
+  ///    ascending, so coverage spreads instead of repeating the same link.
+  ///
+  /// Returns `null` when there is nothing unread to resurface.
+  LinkModel? getResurfaceCandidate({DateTime? now}) {
+    final nowMs = (now ?? DateTime.now()).toUtc().millisecondsSinceEpoch;
+    final unread = _linksBox.values.where((l) => !l.isRead).toList();
+    if (unread.isEmpty) return null;
+
+    final due =
+        unread.where((l) => l.resurfaceAt != null && l.resurfaceAt! <= nowMs).toList()
+          ..sort((a, b) => a.resurfaceAt!.compareTo(b.resurfaceAt!));
+    if (due.isNotEmpty) return due.first;
+
+    final pool = List<LinkModel>.from(unread)
+      ..sort((a, b) {
+        final aLast = a.lastResurfacedAt;
+        final bLast = b.lastResurfacedAt;
+        if (aLast == null && bLast == null) {
+          return a.createdAt.compareTo(b.createdAt);
+        }
+        if (aLast == null) return -1; // never shown sorts first
+        if (bLast == null) return 1;
+        return aLast.compareTo(bLast);
+      });
+    return pool.first;
+  }
+
+  /// Records that [id] was just shown by the Daily Resurface engine and
+  /// clears any due schedule, so it falls back into the general spaced pool
+  /// instead of being offered again every day.
+  Future<void> markResurfaced(String id) async {
+    final link = _linksBox.get(id);
+    if (link == null) return;
+    final updated = link.copyWith(
+      lastResurfacedAt: DateTime.now().toUtc().millisecondsSinceEpoch,
+      clearResurfaceAt: true,
+      isSynced: false,
+    );
+    await _linksBox.put(id, updated);
+    await _enqueueOperation(
+      entityType: SyncOperation.linkEntity,
+      entityId: id,
+      operationType: SyncOperation.update,
+      payload: updated.toSyncPayload(),
+    );
+  }
+
   // ─── Categories ────────────────────────────────────────────────────────────
 
   List<CategoryModel> getCategories() => _categoriesBox.values.toList();

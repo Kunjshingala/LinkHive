@@ -46,6 +46,12 @@ class FirebaseConstants {
   /// isQuickSaved — true for instant share-saves not yet organized (Inbox)
   static const String linkIsQuickSaved = 'isQuickSaved';
 
+  /// resurfaceAt — when the Daily Resurface engine should next offer this link
+  static const String linkResurfaceAt = 'resurfaceAt';
+
+  /// lastResurfacedAt — last time this link was picked by Daily Resurface
+  static const String linkLastResurfacedAt = 'lastResurfacedAt';
+
   /// deletedAt — used in deleted_links collection
   static const String linkDeletedAt = 'deletedAt';
 
