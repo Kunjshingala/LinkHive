@@ -169,6 +169,12 @@ class _HomeScreenContentState extends State<_HomeScreenContent> {
         ),
       ),
       actions: [
+        NeoBrutalistButton(
+          icon: Icons.today_rounded,
+          onPressed: () => context.pushNamed(MyRouteName.today),
+          shape: BoxShape.circle,
+        ),
+        const SizedBox(width: AppSpacing.sm),
         _inboxAction(context, quick),
         const SizedBox(width: AppSpacing.sm),
         NeoBrutalistButton(

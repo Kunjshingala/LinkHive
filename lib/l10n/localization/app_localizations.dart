@@ -378,6 +378,54 @@ abstract class AppLocalizations {
   /// **'Links you save in a hurry land here. Add details to file them away.'**
   String get inboxEmptySubtitle;
 
+  /// No description provided for @todayTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Today'**
+  String get todayTitle;
+
+  /// No description provided for @todayEmptyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'All caught up'**
+  String get todayEmptyTitle;
+
+  /// No description provided for @todayEmptySubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing waiting to be read right now.'**
+  String get todayEmptySubtitle;
+
+  /// No description provided for @todayOpen.
+  ///
+  /// In en, this message translates to:
+  /// **'Open'**
+  String get todayOpen;
+
+  /// No description provided for @todayArchive.
+  ///
+  /// In en, this message translates to:
+  /// **'Archive'**
+  String get todayArchive;
+
+  /// No description provided for @todaySnooze.
+  ///
+  /// In en, this message translates to:
+  /// **'Snooze'**
+  String get todaySnooze;
+
+  /// No description provided for @todaySnoozedConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Snoozed for later'**
+  String get todaySnoozedConfirm;
+
+  /// No description provided for @todayArchivedConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Archived'**
+  String get todayArchivedConfirm;
+
   /// No description provided for @priorityHigh.
   ///
   /// In en, this message translates to:

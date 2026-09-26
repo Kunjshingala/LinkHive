@@ -43,6 +43,11 @@ dependencies:
   url_launcher: ^6.3.2
   share_plus: ^13.3.0
 
+  # Return engine (Daily Resurface)
+  flutter_local_notifications: any
+  timezone: any
+  flutter_timezone: any
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

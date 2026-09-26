@@ -139,6 +139,25 @@ class LinkModel {
   @HiveField(11, defaultValue: false)
   final bool isQuickSaved;
 
+  /// UTC milliseconds since epoch — when this link should next be offered by
+  /// the Daily Resurface engine.
+  ///
+  /// Set optionally via "When should this come back?" (tonight / weekend /
+  /// someday) at save time. `null` means no explicit schedule — the link
+  /// still participates in the general daily pool, just without a preferred
+  /// time. Nullable fields decode a missing/legacy record as `null` safely
+  /// (same pattern as [syncedAt]), so no `defaultValue` is needed here.
+  @HiveField(12)
+  final int? resurfaceAt;
+
+  /// UTC milliseconds since epoch — the last time this link was chosen as the
+  /// Daily Resurface pick. `null` if it has never been picked.
+  ///
+  /// Used to spread coverage across the unread pool (least-recently-shown
+  /// first) instead of resurfacing the same link every day.
+  @HiveField(13)
+  final int? lastResurfacedAt;
+
   const LinkModel({
     required this.id,
     required this.url,
@@ -152,6 +171,8 @@ class LinkModel {
     this.isSynced = false,
     this.isRead = false,
     this.isQuickSaved = false,
+    this.resurfaceAt,
+    this.lastResurfacedAt,
   });
 
   /// Returns a copy of this [LinkModel] with the specified fields replaced.
@@ -176,6 +197,9 @@ class LinkModel {
     bool? isSynced,
     bool? isRead,
     bool? isQuickSaved,
+    int? resurfaceAt,
+    bool clearResurfaceAt = false,
+    int? lastResurfacedAt,
   }) {
     return LinkModel(
       id: id ?? this.id,
@@ -190,6 +214,8 @@ class LinkModel {
       isSynced: isSynced ?? this.isSynced,
       isRead: isRead ?? this.isRead,
       isQuickSaved: isQuickSaved ?? this.isQuickSaved,
+      resurfaceAt: clearResurfaceAt ? null : (resurfaceAt ?? this.resurfaceAt),
+      lastResurfacedAt: lastResurfacedAt ?? this.lastResurfacedAt,
     );
   }
 
@@ -212,6 +238,8 @@ class LinkModel {
       FirebaseConstants.linkCreatedAt: createdAt,
       FirebaseConstants.linkIsRead: isRead,
       FirebaseConstants.linkIsQuickSaved: isQuickSaved,
+      FirebaseConstants.linkResurfaceAt: resurfaceAt,
+      FirebaseConstants.linkLastResurfacedAt: lastResurfacedAt,
       // syncedAt is NOT written here — the service writes it as
       // FieldValue.serverTimestamp() to get the authoritative server time.
     };
@@ -267,6 +295,8 @@ class LinkModel {
       isSynced: true,
       isRead: data[FirebaseConstants.linkIsRead] as bool? ?? false,
       isQuickSaved: data[FirebaseConstants.linkIsQuickSaved] as bool? ?? false,
+      resurfaceAt: data[FirebaseConstants.linkResurfaceAt] as int?,
+      lastResurfacedAt: data[FirebaseConstants.linkLastResurfacedAt] as int?,
     );
   }
 

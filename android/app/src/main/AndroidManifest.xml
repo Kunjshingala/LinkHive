@@ -2,6 +2,13 @@
           xmlns:tools="http://schemas.android.com/tools"
           package="com.link.hive">
 
+    <!-- Daily Resurface: local notification permissions (flutter_local_notifications).
+         POST_NOTIFICATIONS is required at runtime on Android 13+ in addition to
+         this declaration; RECEIVE_BOOT_COMPLETED lets the plugin reschedule the
+         repeating daily notification after a device reboot clears AlarmManager. -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
+
     <application
         android:label="@string/app_name"
         android:name="${applicationName}"

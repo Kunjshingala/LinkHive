@@ -221,6 +221,59 @@ Fixed: `link_metadata_service.dart` now decodes `&amp; &lt; &gt; &quot; &#39;
 title, meta-content, and icon-href value.
 Verified: `fvm flutter analyze` clean, `fvm flutter test` 108 passed.
 
+## Daily Resurface (Approach A) — IMPLEMENTED 2026-09-25
+
+The return half of the loop. Not the "when should this come back?" scheduling
+picker (Approach C) — that's still unbuilt; see below.
+
+- **Data:** `LinkModel.resurfaceAt` (Hive 12, nullable — a due schedule) and
+  `lastResurfacedAt` (Hive 13, nullable — spacing so the same link isn't
+  offered every day). Both nullable, so legacy records decode safely with no
+  `defaultValue` needed (same reasoning as `syncedAt`).
+- **Selection:** `LinkRepository.getResurfaceCandidate()` — candidates are
+  every unread link (quick-saved or organized, doesn't matter which — the
+  point is fighting rot on anything not yet consumed). Picks a due-scheduled
+  link first (earliest due), else least-recently-shown from the general pool.
+  `markResurfaced()` records the pick and clears any due schedule.
+- **Notification:** `ResurfaceNotificationService` — one daily local
+  notification (fixed 9:00am local time, `flutter_local_notifications` +
+  `timezone` + `flutter_timezone`), inexact scheduling (no
+  `SCHEDULE_EXACT_ALARM` needed — a rough "around 9am" is fine for this).
+  Tapping it deep-links to `/today`, handling both the live-app and cold-start
+  (`getNotificationAppLaunchDetails`) cases. **v1 simplification:** the
+  notification body is static text, not a live "N links waiting" count —
+  doing that live would need a background task (`workmanager`) rescheduling
+  the text daily, real added complexity not worth it yet.
+- **Today screen** (`lib/features/today/`): single-card focus view, one
+  resurfaced link at a time. Open (launch + mark read), Archive (mark read
+  without opening), Snooze (leave unread, just move on) — all three advance to
+  the next candidate.
+- **Manual entry point:** a "Today" button on Home's app bar (distinct icon
+  from the existing "Up Next" strip's bolt icon, to avoid confusion) — lets
+  you reach it without waiting for the actual 9am notification, which matters
+  for testing.
+- **Route:** `MyRouteName.today` → `/today`.
+- **New deps:** `flutter_local_notifications`, `timezone`, `flutter_timezone`.
+- **Android:** `POST_NOTIFICATIONS` + `RECEIVE_BOOT_COMPLETED` permissions
+  added to the manifest.
+Verified: `fvm flutter analyze` clean, `fvm flutter test` 108 passed. **Not
+yet verified on-device** — actual notification permission prompts and firing
+need a real device/emulator run, which hasn't happened yet.
+
+### Bug fixed 2026-09-26: Android build failure — core library desugaring
+User hit this running on a real device: `checkDebugAarMetadata` failed because
+`flutter_local_notifications` requires core library desugaring (it uses
+`java.time` APIs unavailable pre-API 26 without it). Fixed in
+`android/app/build.gradle.kts`: added `isCoreLibraryDesugaringEnabled = true`
+to `compileOptions` and a `coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.5")`
+dependency (version confirmed against Google's Maven repo, not guessed).
+Verified with `fvm flutter build apk --debug` — builds clean.
+
+**Still not built (Approach C):** the "when should this come back?"
+(tonight/weekend/someday) picker at save time. The model field
+(`resurfaceAt`) and the selection logic that would honor it are ready; only
+the UI to set it is missing.
+
 ## Future: web/desktop
 
 Out of scope for now (guarded so it can't crash a stray build — see

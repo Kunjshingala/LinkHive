@@ -149,6 +149,30 @@ class AppLocalizationsGu extends AppLocalizations {
       'ઉતાવળમાં સાચવેલી લિંક અહીં આવે છે. વિગતો ઉમેરીને તેમને ગોઠવો.';
 
   @override
+  String get todayTitle => 'આજે';
+
+  @override
+  String get todayEmptyTitle => 'બધું પૂરું થઈ ગયું';
+
+  @override
+  String get todayEmptySubtitle => 'અત્યારે વાંચવા માટે કંઈ બાકી નથી.';
+
+  @override
+  String get todayOpen => 'ખોલો';
+
+  @override
+  String get todayArchive => 'સંગ્રહિત કરો';
+
+  @override
+  String get todaySnooze => 'સ્નૂઝ કરો';
+
+  @override
+  String get todaySnoozedConfirm => 'પછી માટે સ્નૂઝ કર્યું';
+
+  @override
+  String get todayArchivedConfirm => 'સંગ્રહિત કર્યું';
+
+  @override
   String get priorityHigh => 'ઉચ્ચ';
 
   @override

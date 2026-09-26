@@ -149,6 +149,30 @@ class AppLocalizationsEn extends AppLocalizations {
       'Links you save in a hurry land here. Add details to file them away.';
 
   @override
+  String get todayTitle => 'Today';
+
+  @override
+  String get todayEmptyTitle => 'All caught up';
+
+  @override
+  String get todayEmptySubtitle => 'Nothing waiting to be read right now.';
+
+  @override
+  String get todayOpen => 'Open';
+
+  @override
+  String get todayArchive => 'Archive';
+
+  @override
+  String get todaySnooze => 'Snooze';
+
+  @override
+  String get todaySnoozedConfirm => 'Snoozed for later';
+
+  @override
+  String get todayArchivedConfirm => 'Archived';
+
+  @override
   String get priorityHigh => 'High';
 
   @override
