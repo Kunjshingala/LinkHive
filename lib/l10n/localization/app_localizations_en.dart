@@ -121,6 +121,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get addLinkPriorityLabel => 'Priority';
 
   @override
+  String get addLinkWhenLabel => 'When should this come back?';
+
+  @override
+  String get addLinkWhenTonight => 'Tonight';
+
+  @override
+  String get addLinkWhenWeekend => 'Weekend';
+
+  @override
+  String get addLinkWhenSomeday => 'Someday';
+
+  @override
   String get addLinkCategoriesLabel => 'Categories';
 
   @override

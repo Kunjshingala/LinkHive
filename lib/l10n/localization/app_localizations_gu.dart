@@ -121,6 +121,18 @@ class AppLocalizationsGu extends AppLocalizations {
   String get addLinkPriorityLabel => 'પ્રાધાન્યતા';
 
   @override
+  String get addLinkWhenLabel => 'આ ક્યારે પાછું આવવું જોઈએ?';
+
+  @override
+  String get addLinkWhenTonight => 'આજે રાત્રે';
+
+  @override
+  String get addLinkWhenWeekend => 'સપ્તાહાંત';
+
+  @override
+  String get addLinkWhenSomeday => 'કોઈ દિવસ';
+
+  @override
   String get addLinkCategoriesLabel => 'શ્રેણીઓ';
 
   @override
