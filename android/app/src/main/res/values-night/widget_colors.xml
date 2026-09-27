@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Today widget color tokens — dark values, mirroring app_colors.dart's dark set
+  (surfaceDark, borderDark, textPrimaryDark, textSecondaryDark). Pastel shadow/
+  accent colors stay the same as values/ — the Flutter app doesn't vary them
+  either.
+-->
+<resources>
+    <color name="widget_surface">#FF1E1E1E</color>
+    <color name="widget_border">#FFE5E7EB</color>
+    <color name="widget_text_primary">#FFE5E7EB</color>
+    <color name="widget_text_secondary">#FFA3A3A3</color>
+    <color name="widget_text_tertiary">#FF737373</color>
+
+    <color name="widget_shadow_mint">#FFB5E4CA</color>
+    <color name="widget_accent_orange">#FFFEF0C7</color>
+    <color name="widget_accent_blue">#FFD1E9FF</color>
+    <color name="widget_success">#FF22C55E</color>
+</resources>

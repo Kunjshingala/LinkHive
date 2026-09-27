@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  The bordered "pick" card surface — matches AppSpacing.radiusLg (16dp) and
+  the app's 2px Neo-Brutalist border. Sits on top of widget_card_shadow.xml
+  with bottom/end padding in the composable, so the shadow peeks out — the
+  same two-box trick LinkCard/NeoBrutalistButton use, done here with padding
+  instead of a true offset (Glance's modifier set doesn't have one).
+-->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+    <solid android:color="@color/widget_surface" />
+    <stroke android:width="2dp" android:color="@color/widget_border" />
+    <corners android:radius="16dp" />
+</shape>

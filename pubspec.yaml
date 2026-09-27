@@ -48,6 +48,9 @@ dependencies:
   timezone: any
   flutter_timezone: any
 
+  # Home screen widget (Today's pick + stats)
+  home_widget: any
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

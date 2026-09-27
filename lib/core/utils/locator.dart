@@ -4,6 +4,7 @@ import '../../features/links/repository/link_repository.dart';
 import '../services/auth_service.dart';
 import '../services/firebase_firestore_service.dart';
 import '../services/link_metadata_service.dart';
+import '../services/home_widget_service.dart';
 import '../services/receive_shared_intent.dart';
 import '../services/resurface_notification_service.dart';
 import '../services/sync_service.dart';
@@ -25,6 +26,9 @@ void setupLocator() {
   );
   locator.registerLazySingleton<ResurfaceNotificationService>(
     () => ResurfaceNotificationService(),
+  );
+  locator.registerLazySingleton<HomeWidgetService>(
+    () => HomeWidgetService(repository: locator<LinkRepository>()),
   );
 
   // ─── Firebase / Cloud ───────────────────────────────────────────

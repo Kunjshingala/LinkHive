@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Today widget (resurface pick + Inbox/unread stats). Resizable across the
+  Small/Medium/Large tiers the Kotlin side renders via SizeMode.Responsive.
+
+  updatePeriodMillis is a loose fallback tick only (OS enforces a ~30min
+  floor regardless of a smaller value here) — the real update path is
+  HomeWidgetService pushing HomeWidget.updateWidget() immediately whenever
+  the Hive links box changes.
+-->
+<appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
+    android:initialLayout="@layout/glance_default_loading_layout"
+    android:minWidth="110dp"
+    android:minHeight="40dp"
+    android:minResizeWidth="110dp"
+    android:minResizeHeight="40dp"
+    android:targetCellWidth="2"
+    android:targetCellHeight="1"
+    android:resizeMode="horizontal|vertical"
+    android:updatePeriodMillis="1800000"
+    android:widgetCategory="home_screen">
+</appwidget-provider>

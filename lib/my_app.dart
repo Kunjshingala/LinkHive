@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'core/localization/locale_cubit.dart';
+import 'core/services/home_widget_service.dart';
 import 'core/services/receive_shared_intent.dart';
 import 'core/services/resurface_notification_service.dart';
 import 'core/services/sync_service.dart';
@@ -24,6 +25,7 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   ReceiveSharedIntent? _receiveSharedIntent;
+  HomeWidgetService? _homeWidgetService;
 
   @override
   void initState() {
@@ -37,6 +39,11 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
     // navigate), fails silently on its own — see
     // ResurfaceNotificationService.initialize().
     locator<ResurfaceNotificationService>().initialize();
+    // Same fire-and-forget pattern: pushes initial data to the home-screen
+    // widget and starts watching for changes. Android only for now — see
+    // HomeWidgetService's doc comment.
+    _homeWidgetService ??= locator<HomeWidgetService>();
+    _homeWidgetService?.initialize();
   }
 
   @override
@@ -49,6 +56,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   @override
   void dispose() {
     _receiveSharedIntent?.dispose();
+    _homeWidgetService?.dispose();
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }

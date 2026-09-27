@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The solid backing box behind widget_card_bg.xml — no border, no blur. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+    <solid android:color="@color/widget_shadow_mint" />
+    <corners android:radius="16dp" />
+</shape>
