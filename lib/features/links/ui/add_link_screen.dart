@@ -36,7 +36,7 @@ class AddLinkScreen extends StatelessWidget {
       create: (_) =>
           AddLinkBloc(repository: locator<LinkRepository>(), metadataService: locator<LinkMetadataService>())
             ..add(AddLinkInitialized(prefillUrl: prefillUrl, existingLink: existingLink)),
-      child: _AddLinkContent(isEditing: existingLink != null),
+      child: _AddLinkContent(isEditing: existingLink != null, isRead: existingLink?.isRead ?? false),
     );
   }
 }
@@ -44,7 +44,12 @@ class AddLinkScreen extends StatelessWidget {
 // ─── Content ──────────────────────────────────────────────────────────────────
 class _AddLinkContent extends StatefulWidget {
   final bool isEditing;
-  const _AddLinkContent({required this.isEditing});
+
+  /// Whether the link being edited has already been read/archived. Always
+  /// `false` in add mode — a brand-new link is unread by definition.
+  final bool isRead;
+
+  const _AddLinkContent({required this.isEditing, required this.isRead});
 
   @override
   State<_AddLinkContent> createState() => _AddLinkContentState();
@@ -57,6 +62,13 @@ class _AddLinkContentState extends State<_AddLinkContent> {
   String _priority = 'Normal';
   final List<String> _selectedCategories = [];
   bool _didPopulate = false;
+
+  // "When should this come back?" — deliberately never pre-populated from an
+  // existing link's resurfaceAt (see AddLinkForm.resurfaceAt doc): a raw
+  // timestamp can't be reverse-mapped to one of these buckets, and starting
+  // unselected means leaving it untouched preserves whatever schedule (if
+  // any) the link already had, rather than silently guessing or clearing it.
+  _ResurfaceChoice? _resurfaceChoice;
 
   // Custom categories loaded directly from the Hive repository.
   // We do NOT use LinkBloc here because AddLinkScreen is pushed as its own
@@ -223,6 +235,37 @@ class _AddLinkContentState extends State<_AddLinkContent> {
 
                 SizedBox(height: AppSpacing.lg),
 
+                // ─── When should this come back? ───────────────────
+                // Hidden once a link is already read/archived: the Daily
+                // Resurface engine only ever considers unread links, so
+                // scheduling one here would be a control with no effect.
+                if (!widget.isRead) ...[
+                  _SectionLabel(context.l10n.addLinkWhenLabel),
+                  SizedBox(height: AppSpacing.sm),
+                  Row(
+                    children: [
+                      (_ResurfaceChoice.tonight, context.l10n.addLinkWhenTonight),
+                      (_ResurfaceChoice.weekend, context.l10n.addLinkWhenWeekend),
+                      (_ResurfaceChoice.someday, context.l10n.addLinkWhenSomeday),
+                    ].map((entry) {
+                      final (choice, label) = entry;
+                      final selected = _resurfaceChoice == choice;
+                      return Padding(
+                        padding: EdgeInsets.only(right: AppSpacing.sm),
+                        child: CategoryChip(
+                          label: label,
+                          isSelected: selected,
+                          // Tapping the already-selected chip deselects it —
+                          // back to "untouched" (leave any existing schedule
+                          // alone), matching the category chips' toggle feel.
+                          onTap: () => setState(() => _resurfaceChoice = selected ? null : choice),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                  SizedBox(height: AppSpacing.lg),
+                ],
+
                 // ─── Categories ────────────────────────────────────
                 _SectionLabel(context.l10n.addLinkCategoriesLabel),
                 SizedBox(height: AppSpacing.sm),
@@ -312,6 +355,12 @@ class _AddLinkContentState extends State<_AddLinkContent> {
                           description: _descCtrl.text,
                           priority: _priority,
                           categories: List.from(_selectedCategories),
+                          resurfaceAt: switch (_resurfaceChoice) {
+                            _ResurfaceChoice.tonight => _resurfaceTonight(),
+                            _ResurfaceChoice.weekend => _resurfaceWeekend(),
+                            _ResurfaceChoice.someday || null => null,
+                          },
+                          clearResurfaceAt: _resurfaceChoice == _ResurfaceChoice.someday,
                         ),
                       )
                       ..add(AddLinkSaveRequested());
@@ -372,6 +421,30 @@ class _ImagePreview extends StatelessWidget {
 bool _isSvgUrl(String url) {
   final path = url.toLowerCase().split('?').first;
   return path.endsWith('.svg');
+}
+
+/// The three "when should this come back?" choices. `someday` is an
+/// affirmative "not urgent" pick — it behaves identically to leaving the
+/// picker untouched (both fall into the general spaced resurface pool) but
+/// exists so choosing "no specific time" doesn't feel like skipping.
+enum _ResurfaceChoice { tonight, weekend, someday }
+
+/// "Tonight" → today at 8pm local, or tomorrow 8pm if that's already passed.
+int _resurfaceTonight() {
+  final now = DateTime.now();
+  var target = DateTime(now.year, now.month, now.day, 20, 0);
+  if (target.isBefore(now)) target = target.add(const Duration(days: 1));
+  return target.toUtc().millisecondsSinceEpoch;
+}
+
+/// "Weekend" → the coming Saturday at 10am local (today, if it's already
+/// Saturday and still before 10am; otherwise the next one).
+int _resurfaceWeekend() {
+  final now = DateTime.now();
+  final daysUntilSaturday = (DateTime.saturday - now.weekday) % 7;
+  var target = DateTime(now.year, now.month, now.day, 10, 0).add(Duration(days: daysUntilSaturday));
+  if (target.isBefore(now)) target = target.add(const Duration(days: 7));
+  return target.toUtc().millisecondsSinceEpoch;
 }
 
 // ─── Section Label ───────────────────────────────────────────────────────────

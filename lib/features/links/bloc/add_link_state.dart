@@ -73,6 +73,19 @@ class AddLinkForm extends AddLinkState {
   /// The UI should show an inline loading indicator while this is true.
   final bool isFetchingMetadata;
 
+  /// UTC epoch ms the Daily Resurface engine should offer this link at, if
+  /// the user picked "Tonight" or "Weekend" on this save. `null` here means
+  /// "no explicit choice was made this session" — the save handler must
+  /// leave any existing schedule untouched, not clear it. To explicitly
+  /// clear a schedule (the "Someday" choice), set [clearResurfaceAt] instead
+  /// — same two-field convention as [LinkModel.copyWith].
+  final int? resurfaceAt;
+
+  /// `true` only when the user explicitly picked "Someday" this session —
+  /// clears any existing schedule. Distinct from leaving the picker
+  /// untouched, which must NOT clear a schedule set on a previous edit.
+  final bool clearResurfaceAt;
+
   const AddLinkForm({
     this.url = '',
     this.title = '',
@@ -81,6 +94,8 @@ class AddLinkForm extends AddLinkState {
     this.priority = 'Normal',
     this.categories = const [],
     this.isFetchingMetadata = false,
+    this.resurfaceAt,
+    this.clearResurfaceAt = false,
   });
 
   /// Returns a copy of this state with the specified fields replaced.
@@ -95,6 +110,8 @@ class AddLinkForm extends AddLinkState {
     String? priority,
     List<String>? categories,
     bool? isFetchingMetadata,
+    int? resurfaceAt,
+    bool? clearResurfaceAt,
   }) {
     return AddLinkForm(
       url: url ?? this.url,
@@ -104,11 +121,23 @@ class AddLinkForm extends AddLinkState {
       priority: priority ?? this.priority,
       categories: categories ?? this.categories,
       isFetchingMetadata: isFetchingMetadata ?? this.isFetchingMetadata,
+      resurfaceAt: resurfaceAt ?? this.resurfaceAt,
+      clearResurfaceAt: clearResurfaceAt ?? this.clearResurfaceAt,
     );
   }
 
   @override
-  List<Object?> get props => [url, title, description, image, priority, categories, isFetchingMetadata];
+  List<Object?> get props => [
+    url,
+    title,
+    description,
+    image,
+    priority,
+    categories,
+    isFetchingMetadata,
+    resurfaceAt,
+    clearResurfaceAt,
+  ];
 }
 
 /// Emitted while the repository `addLink` / `updateLink` call is in-flight.

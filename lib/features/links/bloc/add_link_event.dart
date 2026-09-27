@@ -89,10 +89,28 @@ class AddLinkFieldChanged extends AddLinkEvent {
   /// Updated list of category IDs/names, or null if unchanged.
   final List<String>? categories;
 
-  const AddLinkFieldChanged({this.url, this.title, this.description, this.priority, this.categories});
+  /// A "when should this come back?" schedule the user just picked (Tonight
+  /// / Weekend), as a UTC epoch ms. Null means "no explicit choice this
+  /// call" — see [AddLinkForm.resurfaceAt] for why that's not the same as
+  /// clearing it.
+  final int? resurfaceAt;
+
+  /// Set when the user explicitly picked "Someday" — clears any existing
+  /// schedule instead of leaving it untouched.
+  final bool clearResurfaceAt;
+
+  const AddLinkFieldChanged({
+    this.url,
+    this.title,
+    this.description,
+    this.priority,
+    this.categories,
+    this.resurfaceAt,
+    this.clearResurfaceAt = false,
+  });
 
   @override
-  List<Object?> get props => [url, title, description, priority, categories];
+  List<Object?> get props => [url, title, description, priority, categories, resurfaceAt, clearResurfaceAt];
 }
 
 /// Signals that the user has pressed the "Save" button.

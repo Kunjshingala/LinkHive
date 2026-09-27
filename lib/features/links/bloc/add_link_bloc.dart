@@ -216,6 +216,8 @@ class AddLinkBloc extends Bloc<AddLinkEvent, AddLinkState> {
         priority: event.priority,
         categories: event.categories,
         isFetchingMetadata: event.url == null ? null : false,
+        resurfaceAt: event.resurfaceAt,
+        clearResurfaceAt: event.clearResurfaceAt,
       ),
     );
 
@@ -278,6 +280,8 @@ class AddLinkBloc extends Bloc<AddLinkEvent, AddLinkState> {
           // Inbox and joins the managed Home collection. No-op for links that
           // were already managed.
           isQuickSaved: false,
+          resurfaceAt: current.resurfaceAt,
+          clearResurfaceAt: current.clearResurfaceAt,
         );
 
         await _repository.updateLink(updatedLink);
@@ -300,6 +304,7 @@ class AddLinkBloc extends Bloc<AddLinkEvent, AddLinkState> {
           categories: current.categories,
           priority: current.priority,
           createdAt: DateTime.now().toUtc().millisecondsSinceEpoch,
+          resurfaceAt: current.resurfaceAt,
         );
 
         await _repository.addLink(link);
