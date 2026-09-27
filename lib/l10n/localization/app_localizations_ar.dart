@@ -120,6 +120,18 @@ class AppLocalizationsAr extends AppLocalizations {
   String get addLinkPriorityLabel => 'الأولوية';
 
   @override
+  String get addLinkWhenLabel => 'متى يجب أن يعود هذا؟';
+
+  @override
+  String get addLinkWhenTonight => 'الليلة';
+
+  @override
+  String get addLinkWhenWeekend => 'نهاية الأسبوع';
+
+  @override
+  String get addLinkWhenSomeday => 'يومًا ما';
+
+  @override
   String get addLinkCategoriesLabel => 'الفئات';
 
   @override

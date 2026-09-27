@@ -44,7 +44,13 @@ class _SplashScreenContent extends StatelessWidget {
             children: [
               const AppLogo(size: 100),
               const SizedBox(height: AppSpacing.lg),
-              Text(context.l10n.appTitle, style: Theme.of(context).textTheme.displayLarge),
+              // Fixed color: brandBackground never changes with theme, so the
+              // title must stay fixed too — textTheme.displayLarge flips to
+              // light gray in dark mode and would be unreadable here.
+              Text(
+                context.l10n.appTitle,
+                style: Theme.of(context).textTheme.displayLarge?.copyWith(color: AppColors.textPrimary),
+              ),
             ],
           ),
         ),

@@ -985,8 +985,12 @@ class _UpNextCardState extends State<_UpNextCard> {
                   widget.link.title.isNotEmpty ? widget.link.title : widget.link.url,
                   maxLines: 3,
                   overflow: TextOverflow.ellipsis,
+                  // Keep bodySmall's compact size, but use onSurface (the
+                  // primary text color) to match LinkCard's title — bodySmall
+                  // defaults to textSecondary, which is a dimmer shade.
                   style: Theme.of(context).textTheme.bodySmall!.copyWith(
                     fontWeight: FontWeight.w600,
+                    color: Theme.of(context).colorScheme.onSurface,
                   ),
                 ),
                 const Spacer(),

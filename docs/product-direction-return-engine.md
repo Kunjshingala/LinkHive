@@ -269,10 +269,42 @@ to `compileOptions` and a `coreLibraryDesugaring("com.android.tools:desugar_jdk_
 dependency (version confirmed against Google's Maven repo, not guessed).
 Verified with `fvm flutter build apk --debug` — builds clean.
 
-**Still not built (Approach C):** the "when should this come back?"
-(tonight/weekend/someday) picker at save time. The model field
-(`resurfaceAt`) and the selection logic that would honor it are ready; only
-the UI to set it is missing.
+## "When should this come back?" (Approach C) — IMPLEMENTED 2026-09-27
+
+The last known-missing piece of the v1 wedge. Lives on the Add/Edit link form
+(not the quick-save confirmation bar — three chips don't fit there), reached
+the same way "Add details" already works.
+
+- **UI:** a Tonight / Weekend / Someday chip row, none pre-selected. Tapping
+  the active chip again deselects it.
+- **Deliberately never pre-populated from an existing link's `resurfaceAt`**
+  when editing — a raw timestamp can't be reverse-mapped to one of these
+  buckets. Starting unselected and only writing on an explicit choice means
+  opening the form and not touching this row **preserves** whatever schedule
+  (if any) already existed, instead of silently guessing or clearing it.
+- **Someday vs. untouched:** functionally the same outcome (no schedule, goes
+  into the general spaced pool) but distinct in intent — Someday is an
+  affirmative "not urgent, but yes" pick that also *actively clears* an
+  existing schedule (via a `clearResurfaceAt` flag, same convention as
+  `LinkModel.copyWith`), whereas leaving the row untouched changes nothing.
+- **Timestamps:** Tonight → today 8pm local (tomorrow 8pm if already past).
+  Weekend → the coming Saturday 10am local (next one if today's Saturday past
+  10am already).
+- **Wiring:** threaded through `AddLinkFieldChanged` → `AddLinkForm` →
+  `AddLinkBloc._onSaveRequested` using the same `resurfaceAt`/
+  `clearResurfaceAt` two-field pattern already established on `LinkModel`.
+  No schema change — `resurfaceAt`/`getResurfaceCandidate()` already existed
+  from the Daily Resurface build.
+Verified: `fvm flutter analyze` clean, `fvm flutter test` 108 passed.
+
+This closes out the originally-scoped v1 wedge (Approach A + C). Everything
+from the initial design decision is now built.
+
+**Refined 2026-09-27:** the picker is hidden once a link is already
+read/archived — `getResurfaceCandidate()` only ever considers unread links,
+so showing it on an already-consumed link would be a control with no effect.
+This naturally covers both "new link" and "organizing a quick save" (always
+unread at that point) without needing to special-case on `isQuickSaved`.
 
 ## Future: web/desktop
 

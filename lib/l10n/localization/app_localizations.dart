@@ -324,6 +324,30 @@ abstract class AppLocalizations {
   /// **'Priority'**
   String get addLinkPriorityLabel;
 
+  /// No description provided for @addLinkWhenLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'When should this come back?'**
+  String get addLinkWhenLabel;
+
+  /// No description provided for @addLinkWhenTonight.
+  ///
+  /// In en, this message translates to:
+  /// **'Tonight'**
+  String get addLinkWhenTonight;
+
+  /// No description provided for @addLinkWhenWeekend.
+  ///
+  /// In en, this message translates to:
+  /// **'Weekend'**
+  String get addLinkWhenWeekend;
+
+  /// No description provided for @addLinkWhenSomeday.
+  ///
+  /// In en, this message translates to:
+  /// **'Someday'**
+  String get addLinkWhenSomeday;
+
   /// No description provided for @addLinkCategoriesLabel.
   ///
   /// In en, this message translates to:

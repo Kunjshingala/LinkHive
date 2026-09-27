@@ -121,6 +121,18 @@ class AppLocalizationsHi extends AppLocalizations {
   String get addLinkPriorityLabel => 'प्राथमिकता';
 
   @override
+  String get addLinkWhenLabel => 'यह वापस कब आना चाहिए?';
+
+  @override
+  String get addLinkWhenTonight => 'आज रात';
+
+  @override
+  String get addLinkWhenWeekend => 'सप्ताहांत';
+
+  @override
+  String get addLinkWhenSomeday => 'किसी दिन';
+
+  @override
   String get addLinkCategoriesLabel => 'श्रेणियां';
 
   @override
