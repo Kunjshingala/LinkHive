@@ -1,31 +1,33 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:url_launcher/url_launcher.dart';
 
-import '../../../core/utils/utils.dart';
+import '../../links/manager/link_manager.dart';
 import '../../links/models/link_model.dart';
-import '../../links/repository/link_repository.dart';
 
 part 'today_event.dart';
 part 'today_state.dart';
 
 /// BLoC for the "Today" focus screen — the Daily Resurface pull-back.
 ///
-/// Shows exactly one link at a time
-/// ([LinkRepository.getResurfaceCandidate]) with three actions:
-/// - **Open** — launches the URL and marks the link read (consumed).
-/// - **Archive** — marks it read without opening (already handled elsewhere,
-///   or decided it's not worth revisiting).
-/// - **Snooze** — leaves it unread; [LinkRepository.markResurfaced] still
-///   records it was shown, so the spaced pool doesn't offer it again
-///   immediately.
+/// Shows exactly one link at a time ([LinkManager.currentPick]) with three
+/// actions:
+/// - **Open** — launches the URL and marks the link consumed.
+/// - **Archive** — marks it consumed without opening (already handled
+///   elsewhere, or decided it's not worth revisiting).
+/// - **Snooze** — leaves it unread, but records it was shown so the spaced
+///   pool doesn't offer it again immediately.
 ///
 /// Both Open and Archive advance to the next candidate automatically.
+///
+/// What each action *means* lives in [LinkManager], not here. This bloc
+/// decides when an action happens and what state to emit; the manager owns
+/// the launch, the bookkeeping writes and their ordering, so the widget and
+/// the link cards behave identically to this screen.
 class TodayBloc extends Bloc<TodayEvent, TodayState> {
-  final LinkRepository _repository;
+  final LinkManager _manager;
 
-  TodayBloc({required LinkRepository repository})
-    : _repository = repository,
+  TodayBloc({required LinkManager manager})
+    : _manager = manager,
       super(const TodayInitial()) {
     on<TodayLoadRequested>(_onLoadRequested);
     on<TodayOpenRequested>(_onOpenRequested);
@@ -47,25 +49,7 @@ class TodayBloc extends Bloc<TodayEvent, TodayState> {
   ) async {
     final current = state;
     if (current is! TodayLoaded) return;
-    try {
-      final uri = Uri.tryParse(current.link.url);
-      if (uri != null) {
-        // In-app browser view for http(s) — a Chrome Custom Tab on Android, an
-        // SFSafariViewController on iOS. Deliberately not a WebView: this
-        // shares the system browser's cookie jar, so gated links (x.com,
-        // wellfound) open already logged in, and Google OAuth works — both
-        // of which break inside a raw WebView. It also keeps the user inside
-        // LinkHive rather than handing them to the browser, which is the
-        // whole point of the resurface loop. See [launchModeForUrl] for why
-        // other schemes must not use it.
-        final launched = await launchUrl(uri, mode: launchModeForUrl(uri));
-        if (!launched) showSnackBar('Could not open ${current.link.url}');
-      }
-    } catch (_) {
-      showSnackBar('Could not open ${current.link.url}');
-    }
-    await _repository.markLinkAsRead(current.link.id);
-    await _repository.markResurfaced(current.link.id);
+    await _manager.openLink(current.link);
     await _emitCandidate(emit);
   }
 
@@ -75,8 +59,7 @@ class TodayBloc extends Bloc<TodayEvent, TodayState> {
   ) async {
     final current = state;
     if (current is! TodayLoaded) return;
-    await _repository.markLinkAsRead(current.link.id);
-    await _repository.markResurfaced(current.link.id);
+    await _manager.archiveLink(current.link);
     await _emitCandidate(emit);
   }
 
@@ -86,13 +69,12 @@ class TodayBloc extends Bloc<TodayEvent, TodayState> {
   ) async {
     final current = state;
     if (current is! TodayLoaded) return;
-    // Record it was shown (so the spaced pool moves on) but leave it unread.
-    await _repository.markResurfaced(current.link.id);
+    await _manager.snoozeLink(current.link);
     await _emitCandidate(emit);
   }
 
   Future<void> _emitCandidate(Emitter<TodayState> emit) async {
-    final link = _repository.getResurfaceCandidate();
+    final link = _manager.currentPick();
     emit(link == null ? const TodayEmpty() : TodayLoaded(link));
   }
 }

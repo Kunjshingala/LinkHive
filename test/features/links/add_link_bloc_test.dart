@@ -6,6 +6,7 @@ import 'package:link_hive/core/services/link_metadata_service.dart';
 import 'package:link_hive/features/links/bloc/add_link_bloc.dart';
 import 'package:link_hive/features/links/bloc/add_link_event.dart';
 import 'package:link_hive/features/links/bloc/add_link_state.dart';
+import 'package:link_hive/features/links/manager/link_manager.dart';
 import 'package:link_hive/features/links/models/link_model.dart';
 import 'package:link_hive/features/links/repository/link_repository.dart';
 import 'package:mocktail/mocktail.dart';
@@ -42,7 +43,7 @@ void main() {
     });
 
     AddLinkBloc buildBloc() => AddLinkBloc(
-      repository: mockRepository,
+      manager: LinkManager(repository: mockRepository),
       metadataService: mockMetadataService,
     );
 
@@ -261,9 +262,7 @@ void main() {
           ).thenAnswer((_) => staleResult.future);
           when(
             () => mockMetadataService.fetchMetadata('https://new.example'),
-          ).thenAnswer(
-            (_) async => const LinkMetadata(title: 'New page'),
-          );
+          ).thenAnswer((_) async => const LinkMetadata(title: 'New page'));
           return buildBloc();
         },
         seed: () => const AddLinkForm(url: 'https://old.example'),
@@ -276,9 +275,15 @@ void main() {
         },
         wait: const Duration(milliseconds: 300),
         expect: () => [
-          const AddLinkForm(url: 'https://old.example', isFetchingMetadata: true),
+          const AddLinkForm(
+            url: 'https://old.example',
+            isFetchingMetadata: true,
+          ),
           const AddLinkForm(url: 'https://new.example'),
-          const AddLinkForm(url: 'https://new.example', isFetchingMetadata: true),
+          const AddLinkForm(
+            url: 'https://new.example',
+            isFetchingMetadata: true,
+          ),
           const AddLinkForm(url: 'https://new.example', title: 'New page'),
         ],
       );
@@ -355,7 +360,9 @@ void main() {
         act: (bloc) => bloc.add(const AddLinkSaveRequested()),
         expect: () => [const AddLinkSaving(), const AddLinkSuccess()],
         verify: (_) {
-          final captured = verify(() => mockRepository.addLink(captureAny())).captured;
+          final captured = verify(
+            () => mockRepository.addLink(captureAny()),
+          ).captured;
           final savedLink = captured.single as LinkModel;
           expect(savedLink.url, 'https://flutter.dev');
         },
@@ -364,15 +371,11 @@ void main() {
       blocTest<AddLinkBloc, AddLinkState>(
         'emits [AddLinkSaving, AddLinkSuccess] on successful add',
         build: () {
-          when(
-            () => mockRepository.addLink(any()),
-          ).thenAnswer((_) async {});
+          when(() => mockRepository.addLink(any())).thenAnswer((_) async {});
           return buildBloc();
         },
-        seed: () => const AddLinkForm(
-          url: 'https://flutter.dev',
-          title: 'Flutter',
-        ),
+        seed: () =>
+            const AddLinkForm(url: 'https://flutter.dev', title: 'Flutter'),
         act: (bloc) => bloc.add(const AddLinkSaveRequested()),
         expect: () => [const AddLinkSaving(), const AddLinkSuccess()],
         verify: (_) {
@@ -383,9 +386,7 @@ void main() {
       blocTest<AddLinkBloc, AddLinkState>(
         'calls updateLink in edit mode',
         build: () {
-          when(
-            () => mockRepository.updateLink(any()),
-          ).thenAnswer((_) async {});
+          when(() => mockRepository.updateLink(any())).thenAnswer((_) async {});
           return buildBloc();
         },
         act: (bloc) async {
@@ -423,18 +424,13 @@ void main() {
         },
         seed: () => const AddLinkForm(url: 'https://flutter.dev'),
         act: (bloc) => bloc.add(const AddLinkSaveRequested()),
-        expect: () => [
-          const AddLinkSaving(),
-          isA<AddLinkError>(),
-        ],
+        expect: () => [const AddLinkSaving(), isA<AddLinkError>()],
       );
 
       blocTest<AddLinkBloc, AddLinkState>(
         'uses URL as title when title is empty',
         build: () {
-          when(
-            () => mockRepository.addLink(any()),
-          ).thenAnswer((_) async {});
+          when(() => mockRepository.addLink(any())).thenAnswer((_) async {});
           return buildBloc();
         },
         seed: () => const AddLinkForm(url: 'https://flutter.dev', title: ''),

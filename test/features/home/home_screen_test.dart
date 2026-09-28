@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:link_hive/core/services/sync_engine.dart';
 import 'package:link_hive/core/utils/locator.dart';
+import 'package:link_hive/features/links/manager/link_manager.dart';
 import 'package:link_hive/features/home/home.dart';
 import 'package:link_hive/features/links/models/link_model.dart';
 import 'package:link_hive/features/links/models/category_model.dart';
@@ -29,14 +30,26 @@ void main() {
     setUp(() {
       mockRepository = MockLinkRepository();
       boxStreamController = StreamController<BoxEvent>.broadcast();
-      
+
       // Inject the mocked repository into locator so HomeScreen can build LinkBloc successfully
       locator.registerSingleton<LinkRepository>(mockRepository);
+      // HomeScreen's LinkBloc and its link cards resolve LinkManager now.
+      // A real manager over the mock repository keeps every existing stub
+      // below valid, since the manager forwards to the same methods.
+      locator.registerSingleton<LinkManager>(
+        LinkManager(repository: mockRepository),
+      );
       locator.registerSingleton<SyncEngine>(MockSyncEngine());
 
-      when(() => mockRepository.watchLinksBox()).thenAnswer((_) => boxStreamController.stream);
-      when(() => mockRepository.getCategories()).thenReturn(const <CategoryModel>[]);
-      when(() => mockRepository.getUpNextLinks()).thenReturn(const <LinkModel>[]);
+      when(
+        () => mockRepository.watchLinksBox(),
+      ).thenAnswer((_) => boxStreamController.stream);
+      when(
+        () => mockRepository.getCategories(),
+      ).thenReturn(const <CategoryModel>[]);
+      when(
+        () => mockRepository.getUpNextLinks(),
+      ).thenReturn(const <LinkModel>[]);
       when(() => mockRepository.unreadCount).thenReturn(0);
       when(() => mockRepository.quickCount).thenReturn(0);
     });
@@ -58,23 +71,28 @@ void main() {
 
     testWidgets('shows empty state when no links exist', (tester) async {
       // 1. Mock the repository to return an empty list
-      when(() => mockRepository.queryLinks(
-            limit: any(named: 'limit'),
-            offset: any(named: 'offset'),
-            query: any(named: 'query'),
-            category: any(named: 'category'),
-            priority: any(named: 'priority'),
-          )).thenReturn([]);
+      when(
+        () => mockRepository.queryLinks(
+          limit: any(named: 'limit'),
+          offset: any(named: 'offset'),
+          query: any(named: 'query'),
+          category: any(named: 'category'),
+          priority: any(named: 'priority'),
+        ),
+      ).thenReturn([]);
 
       // 2. Build the widget
       await tester.pumpWidget(buildTestWidget());
-      
+
       // 3. Wait for LinkBloc to finish loading and transition to LinksLoaded
       await tester.pumpAndSettle();
 
       // 4. Verify empty state elements are displayed
       expect(find.byIcon(Icons.link_rounded), findsOneWidget);
-      expect(find.text('No Links yet!'), findsWidgets); // using string since l10n is processed
+      expect(
+        find.text('No Links yet!'),
+        findsWidgets,
+      ); // using string since l10n is processed
     });
 
     testWidgets('renders links in the list', (tester) async {
@@ -91,13 +109,15 @@ void main() {
       );
 
       // 1. Mock repository to return one link
-      when(() => mockRepository.queryLinks(
-            limit: any(named: 'limit'),
-            offset: any(named: 'offset'),
-            query: any(named: 'query'),
-            category: any(named: 'category'),
-            priority: any(named: 'priority'),
-          )).thenReturn([testLink]);
+      when(
+        () => mockRepository.queryLinks(
+          limit: any(named: 'limit'),
+          offset: any(named: 'offset'),
+          query: any(named: 'query'),
+          category: any(named: 'category'),
+          priority: any(named: 'priority'),
+        ),
+      ).thenReturn([testLink]);
 
       // Wrap in mockNetworkImages to safely render CachedNetworkImage or fallbacks
       await mockNetworkImages(() async {
@@ -106,7 +126,10 @@ void main() {
 
         // 2. Verify the link is rendered using its title
         expect(find.text('Flutter Dev'), findsOneWidget);
-        expect(find.text('flutter.dev'), findsOneWidget); // host extraction test
+        expect(
+          find.text('flutter.dev'),
+          findsOneWidget,
+        ); // host extraction test
       });
     });
   });

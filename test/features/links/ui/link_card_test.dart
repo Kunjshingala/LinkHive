@@ -5,13 +5,34 @@ import 'package:link_hive/sharedWidgets/link_card.dart';
 import 'package:link_hive/l10n/localization/app_localizations.dart';
 import 'package:link_hive/core/theme/app_theme.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:link_hive/core/utils/locator.dart';
+import 'package:link_hive/features/links/manager/link_manager.dart';
+import 'package:mocktail/mocktail.dart';
 import 'package:mocktail_image_network/mocktail_image_network.dart';
+
+class MockLinkManager extends Mock implements LinkManager {}
 
 void main() {
   group('LinkCard', () {
     late LinkModel testLink;
+    late MockLinkManager manager;
+
+    setUpAll(() {
+      registerFallbackValue(LinkModel(id: 'fallback', url: '', title: '', createdAt: 0));
+    });
 
     setUp(() {
+      // The card resolves LinkManager from the locator on tap, so the test
+      // has to provide one. Registering a mock also lets the tap assertion
+      // check the real outcome (the link is opened) rather than only that
+      // editing was not triggered.
+      manager = MockLinkManager();
+      when(() => manager.openLink(any())).thenAnswer((_) async {});
+      if (locator.isRegistered<LinkManager>()) {
+        locator.unregister<LinkManager>();
+      }
+      locator.registerSingleton<LinkManager>(manager);
+
       testLink = LinkModel(
         id: '1',
         title: 'Flutter Dev',
@@ -115,6 +136,10 @@ void main() {
       });
 
       expect(editCalled, isFalse);
+      // The card body opens the link through the manager, which is also what
+      // marks it read and resurfaced. Before the LinkManager refactor this
+      // path launched the URL and recorded nothing.
+      verify(() => manager.openLink(testLink)).called(1);
     });
   });
 }

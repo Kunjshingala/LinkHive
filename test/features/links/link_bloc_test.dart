@@ -5,6 +5,8 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:link_hive/features/links/bloc/link_bloc.dart';
 import 'package:link_hive/features/links/bloc/link_event.dart';
 import 'package:link_hive/features/links/bloc/link_state.dart';
+import 'package:link_hive/features/links/manager/link_manager.dart';
+import 'package:link_hive/features/links/models/link_exceptions.dart';
 import 'package:link_hive/features/links/models/link_model.dart';
 import 'package:link_hive/features/links/models/category_model.dart';
 import 'package:link_hive/features/links/repository/link_repository.dart';
@@ -17,15 +19,27 @@ void main() {
     late MockLinkRepository mockRepository;
     late StreamController<BoxEvent> boxStreamController;
 
-    final testLink = LinkModel(id: '1', url: 'https://flutter.dev', title: 'Flutter', createdAt: 123456789);
-    final nextPageLink = LinkModel(id: '2', url: 'https://dart.dev', title: 'Dart', createdAt: 123456788);
+    final testLink = LinkModel(
+      id: '1',
+      url: 'https://flutter.dev',
+      title: 'Flutter',
+      createdAt: 123456789,
+    );
+    final nextPageLink = LinkModel(
+      id: '2',
+      url: 'https://dart.dev',
+      title: 'Dart',
+      createdAt: 123456788,
+    );
     const testCategory = CategoryModel(id: 'cat1', name: 'Dev');
 
     setUp(() {
       mockRepository = MockLinkRepository();
       boxStreamController = StreamController<BoxEvent>.broadcast();
 
-      when(() => mockRepository.watchLinksBox()).thenAnswer((_) => boxStreamController.stream);
+      when(
+        () => mockRepository.watchLinksBox(),
+      ).thenAnswer((_) => boxStreamController.stream);
       when(() => mockRepository.getCategories()).thenReturn([testCategory]);
       when(() => mockRepository.getUpNextLinks()).thenReturn([]);
       when(() => mockRepository.unreadCount).thenReturn(0);
@@ -33,7 +47,9 @@ void main() {
     });
 
     setUpAll(() {
-      registerFallbackValue(const CategoryModel(id: 'fallback', name: 'fallback'));
+      registerFallbackValue(
+        const CategoryModel(id: 'fallback', name: 'fallback'),
+      );
     });
 
     tearDown(() {
@@ -41,7 +57,7 @@ void main() {
     });
 
     test('initial state is LinkInitial', () {
-      final bloc = LinkBloc(repository: mockRepository);
+      final bloc = LinkBloc(manager: LinkManager(repository: mockRepository));
       expect(bloc.state, const LinkInitial());
       bloc.close();
     });
@@ -49,23 +65,37 @@ void main() {
     blocTest<LinkBloc, LinkState>(
       'emits [LinkLoading, LinksLoaded] when LinkLoadRequested is added',
       build: () {
-        when(() => mockRepository.queryLinks(limit: 20, offset: 0)).thenReturn([testLink]);
-        return LinkBloc(repository: mockRepository);
+        when(
+          () => mockRepository.queryLinks(limit: 20, offset: 0),
+        ).thenReturn([testLink]);
+        return LinkBloc(manager: LinkManager(repository: mockRepository));
       },
       act: (bloc) => bloc.add(const LinkLoadRequested()),
       expect: () => [
         const LinkLoading(),
-        LinksLoaded(links: [testLink], hasReachedMax: true, offset: 1, customCategories: const [testCategory]),
+        LinksLoaded(
+          links: [testLink],
+          hasReachedMax: true,
+          offset: 1,
+          customCategories: const [testCategory],
+        ),
       ],
     );
 
     blocTest<LinkBloc, LinkState>(
       'reloads when boxStream emits and state is LinksLoaded',
       build: () {
-        when(() => mockRepository.queryLinks(limit: 20, offset: 0)).thenReturn([testLink]);
-        return LinkBloc(repository: mockRepository);
+        when(
+          () => mockRepository.queryLinks(limit: 20, offset: 0),
+        ).thenReturn([testLink]);
+        return LinkBloc(manager: LinkManager(repository: mockRepository));
       },
-      seed: () => const LinksLoaded(links: [], hasReachedMax: true, offset: 0, customCategories: []),
+      seed: () => const LinksLoaded(
+        links: [],
+        hasReachedMax: true,
+        offset: 0,
+        customCategories: [],
+      ),
       act: (bloc) {
         boxStreamController.add(BoxEvent('new_key', testLink, false));
       },
@@ -73,7 +103,12 @@ void main() {
       // LinkLoading emit to avoid a UI flash on every Hive write. So only the
       // refreshed LinksLoaded is expected — no leading LinkLoading.
       expect: () => [
-        LinksLoaded(links: [testLink], hasReachedMax: true, offset: 1, customCategories: const [testCategory]),
+        LinksLoaded(
+          links: [testLink],
+          hasReachedMax: true,
+          offset: 1,
+          customCategories: const [testCategory],
+        ),
       ],
     );
 
@@ -89,9 +124,14 @@ void main() {
             offset: 0,
           ),
         ).thenReturn([testLink]);
-        return LinkBloc(repository: mockRepository);
+        return LinkBloc(manager: LinkManager(repository: mockRepository));
       },
-      seed: () => const LinksLoaded(links: [], hasReachedMax: true, offset: 0, customCategories: []),
+      seed: () => const LinksLoaded(
+        links: [],
+        hasReachedMax: true,
+        offset: 0,
+        customCategories: [],
+      ),
       act: (bloc) {
         bloc
           ..add(const LinkSearchChanged('f'))
@@ -133,9 +173,14 @@ void main() {
             offset: 1,
           ),
         ).thenReturn([nextPageLink]);
-        return LinkBloc(repository: mockRepository);
+        return LinkBloc(manager: LinkManager(repository: mockRepository));
       },
-      seed: () => LinksLoaded(links: [testLink], hasReachedMax: false, offset: 1, customCategories: const [testCategory]),
+      seed: () => LinksLoaded(
+        links: [testLink],
+        hasReachedMax: false,
+        offset: 1,
+        customCategories: const [testCategory],
+      ),
       act: (bloc) => bloc.add(const LinkLoadNextPageRequested()),
       expect: () => [
         LinksLoaded(
@@ -157,12 +202,20 @@ void main() {
     blocTest<LinkBloc, LinkState>(
       'emits a duplicate-category error when the repository rejects the name',
       build: () {
-        when(() => mockRepository.addCategory(any())).thenThrow(const CategoryAlreadyExistsException());
-        return LinkBloc(repository: mockRepository);
+        when(
+          () => mockRepository.addCategory(any()),
+        ).thenThrow(const CategoryAlreadyExistsException());
+        return LinkBloc(manager: LinkManager(repository: mockRepository));
       },
-      seed: () => const LinksLoaded(links: [], hasReachedMax: true, customCategories: []),
+      seed: () => const LinksLoaded(
+        links: [],
+        hasReachedMax: true,
+        customCategories: [],
+      ),
       act: (bloc) => bloc.add(const LinkCustomCategoryAdded('Dev')),
-      expect: () => [const LinkError('', code: LinkErrorCode.duplicateCategory)],
+      expect: () => [
+        const LinkError('', code: LinkErrorCode.duplicateCategory),
+      ],
     );
   });
 }

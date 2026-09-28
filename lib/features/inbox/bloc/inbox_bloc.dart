@@ -4,7 +4,7 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../links/models/link_model.dart';
-import '../../links/repository/link_repository.dart';
+import '../../links/manager/link_manager.dart';
 
 part 'inbox_event.dart';
 part 'inbox_state.dart';
@@ -16,18 +16,18 @@ part 'inbox_state.dart';
 /// `isQuickSaved` flag (removing it here) and deleting one drops it, both via
 /// external box writes.
 class InboxBloc extends Bloc<InboxEvent, InboxState> {
-  final LinkRepository _repository;
+  final LinkManager _manager;
 
   /// Subscription to the Hive links box stream. Cancelled in [close].
   late final StreamSubscription<void> _boxSubscription;
 
-  InboxBloc({required LinkRepository repository})
-    : _repository = repository,
+  InboxBloc({required LinkManager manager})
+    : _manager = manager,
       super(const InboxInitial()) {
     on<InboxLoadRequested>(_onLoadRequested);
     on<InboxLinkDeleted>(_onLinkDeleted);
 
-    _boxSubscription = _repository.watchLinksBox().listen((_) {
+    _boxSubscription = _manager.watchLinks().listen((_) {
       if (state is InboxLoaded) {
         add(const InboxLoadRequested(silent: true));
       }
@@ -46,7 +46,7 @@ class InboxBloc extends Bloc<InboxEvent, InboxState> {
   ) async {
     if (!event.silent) emit(const InboxLoading());
     try {
-      emit(InboxLoaded(links: _repository.queryQuickLinks()));
+      emit(InboxLoaded(links: _manager.queryQuickLinks()));
     } catch (e) {
       emit(InboxError('Failed to load inbox: $e'));
     }
@@ -57,9 +57,9 @@ class InboxBloc extends Bloc<InboxEvent, InboxState> {
     Emitter<InboxState> emit,
   ) async {
     try {
-      await _repository.deleteLink(event.linkId);
+      await _manager.deleteLink(event.linkId);
       // The box watch also refreshes, but emit immediately for a snappy UI.
-      emit(InboxLoaded(links: _repository.queryQuickLinks()));
+      emit(InboxLoaded(links: _manager.queryQuickLinks()));
     } catch (e) {
       emit(InboxError('Failed to delete link: $e'));
     }

@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../core/theme/app_colors.dart';
@@ -16,8 +15,8 @@ import '../../core/utils/utils.dart';
 import '../../features/links/bloc/link_bloc.dart';
 import '../../features/links/bloc/link_event.dart';
 import '../../features/links/bloc/link_state.dart';
+import '../../features/links/manager/link_manager.dart';
 import '../../features/links/models/link_model.dart';
-import '../../features/links/repository/link_repository.dart';
 import '../../sharedWidgets/category_chip.dart';
 import '../../sharedWidgets/confirmation_bottom_sheet.dart';
 import '../../sharedWidgets/custom_button.dart';
@@ -38,7 +37,7 @@ class HomeScreen extends StatelessWidget {
         BlocProvider(create: (context) => HomeBloc()),
         BlocProvider(
           create: (_) => LinkBloc(
-            repository: locator<LinkRepository>(),
+            manager: locator<LinkManager>(),
             syncEngine: locator<SyncEngine>(),
           )..add(const LinkLoadRequested()),
         ),
@@ -468,10 +467,7 @@ class _HomeScreenContentState extends State<_HomeScreenContent> {
               AppSpacing.pageH,
               AppSpacing.lg,
             ),
-            child: _UpNextStrip(
-              links: upNextLinks,
-              onLinkTap: (link) => _openUpNextLink(context, link),
-            ),
+            child: _UpNextStrip(links: upNextLinks, onLinkTap: _openUpNextLink),
           ),
         )
       else if (showAllCaughtUp)
@@ -550,21 +546,15 @@ class _HomeScreenContentState extends State<_HomeScreenContent> {
     );
   }
 
-  Future<void> _openUpNextLink(BuildContext context, LinkModel link) async {
-    final uri = Uri.tryParse(link.url);
-    if (uri != null) {
-      // In-app browser view (Custom Tabs / SFSafariViewController) — see
-      // TodayBloc._onOpenRequested for why this isn't a WebView, and
-      // [launchModeForUrl] for the non-http(s) fallback.
-      final launched = await launchUrl(uri, mode: launchModeForUrl(uri));
-      if (!launched && context.mounted) {
-        showSnackBar('Could not open link');
-      }
-    }
-    if (context.mounted) {
-      context.read<LinkBloc>().add(LinkMarkAsRead(link.id));
-    }
-  }
+  /// Opens an Up Next link through [LinkManager].
+  ///
+  /// No explicit LinkMarkAsRead event any more: the manager writes to the
+  /// links box, and [LinkBloc] already rebuilds from `watchLinksBox()`, so the
+  /// strip refreshes on its own. This also picks up `markResurfaced`, which
+  /// this path used to skip — opening from Up Next marked a link read but
+  /// never recorded that it had been shown.
+  Future<void> _openUpNextLink(LinkModel link) =>
+      locator<LinkManager>().openLink(link);
 
   Widget _buildSearchBar(BuildContext context) {
     return CustomTextField(

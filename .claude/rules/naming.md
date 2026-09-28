@@ -23,6 +23,7 @@ Never use `camelCase` or `PascalCase` for file or directory names.
 | State (concrete) | `<Subject><Adjective>` | `LinkInitial`, `LinkLoading`, `LinksLoaded`, `LinkError` |
 | Service | `Service` | `AuthService`, `SyncService`, `LinkMetadataService` |
 | Repository | `Repository` | `LinkRepository` |
+| Manager | `Manager` | `LinkManager` |
 | Model | `Model` | `LinkModel`, `CategoryModel` |
 | Constants class | `Constants` | `HiveConstants`, `FirebaseConstants` |
 

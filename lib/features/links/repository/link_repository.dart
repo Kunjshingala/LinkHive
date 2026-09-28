@@ -13,11 +13,8 @@ import '../../../core/utils/sync_merge_helper.dart';
 import '../../../core/utils/utils.dart';
 import '../../../core/utils/category_utils.dart';
 import '../models/category_model.dart';
+import '../models/link_exceptions.dart';
 import '../models/link_model.dart';
-
-class CategoryAlreadyExistsException implements Exception {
-  const CategoryAlreadyExistsException();
-}
 
 /// Repository that manages all [LinkModel] and [CategoryModel] persistence.
 ///
@@ -184,7 +181,9 @@ class LinkRepository {
     if (unread.isEmpty) return null;
 
     final due =
-        unread.where((l) => l.resurfaceAt != null && l.resurfaceAt! <= nowMs).toList()
+        unread
+            .where((l) => l.resurfaceAt != null && l.resurfaceAt! <= nowMs)
+            .toList()
           ..sort((a, b) => a.resurfaceAt!.compareTo(b.resurfaceAt!));
     if (due.isNotEmpty) return due.first;
 
@@ -264,14 +263,17 @@ class LinkRepository {
   List<LinkModel> getUpNextLinks({int count = 3}) {
     // Exclude quick-saved links — they belong to the Inbox, not the managed
     // reading queue surfaced on Home.
-    final unread = _linksBox.values.where((l) => !l.isRead && !l.isQuickSaved).toList();
+    final unread = _linksBox.values
+        .where((l) => !l.isRead && !l.isQuickSaved)
+        .toList();
     unread.sort((a, b) => a.createdAt.compareTo(b.createdAt));
     return unread.take(count).toList();
   }
 
   /// Total number of unread links — used for the Up Next strip label.
   /// Quick-saved (Inbox) links are excluded; they are counted by [quickCount].
-  int get unreadCount => _linksBox.values.where((l) => !l.isRead && !l.isQuickSaved).length;
+  int get unreadCount =>
+      _linksBox.values.where((l) => !l.isRead && !l.isQuickSaved).length;
 
   Future<void> addCategory(CategoryModel category) async {
     final c = category.id.isEmpty

@@ -2,14 +2,15 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:share_plus/share_plus.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 import '../core/extensions/context_extension.dart';
 import '../core/theme/app_colors.dart';
 import '../core/theme/app_spacing.dart';
 import '../core/theme/app_typography.dart';
 import '../core/utils/category_utils.dart';
+import '../core/utils/locator.dart';
 import '../core/utils/utils.dart';
+import '../features/links/manager/link_manager.dart';
 import '../features/links/models/link_model.dart';
 import 'confirmation_bottom_sheet.dart';
 import 'neo_popup_menu.dart';
@@ -86,7 +87,7 @@ class LinkCard extends StatelessWidget {
             color: Colors.transparent,
             child: InkWell(
               borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-              onTap: () => _openLink(context),
+              onTap: _openLink,
               child: Padding(
                 padding: EdgeInsetsDirectional.all(AppSpacing.cardPaddingH),
                 child: Row(
@@ -121,24 +122,14 @@ class LinkCard extends StatelessWidget {
     );
   }
 
-  Future<void> _openLink(BuildContext context) async {
-    try {
-      final uri = Uri.parse(link.url);
-      // In-app browser view (Custom Tabs / SFSafariViewController) — see
-      // TodayBloc._onOpenRequested for why this isn't a WebView, and
-      // [launchModeForUrl] for why non-http(s) links fall back to the
-      // external app. Every link in the app opens the same way, wherever it
-      // was tapped from.
-      final launched = await launchUrl(uri, mode: launchModeForUrl(uri));
-      if (!launched && context.mounted) {
-        showSnackBar(context.l10n.linkOpenFailed(link.url));
-      }
-    } catch (_) {
-      if (context.mounted) {
-        showSnackBar(context.l10n.linkOpenFailed(link.url));
-      }
-    }
-  }
+  /// Opens the link through [LinkManager], which also marks it read and
+  /// resurfaced.
+  ///
+  /// The card used to launch the URL and nothing else, so the most common way
+  /// to open a link in the app (this row, on Home and in the Inbox) never
+  /// recorded it and the link resurfaced forever. Routing through the manager
+  /// means a tap here behaves exactly like Open on Today or a widget tap.
+  Future<void> _openLink() => locator<LinkManager>().openLink(link);
 }
 // ─── Favicon / Avatar ─────────────────────────────────────────────────────────
 

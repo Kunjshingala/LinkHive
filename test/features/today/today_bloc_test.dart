@@ -1,5 +1,6 @@
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:link_hive/features/links/manager/link_manager.dart';
 import 'package:link_hive/features/links/models/link_model.dart';
 import 'package:link_hive/features/links/repository/link_repository.dart';
 import 'package:link_hive/features/today/bloc/today_bloc.dart';
@@ -78,7 +79,7 @@ void main() {
       'emits Loading then Loaded with the current candidate',
       build: () {
         when(() => repository.getResurfaceCandidate()).thenReturn(first);
-        return TodayBloc(repository: repository);
+        return TodayBloc(manager: LinkManager(repository: repository));
       },
       act: (bloc) => bloc.add(const TodayLoadRequested()),
       expect: () => [const TodayLoading(), TodayLoaded(first)],
@@ -88,7 +89,7 @@ void main() {
       'emits Loading then Empty when nothing is left to resurface',
       build: () {
         when(() => repository.getResurfaceCandidate()).thenReturn(null);
-        return TodayBloc(repository: repository);
+        return TodayBloc(manager: LinkManager(repository: repository));
       },
       act: (bloc) => bloc.add(const TodayLoadRequested()),
       expect: () => [const TodayLoading(), const TodayEmpty()],
@@ -100,7 +101,7 @@ void main() {
       'marks read and resurfaced, then advances to the next candidate',
       build: () {
         stubCandidates([first, second]);
-        return TodayBloc(repository: repository);
+        return TodayBloc(manager: LinkManager(repository: repository));
       },
       act: (bloc) async {
         bloc.add(const TodayLoadRequested());
@@ -126,7 +127,7 @@ void main() {
           () => launcher.launchUrl(any(), any()),
         ).thenAnswer((_) async => false);
         stubCandidates([first, second]);
-        return TodayBloc(repository: repository);
+        return TodayBloc(manager: LinkManager(repository: repository));
       },
       act: (bloc) async {
         bloc.add(const TodayLoadRequested());
@@ -141,7 +142,7 @@ void main() {
 
     blocTest<TodayBloc, TodayState>(
       'does nothing when no candidate is loaded',
-      build: () => TodayBloc(repository: repository),
+      build: () => TodayBloc(manager: LinkManager(repository: repository)),
       act: (bloc) => bloc.add(const TodayOpenRequested()),
       expect: () => const <TodayState>[],
       verify: (_) {
@@ -156,7 +157,7 @@ void main() {
       'marks read and resurfaced without launching anything',
       build: () {
         stubCandidates([first, second]);
-        return TodayBloc(repository: repository);
+        return TodayBloc(manager: LinkManager(repository: repository));
       },
       act: (bloc) async {
         bloc.add(const TodayLoadRequested());
@@ -181,7 +182,7 @@ void main() {
       'records it was shown but leaves it unread so it comes back later',
       build: () {
         stubCandidates([first, second]);
-        return TodayBloc(repository: repository);
+        return TodayBloc(manager: LinkManager(repository: repository));
       },
       act: (bloc) async {
         bloc.add(const TodayLoadRequested());
