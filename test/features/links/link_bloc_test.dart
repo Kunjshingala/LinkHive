@@ -6,6 +6,7 @@ import 'package:link_hive/features/links/bloc/link_bloc.dart';
 import 'package:link_hive/features/links/bloc/link_event.dart';
 import 'package:link_hive/features/links/bloc/link_state.dart';
 import 'package:link_hive/features/links/manager/link_manager.dart';
+import 'package:link_hive/features/links/models/link_exceptions.dart';
 import 'package:link_hive/features/links/models/link_model.dart';
 import 'package:link_hive/features/links/models/category_model.dart';
 import 'package:link_hive/features/links/repository/link_repository.dart';

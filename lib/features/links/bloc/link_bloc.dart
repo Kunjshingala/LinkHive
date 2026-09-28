@@ -8,7 +8,7 @@ import '../../../core/utils/utils.dart';
 import '../models/link_model.dart';
 import '../models/category_model.dart';
 import '../manager/link_manager.dart';
-import '../repository/link_repository.dart'; // CategoryAlreadyExistsException only
+import '../models/link_exceptions.dart';
 import 'link_event.dart';
 import 'link_state.dart';
 

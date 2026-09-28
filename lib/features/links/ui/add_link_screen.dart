@@ -19,7 +19,7 @@ import '../../../sharedWidgets/custom_text_field.dart';
 import '../models/category_model.dart';
 import '../models/link_model.dart';
 import '../manager/link_manager.dart';
-import '../repository/link_repository.dart'; // CategoryAlreadyExistsException only
+import '../models/link_exceptions.dart';
 import '../bloc/add_link_bloc.dart';
 import '../bloc/add_link_event.dart';
 import '../bloc/add_link_state.dart';
