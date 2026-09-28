@@ -1,22 +1,34 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  Today widget (resurface pick + Inbox/unread stats). Resizable across the
-  Small/Medium/Large tiers the Kotlin side renders via SizeMode.Responsive.
+  Today widget (resurface pick + Inbox/unread stats).
 
-  updatePeriodMillis is a loose fallback tick only (OS enforces a ~30min
-  floor regardless of a smaller value here) — the real update path is
-  HomeWidgetService pushing HomeWidget.updateWidget() immediately whenever
-  the Hive links box changes.
+  FIXED SIZE, 4x3. This pairs with SizeMode.Single on the Glance side:
+  - resizeMode="none" stops the user resizing. Without it they could stretch
+    the widget while the layout stayed locked to one size, which looks broken.
+  - targetCellWidth/Height (API 31+) place it at exactly 4x2 cells.
+  - minWidth/minHeight are the pre-API-31 fallback, in dp, using Android's
+    own cell formula (70 * cells - 30). With SizeMode.Single these are also
+    the dimensions LocalSize reports, so they are what the layout is
+    designed against.
+  - minResize*/maxResize* are deliberately absent: they do nothing when
+    resizing is disabled.
+
+  Android has no fixed catalogue of widget sizes the way iOS's WidgetKit
+  families do — "4x2" here means dp values plus a cell hint, and the real
+  rendered size still varies a little by launcher and density.
+
+  updatePeriodMillis is a loose fallback tick only (the OS enforces a ~30min
+  floor regardless) — the real update path is HomeWidgetService pushing
+  HomeWidget.updateWidget() whenever the Hive links box changes, plus a push
+  on system theme change from MyApp.didChangePlatformBrightness.
 -->
 <appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
     android:initialLayout="@layout/glance_default_loading_layout"
-    android:minWidth="110dp"
-    android:minHeight="40dp"
-    android:minResizeWidth="110dp"
-    android:minResizeHeight="40dp"
-    android:targetCellWidth="2"
-    android:targetCellHeight="1"
-    android:resizeMode="horizontal|vertical"
+    android:minWidth="250dp"
+    android:minHeight="180dp"
+    android:targetCellWidth="4"
+    android:targetCellHeight="3"
+    android:resizeMode="none"
     android:updatePeriodMillis="1800000"
     android:widgetCategory="home_screen">
 </appwidget-provider>

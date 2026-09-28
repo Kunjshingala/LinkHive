@@ -1,9 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
   Today widget color tokens — light values, mirroring lib/core/theme/app_colors.dart.
-  Only surface/border/text switch between light and dark (see values-night/); the
-  pastel shadow/accent colors are constant across both themes in the Flutter app
-  itself, so they aren't duplicated here.
+
+  Two rules learned the hard way here:
+  - The pastel accent colors are CONSTANT across light/dark (the Flutter app
+    doesn't vary them either), so any text drawn on top of them must use a
+    constant color too — widget_on_accent, not widget_text_primary, which
+    flips to light in dark mode and became illegible on a light pastel.
+  - widget_host is a real, readable accent — not one of the pastels. A pastel
+    as a text color disappears against the surface it sits on.
 -->
 <resources>
     <color name="widget_surface">#FFFFFFFF</color>
@@ -12,10 +17,13 @@
     <color name="widget_text_secondary">#FF4B5563</color>
     <color name="widget_text_tertiary">#FF9CA3AF</color>
 
-    <!-- Pastel shadow colors (Neo-Brutalism signatures) — same in light/dark. -->
-    <color name="widget_shadow_mint">#FFB5E4CA</color>
+    <!-- Readable host/link accent (NOT the pastel accentBlue). -->
+    <color name="widget_host">#FF2563EB</color>
 
-    <!-- Tag/accent backgrounds — same in light/dark. -->
+    <!-- Text drawn on top of a pastel fill — constant in both themes. -->
+    <color name="widget_on_accent">#FF1E1E1E</color>
+
+    <!-- Pastel accents — same in light/dark. -->
     <color name="widget_accent_orange">#FFFEF0C7</color>
     <color name="widget_accent_blue">#FFD1E9FF</color>
     <color name="widget_success">#FF22C55E</color>

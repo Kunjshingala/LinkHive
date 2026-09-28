@@ -541,9 +541,11 @@ class _HomeScreenContentState extends State<_HomeScreenContent> {
   Future<void> _openUpNextLink(BuildContext context, LinkModel link) async {
     final uri = Uri.tryParse(link.url);
     if (uri != null) {
+      // In-app browser view (Custom Tabs / SFSafariViewController) — see
+      // TodayBloc._onOpenRequested for why this isn't a WebView.
       final launched = await launchUrl(
         uri,
-        mode: LaunchMode.externalApplication,
+        mode: LaunchMode.inAppBrowserView,
       );
       if (!launched && context.mounted) {
         showSnackBar('Could not open link');

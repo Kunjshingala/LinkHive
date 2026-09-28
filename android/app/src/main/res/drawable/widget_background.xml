@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  The widget's own surface.
+
+  The first version of this widget deliberately drew no background, on the
+  theory that the launcher provides one. It doesn't always — on a launcher
+  that leaves widgets transparent, the content lands straight on the user's
+  wallpaper, and light mode's dark text became unreadable over a dark
+  wallpaper. A widget supplying its own surface is the normal, correct
+  pattern; "let the OS own the chrome" means using the system's corner
+  radius (see values-v31/widget_dimens.xml), not skipping the surface.
+
+  Drawable-based rather than the cornerRadius() modifier because that
+  modifier only takes effect on API 31+, while a shape drawable rounds
+  correctly everywhere.
+-->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+    <solid android:color="@color/widget_surface" />
+    <corners android:radius="@dimen/widget_corner_radius" />
+</shape>

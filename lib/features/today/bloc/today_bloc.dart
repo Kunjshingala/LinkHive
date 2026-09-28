@@ -44,7 +44,14 @@ class TodayBloc extends Bloc<TodayEvent, TodayState> {
     try {
       final uri = Uri.tryParse(current.link.url);
       if (uri != null) {
-        final launched = await launchUrl(uri, mode: LaunchMode.externalApplication);
+        // In-app browser view — a Chrome Custom Tab on Android, an
+        // SFSafariViewController on iOS. Deliberately not a WebView: this
+        // shares the system browser's cookie jar, so gated links (x.com,
+        // wellfound) open already logged in, and Google OAuth works — both
+        // of which break inside a raw WebView. It also keeps the user inside
+        // LinkHive rather than handing them to the browser, which is the
+        // whole point of the resurface loop.
+        final launched = await launchUrl(uri, mode: LaunchMode.inAppBrowserView);
         if (!launched) showSnackBar('Could not open ${current.link.url}');
       }
     } catch (_) {

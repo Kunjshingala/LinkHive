@@ -116,7 +116,10 @@ class LinkCard extends StatelessWidget {
   Future<void> _openLink(BuildContext context) async {
     try {
       final uri = Uri.parse(link.url);
-      final launched = await launchUrl(uri, mode: LaunchMode.externalApplication);
+      // In-app browser view (Custom Tabs / SFSafariViewController) — see
+      // TodayBloc._onOpenRequested for why this isn't a WebView. Every link
+      // in the app opens the same way, wherever it was tapped from.
+      final launched = await launchUrl(uri, mode: LaunchMode.inAppBrowserView);
       if (!launched && context.mounted) {
         showSnackBar(context.l10n.linkOpenFailed(link.url));
       }

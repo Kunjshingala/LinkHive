@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Android 12+ exposes the launcher's own widget corner radius. Using it means
+  the widget's corners match whatever the OEM launcher uses, rather than us
+  hardcoding a radius that looks subtly wrong on some devices.
+-->
+<resources>
+    <dimen name="widget_corner_radius">@android:dimen/system_app_widget_background_radius</dimen>
+</resources>

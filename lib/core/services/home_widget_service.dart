@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:home_widget/home_widget.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../features/links/repository/link_repository.dart';
 import '../utils/navigation/route.dart';
@@ -26,7 +27,15 @@ class HomeWidgetService {
   final LinkRepository _repository;
   final String _tag = 'HomeWidgetService';
 
-  static const _androidWidgetName = 'TodayWidgetReceiver';
+  /// Fully qualified, and passed as `qualifiedAndroidName` rather than
+  /// `androidName`, because the receiver lives in a sub-package.
+  ///
+  /// `androidName` is resolved by the plugin as
+  /// `"${context.packageName}.$name"` — which would look for
+  /// `com.link.hive.TodayWidgetReceiver` and throw ClassNotFoundException,
+  /// failing every update silently (the error surfaces as a PlatformException
+  /// that _pushData's catch used to swallow).
+  static const _androidWidgetName = 'com.link.hive.widget.TodayWidgetReceiver';
 
   StreamSubscription<void>? _boxSubscription;
   StreamSubscription<Uri?>? _clickSubscription;
@@ -53,6 +62,15 @@ class HomeWidgetService {
     }
   }
 
+  /// Forces a redraw of the widget with current data.
+  ///
+  /// Android doesn't re-render a widget when the system theme flips, and the
+  /// fallback tick is 30 minutes — so without this, switching light/dark
+  /// leaves the widget showing its previously-rendered colors until
+  /// something else happens to update it. [MyApp] calls this from
+  /// `didChangePlatformBrightness`.
+  Future<void> refresh() => _pushData();
+
   Future<void> _pushData() async {
     try {
       final pick = _repository.getResurfaceCandidate();
@@ -61,20 +79,73 @@ class HomeWidgetService {
       await HomeWidget.saveWidgetData<String>('pick_host', pick == null ? '' : _host(pick.url));
       await HomeWidget.saveWidgetData<int>('inbox_count', _repository.quickCount);
       await HomeWidget.saveWidgetData<int>('unread_count', _repository.unreadCount);
-      await HomeWidget.updateWidget(androidName: _androidWidgetName);
+      await HomeWidget.updateWidget(qualifiedAndroidName: _androidWidgetName);
     } catch (e) {
-      printLog(tag: _tag, msg: 'Failed to push widget data: $e');
+      // Deliberately loud: a silent catch here hid a broken widget-class
+      // lookup that made every update a no-op while the widget kept showing
+      // stale data.
+      printLog(tag: _tag, msg: 'WIDGET UPDATE FAILED — widget will show stale data: $e');
     }
   }
 
   void _handleUri(Uri? uri) {
     if (uri == null) return;
+    // Logged because a widget tap that quietly does nothing is
+    // indistinguishable from one that opened the app on purpose — which is
+    // exactly how the first version of this shipped broken.
+    printLog(tag: _tag, msg: 'Widget tap: $uri');
     switch (uri.host) {
+      case 'open':
+        unawaited(_openPick());
       case 'today':
         router.pushNamed(MyRouteName.today);
       case 'home':
         router.goNamed(MyRouteName.homeScreen);
+      default:
+        printLog(tag: _tag, msg: 'Unhandled widget deep link: $uri');
     }
+  }
+
+  /// Opens the tapped pick and records it, mirroring
+  /// [TodayBloc] `_onOpenRequested` exactly — same launch mode, same two
+  /// writes, in the same order.
+  ///
+  /// The writes are the point. [LinkRepository.getResurfaceCandidate] filters
+  /// on `!isRead`, so without [LinkRepository.markLinkAsRead] the widget would
+  /// keep offering the same link forever — you'd read it and it would still be
+  /// there tomorrow. That is also why the widget can't fire an ACTION_VIEW
+  /// intent at the browser itself: the app has to run for these to happen.
+  ///
+  /// Resolves the pick here rather than trusting an id passed in from the
+  /// widget — see the comment in TodayGlanceWidget for why.
+  ///
+  /// No navigation afterwards — the in-app browser opens over whatever screen
+  /// the app landed on, and closing it leaves the user in LinkHive. The box
+  /// write triggers [_pushData] through the watch, so the widget has already
+  /// moved to the next pick by the time they get back.
+  Future<void> _openPick() async {
+    final link = _repository.getResurfaceCandidate();
+    if (link == null) {
+      // The widget drew a pick but there's nothing to resurface now — it was
+      // read, archived or deleted since the last draw. Show the user
+      // something rather than appearing to do nothing, and re-sync the widget.
+      printLog(tag: _tag, msg: 'Widget tap had no candidate — widget was stale');
+      router.goNamed(MyRouteName.homeScreen);
+      unawaited(_pushData());
+      return;
+    }
+    final id = link.id;
+    try {
+      final uri = Uri.tryParse(link.url);
+      if (uri != null) {
+        final launched = await launchUrl(uri, mode: LaunchMode.inAppBrowserView);
+        if (!launched) showSnackBar('Could not open ${link.url}');
+      }
+    } catch (_) {
+      showSnackBar('Could not open ${link.url}');
+    }
+    await _repository.markLinkAsRead(id);
+    await _repository.markResurfaced(id);
   }
 
   String _displayTitle(String title, String url) => title.isNotEmpty ? title : url;

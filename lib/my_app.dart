@@ -54,6 +54,15 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   }
 
   @override
+  void didChangePlatformBrightness() {
+    // Android doesn't redraw home screen widgets when the system theme
+    // flips, so the widget would keep its old colors until the next data
+    // change or the 30-minute fallback tick. Push an update so light/dark
+    // actually follows the system.
+    _homeWidgetService?.refresh();
+  }
+
+  @override
   void dispose() {
     _receiveSharedIntent?.dispose();
     _homeWidgetService?.dispose();
