@@ -33,25 +33,32 @@ class TodayBloc extends Bloc<TodayEvent, TodayState> {
     on<TodaySnoozeRequested>(_onSnoozeRequested);
   }
 
-  Future<void> _onLoadRequested(TodayLoadRequested event, Emitter<TodayState> emit) async {
+  Future<void> _onLoadRequested(
+    TodayLoadRequested event,
+    Emitter<TodayState> emit,
+  ) async {
     emit(const TodayLoading());
     await _emitCandidate(emit);
   }
 
-  Future<void> _onOpenRequested(TodayOpenRequested event, Emitter<TodayState> emit) async {
+  Future<void> _onOpenRequested(
+    TodayOpenRequested event,
+    Emitter<TodayState> emit,
+  ) async {
     final current = state;
     if (current is! TodayLoaded) return;
     try {
       final uri = Uri.tryParse(current.link.url);
       if (uri != null) {
-        // In-app browser view — a Chrome Custom Tab on Android, an
+        // In-app browser view for http(s) — a Chrome Custom Tab on Android, an
         // SFSafariViewController on iOS. Deliberately not a WebView: this
         // shares the system browser's cookie jar, so gated links (x.com,
         // wellfound) open already logged in, and Google OAuth works — both
         // of which break inside a raw WebView. It also keeps the user inside
         // LinkHive rather than handing them to the browser, which is the
-        // whole point of the resurface loop.
-        final launched = await launchUrl(uri, mode: LaunchMode.inAppBrowserView);
+        // whole point of the resurface loop. See [launchModeForUrl] for why
+        // other schemes must not use it.
+        final launched = await launchUrl(uri, mode: launchModeForUrl(uri));
         if (!launched) showSnackBar('Could not open ${current.link.url}');
       }
     } catch (_) {
@@ -62,7 +69,10 @@ class TodayBloc extends Bloc<TodayEvent, TodayState> {
     await _emitCandidate(emit);
   }
 
-  Future<void> _onArchiveRequested(TodayArchiveRequested event, Emitter<TodayState> emit) async {
+  Future<void> _onArchiveRequested(
+    TodayArchiveRequested event,
+    Emitter<TodayState> emit,
+  ) async {
     final current = state;
     if (current is! TodayLoaded) return;
     await _repository.markLinkAsRead(current.link.id);
@@ -70,7 +80,10 @@ class TodayBloc extends Bloc<TodayEvent, TodayState> {
     await _emitCandidate(emit);
   }
 
-  Future<void> _onSnoozeRequested(TodaySnoozeRequested event, Emitter<TodayState> emit) async {
+  Future<void> _onSnoozeRequested(
+    TodaySnoozeRequested event,
+    Emitter<TodayState> emit,
+  ) async {
     final current = state;
     if (current is! TodayLoaded) return;
     // Record it was shown (so the spaced pool moves on) but leave it unread.

@@ -235,9 +235,7 @@ class _HomeScreenContentState extends State<_HomeScreenContent> {
                       const SizedBox(width: 8),
                       Text(
                         context.l10n.homeTitle,
-                        style: Theme.of(context)
-                            .textTheme
-                            .headlineMedium!
+                        style: Theme.of(context).textTheme.headlineMedium!
                             .copyWith(fontSize: fontSize),
                       ),
                       if (unread > 0) ...[
@@ -351,7 +349,11 @@ class _HomeScreenContentState extends State<_HomeScreenContent> {
             children: [
               SizedBox(height: _kSearchH, child: _buildSearchBar(context)),
               const SizedBox(height: _kFilterGap),
-              _collapsibleFilterLabel(context, context.l10n.homeCategoriesLabel, t),
+              _collapsibleFilterLabel(
+                context,
+                context.l10n.homeCategoriesLabel,
+                t,
+              ),
               SizedBox(
                 height: _kChipsH,
                 child: _categoryChipsRow(
@@ -363,10 +365,15 @@ class _HomeScreenContentState extends State<_HomeScreenContent> {
               ),
               // Gap between the two chip rows tightens as the header collapses.
               SizedBox(
-                height: _kFilterGapCollapsed +
+                height:
+                    _kFilterGapCollapsed +
                     (_kFilterGap - _kFilterGapCollapsed) * (1 - t),
               ),
-              _collapsibleFilterLabel(context, context.l10n.homePrioritiesLabel, t),
+              _collapsibleFilterLabel(
+                context,
+                context.l10n.homePrioritiesLabel,
+                t,
+              ),
               SizedBox(
                 height: _kChipsH,
                 child: _priorityChipsRow(context, activePriority),
@@ -502,7 +509,12 @@ class _HomeScreenContentState extends State<_HomeScreenContent> {
                 ),
               );
             }
-            return _buildListItem(context, rows[index], searchQuery, index == 0);
+            return _buildListItem(
+              context,
+              rows[index],
+              searchQuery,
+              index == 0,
+            );
           }, childCount: rows.length + (hasMore ? 1 : 0)),
         ),
       ),
@@ -542,11 +554,9 @@ class _HomeScreenContentState extends State<_HomeScreenContent> {
     final uri = Uri.tryParse(link.url);
     if (uri != null) {
       // In-app browser view (Custom Tabs / SFSafariViewController) — see
-      // TodayBloc._onOpenRequested for why this isn't a WebView.
-      final launched = await launchUrl(
-        uri,
-        mode: LaunchMode.inAppBrowserView,
-      );
+      // TodayBloc._onOpenRequested for why this isn't a WebView, and
+      // [launchModeForUrl] for the non-http(s) fallback.
+      final launched = await launchUrl(uri, mode: launchModeForUrl(uri));
       if (!launched && context.mounted) {
         showSnackBar('Could not open link');
       }
@@ -766,8 +776,10 @@ class _LinkRow extends _HomeRow {
 /// 2 = older. Uses createdAt (the save time) — the same key the list is sorted
 /// by — so headers stay in order and marking a link read doesn't move it.
 int _timeBucket(LinkModel link) {
-  final dt =
-      DateTime.fromMillisecondsSinceEpoch(link.createdAt, isUtc: true).toLocal();
+  final dt = DateTime.fromMillisecondsSinceEpoch(
+    link.createdAt,
+    isUtc: true,
+  ).toLocal();
   final now = DateTime.now();
   final today = DateTime(now.year, now.month, now.day);
   final linkDay = DateTime(dt.year, dt.month, dt.day);
@@ -830,7 +842,10 @@ class _AllCaughtUpBanner extends StatelessWidget {
               decoration: BoxDecoration(
                 color: AppColors.success,
                 borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-                border: Border.all(color: neo.borderColor, width: neo.borderWidth),
+                border: Border.all(
+                  color: neo.borderColor,
+                  width: neo.borderWidth,
+                ),
               ),
             ),
           ),
@@ -857,10 +872,9 @@ class _AllCaughtUpBanner extends StatelessWidget {
                   children: [
                     Text(
                       context.l10n.homeAllCaughtUpTitle,
-                      style: Theme.of(context)
-                          .textTheme
-                          .titleSmall!
-                          .copyWith(fontWeight: FontWeight.w700),
+                      style: Theme.of(context).textTheme.titleSmall!.copyWith(
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
                     SizedBox(height: AppSpacing.xs),
                     Text(
@@ -897,9 +911,9 @@ class _UpNextStrip extends StatelessWidget {
             SizedBox(width: AppSpacing.xs),
             Text(
               'Up Next',
-              style: Theme.of(context).textTheme.labelLarge!.copyWith(
-                fontWeight: FontWeight.w700,
-              ),
+              style: Theme.of(
+                context,
+              ).textTheme.labelLarge!.copyWith(fontWeight: FontWeight.w700),
             ),
           ],
         ),
@@ -911,8 +925,10 @@ class _UpNextStrip extends StatelessWidget {
             clipBehavior: Clip.none,
             itemCount: links.length,
             separatorBuilder: (context, i) => SizedBox(width: AppSpacing.sm),
-            itemBuilder: (context, index) =>
-                _UpNextCard(link: links[index], onTap: () => onLinkTap(links[index])),
+            itemBuilder: (context, index) => _UpNextCard(
+              link: links[index],
+              onTap: () => onLinkTap(links[index]),
+            ),
           ),
         ),
       ],
@@ -961,7 +977,10 @@ class _UpNextCardState extends State<_UpNextCard> {
                 decoration: BoxDecoration(
                   color: AppColors.shadowMint,
                   borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-                  border: Border.all(color: neo.borderColor, width: neo.borderWidth),
+                  border: Border.all(
+                    color: neo.borderColor,
+                    width: neo.borderWidth,
+                  ),
                 ),
               ),
             ),
@@ -978,13 +997,18 @@ class _UpNextCardState extends State<_UpNextCard> {
             decoration: BoxDecoration(
               color: Theme.of(context).colorScheme.surface,
               borderRadius: BorderRadius.circular(AppSpacing.radiusMd),
-              border: Border.all(color: neo.borderColor, width: neo.borderWidth),
+              border: Border.all(
+                color: neo.borderColor,
+                width: neo.borderWidth,
+              ),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  widget.link.title.isNotEmpty ? widget.link.title : widget.link.url,
+                  widget.link.title.isNotEmpty
+                      ? widget.link.title
+                      : widget.link.url,
                   maxLines: 3,
                   overflow: TextOverflow.ellipsis,
                   // Keep bodySmall's compact size, but use onSurface (the
@@ -1144,9 +1168,9 @@ class _SwipeableNeoCardState extends State<_SwipeableNeoCard> {
                     link: link,
                     searchQuery: widget.searchQuery,
                     onEdit: () => context.push('/editLink', extra: link),
-                    onDelete: () => context
-                        .read<LinkBloc>()
-                        .add(LinkDeleteRequested(link.id)),
+                    onDelete: () => context.read<LinkBloc>().add(
+                      LinkDeleteRequested(link.id),
+                    ),
                   ),
                 ),
               ],
@@ -1230,7 +1254,8 @@ const double _kFilterVPad = 8;
 
 // Expanded height (labels shown, full gaps) and collapsed height (labels hidden
 // and the category↔priority gap tightened).
-const double _kFiltersMaxExtent = _kFilterVPad * 2 +
+const double _kFiltersMaxExtent =
+    _kFilterVPad * 2 +
     _kSearchH +
     _kFilterGap +
     _kFilterLabelH +
@@ -1238,7 +1263,8 @@ const double _kFiltersMaxExtent = _kFilterVPad * 2 +
     _kFilterGap +
     _kFilterLabelH +
     _kChipsH;
-const double _kFiltersMinExtent = _kFiltersMaxExtent -
+const double _kFiltersMinExtent =
+    _kFiltersMaxExtent -
     2 * _kFilterLabelH -
     (_kFilterGap - _kFilterGapCollapsed);
 

@@ -22,7 +22,8 @@ import '../utils/utils.dart';
 /// downloading + caching the image file for the native widget to read,
 /// real but non-trivial extra work for what's a cosmetic improvement).
 class HomeWidgetService {
-  HomeWidgetService({required LinkRepository repository}) : _repository = repository;
+  HomeWidgetService({required LinkRepository repository})
+    : _repository = repository;
 
   final LinkRepository _repository;
   final String _tag = 'HomeWidgetService';
@@ -48,7 +49,9 @@ class HomeWidgetService {
     try {
       await _pushData();
 
-      _boxSubscription ??= _repository.watchLinksBox().listen((_) => _pushData());
+      _boxSubscription ??= _repository.watchLinksBox().listen(
+        (_) => _pushData(),
+      );
 
       // Cold start via a widget tap: the app wasn't running, so no stream
       // event fires for it — check explicitly once, same pattern as
@@ -75,16 +78,31 @@ class HomeWidgetService {
     try {
       final pick = _repository.getResurfaceCandidate();
       await HomeWidget.saveWidgetData<bool>('has_pick', pick != null);
-      await HomeWidget.saveWidgetData<String>('pick_title', pick == null ? '' : _displayTitle(pick.title, pick.url));
-      await HomeWidget.saveWidgetData<String>('pick_host', pick == null ? '' : _host(pick.url));
-      await HomeWidget.saveWidgetData<int>('inbox_count', _repository.quickCount);
-      await HomeWidget.saveWidgetData<int>('unread_count', _repository.unreadCount);
+      await HomeWidget.saveWidgetData<String>(
+        'pick_title',
+        pick == null ? '' : _displayTitle(pick.title, pick.url),
+      );
+      await HomeWidget.saveWidgetData<String>(
+        'pick_host',
+        pick == null ? '' : _host(pick.url),
+      );
+      await HomeWidget.saveWidgetData<int>(
+        'inbox_count',
+        _repository.quickCount,
+      );
+      await HomeWidget.saveWidgetData<int>(
+        'unread_count',
+        _repository.unreadCount,
+      );
       await HomeWidget.updateWidget(qualifiedAndroidName: _androidWidgetName);
     } catch (e) {
       // Deliberately loud: a silent catch here hid a broken widget-class
       // lookup that made every update a no-op while the widget kept showing
       // stale data.
-      printLog(tag: _tag, msg: 'WIDGET UPDATE FAILED — widget will show stale data: $e');
+      printLog(
+        tag: _tag,
+        msg: 'WIDGET UPDATE FAILED — widget will show stale data: $e',
+      );
     }
   }
 
@@ -106,9 +124,9 @@ class HomeWidgetService {
     }
   }
 
-  /// Opens the tapped pick and records it, mirroring
-  /// [TodayBloc] `_onOpenRequested` exactly — same launch mode, same two
-  /// writes, in the same order.
+  /// Opens the tapped pick and records it, with the same semantics as
+  /// [TodayBloc] `_onOpenRequested` — same launch mode, same two writes.
+  /// The order differs deliberately; see the comment on the writes below.
   ///
   /// The writes are the point. [LinkRepository.getResurfaceCandidate] filters
   /// on `!isRead`, so without [LinkRepository.markLinkAsRead] the widget would
@@ -129,26 +147,52 @@ class HomeWidgetService {
       // The widget drew a pick but there's nothing to resurface now — it was
       // read, archived or deleted since the last draw. Show the user
       // something rather than appearing to do nothing, and re-sync the widget.
-      printLog(tag: _tag, msg: 'Widget tap had no candidate — widget was stale');
+      printLog(
+        tag: _tag,
+        msg: 'Widget tap had no candidate — widget was stale',
+      );
       router.goNamed(MyRouteName.homeScreen);
       unawaited(_pushData());
       return;
     }
-    final id = link.id;
+    final uri = Uri.tryParse(link.url);
+    if (uri == null) {
+      showSnackBar('Could not open ${link.url}');
+      return;
+    }
+
+    // Record BEFORE launching, not after.
+    //
+    // Opening the browser backgrounds this activity almost immediately. On a
+    // cold start — app killed, tapped straight from the widget — the engine
+    // is still warming up when that happens, and the continuation after
+    // `await launchUrl` is not guaranteed to run before the process is
+    // suspended or reclaimed. With the writes after the launch, the link
+    // opened but stayed unread; with them before, the durable part is done
+    // first and the launch is effectively fire-and-forget.
+    //
+    // This is why the order here differs from TodayBloc._onOpenRequested,
+    // which runs with the app already in the foreground.
     try {
-      final uri = Uri.tryParse(link.url);
-      if (uri != null) {
-        final launched = await launchUrl(uri, mode: LaunchMode.inAppBrowserView);
-        if (!launched) showSnackBar('Could not open ${link.url}');
-      }
-    } catch (_) {
+      await _repository.markLinkAsRead(link.id);
+      await _repository.markResurfaced(link.id);
+    } catch (e) {
+      // _openPick runs unawaited, so without this an error here would vanish
+      // and look exactly like a tap that did nothing.
+      printLog(tag: _tag, msg: 'Failed to record widget open: $e');
+    }
+
+    try {
+      final launched = await launchUrl(uri, mode: launchModeForUrl(uri));
+      if (!launched) showSnackBar('Could not open ${link.url}');
+    } catch (e) {
+      printLog(tag: _tag, msg: 'Failed to launch ${link.url}: $e');
       showSnackBar('Could not open ${link.url}');
     }
-    await _repository.markLinkAsRead(id);
-    await _repository.markResurfaced(id);
   }
 
-  String _displayTitle(String title, String url) => title.isNotEmpty ? title : url;
+  String _displayTitle(String title, String url) =>
+      title.isNotEmpty ? title : url;
 
   String _host(String url) {
     try {

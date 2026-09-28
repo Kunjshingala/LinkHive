@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
@@ -32,3 +33,22 @@ void showSnackBar(String message) {
 void printLog({String tag = "Utils", required String msg}) {
   debugPrint("$tag ----------> $msg");
 }
+
+/// Picks the launch mode for [uri]. Use this for every link the app opens.
+///
+/// `LaunchMode.inAppBrowserView` throws `ArgumentError` for anything that
+/// isn't http(s) — see url_launcher's own guard in
+/// `url_launcher_uri.dart:47-51`. That matters because non-http links really
+/// do get saved: [normalizeUrl] returns null for them, and both
+/// `ReceiveSharedIntent` and `AddLinkBloc` fall back to the raw string
+/// (`receive_shared_intent.dart:92`). The previous `externalApplication` had
+/// no such guard, so switching to the in-app browser silently turned those
+/// links into "Could not open".
+///
+/// Falling back to the external app is also the right destination for them:
+/// `mailto:` belongs in a mail client, `tel:` in the dialer. Neither has any
+/// business in a browser tab.
+LaunchMode launchModeForUrl(Uri uri) =>
+    uri.scheme == 'http' || uri.scheme == 'https'
+    ? LaunchMode.inAppBrowserView
+    : LaunchMode.externalApplication;
