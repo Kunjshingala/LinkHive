@@ -12,13 +12,13 @@ import '../../sharedWidgets/common_app_bar.dart';
 import '../../sharedWidgets/custom_button.dart';
 import '../../sharedWidgets/empty_state.dart';
 import '../links/models/link_model.dart';
-import '../links/repository/link_repository.dart';
+import '../links/manager/link_manager.dart';
 import 'bloc/today_bloc.dart';
 
 /// The Daily Resurface focus screen: one link at a time, big preview.
 ///
 /// Reached by tapping the daily notification, or manually from Home. Shows
-/// [LinkRepository.getResurfaceCandidate] with three actions — Open, Archive,
+/// [LinkManager.currentPick] with three actions — Open, Archive,
 /// Snooze — each advancing to the next candidate.
 class TodayScreen extends StatelessWidget {
   const TodayScreen({super.key});
@@ -26,7 +26,7 @@ class TodayScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => TodayBloc(repository: locator<LinkRepository>())..add(const TodayLoadRequested()),
+      create: (_) => TodayBloc(manager: locator<LinkManager>())..add(const TodayLoadRequested()),
       child: const _TodayContent(),
     );
   }

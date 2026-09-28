@@ -1,5 +1,6 @@
 import 'package:get_it/get_it.dart';
 
+import '../../features/links/manager/link_manager.dart';
 import '../../features/links/repository/link_repository.dart';
 import '../services/auth_service.dart';
 import '../services/firebase_firestore_service.dart';
@@ -28,7 +29,7 @@ void setupLocator() {
     () => ResurfaceNotificationService(),
   );
   locator.registerLazySingleton<HomeWidgetService>(
-    () => HomeWidgetService(repository: locator<LinkRepository>()),
+    () => HomeWidgetService(manager: locator<LinkManager>()),
   );
 
   // ─── Firebase / Cloud ───────────────────────────────────────────
@@ -50,6 +51,14 @@ void setupLocator() {
       firebaseService: locator<FirebaseFirestoreService>(),
       hiveHelper: locator<HiveHelper>(),
     ),
+  );
+
+  // ─── Link actions ───────────────────────────────────────────────
+  // Every "do something to a link" composite (open / archive / snooze) lives
+  // here so the behavior is defined once. The repository stays the single
+  // source for persistence; this is the single source for actions.
+  locator.registerLazySingleton<LinkManager>(
+    () => LinkManager(repository: locator<LinkRepository>()),
   );
 
   locator.registerLazySingleton<SyncEngine>(
