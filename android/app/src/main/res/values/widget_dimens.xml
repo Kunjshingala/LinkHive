@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Fallback widget corner radius for API < 31. values-v31/ overrides this with
+  the system's own widget radius so the widget matches every other widget on
+  the user's home screen instead of picking its own number.
+-->
+<resources>
+    <dimen name="widget_corner_radius">16dp</dimen>
+</resources>

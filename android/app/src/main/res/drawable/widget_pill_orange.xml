@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Inbox stat pill: pastel fill + thin border, fully rounded. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+    <solid android:color="@color/widget_accent_orange" />
+    <stroke android:width="1.5dp" android:color="@color/widget_border" />
+    <corners android:radius="100dp" />
+</shape>

@@ -3,6 +3,7 @@ import java.util.Properties
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
+    id("org.jetbrains.kotlin.plugin.compose")
     id("dev.flutter.flutter-gradle-plugin")
 
 }
@@ -67,4 +68,7 @@ dependencies {
 //    implementation("com.google.firebase:firebase-analytics") // Example for Firebase
 //    implementation(platform("com.google.firebase:firebase-bom:34.7.0")) // Example for Firebase
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.5")
+    // Home-screen widget (Today's pick + stats) — Jetpack Glance, the modern
+    // Compose-style widget API (vs. hand-written RemoteViews/XML).
+    implementation("androidx.glance:glance-appwidget:1.2.0")
 }

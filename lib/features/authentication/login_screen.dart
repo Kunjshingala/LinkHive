@@ -101,7 +101,6 @@ class _LoginScreenContentState extends State<_LoginScreenContent> {
         // Navigation is handled via named routes.
       },
       child: Scaffold(
-        backgroundColor: AppColors.brandBackground,
         appBar: const CommonAppBar(backgroundColor: AppColors.transparent),
         body: SafeArea(
           child: SingleChildScrollView(
@@ -116,7 +115,6 @@ class _LoginScreenContentState extends State<_LoginScreenContent> {
                     context.l10n.authWelcome,
                     style: context.text.headlineMedium?.copyWith(
                       fontWeight: FontWeight.w800,
-                      color: AppColors.textPrimary,
                     ),
                     textAlign: TextAlign.center,
                   ),
@@ -124,7 +122,7 @@ class _LoginScreenContentState extends State<_LoginScreenContent> {
                   Text(
                     context.l10n.authSignInDesc,
                     style: context.text.bodyLarge?.copyWith(
-                      color: AppColors.textSecondary,
+                      color: context.text.bodySmall?.color,
                     ),
                     textAlign: TextAlign.center,
                   ),

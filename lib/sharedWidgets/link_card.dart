@@ -60,7 +60,13 @@ class LinkCard extends StatelessWidget {
   /// only when this value is non-empty.
   final String searchQuery;
 
-  const LinkCard({super.key, required this.link, this.searchQuery = '', this.onEdit, this.onDelete});
+  const LinkCard({
+    super.key,
+    required this.link,
+    this.searchQuery = '',
+    this.onEdit,
+    this.onDelete,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -88,7 +94,9 @@ class LinkCard extends StatelessWidget {
                   children: [
                     _FaviconAvatar(link: link),
                     SizedBox(width: AppSpacing.md - 4),
-                    Expanded(child: _LinkContent(link: link, searchQuery: searchQuery)),
+                    Expanded(
+                      child: _LinkContent(link: link, searchQuery: searchQuery),
+                    ),
                     _MoreMenu(link: link, onEdit: onEdit, onDelete: onDelete),
                   ],
                 ),
@@ -116,7 +124,12 @@ class LinkCard extends StatelessWidget {
   Future<void> _openLink(BuildContext context) async {
     try {
       final uri = Uri.parse(link.url);
-      final launched = await launchUrl(uri, mode: LaunchMode.externalApplication);
+      // In-app browser view (Custom Tabs / SFSafariViewController) — see
+      // TodayBloc._onOpenRequested for why this isn't a WebView, and
+      // [launchModeForUrl] for why non-http(s) links fall back to the
+      // external app. Every link in the app opens the same way, wherever it
+      // was tapped from.
+      final launched = await launchUrl(uri, mode: launchModeForUrl(uri));
       if (!launched && context.mounted) {
         showSnackBar(context.l10n.linkOpenFailed(link.url));
       }
@@ -157,6 +170,7 @@ class _FaviconAvatar extends StatelessWidget {
     return _LetterAvatar(link: link);
   }
 }
+
 /// Fallback avatar that displays the first character of the link's title (or URL).
 ///
 /// The background color is deterministically derived from the character's
@@ -178,9 +192,17 @@ class _LetterAvatar extends StatelessWidget {
     return Container(
       width: 38,
       height: 38,
-      decoration: BoxDecoration(color: colors.$1, borderRadius: BorderRadius.circular(AppSpacing.radiusMd - 2)),
+      decoration: BoxDecoration(
+        color: colors.$1,
+        borderRadius: BorderRadius.circular(AppSpacing.radiusMd - 2),
+      ),
       alignment: Alignment.center,
-      child: Text(letter, style: Theme.of(context).textTheme.titleSmall!.copyWith(color: colors.$2, fontSize: 15)),
+      child: Text(
+        letter,
+        style: Theme.of(
+          context,
+        ).textTheme.titleSmall!.copyWith(color: colors.$2, fontSize: 15),
+      ),
     );
   }
 
@@ -230,9 +252,10 @@ class _LinkContent extends StatelessWidget {
           _highlightText(
             link.title.isNotEmpty ? link.title : link.url,
             searchQuery,
-            Theme.of(
-              context,
-            ).textTheme.bodyMedium!.copyWith(fontWeight: FontWeight.w500, color: Theme.of(context).colorScheme.onSurface),
+            Theme.of(context).textTheme.bodyMedium!.copyWith(
+              fontWeight: FontWeight.w500,
+              color: Theme.of(context).colorScheme.onSurface,
+            ),
             context,
           ),
           maxLines: 2,
@@ -248,7 +271,9 @@ class _LinkContent extends StatelessWidget {
                 _highlightText(
                   host,
                   searchQuery,
-                  Theme.of(context).textTheme.labelLarge!.copyWith(color: Theme.of(context).colorScheme.primary),
+                  Theme.of(context).textTheme.labelLarge!.copyWith(
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
                   context,
                 ),
                 maxLines: 2,
@@ -304,7 +329,12 @@ class _TagsRow extends StatelessWidget {
               children: List.generate(link.categories.length, (index) {
                 return Padding(
                   padding: EdgeInsetsDirectional.only(end: AppSpacing.xs),
-                  child: _TagChip(label: CategoryUtils.getLocalizedCategory(context, link.categories[index])),
+                  child: _TagChip(
+                    label: CategoryUtils.getLocalizedCategory(
+                      context,
+                      link.categories[index],
+                    ),
+                  ),
                 );
               }),
             ),
@@ -318,7 +348,10 @@ class _TagsRow extends StatelessWidget {
         if (!link.isSynced) ...[
           const SizedBox(width: AppSpacing.xs),
           Container(
-            padding: const EdgeInsetsDirectional.symmetric(horizontal: 5, vertical: 2),
+            padding: const EdgeInsetsDirectional.symmetric(
+              horizontal: 5,
+              vertical: 2,
+            ),
             decoration: BoxDecoration(
               color: AppColors.shadowRose.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(AppSpacing.radiusSm),
@@ -326,7 +359,13 @@ class _TagsRow extends StatelessWidget {
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
-              children: [const Icon(Icons.cloud_off_rounded, size: 12, color: AppColors.error)],
+              children: [
+                const Icon(
+                  Icons.cloud_off_rounded,
+                  size: 12,
+                  color: AppColors.error,
+                ),
+              ],
             ),
           ),
         ],
@@ -337,7 +376,10 @@ class _TagsRow extends StatelessWidget {
   /// Converts a UTC epoch timestamp (milliseconds) to a human-readable
   /// relative string.
   String _formatTime(int epochMs) {
-    final dt = DateTime.fromMillisecondsSinceEpoch(epochMs, isUtc: true).toLocal();
+    final dt = DateTime.fromMillisecondsSinceEpoch(
+      epochMs,
+      isUtc: true,
+    ).toLocal();
     final diff = DateTime.now().difference(dt);
 
     if (diff.inMinutes < 1) return 'just now';
@@ -360,7 +402,10 @@ class _TagChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsetsDirectional.symmetric(horizontal: AppSpacing.sm, vertical: 2),
+      padding: EdgeInsetsDirectional.symmetric(
+        horizontal: AppSpacing.sm,
+        vertical: 2,
+      ),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surfaceContainerHighest,
         borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
@@ -416,10 +461,22 @@ class _MoreMenu extends StatelessWidget {
         }
       },
       items: [
-        const NeoPopupMenuItem(label: 'Copy URL', value: 'copy', icon: Icons.copy_rounded),
-        const NeoPopupMenuItem(label: 'Share', value: 'share', icon: Icons.share_rounded),
+        const NeoPopupMenuItem(
+          label: 'Copy URL',
+          value: 'copy',
+          icon: Icons.copy_rounded,
+        ),
+        const NeoPopupMenuItem(
+          label: 'Share',
+          value: 'share',
+          icon: Icons.share_rounded,
+        ),
         if (onEdit != null)
-          NeoPopupMenuItem(label: context.l10n.linkEditLabel, value: 'edit', icon: Icons.edit_rounded),
+          NeoPopupMenuItem(
+            label: context.l10n.linkEditLabel,
+            value: 'edit',
+            icon: Icons.edit_rounded,
+          ),
         if (onDelete != null)
           NeoPopupMenuItem(
             label: context.l10n.linkDeleteLabel,
@@ -429,8 +486,16 @@ class _MoreMenu extends StatelessWidget {
           ),
       ],
       child: Padding(
-        padding: const EdgeInsetsDirectional.only(start: 8.0, top: 4.0, bottom: 4.0),
-        child: Icon(Icons.more_vert_rounded, size: 20, color: Theme.of(context).colorScheme.onSurface),
+        padding: const EdgeInsetsDirectional.only(
+          start: 8.0,
+          top: 4.0,
+          bottom: 4.0,
+        ),
+        child: Icon(
+          Icons.more_vert_rounded,
+          size: 20,
+          color: Theme.of(context).colorScheme.onSurface,
+        ),
       ),
     );
   }
@@ -441,7 +506,12 @@ class _MoreMenu extends StatelessWidget {
 /// Matching is case-insensitive and uses simple index lookup instead of a
 /// regular expression. An empty query returns one normal span, so cards that
 /// are not displayed through search retain their original appearance.
-TextSpan _highlightText(String text, String query, TextStyle baseStyle, BuildContext context) {
+TextSpan _highlightText(
+  String text,
+  String query,
+  TextStyle baseStyle,
+  BuildContext context,
+) {
   final normalizedQuery = query.trim().toLowerCase();
   if (normalizedQuery.isEmpty) return TextSpan(text: text, style: baseStyle);
 
@@ -460,10 +530,20 @@ TextSpan _highlightText(String text, String query, TextStyle baseStyle, BuildCon
       break;
     }
     if (matchStart > searchStart) {
-      spans.add(TextSpan(text: text.substring(searchStart, matchStart), style: baseStyle));
+      spans.add(
+        TextSpan(
+          text: text.substring(searchStart, matchStart),
+          style: baseStyle,
+        ),
+      );
     }
     final matchEnd = matchStart + normalizedQuery.length;
-    spans.add(TextSpan(text: text.substring(matchStart, matchEnd), style: highlightStyle));
+    spans.add(
+      TextSpan(
+        text: text.substring(matchStart, matchEnd),
+        style: highlightStyle,
+      ),
+    );
     searchStart = matchEnd;
   }
 

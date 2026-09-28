@@ -79,7 +79,6 @@ class _SignupScreenContentState extends State<_SignupScreenContent> {
         }
       },
       child: Scaffold(
-        backgroundColor: AppColors.brandBackground,
         appBar: const CommonAppBar(backgroundColor: AppColors.transparent),
         body: SafeArea(
           child: SingleChildScrollView(
@@ -93,14 +92,13 @@ class _SignupScreenContentState extends State<_SignupScreenContent> {
                     context.l10n.signupTitle,
                     style: context.text.headlineMedium?.copyWith(
                       fontWeight: FontWeight.bold,
-                      color: AppColors.textPrimary,
                     ),
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: AppSpacing.sm),
                   Text(
                     context.l10n.signupDesc,
-                    style: context.text.bodyLarge?.copyWith(color: AppColors.textSecondary),
+                    style: context.text.bodyLarge?.copyWith(color: context.text.bodySmall?.color),
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: AppSpacing.xxl),

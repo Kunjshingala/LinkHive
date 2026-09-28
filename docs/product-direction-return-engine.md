@@ -306,6 +306,64 @@ so showing it on an already-consumed link would be a control with no effect.
 This naturally covers both "new link" and "organizing a quick save" (always
 unread at that point) without needing to special-case on `isQuickSaved`.
 
+## Home screen widget (Today's pick + stats) — Android v1 IMPLEMENTED 2026-09-27
+
+A third surface for the return loop, beyond the notification and the Today
+screen: a resizable home-screen widget showing today's resurface pick plus
+Inbox/unread counts, so the pull-back doesn't require opening the app at all.
+
+**Design contract agreed before building** (all still true, load-bearing):
+- The widget's **outer edge/chrome belongs to the OS** (launcher corner
+  radius, Material You dynamic tint) — never overridden. Our Neo-Brutalist
+  border + hard offset shadow only applies to content drawn *inside* that
+  edge (the pick card, stat pills, mini buttons), with a safe inset margin.
+- Light/dark follows the **system** setting, not the in-app `ThemeCubit`
+  override — the widget lives among other apps' widgets on the home screen,
+  not inside this app.
+- Tinted/vibrant/Material-You-dynamic-color modes, when active, take
+  precedence over our own palette on the elements they govern — our colors
+  are the default, not a fight against an active OS customization.
+- v1 has no live preview image and no instant in-widget actions (Open/
+  Snooze/Archive on the widget just deep-link into Today, pre-loaded) —
+  true tap-without-opening-the-app actions need a headless Flutter engine
+  (`home_widget`'s `registerInteractivityCallback`) with Hive/get_it
+  re-initialized in that detached context, real complexity deliberately
+  deferred to v2 rather than built blind.
+
+**Implementation:**
+- `home_widget` package (data bridge: `saveWidgetData`/`updateWidget`,
+  Android SharedPreferences under the hood; tap deep-links via
+  `HomeWidget.widgetClicked`/`initiallyLaunchedFromHomeWidget`).
+- `HomeWidgetService` (`lib/core/services/home_widget_service.dart`) —
+  watches `LinkRepository.watchLinksBox()` (same reactive pattern as
+  `InboxBloc`), pushes `getResurfaceCandidate()` + `quickCount` +
+  `unreadCount` to the widget, and routes `linkhive://today` /
+  `linkhive://home` taps into the existing router.
+- Android native: **Jetpack Glance** (`androidx.glance:glance-appwidget:1.2.0`,
+  the modern Compose-style widget API, not hand-written RemoteViews/XML) —
+  `TodayGlanceWidget.kt` + `TodayWidgetReceiver.kt`
+  (`android/app/src/main/kotlin/com/link/hive/widget/`), `SizeMode.Responsive`
+  across Small (a single glanceable count) / Medium (pick + stats row) /
+  Large (adds the mini action row) — matches the three-tier mockup discussed.
+  The Neo-Brutalist card is two stacked `Box`es with padding-based inset
+  instead of a true offset (Glance's modifier set has no `.offset()`) —
+  confirmed working by an actual `flutter build apk --debug` compile, not
+  assumed from documentation.
+- Kotlin requires the `org.jetbrains.kotlin.plugin.compose` Gradle plugin
+  (Kotlin 2.0+ moved the Compose compiler out of `kotlinOptions` into its
+  own plugin, versioned in lockstep with Kotlin — `2.2.21` here) — added to
+  `settings.gradle.kts` and `android/app/build.gradle.kts`.
+Verified: `fvm flutter analyze` clean, `fvm flutter test` 108 passed,
+`fvm flutter build apk --debug` succeeds (the widget's Kotlin code actually
+compiles, not just the Dart side). **Not yet verified on-device** — placing
+the widget, resizing across the three tiers, and confirming taps navigate
+correctly all need a real device, same caveat as the notification work.
+
+**iOS:** deliberately not started yet — needs a WidgetKit Extension target
+created in Xcode (a manual step, same category as the ShareExtension) before
+any Swift code can be written against it meaningfully. Comes after Android
+is confirmed working on-device.
+
 ## Future: web/desktop
 
 Out of scope for now (guarded so it can't crash a stray build — see
