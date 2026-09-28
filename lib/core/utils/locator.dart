@@ -21,7 +21,7 @@ void setupLocator() {
   // by which point LinkRepository and LinkMetadataService are registered.
   locator.registerLazySingleton<ReceiveSharedIntent>(
     () => ReceiveSharedIntent(
-      repository: locator<LinkRepository>(),
+      manager: locator<LinkManager>(),
       metadataService: locator<LinkMetadataService>(),
     ),
   );

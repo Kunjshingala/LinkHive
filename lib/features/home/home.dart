@@ -17,7 +17,6 @@ import '../../features/links/bloc/link_event.dart';
 import '../../features/links/bloc/link_state.dart';
 import '../../features/links/manager/link_manager.dart';
 import '../../features/links/models/link_model.dart';
-import '../../features/links/repository/link_repository.dart';
 import '../../sharedWidgets/category_chip.dart';
 import '../../sharedWidgets/confirmation_bottom_sheet.dart';
 import '../../sharedWidgets/custom_button.dart';
@@ -38,7 +37,7 @@ class HomeScreen extends StatelessWidget {
         BlocProvider(create: (context) => HomeBloc()),
         BlocProvider(
           create: (_) => LinkBloc(
-            repository: locator<LinkRepository>(),
+            manager: locator<LinkManager>(),
             syncEngine: locator<SyncEngine>(),
           )..add(const LinkLoadRequested()),
         ),
@@ -468,10 +467,7 @@ class _HomeScreenContentState extends State<_HomeScreenContent> {
               AppSpacing.pageH,
               AppSpacing.lg,
             ),
-            child: _UpNextStrip(
-              links: upNextLinks,
-              onLinkTap: _openUpNextLink,
-            ),
+            child: _UpNextStrip(links: upNextLinks, onLinkTap: _openUpNextLink),
           ),
         )
       else if (showAllCaughtUp)

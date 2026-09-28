@@ -18,7 +18,8 @@ import '../../../sharedWidgets/custom_button.dart';
 import '../../../sharedWidgets/custom_text_field.dart';
 import '../models/category_model.dart';
 import '../models/link_model.dart';
-import '../repository/link_repository.dart';
+import '../manager/link_manager.dart';
+import '../repository/link_repository.dart'; // CategoryAlreadyExistsException only
 import '../bloc/add_link_bloc.dart';
 import '../bloc/add_link_event.dart';
 import '../bloc/add_link_state.dart';
@@ -34,9 +35,19 @@ class AddLinkScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (_) =>
-          AddLinkBloc(repository: locator<LinkRepository>(), metadataService: locator<LinkMetadataService>())
-            ..add(AddLinkInitialized(prefillUrl: prefillUrl, existingLink: existingLink)),
-      child: _AddLinkContent(isEditing: existingLink != null, isRead: existingLink?.isRead ?? false),
+          AddLinkBloc(
+            manager: locator<LinkManager>(),
+            metadataService: locator<LinkMetadataService>(),
+          )..add(
+            AddLinkInitialized(
+              prefillUrl: prefillUrl,
+              existingLink: existingLink,
+            ),
+          ),
+      child: _AddLinkContent(
+        isEditing: existingLink != null,
+        isRead: existingLink?.isRead ?? false,
+      ),
     );
   }
 }
@@ -80,7 +91,7 @@ class _AddLinkContentState extends State<_AddLinkContent> {
   @override
   void initState() {
     super.initState();
-    _customCategories = locator<LinkRepository>().getCategories();
+    _customCategories = locator<LinkManager>().getCategories();
   }
 
   @override
@@ -132,7 +143,11 @@ class _AddLinkContentState extends State<_AddLinkContent> {
 
         return Scaffold(
           backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-          appBar: CommonAppBar(titleText: widget.isEditing ? 'Update Link' : context.l10n.addLinkTitle),
+          appBar: CommonAppBar(
+            titleText: widget.isEditing
+                ? 'Update Link'
+                : context.l10n.addLinkTitle,
+          ),
           body: SingleChildScrollView(
             padding: AppSpacing.pagePadding,
             child: Column(
@@ -152,7 +167,9 @@ class _AddLinkContentState extends State<_AddLinkContent> {
                         // request. The BLoC debounces these events and starts
                         // one fetch for the latest valid URL after typing
                         // pauses.
-                        onChanged: (value) => context.read<AddLinkBloc>().add(AddLinkFieldChanged(url: value)),
+                        onChanged: (value) => context.read<AddLinkBloc>().add(
+                          AddLinkFieldChanged(url: value),
+                        ),
                       ),
                     ),
                     SizedBox(width: AppSpacing.sm),
@@ -167,7 +184,9 @@ class _AddLinkContentState extends State<_AddLinkContent> {
                                   width: 20,
                                   height: 20,
                                   child: CircularProgressIndicator(
-                                    color: Theme.of(context).colorScheme.primary,
+                                    color: Theme.of(
+                                      context,
+                                    ).colorScheme.primary,
                                     strokeWidth: 2,
                                   ),
                                 ),
@@ -177,12 +196,18 @@ class _AddLinkContentState extends State<_AddLinkContent> {
                               icon: Icons.auto_fix_high_rounded,
                               shadowColor: AppColors.accentBlue,
                               onPressed: () {
-                                final normalizedUrl = normalizeUrl(_urlCtrl.text);
+                                final normalizedUrl = normalizeUrl(
+                                  _urlCtrl.text,
+                                );
                                 if (normalizedUrl != null) {
                                   _urlCtrl.text = normalizedUrl;
-                                  context.read<AddLinkBloc>().add(AddLinkFetchMetadata(normalizedUrl));
+                                  context.read<AddLinkBloc>().add(
+                                    AddLinkFetchMetadata(normalizedUrl),
+                                  );
                                 } else {
-                                  showSnackBar(context.l10n.addLinkInvalidUrlError);
+                                  showSnackBar(
+                                    context.l10n.addLinkInvalidUrlError,
+                                  );
                                 }
                               },
                             ),
@@ -193,7 +218,9 @@ class _AddLinkContentState extends State<_AddLinkContent> {
                 SizedBox(height: AppSpacing.lg),
 
                 // ─── Image Preview ─────────────────────────────────
-                if (state is AddLinkForm && state.image.isNotEmpty && !_isSvgUrl(state.image)) ...[
+                if (state is AddLinkForm &&
+                    state.image.isNotEmpty &&
+                    !_isSvgUrl(state.image)) ...[
                   _ImagePreview(imageUrl: state.image),
                   SizedBox(height: AppSpacing.lg),
                 ],
@@ -201,14 +228,21 @@ class _AddLinkContentState extends State<_AddLinkContent> {
                 // ─── Title ─────────────────────────────────────────
                 _SectionLabel(context.l10n.addLinkPageTitleLabel),
                 SizedBox(height: AppSpacing.xs),
-                CustomTextField(controller: _titleCtrl, hintText: context.l10n.addLinkPageTitleHint),
+                CustomTextField(
+                  controller: _titleCtrl,
+                  hintText: context.l10n.addLinkPageTitleHint,
+                ),
 
                 SizedBox(height: AppSpacing.lg),
 
                 // ─── Description ───────────────────────────────────
                 _SectionLabel(context.l10n.addLinkDescLabel),
                 SizedBox(height: AppSpacing.xs),
-                CustomTextField(controller: _descCtrl, hintText: context.l10n.addLinkDescHint, maxLines: 3),
+                CustomTextField(
+                  controller: _descCtrl,
+                  hintText: context.l10n.addLinkDescHint,
+                  maxLines: 3,
+                ),
 
                 SizedBox(height: AppSpacing.lg),
 
@@ -216,21 +250,28 @@ class _AddLinkContentState extends State<_AddLinkContent> {
                 _SectionLabel(context.l10n.addLinkPriorityLabel),
                 SizedBox(height: AppSpacing.sm),
                 Row(
-                  children: [context.l10n.priorityHigh, context.l10n.priorityNormal, context.l10n.priorityLow].map((p) {
-                    final isNormalKey = p == context.l10n.priorityNormal;
-                    final selected = _priority == p || (isNormalKey && _priority == 'Normal');
-                    return Padding(
-                      padding: EdgeInsets.only(right: AppSpacing.sm),
-                      // Reuse CategoryChip so priority chips share the exact
-                      // Neo-Brutalist border/shadow as the category chips below
-                      // and the Home filter chips.
-                      child: CategoryChip(
-                        label: p,
-                        isSelected: selected,
-                        onTap: () => setState(() => _priority = p),
-                      ),
-                    );
-                  }).toList(),
+                  children:
+                      [
+                        context.l10n.priorityHigh,
+                        context.l10n.priorityNormal,
+                        context.l10n.priorityLow,
+                      ].map((p) {
+                        final isNormalKey = p == context.l10n.priorityNormal;
+                        final selected =
+                            _priority == p ||
+                            (isNormalKey && _priority == 'Normal');
+                        return Padding(
+                          padding: EdgeInsets.only(right: AppSpacing.sm),
+                          // Reuse CategoryChip so priority chips share the exact
+                          // Neo-Brutalist border/shadow as the category chips below
+                          // and the Home filter chips.
+                          child: CategoryChip(
+                            label: p,
+                            isSelected: selected,
+                            onTap: () => setState(() => _priority = p),
+                          ),
+                        );
+                      }).toList(),
                 ),
 
                 SizedBox(height: AppSpacing.lg),
@@ -243,25 +284,38 @@ class _AddLinkContentState extends State<_AddLinkContent> {
                   _SectionLabel(context.l10n.addLinkWhenLabel),
                   SizedBox(height: AppSpacing.sm),
                   Row(
-                    children: [
-                      (_ResurfaceChoice.tonight, context.l10n.addLinkWhenTonight),
-                      (_ResurfaceChoice.weekend, context.l10n.addLinkWhenWeekend),
-                      (_ResurfaceChoice.someday, context.l10n.addLinkWhenSomeday),
-                    ].map((entry) {
-                      final (choice, label) = entry;
-                      final selected = _resurfaceChoice == choice;
-                      return Padding(
-                        padding: EdgeInsets.only(right: AppSpacing.sm),
-                        child: CategoryChip(
-                          label: label,
-                          isSelected: selected,
-                          // Tapping the already-selected chip deselects it —
-                          // back to "untouched" (leave any existing schedule
-                          // alone), matching the category chips' toggle feel.
-                          onTap: () => setState(() => _resurfaceChoice = selected ? null : choice),
-                        ),
-                      );
-                    }).toList(),
+                    children:
+                        [
+                          (
+                            _ResurfaceChoice.tonight,
+                            context.l10n.addLinkWhenTonight,
+                          ),
+                          (
+                            _ResurfaceChoice.weekend,
+                            context.l10n.addLinkWhenWeekend,
+                          ),
+                          (
+                            _ResurfaceChoice.someday,
+                            context.l10n.addLinkWhenSomeday,
+                          ),
+                        ].map((entry) {
+                          final (choice, label) = entry;
+                          final selected = _resurfaceChoice == choice;
+                          return Padding(
+                            padding: EdgeInsets.only(right: AppSpacing.sm),
+                            child: CategoryChip(
+                              label: label,
+                              isSelected: selected,
+                              // Tapping the already-selected chip deselects it —
+                              // back to "untouched" (leave any existing schedule
+                              // alone), matching the category chips' toggle feel.
+                              onTap: () => setState(
+                                () =>
+                                    _resurfaceChoice = selected ? null : choice,
+                              ),
+                            ),
+                          );
+                        }).toList(),
                   ),
                   SizedBox(height: AppSpacing.lg),
                 ],
@@ -285,7 +339,9 @@ class _AddLinkContentState extends State<_AddLinkContent> {
                         isSelected: selected,
                         onTap: () {
                           setState(() {
-                            selected ? _selectedCategories.remove(cat) : _selectedCategories.add(cat);
+                            selected
+                                ? _selectedCategories.remove(cat)
+                                : _selectedCategories.add(cat);
                           });
                         },
                       );
@@ -299,7 +355,9 @@ class _AddLinkContentState extends State<_AddLinkContent> {
                         isSelected: selected,
                         onTap: () {
                           setState(() {
-                            selected ? _selectedCategories.remove(cat.name) : _selectedCategories.add(cat.name);
+                            selected
+                                ? _selectedCategories.remove(cat.name)
+                                : _selectedCategories.add(cat.name);
                           });
                         },
                       );
@@ -311,11 +369,12 @@ class _AddLinkContentState extends State<_AddLinkContent> {
                         // Persist directly via repository — no LinkBloc needed.
                         final newCat = CategoryModel(id: '', name: name);
                         try {
-                          await locator<LinkRepository>().addCategory(newCat);
+                          await locator<LinkManager>().addCategory(newCat);
                           if (!context.mounted) return;
                           // Refresh the local list and pre-select the new category.
                           setState(() {
-                            _customCategories = locator<LinkRepository>().getCategories();
+                            _customCategories = locator<LinkManager>()
+                                .getCategories();
                             _selectedCategories.add(name);
                           });
                         } on CategoryAlreadyExistsException {
@@ -331,7 +390,9 @@ class _AddLinkContentState extends State<_AddLinkContent> {
 
                 // ─── Save Button ───────────────────────────────────
                 NeoBrutalistButton(
-                  text: widget.isEditing ? 'Update Link' : context.l10n.saveLinkButton,
+                  text: widget.isEditing
+                      ? 'Update Link'
+                      : context.l10n.saveLinkButton,
                   isLoading: isSaving,
                   onPressed: () {
                     final rawUrl = _urlCtrl.text.trim();
@@ -360,7 +421,8 @@ class _AddLinkContentState extends State<_AddLinkContent> {
                             _ResurfaceChoice.weekend => _resurfaceWeekend(),
                             _ResurfaceChoice.someday || null => null,
                           },
-                          clearResurfaceAt: _resurfaceChoice == _ResurfaceChoice.someday,
+                          clearResurfaceAt:
+                              _resurfaceChoice == _ResurfaceChoice.someday,
                         ),
                       )
                       ..add(AddLinkSaveRequested());
@@ -398,7 +460,9 @@ class _ImagePreview extends StatelessWidget {
         border: Border.all(color: neo.borderColor, width: neo.borderWidth),
       ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(AppSpacing.radiusMd - neo.borderWidth),
+        borderRadius: BorderRadius.circular(
+          AppSpacing.radiusMd - neo.borderWidth,
+        ),
         child: CachedNetworkImage(
           imageUrl: imageUrl,
           fit: BoxFit.cover,
@@ -406,9 +470,8 @@ class _ImagePreview extends StatelessWidget {
           // explicit sizing the image lays out at its intrinsic size.
           width: double.infinity,
           height: double.infinity,
-          placeholder: (context, url) => const Center(
-            child: CircularProgressIndicator(strokeWidth: 2),
-          ),
+          placeholder: (context, url) =>
+              const Center(child: CircularProgressIndicator(strokeWidth: 2)),
           errorWidget: (context, url, error) => Center(
             child: Icon(Icons.broken_image_outlined, color: neo.borderColor),
           ),
@@ -442,7 +505,13 @@ int _resurfaceTonight() {
 int _resurfaceWeekend() {
   final now = DateTime.now();
   final daysUntilSaturday = (DateTime.saturday - now.weekday) % 7;
-  var target = DateTime(now.year, now.month, now.day, 10, 0).add(Duration(days: daysUntilSaturday));
+  var target = DateTime(
+    now.year,
+    now.month,
+    now.day,
+    10,
+    0,
+  ).add(Duration(days: daysUntilSaturday));
   if (target.isBefore(now)) target = target.add(const Duration(days: 7));
   return target.toUtc().millisecondsSinceEpoch;
 }
@@ -454,6 +523,11 @@ class _SectionLabel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Text(label, style: Theme.of(context).textTheme.labelLarge!.copyWith(fontWeight: FontWeight.w600));
+    return Text(
+      label,
+      style: Theme.of(
+        context,
+      ).textTheme.labelLarge!.copyWith(fontWeight: FontWeight.w600),
+    );
   }
 }

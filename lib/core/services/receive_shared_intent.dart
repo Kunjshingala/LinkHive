@@ -1,11 +1,12 @@
 import 'dart:async';
 
-import 'package:flutter/foundation.dart' show TargetPlatform, defaultTargetPlatform, kIsWeb;
+import 'package:flutter/foundation.dart'
+    show TargetPlatform, defaultTargetPlatform, kIsWeb;
 import 'package:receive_sharing_intent/receive_sharing_intent.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../features/links/models/link_model.dart';
-import '../../features/links/repository/link_repository.dart';
+import '../../features/links/manager/link_manager.dart';
 import '../../sharedWidgets/saved_link_snackbar.dart';
 import '../utils/navigation/route.dart';
 import '../utils/utils.dart';
@@ -27,12 +28,12 @@ import 'link_metadata_service.dart';
 /// to LinkHive compete with a native "save" button.
 class ReceiveSharedIntent {
   ReceiveSharedIntent({
-    required LinkRepository repository,
+    required LinkManager manager,
     required LinkMetadataService metadataService,
-  }) : _repository = repository,
+  }) : _manager = manager,
        _metadataService = metadataService;
 
-  final LinkRepository _repository;
+  final LinkManager _manager;
   final LinkMetadataService _metadataService;
 
   final String _tag = 'ReceiveSharedIntent';
@@ -48,8 +49,12 @@ class ReceiveSharedIntent {
     // Desktop/web are out of scope for now (see CLAUDE.md); guard so a build
     // for those platforms doesn't crash on startup instead of silently no-op.
     if (kIsWeb ||
-        (defaultTargetPlatform != TargetPlatform.android && defaultTargetPlatform != TargetPlatform.iOS)) {
-      printLog(tag: _tag, msg: 'Share intent unsupported on this platform — skipping');
+        (defaultTargetPlatform != TargetPlatform.android &&
+            defaultTargetPlatform != TargetPlatform.iOS)) {
+      printLog(
+        tag: _tag,
+        msg: 'Share intent unsupported on this platform — skipping',
+      );
       return;
     }
     _startListen();
@@ -57,29 +62,34 @@ class ReceiveSharedIntent {
   }
 
   void _startListen() {
-    _intentSubscription ??= ReceiveSharingIntent.instance.getMediaStream().listen((event) {
-      final url = _extractUrl(event);
-      if (url != null) {
-        printLog(tag: _tag, msg: 'Foreground shared URL: $url');
-        _saveInstantly(url);
-      } else if (_hasContent(event)) {
-        printLog(tag: _tag, msg: 'Non-URL share ignored');
-        showSnackBar('Only URL links can be saved to LinkHive');
-      }
-    });
+    _intentSubscription ??= ReceiveSharingIntent.instance
+        .getMediaStream()
+        .listen((event) {
+          final url = _extractUrl(event);
+          if (url != null) {
+            printLog(tag: _tag, msg: 'Foreground shared URL: $url');
+            _saveInstantly(url);
+          } else if (_hasContent(event)) {
+            printLog(tag: _tag, msg: 'Non-URL share ignored');
+            showSnackBar('Only URL links can be saved to LinkHive');
+          }
+        });
   }
 
   void _startBGListen() {
-    _intentBackGroundSubscription ??= ReceiveSharingIntent.instance.getInitialMedia().asStream().listen((event) {
-      final url = _extractUrl(event);
-      if (url != null) {
-        printLog(tag: _tag, msg: 'Cold-start shared URL: $url');
-        _saveInstantly(url, resetToHome: true);
-      } else if (_hasContent(event)) {
-        printLog(tag: _tag, msg: 'Non-URL cold-start share ignored');
-        showSnackBar('Only URL links can be saved to LinkHive');
-      }
-    });
+    _intentBackGroundSubscription ??= ReceiveSharingIntent.instance
+        .getInitialMedia()
+        .asStream()
+        .listen((event) {
+          final url = _extractUrl(event);
+          if (url != null) {
+            printLog(tag: _tag, msg: 'Cold-start shared URL: $url');
+            _saveInstantly(url, resetToHome: true);
+          } else if (_hasContent(event)) {
+            printLog(tag: _tag, msg: 'Non-URL cold-start share ignored');
+            showSnackBar('Only URL links can be saved to LinkHive');
+          }
+        });
   }
 
   /// Persists [url] immediately, shows the confirmation bar, and kicks off a
@@ -100,7 +110,7 @@ class ReceiveSharedIntent {
     );
 
     try {
-      await _repository.addLink(link);
+      await _manager.addLink(link);
     } catch (e) {
       // Rare: a Hive write failure. Log it and bail rather than showing a
       // "saved" confirmation for something that didn't save.
@@ -116,9 +126,12 @@ class ReceiveSharedIntent {
         // `link`: background enrichment may have already filled in the title
         // by the time this is tapped, and passing the stale (blank) snapshot
         // would show an empty form even though good data is already saved.
-        router.pushNamed(MyRouteName.editLink, extra: _repository.getLinkById(link.id) ?? link);
+        router.pushNamed(
+          MyRouteName.editLink,
+          extra: _manager.linkById(link.id) ?? link,
+        );
       },
-      onUndo: () => _repository.deleteLink(link.id),
+      onUndo: () => _manager.deleteLink(link.id),
     );
 
     unawaited(_enrichInBackground(link));
@@ -132,15 +145,16 @@ class ReceiveSharedIntent {
   Future<void> _enrichInBackground(LinkModel saved) async {
     try {
       final metadata = await _metadataService.fetchMetadata(saved.url);
-      final current = _repository.getLinkById(saved.id);
+      final current = _manager.linkById(saved.id);
       if (current == null) return; // undone or deleted meanwhile
 
       final needsTitle = current.title.isEmpty && metadata.title.isNotEmpty;
       final needsImage = current.image.isEmpty && metadata.image.isNotEmpty;
-      final needsDesc = current.description.isEmpty && metadata.description.isNotEmpty;
+      final needsDesc =
+          current.description.isEmpty && metadata.description.isNotEmpty;
       if (!needsTitle && !needsImage && !needsDesc) return;
 
-      await _repository.updateLink(
+      await _manager.updateLink(
         current.copyWith(
           title: needsTitle ? metadata.title : current.title,
           image: needsImage ? metadata.image : current.image,
@@ -160,7 +174,8 @@ class ReceiveSharedIntent {
     final first = list.first;
     final path = first?.path as String?;
     // receive_sharing_intent passes the real URL in path for URL shares
-    if (path != null && (path.startsWith('http://') || path.startsWith('https://'))) {
+    if (path != null &&
+        (path.startsWith('http://') || path.startsWith('https://'))) {
       return path;
     }
     return null;

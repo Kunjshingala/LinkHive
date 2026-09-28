@@ -4,6 +4,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../core/extensions/context_extension.dart';
 import '../../../core/utils/utils.dart';
 import '../../../my_app.dart';
+import '../models/category_model.dart';
 import '../models/link_model.dart';
 import '../repository/link_repository.dart';
 
@@ -55,6 +56,70 @@ class LinkManager {
 
   /// Unread links in the managed reading queue, excluding the Inbox.
   int get unreadCount => _repository.unreadCount;
+
+  // ─── Links ──────────────────────────────────────────────────────────────
+  //
+  // Straight delegation to [LinkRepository]. These carry no logic of their
+  // own: they exist so a feature bloc has exactly one dependency and one
+  // place to look, rather than reaching past the manager to the store.
+  //
+  // The sync layer (SyncEngine, SyncService, ConflictBloc) and AccountBloc
+  // deliberately do NOT come through here. They are the persistence and sync
+  // machinery itself, not user actions on a link, and forwarding
+  // pullFromCloud or conflict resolution through an action manager would add
+  // a hop without removing a decision.
+
+  Future<void> addLink(LinkModel link) => _repository.addLink(link);
+
+  Future<void> updateLink(LinkModel link) => _repository.updateLink(link);
+
+  Future<void> deleteLink(String id) => _repository.deleteLink(id);
+
+  LinkModel? linkById(String id) => _repository.getLinkById(id);
+
+  List<LinkModel> queryLinks({
+    String query = '',
+    String category = 'All',
+    String priority = 'All',
+    int limit = 20,
+    int offset = 0,
+  }) => _repository.queryLinks(
+    query: query,
+    category: category,
+    priority: priority,
+    limit: limit,
+    offset: offset,
+  );
+
+  /// Quick-saved links, the Inbox contents.
+  List<LinkModel> queryQuickLinks() => _repository.queryQuickLinks();
+
+  /// Oldest unread links for the Home "Up Next" strip.
+  List<LinkModel> getUpNextLinks({int count = 3}) =>
+      _repository.getUpNextLinks(count: count);
+
+  Future<void> markAsRead(String id) => _repository.markLinkAsRead(id);
+
+  Future<void> markAsUnread(String id) => _repository.markLinkAsUnread(id);
+
+  // ─── Categories ─────────────────────────────────────────────────────────
+
+  List<CategoryModel> getCategories() => _repository.getCategories();
+
+  Future<void> addCategory(CategoryModel category) =>
+      _repository.addCategory(category);
+
+  Future<void> deleteCategory(String id) => _repository.deleteCategory(id);
+
+  // ─── Sync triggers ──────────────────────────────────────────────────────
+  //
+  // The user-initiated ones only (pull to refresh). The scheduled and
+  // connectivity-driven paths live in SyncService and talk to the repository
+  // directly.
+
+  Future<void> syncPendingLinks() => _repository.syncPendingLinks();
+
+  Future<void> pullFromCloud() => _repository.pullFromCloud();
 
   /// Opens [link] and records it as consumed.
   ///

@@ -14,7 +14,7 @@ import '../../sharedWidgets/custom_button.dart';
 import '../../sharedWidgets/empty_state.dart';
 import '../../sharedWidgets/link_card.dart';
 import '../links/models/link_model.dart';
-import '../links/repository/link_repository.dart';
+import '../links/manager/link_manager.dart';
 import 'bloc/inbox_bloc.dart';
 
 /// The Inbox: quick-saved links waiting to be organized.
@@ -29,7 +29,8 @@ class InboxScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (_) =>
-          InboxBloc(repository: locator<LinkRepository>())..add(const InboxLoadRequested()),
+          InboxBloc(manager: locator<LinkManager>())
+            ..add(const InboxLoadRequested()),
       child: const _InboxContent(),
     );
   }
@@ -53,23 +54,26 @@ class _InboxContent extends StatelessWidget {
                   color: Theme.of(context).colorScheme.primary,
                 ),
               ),
-              InboxLoaded(:final links) => links.isEmpty
-                  ? EmptyState(
-                      icon: Icons.inbox_rounded,
-                      title: context.l10n.inboxEmptyTitle,
-                      subtitle: context.l10n.inboxEmptySubtitle,
-                    )
-                  : ListView.separated(
-                      padding: const EdgeInsets.fromLTRB(
-                        AppSpacing.pageH,
-                        AppSpacing.lg,
-                        AppSpacing.pageH,
-                        AppSpacing.xxl,
+              InboxLoaded(:final links) =>
+                links.isEmpty
+                    ? EmptyState(
+                        icon: Icons.inbox_rounded,
+                        title: context.l10n.inboxEmptyTitle,
+                        subtitle: context.l10n.inboxEmptySubtitle,
+                      )
+                    : ListView.separated(
+                        padding: const EdgeInsets.fromLTRB(
+                          AppSpacing.pageH,
+                          AppSpacing.lg,
+                          AppSpacing.pageH,
+                          AppSpacing.xxl,
+                        ),
+                        itemCount: links.length,
+                        separatorBuilder: (_, _) =>
+                            const SizedBox(height: AppSpacing.lg),
+                        itemBuilder: (context, index) =>
+                            _InboxItem(link: links[index]),
                       ),
-                      itemCount: links.length,
-                      separatorBuilder: (_, _) => const SizedBox(height: AppSpacing.lg),
-                      itemBuilder: (context, index) => _InboxItem(link: links[index]),
-                    ),
               InboxError(:final message) => Center(child: Text(message)),
             };
           },
@@ -103,7 +107,8 @@ class _InboxItem extends StatelessWidget {
                 icon: Icons.tune_rounded,
                 height: 44,
                 shadowColor: AppColors.success,
-                onPressed: () => context.pushNamed(MyRouteName.editLink, extra: link),
+                onPressed: () =>
+                    context.pushNamed(MyRouteName.editLink, extra: link),
               ),
             ),
             const SizedBox(width: AppSpacing.sm),
