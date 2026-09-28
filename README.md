@@ -1,19 +1,38 @@
 # LinkHive 🐝
 
-A high-performance, **offline-first** Flutter application for capturing, organizing, and syncing links across devices. Built with a bold **Neo-Brutalist** design system and powered by Firebase and Hive.
+An **offline-first** Flutter app for saving links you actually come back to. Built with a bold **Neo-Brutalist** design system and powered by Firebase and Hive.
 
 ## 🚀 Overview
 
-LinkHive is designed for users who need a reliable way to save and categorize links instantly, even without an internet connection. By utilizing a robust local-first architecture, it ensures a lag-free experience while automatically syncing data to the cloud whenever connectivity is available.
+Saving a link is easy. Every app does it. The hard part is returning to it, which is why most saved links quietly rot.
+
+LinkHive treats **return as the product**, not capture:
+
+- **Capture costs one gesture.** Share to LinkHive and the link is saved instantly, no form, no decisions. It lands in an Inbox you can triage later, or never.
+- **The app brings links back to you.** A daily notification surfaces one link worth revisiting, a Today screen makes acting on it a single tap, and an Android home screen widget keeps it visible without opening the app at all.
+- **Everything works offline.** Writes hit local storage immediately and sync to the cloud when a connection appears.
 
 ## ✨ Key Features
 
-### 🔗 Link & Category Management (New!)
-- **Instant Capture**: Save links with metadata (title, image, description) automatically fetched.
-- **Offline CRUD**: Create, Update, and Delete links and categories with zero latency.
-- **Global Search**: Find links by title, description, or URL using high-performance local indexing.
-- **Smart Filtering**: Filter links by dynamic categories or custom priority levels (High, Normal, Low).
-- **Dynamic Sorting**: Automatic descending sort by server-confirmed or client-created timestamps.
+### ⚡ Instant Capture
+- **One-gesture save**: Share a URL from any app and it is saved immediately, with no form to fill in.
+- **Inbox**: Instantly-saved links land in a separate Inbox so they never clutter your organized collection. Add details whenever you feel like it, or don't.
+- **Background enrichment**: Title, image and description are fetched from the page after the save, so the save itself is never blocked on the network.
+- **Undo**: A confirmation bar offers both "Add details" and "Undo" right after saving.
+
+### 🔁 Daily Resurface (the return engine)
+- **One link a day**: A 9am local notification surfaces a single link worth revisiting, chosen from what you haven't read.
+- **Today screen**: Shows that one link with three actions — Open, Archive, Snooze — each advancing to the next.
+- **"When should this come back?"**: Optionally schedule a link to resurface at a chosen time instead of joining the general pool.
+- **Spaced ordering**: Links that have never been shown come first, then the least recently surfaced, so coverage spreads instead of repeating.
+- **Android home screen widget**: Today's pick plus Inbox and unread counts, tappable straight into the link. Built with Jetpack Glance.
+
+### 🔗 Link & Category Management
+- **Offline CRUD**: Create, update and delete links and categories with zero latency.
+- **Global search**: Find links by title, description or URL.
+- **Smart filtering**: Filter by custom categories or priority (High, Normal, Low).
+- **In-app browser**: Links open in a Chrome Custom Tab / `SFSafariViewController`, so they keep your signed-in sessions and keep you inside the app.
+- **Up Next**: The oldest unread links surfaced on Home, so forgotten saves stay visible.
 
 ### 🔐 Multi-Channel Authentication
 - **Secure Sign-In**: Powered by Firebase Authentication.
@@ -22,13 +41,15 @@ LinkHive is designed for users who need a reliable way to save and categorize li
 - **Guest Mode**: Full functionality for local-only use without an account.
 
 ### 🍱 Neo-Brutalist UI/UX
-- **Bold Aesthetics**: High-contrast colors, thick borders, and hard-edge shadows.
+- **Bold Aesthetics**: High-contrast colors, thick 2px borders, and hard-edge shadows (zero blur).
 - **Custom Components**: Bespoke widgets including `NeoBrutalistButton`, `LinkCard`, and `CommonAppBar`.
-- **Responsive Design**: Full support for Mobile (Android/iOS), Web, and Desktop.
+- **Light & dark themes**: Including the home screen widget, which follows the system theme rather than the app's.
 
 ### 🌐 Internationalization
 - **Multi-Language Support**: Full localization for English, Arabic (RTL support), Gujarati, and Hindi.
 - **Locale Persistence**: Remembers your language preference across sessions.
+
+> **Platform support:** Android is the primary target and iOS is supported. The share-sheet integration is mobile-only (guarded at runtime), and the home screen widget is currently Android-only.
 
 ## 🏗️ Project Structure
 
@@ -37,26 +58,50 @@ The project follows a **Feature-based Clean Architecture**, ensuring high modula
 ```
 lib/
 ├── core/                           # Shared kernel
-│   ├── constants/                  # Firebase, Hive, and UI constants
-│   ├── extensions/                 # BuildContext and String extensions
+│   ├── constants/                  # Firebase, Hive, and enum constants
+│   ├── extensions/                 # BuildContext extensions (l10n, theme)
 │   ├── localization/               # i18n logic and Cubits
-│   ├── services/                   # Auth, Firestore, and Sync logic
+│   ├── services/                   # Auth, Firestore, sync, metadata,
+│   │                               #   share intent, notifications, widget
 │   ├── theme/                      # Neo-Brutalist design tokens
-│   └── utils/                      # Service locator (GetIt) and helpers
+│   └── utils/                      # Service locator (GetIt), routing, helpers
 │
 ├── features/                       # Independent modules
-│   ├── links/                      # Core: CRUD, Models, Repositories, BLoCs
-│   ├── authentication/             # Auth flow and Guard rails
-│   ├── home/                       # Dashboard and Search
-│   ├── account/                    # User profiling
-│   ├── login/                      # Login interface
+│   ├── links/                      # Core link domain
+│   │   ├── manager/                #   LinkManager — every link action
+│   │   ├── repository/             #   LinkRepository — Hive + sync queue
+│   │   ├── models/                 #   LinkModel, CategoryModel, exceptions
+│   │   ├── bloc/                   #   LinkBloc, AddLinkBloc
+│   │   └── ui/                     #   Add / Edit link screen
+│   ├── inbox/                      # Instantly-saved links awaiting triage
+│   ├── today/                      # Daily Resurface focus screen
+│   ├── sync/                       # Conflict resolution UI
+│   ├── authentication/             # Login / signup flow
+│   ├── home/                       # Link list, search, Up Next strip
+│   ├── account/                    # Profile, data management, sign-out
 │   └── splash/                     # Brand introduction
 │
 ├── sharedWidgets/                  # Global Neo-Brutalist component library
+├── l10n/                           # ARB translation files (en, ar, hi, gu)
 ├── firebase_options.dart           # Auto-generated Firebase config
 ├── main.dart                       # Entry point
 └── my_app.dart                     # UI Root
+
+android/app/src/main/kotlin/com/link/hive/widget/   # Glance home screen widget
 ```
+
+### Where link logic lives
+
+Two layers, with one job each:
+
+| Layer | Owns | Example |
+|---|---|---|
+| `LinkRepository` | **Persistence.** Hive writes, the Firestore sync queue, conflict resolution. | `addLink`, `markLinkAsRead`, `pullFromCloud` |
+| `LinkManager` | **Actions.** The composites that combine a launch with bookkeeping. | `openLink`, `archiveLink`, `snoozeLink` |
+
+Every surface that can act on a link — the Today screen, link cards, the Up Next strip, the home screen widget — goes through `LinkManager`, so "open a link" is defined exactly once. Before this existed it was implemented four times with four different behaviors, and one of them forgot to mark links as read at all.
+
+The sync machinery (`SyncEngine`, `SyncService`, conflict resolution) talks to the repository directly, since it is persistence infrastructure rather than a user action.
 
 ## 🛠️ Tech Stack
 
@@ -67,14 +112,19 @@ lib/
 - **State Management**: [flutter_bloc](https://pub.dev/packages/flutter_bloc) & [RxDart](https://pub.dev/packages/rxdart)
 - **Routing**: [go_router](https://pub.dev/packages/go_router)
 - **Dependency Injection**: [get_it](https://pub.dev/packages/get_it)
+- **Share Target**: [receive_sharing_intent](https://pub.dev/packages/receive_sharing_intent) (Android intent filters + iOS Share Extension)
+- **Notifications**: [flutter_local_notifications](https://pub.dev/packages/flutter_local_notifications) + [timezone](https://pub.dev/packages/timezone)
+- **Home Screen Widget**: [home_widget](https://pub.dev/packages/home_widget) + [Jetpack Glance](https://developer.android.com/jetpack/androidx/releases/glance)
+- **In-App Browser**: [url_launcher](https://pub.dev/packages/url_launcher) (Custom Tabs / `SFSafariViewController`)
 
 ## 📡 Offline-First Sync Strategy
 
 LinkHive uses a sophisticated two-way sync strategy between **Hive** and **Firestore**:
 
 1.  **Writes**: All changes are committed to the local Hive box immediately. If the user is online, the change is mirrored to Firestore asynchronously.
-2.  **Conflict Resolution**: Cloud data acts as the source of truth. On app resume, Firestore data is pulled and merged into Hive.
-3.  **Sync Status**: Every link tracks an `isSynced` flag, displayed in the UI (cloud-off icon for local-only links).
+2.  **Outbox queue**: Writes that can't reach Firestore are queued as sync operations and replayed once connectivity returns. `SyncService` watches connectivity and auth state, and also ticks every 5 minutes.
+3.  **Conflict Resolution**: On pull, a local edit that collides with a cloud edit is recorded as a conflict rather than silently overwritten. The Conflicts screen lets you keep either version.
+4.  **Sync Status**: Every link tracks an `isSynced` flag, displayed in the UI (cloud-off icon for local-only links), and `SyncEngine` exposes a status stream (idle / syncing / failed / conflict).
 
 ## 🚦 Getting Started
 
@@ -100,7 +150,7 @@ LinkHive uses a sophisticated two-way sync strategy between **Hive** and **Fires
 
 ```bash
 git clone https://github.com/Kunjshingala/LinkHive.git
-cd LinkHive/Code/LinkHive
+cd LinkHive
 
 # Install the correct Flutter version for this project
 fvm install
@@ -184,15 +234,24 @@ All project documentation lives in the [`docs/`](docs/) directory:
 
 | Document | Description |
 |----------|-------------|
+| [Product Direction: The Return Engine](docs/product-direction-return-engine.md) | Why the app exists, the problem it's actually solving, and the reasoning behind Instant Capture and Daily Resurface |
 | [Project Plan](docs/PLAN.md) | Phase 1 scope, architecture decisions, and feature roadmap |
 | [Dart Define & Firebase Setup](docs/setup/dart_define_and_firebase_setup.md) | How `--dart-define-from-file` works, Firebase project setup from scratch, and config file reference |
 | [Receive Sharing Intent](docs/setup/receive_sharing_intent_setup.md) | Android & iOS share sheet integration — how the app receives shared URLs from other apps |
 
+Contributor rules live in [`.claude/rules/`](.claude/rules/) (workflow, code patterns, naming) and fuller context in [`.ai/`](.ai/).
+
 ## 🧪 Testing
 
 ```bash
+# Run the suite
 fvm flutter test
+
+# Must pass with zero warnings before any change is considered done
+fvm flutter analyze
 ```
+
+All Flutter and Dart commands go through FVM (`fvm flutter`, `fvm dart`) so everyone builds against the pinned SDK.
 
 ## 📄 License
 This is a private project. All rights reserved.
