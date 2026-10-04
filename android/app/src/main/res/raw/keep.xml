@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Keep the notification icon (the Daily Resurface notification uses
+     @mipmap/ic_launcher) so R8 resource shrinking in release builds doesn't
+     strip it; a missing icon makes the notification silently never show. -->
+<resources xmlns:tools="http://schemas.android.com/tools"
+    tools:keep="@mipmap/ic_launcher*" />
