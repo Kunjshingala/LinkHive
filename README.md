@@ -139,6 +139,17 @@ LinkHive uses a sophisticated two-way sync strategy between **Hive** and **Fires
 | Android Studio | latest | [Download](https://developer.android.com/studio) (required for Android) |
 | Firebase Project | — | [Firebase Console](https://console.firebase.google.com/) |
 
+### Java Requirement
+
+Android builds need **JDK 17 or 21**. JDK 25 (bundled with recent Android Studio releases) is not supported by this project's Gradle version.
+
+```bash
+# Point Flutter at a supported JDK
+fvm flutter config --jdk-dir "<path to JDK 17 or 21>"
+```
+
+In Android Studio, set **Settings → Build Tools → Gradle → Gradle JDK** to the same JDK.
+
 ### Minimum Platform Requirements
 
 | Platform | Minimum Version |
