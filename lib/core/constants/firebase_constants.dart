@@ -52,6 +52,15 @@ class FirebaseConstants {
   /// lastResurfacedAt — last time this link was picked by Daily Resurface
   static const String linkLastResurfacedAt = 'lastResurfacedAt';
 
+  /// shareCount — how many times this link was saved (re-shares merge in)
+  static const String linkShareCount = 'shareCount';
+
+  /// lastSharedAt — last time this link was saved or re-shared
+  static const String linkLastSharedAt = 'lastSharedAt';
+
+  /// otherUrls — other exact URLs of the same link (tracking/affiliate variants)
+  static const String linkOtherUrls = 'otherUrls';
+
   /// deletedAt — used in deleted_links collection
   static const String linkDeletedAt = 'deletedAt';
 

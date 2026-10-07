@@ -73,5 +73,68 @@ void main() {
       expect(link.syncedAt, now);
       expect(link.isSynced, true);
     });
+
+    test('a new link is saved once with no other versions', () {
+      expect(testLink.shareCount, 1);
+      expect(testLink.lastSharedAt, isNull);
+      expect(testLink.otherUrls, isEmpty);
+    });
+
+    test('copyWith updates shareCount, lastSharedAt and otherUrls', () {
+      final updated = testLink.copyWith(
+        shareCount: 3,
+        lastSharedAt: now,
+        otherUrls: ['https://flutter.dev/?utm_source=x'],
+      );
+
+      expect(updated.shareCount, 3);
+      expect(updated.lastSharedAt, now);
+      expect(updated.otherUrls, ['https://flutter.dev/?utm_source=x']);
+    });
+
+    test(
+      'clearLastSharedAt writes null (Undo of a merge on a legacy link)',
+      () {
+        final shared = testLink.copyWith(lastSharedAt: now);
+
+        expect(shared.copyWith(clearLastSharedAt: true).lastSharedAt, isNull);
+        expect(shared.copyWith(lastSharedAt: null).lastSharedAt, now);
+      },
+    );
+
+    test('toFirestore includes the merge fields', () {
+      final map = testLink
+          .copyWith(shareCount: 2, lastSharedAt: now, otherUrls: ['u2'])
+          .toFirestore();
+
+      expect(map[FirebaseConstants.linkShareCount], 2);
+      expect(map[FirebaseConstants.linkLastSharedAt], now);
+      expect(map[FirebaseConstants.linkOtherUrls], ['u2']);
+    });
+
+    test('fromFirestore defaults the merge fields for legacy docs', () {
+      final link = LinkModel.fromFirestore('test-id', {
+        FirebaseConstants.linkUrl: 'https://flutter.dev',
+        FirebaseConstants.linkCreatedAt: now,
+      });
+
+      expect(link.shareCount, 1);
+      expect(link.lastSharedAt, isNull);
+      expect(link.otherUrls, isEmpty);
+    });
+
+    test('fromFirestore reads the merge fields when present', () {
+      final link = LinkModel.fromFirestore('test-id', {
+        FirebaseConstants.linkUrl: 'https://flutter.dev',
+        FirebaseConstants.linkCreatedAt: now,
+        FirebaseConstants.linkShareCount: 4,
+        FirebaseConstants.linkLastSharedAt: now,
+        FirebaseConstants.linkOtherUrls: ['u2', 'u3'],
+      });
+
+      expect(link.shareCount, 4);
+      expect(link.lastSharedAt, now);
+      expect(link.otherUrls, ['u2', 'u3']);
+    });
   });
 }

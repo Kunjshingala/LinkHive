@@ -158,6 +158,30 @@ class LinkModel {
   @HiveField(13)
   final int? lastResurfacedAt;
 
+  /// How many times this link has been saved. `1` on create; a re-share of
+  /// the same link merges into this record and increments it instead of
+  /// creating a duplicate. Today shows "Saved N×" when it's above 1.
+  ///
+  /// `defaultValue: 1` so every link written before this field existed reads
+  /// back as saved once, instead of crashing the adapter's `int` cast (the
+  /// same failure `isQuickSaved` hit before it got a default).
+  @HiveField(14, defaultValue: 1)
+  final int shareCount;
+
+  /// UTC milliseconds since epoch — the last time this link was saved or
+  /// re-shared. `null` for links saved before this field existed.
+  @HiveField(15)
+  final int? lastSharedAt;
+
+  /// Other exact URLs of this same link, newest last (max 5).
+  ///
+  /// The main [url] is kept exactly as first shared so affiliate params
+  /// survive. When a re-share of the same link arrives with a different URL
+  /// (another tracking or affiliate variant), it lands here and the user picks
+  /// which one to open later. Empty for almost every link.
+  @HiveField(16, defaultValue: <String>[])
+  final List<String> otherUrls;
+
   const LinkModel({
     required this.id,
     required this.url,
@@ -173,6 +197,9 @@ class LinkModel {
     this.isQuickSaved = false,
     this.resurfaceAt,
     this.lastResurfacedAt,
+    this.shareCount = 1,
+    this.lastSharedAt,
+    this.otherUrls = const [],
   });
 
   /// Returns a copy of this [LinkModel] with the specified fields replaced.
@@ -200,6 +227,10 @@ class LinkModel {
     int? resurfaceAt,
     bool clearResurfaceAt = false,
     int? lastResurfacedAt,
+    int? shareCount,
+    int? lastSharedAt,
+    bool clearLastSharedAt = false,
+    List<String>? otherUrls,
   }) {
     return LinkModel(
       id: id ?? this.id,
@@ -216,6 +247,11 @@ class LinkModel {
       isQuickSaved: isQuickSaved ?? this.isQuickSaved,
       resurfaceAt: clearResurfaceAt ? null : (resurfaceAt ?? this.resurfaceAt),
       lastResurfacedAt: lastResurfacedAt ?? this.lastResurfacedAt,
+      shareCount: shareCount ?? this.shareCount,
+      lastSharedAt: clearLastSharedAt
+          ? null
+          : (lastSharedAt ?? this.lastSharedAt),
+      otherUrls: otherUrls ?? this.otherUrls,
     );
   }
 
@@ -240,6 +276,9 @@ class LinkModel {
       FirebaseConstants.linkIsQuickSaved: isQuickSaved,
       FirebaseConstants.linkResurfaceAt: resurfaceAt,
       FirebaseConstants.linkLastResurfacedAt: lastResurfacedAt,
+      FirebaseConstants.linkShareCount: shareCount,
+      FirebaseConstants.linkLastSharedAt: lastSharedAt,
+      FirebaseConstants.linkOtherUrls: otherUrls,
       // syncedAt is NOT written here — the service writes it as
       // FieldValue.serverTimestamp() to get the authoritative server time.
     };
@@ -297,6 +336,12 @@ class LinkModel {
       isQuickSaved: data[FirebaseConstants.linkIsQuickSaved] as bool? ?? false,
       resurfaceAt: data[FirebaseConstants.linkResurfaceAt] as int?,
       lastResurfacedAt: data[FirebaseConstants.linkLastResurfacedAt] as int?,
+      // Docs written before these fields existed: saved once, no versions.
+      shareCount: data[FirebaseConstants.linkShareCount] as int? ?? 1,
+      lastSharedAt: data[FirebaseConstants.linkLastSharedAt] as int?,
+      otherUrls: List<String>.from(
+        data[FirebaseConstants.linkOtherUrls] as List? ?? [],
+      ),
     );
   }
 
