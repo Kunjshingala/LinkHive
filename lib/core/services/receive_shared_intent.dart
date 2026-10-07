@@ -2,26 +2,34 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart'
     show TargetPlatform, defaultTargetPlatform, kIsWeb;
+import 'package:flutter/widgets.dart' show WidgetsBinding;
 import 'package:receive_sharing_intent/receive_sharing_intent.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../features/links/models/link_model.dart';
 import '../../features/links/manager/link_manager.dart';
+import '../../l10n/localization/app_localizations.dart';
+import '../../my_app.dart';
 import '../../sharedWidgets/saved_link_snackbar.dart';
+import '../extensions/context_extension.dart';
 import '../utils/navigation/route.dart';
 import '../utils/utils.dart';
 import '../utils/validator/validator.dart';
 import 'link_metadata_service.dart';
+import 'share_feedback.dart';
 
 /// Listens for URLs shared into the app from the OS share sheet and saves them
 /// with zero friction.
 ///
 /// ## Capture flow (Phase 1)
 /// A shared URL is persisted **immediately** with no form and no required
-/// input. The user then sees a lightweight "Saved to LinkHive" confirmation
+/// input, exactly as shared (affiliate params survive). If the same link was
+/// already saved, the share merges into it instead (see
+/// [LinkManager.saveOrMerge]). The user then sees a lightweight confirmation
 /// with two optional actions:
-/// - **Add details** — opens the edit form on the just-saved link.
-/// - **Undo** — deletes it.
+/// - **Add details** — opens the edit form on the saved link.
+/// - **Undo** — deletes a new link, or reverts a merge (never deleting the
+///   original).
 ///
 /// Page metadata (title, image, description) is fetched in the background
 /// *after* the save, so nothing blocks the capture. This is what lets sharing
@@ -71,7 +79,7 @@ class ReceiveSharedIntent {
             _saveInstantly(url);
           } else if (_hasContent(event)) {
             printLog(tag: _tag, msg: 'Non-URL share ignored');
-            showSnackBar('Only URL links can be saved to LinkHive');
+            _showLocalizedSnackBar((l10n) => l10n.sharedOnlyUrls);
           }
         });
   }
@@ -87,20 +95,21 @@ class ReceiveSharedIntent {
             _saveInstantly(url, resetToHome: true);
           } else if (_hasContent(event)) {
             printLog(tag: _tag, msg: 'Non-URL cold-start share ignored');
-            showSnackBar('Only URL links can be saved to LinkHive');
+            _showLocalizedSnackBar((l10n) => l10n.sharedOnlyUrls);
           }
         });
   }
 
-  /// Persists [url] immediately, shows the confirmation bar, and kicks off a
-  /// background metadata fetch. Never opens the full form.
+  /// Saves [url] immediately (or merges it into the link it duplicates),
+  /// shows the confirmation bar, and kicks off a background metadata fetch.
+  /// Never opens the full form.
   ///
   /// [resetToHome] is set for cold-start shares: the app is still on the splash
   /// screen, so "Add details" first drops Home at the base of the stack (so
   /// closing the edit form returns to Home, not the splash).
   Future<void> _saveInstantly(String url, {bool resetToHome = false}) async {
     final normalizedUrl = normalizeUrl(url) ?? url;
-    final link = LinkModel(
+    final candidate = LinkModel(
       id: _uuid.v4(),
       url: normalizedUrl,
       title: '',
@@ -109,32 +118,74 @@ class ReceiveSharedIntent {
       isQuickSaved: true,
     );
 
+    final SaveResult result;
     try {
-      await _manager.addLink(link);
+      result = await _manager.saveOrMerge(candidate);
     } catch (e) {
-      // Rare: a Hive write failure. Log it and bail rather than showing a
-      // "saved" confirmation for something that didn't save.
+      // Rare: a Hive write failure. Don't show "saved" for something that
+      // didn't save; tell the user to share again instead.
       printLog(tag: _tag, msg: 'Instant save failed: $e');
+      _showLocalizedSnackBar(
+        (l10n) =>
+            shareOutcomeMessage(error: e, l10n: l10n, now: DateTime.now()),
+      );
       return;
     }
 
-    printLog(tag: _tag, msg: 'Instant-saved link: ${link.url}');
+    final saved = switch (result) {
+      SaveCreated(:final link) => link,
+      SaveMerged(:final merged) => merged,
+    };
+    printLog(
+      tag: _tag,
+      msg: 'Instant-saved (${result.runtimeType}): ${saved.url}',
+    );
+
     showSavedLinkSnackBar(
+      message: result is SaveMerged
+          ? (context) => shareOutcomeMessage(
+              result: result,
+              l10n: context.l10n,
+              now: DateTime.now(),
+            )
+          : null,
       onAddDetails: () {
         if (resetToHome) router.goNamed(MyRouteName.homeScreen);
         // Re-read from the repository rather than reusing the closure-captured
-        // `link`: background enrichment may have already filled in the title
+        // link: background enrichment may have already filled in the title
         // by the time this is tapped, and passing the stale (blank) snapshot
         // would show an empty form even though good data is already saved.
         router.pushNamed(
           MyRouteName.editLink,
-          extra: _manager.linkById(link.id) ?? link,
+          extra: _manager.linkById(saved.id) ?? saved,
         );
       },
-      onUndo: () => _manager.deleteLink(link.id),
+      onUndo: () => switch (result) {
+        SaveCreated() => _manager.deleteLink(saved.id),
+        SaveMerged(:final previous) => _manager.undoMerge(previous),
+      },
     );
 
-    unawaited(_enrichInBackground(link));
+    // A merge keeps the existing title; only fetch if it never got one.
+    if (saved.title.isEmpty) unawaited(_enrichInBackground(saved));
+  }
+
+  /// Shows a plain localized snackbar, waiting for the first frame when the
+  /// messenger isn't mounted yet (a cold-start share arrives before it is).
+  void _showLocalizedSnackBar(
+    String Function(AppLocalizations l10n) message, {
+    bool retryAfterFirstFrame = true,
+  }) {
+    final context = scaffoldMessengerKey.currentContext;
+    if (context == null) {
+      if (retryAfterFirstFrame) {
+        WidgetsBinding.instance.addPostFrameCallback(
+          (_) => _showLocalizedSnackBar(message, retryAfterFirstFrame: false),
+        );
+      }
+      return;
+    }
+    showSnackBar(message(context.l10n));
   }
 
   /// Fetches page metadata after the save and fills any fields still empty.

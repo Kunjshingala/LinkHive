@@ -34,6 +34,10 @@ void main() {
     setUp(() {
       mockRepository = MockLinkRepository();
       mockMetadataService = MockLinkMetadataService();
+      // Add mode saves through LinkManager.saveOrMerge, which first looks for
+      // a saved duplicate. By default nothing matches, so add mode keeps
+      // creating new links; the merge tests below override this.
+      when(() => mockRepository.findByCanonicalUrl(any())).thenReturn(null);
     });
 
     setUpAll(() {
@@ -444,6 +448,81 @@ void main() {
           expect(savedLink.title, 'https://flutter.dev');
         },
       );
+
+      group('when the URL is already saved', () {
+        void stubDuplicate() {
+          when(
+            () => mockRepository.findByCanonicalUrl(any()),
+          ).thenReturn(testLink);
+          when(() => mockRepository.updateLink(any())).thenAnswer((_) async {});
+        }
+
+        LinkModel savedUpdate() =>
+            verify(
+                  () => mockRepository.updateLink(captureAny()),
+                ).captured.single
+                as LinkModel;
+
+        blocTest<AddLinkBloc, AddLinkState>(
+          'merges instead of adding, keeping the curated title and priority',
+          build: () {
+            stubDuplicate();
+            return buildBloc();
+          },
+          seed: () => const AddLinkForm(
+            url: 'https://flutter.dev/?utm_source=newsletter',
+            title: 'Some fetched title',
+            priority: 'Normal',
+            categories: ['news'],
+          ),
+          act: (bloc) => bloc.add(const AddLinkSaveRequested()),
+          expect: () => [const AddLinkSaving(), isA<AddLinkMerged>()],
+          verify: (_) {
+            verifyNever(() => mockRepository.addLink(any()));
+            final merged = savedUpdate();
+            expect(merged.id, testLink.id);
+            expect(merged.title, 'Flutter');
+            expect(merged.priority, 'High');
+            expect(merged.url, testLink.url);
+            expect(merged.categories, unorderedEquals(['dev', 'news']));
+            expect(merged.shareCount, 2);
+          },
+        );
+
+        blocTest<AddLinkBloc, AddLinkState>(
+          'a Tonight/Weekend pick sets the schedule on the merged link',
+          build: () {
+            stubDuplicate();
+            return buildBloc();
+          },
+          seed: () => const AddLinkForm(
+            url: 'https://flutter.dev',
+            resurfaceAt: 1790000000000,
+          ),
+          act: (bloc) => bloc.add(const AddLinkSaveRequested()),
+          expect: () => [const AddLinkSaving(), isA<AddLinkMerged>()],
+          verify: (_) => expect(savedUpdate().resurfaceAt, 1790000000000),
+        );
+
+        blocTest<AddLinkBloc, AddLinkState>(
+          'Someday brings it back unread without making it due',
+          build: () {
+            stubDuplicate();
+            return buildBloc();
+          },
+          seed: () => const AddLinkForm(
+            url: 'https://flutter.dev',
+            clearResurfaceAt: true,
+          ),
+          act: (bloc) => bloc.add(const AddLinkSaveRequested()),
+          expect: () => [const AddLinkSaving(), isA<AddLinkMerged>()],
+          verify: (_) {
+            final merged = savedUpdate();
+            expect(merged.isRead, isFalse);
+            expect(merged.resurfaceAt, isNull);
+          },
+        );
+      });
     });
   });
 }

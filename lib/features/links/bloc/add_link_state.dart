@@ -1,5 +1,7 @@
 import 'package:equatable/equatable.dart';
 
+import '../models/link_model.dart';
+
 /// Base sealed class for all states emitted by [AddLinkBloc].
 ///
 /// The state machine follows this lifecycle:
@@ -154,6 +156,22 @@ class AddLinkSaving extends AddLinkState {
 /// Add/Edit screen (e.g. `context.pop()` via go_router).
 class AddLinkSuccess extends AddLinkState {
   const AddLinkSuccess();
+}
+
+/// Emitted in add mode when the URL was already saved, so the save merged
+/// into the existing link instead of creating a new one.
+///
+/// The existing link keeps its own title, description and priority (the form
+/// can't tell typed values from fetched ones or defaults), so the UI says so
+/// and offers Edit and Undo. [previous] is what Undo restores.
+class AddLinkMerged extends AddLinkState {
+  final LinkModel merged;
+  final LinkModel previous;
+
+  const AddLinkMerged({required this.merged, required this.previous});
+
+  @override
+  List<Object?> get props => [merged.id, merged.shareCount, previous.id];
 }
 
 /// Emitted when validation fails or the repository throws an exception.
