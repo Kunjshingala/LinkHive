@@ -56,7 +56,9 @@ const _youtubeVideoPathPrefixes = {'shorts', 'live', 'embed'};
 /// `docs/designs/smart-duplicate-merge.md` §1).
 ///
 /// It ignores tracking params, `http` vs `https`, a `www.`/`m.` prefix, a
-/// trailing `/`, param order and plain `#anchors`, and folds YouTube's short
+/// trailing `/`, param order and plain `#anchors` (`#section-2`; a fragment with a path or
+/// params, like Gmail's `#inbox/ID`, a Sheets `#gid=1` or a PDF `#page=3`, picks
+/// a different page and is kept), and folds YouTube's short
 /// forms (`youtu.be/X`, `/shorts/X`, `/live/X`, `/embed/X`) into
 /// `youtube.com/watch?v=X`. Anything it doesn't recognise is kept: missing a
 /// duplicate is better than merging two different links.
@@ -113,9 +115,7 @@ String canonicalUrl(String url) {
 
   final port = uri.hasPort ? ':${uri.port}' : '';
   final query = params.isEmpty ? '' : '?${params.join('&')}';
-  final fragment = uri.fragment.startsWith('/') || uri.fragment.startsWith('!/')
-      ? '#${uri.fragment}'
-      : '';
+  final fragment = _isPlainAnchor(uri.fragment) ? '' : '#${uri.fragment}';
   return 'https://$host$port$path$query$fragment';
 }
 
@@ -140,4 +140,54 @@ String _decode(String component) {
   } on FormatException {
     return component;
   }
+}
+
+/// A fragment that only jumps to a spot on the page (`#section-2`).
+///
+/// One with a `/`, `=`, `&` or `?` (hash routes, `#inbox/ID`, `#gid=1`,
+/// `#page=3`) selects different content, so the key keeps it.
+bool _isPlainAnchor(String fragment) => !fragment.contains(RegExp(r'[/=&?]'));
+
+/// Keys that change on every share or click and say nothing about which link
+/// it is: [_globalTrackingKeys] plus the per-host share tokens.
+const _shareTokenKeys = {
+  ..._globalTrackingKeys,
+  'si',
+  'stkn',
+  'ref_src',
+  'ref_url',
+  'pageUID',
+  'hl_lid',
+  'feature',
+  'pp',
+  'spm',
+  'marketplace',
+  'BU',
+  'fm',
+};
+
+/// [url] with its per-share tokens removed, otherwise exactly as written.
+///
+/// Used to decide whether a re-share brought a **different version** of a link
+/// that [canonicalUrl] already matched: `?utm_source=creator` (campaign or
+/// affiliate) is a version, a fresh `igsh`/`si` token is not. Only meaningful
+/// for two URLs with equal [canonicalUrl]s, which is why it strips `si` and
+/// `stkn` on every host.
+String versionKey(String url) {
+  final hash = url.indexOf('#');
+  final beforeHash = hash == -1 ? url : url.substring(0, hash);
+  final fragment = hash == -1 ? '' : url.substring(hash);
+  final q = beforeHash.indexOf('?');
+  if (q == -1) return url;
+
+  final query = beforeHash
+      .substring(q + 1)
+      .split('&')
+      .where(
+        (s) =>
+            s.isNotEmpty &&
+            !_shareTokenKeys.contains(_decode(s.split('=').first)),
+      )
+      .join('&');
+  return '${beforeHash.substring(0, q)}${query.isEmpty ? '' : '?$query'}$fragment';
 }

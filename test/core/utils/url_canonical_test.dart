@@ -191,6 +191,21 @@ void main() {
       );
     });
 
+    test('fragments that pick different content are kept', () {
+      expectDifferent(
+        'https://mail.google.com/mail/u/0/#inbox/AAA',
+        'https://mail.google.com/mail/u/0/#inbox/BBB',
+      );
+      expectDifferent(
+        'https://docs.google.com/spreadsheets/d/ID/edit#gid=0',
+        'https://docs.google.com/spreadsheets/d/ID/edit#gid=999',
+      );
+      expectDifferent(
+        'https://example.com/doc.pdf#page=3',
+        'https://example.com/doc.pdf#page=40',
+      );
+    });
+
     test('unknown params are kept as part of the link', () {
       expectDifferent(
         'https://wellfound.com/jobs?role=1',
@@ -246,5 +261,69 @@ void main() {
         );
       },
     );
+  });
+
+  versionKeyTests();
+}
+
+/// What counts as another *version* of a link that already matched.
+void versionKeyTests() {
+  group('versionKey', () {
+    test('per-share tokens are ignored', () {
+      expect(
+        versionKey('https://www.instagram.com/reel/X/?igsh=a&stkn=b'),
+        versionKey('https://www.instagram.com/reel/X/?igsh=c&stkn=d'),
+      );
+      expect(
+        versionKey('https://youtu.be/X?si=one'),
+        versionKey('https://youtu.be/X?si=two'),
+      );
+    });
+
+    test('campaign and affiliate params are a different version', () {
+      expect(
+        versionKey('https://shop.example/p?utm_source=creator&igsh=a'),
+        isNot(versionKey('https://shop.example/p?igsh=a')),
+      );
+      expect(
+        versionKey('https://youtu.be/X?t=293&si=a'),
+        isNot(versionKey('https://youtu.be/X?si=a')),
+      );
+    });
+
+    test('per-host tracking keys are ignored too, but a timestamp is not', () {
+      expect(
+        versionKey('https://youtu.be/X?feature=shared&si=a'),
+        versionKey('https://youtu.be/X'),
+      );
+      expect(
+        versionKey('https://www.aliexpress.com/item/1.html?spm=a2g0.1'),
+        versionKey('https://www.aliexpress.com/item/1.html'),
+      );
+      expect(
+        versionKey('https://youtu.be/X?t=293'),
+        isNot(versionKey('https://youtu.be/X')),
+      );
+    });
+
+    test('empty query, repeated keys and a ? inside a fragment', () {
+      expect(versionKey('https://shop.example/p?'), 'https://shop.example/p');
+      expect(
+        versionKey('https://shop.example/p?igsh=1&igsh=2&a=1'),
+        'https://shop.example/p?a=1',
+      );
+      expect(
+        versionKey('https://shop.example/p#a?si=1'),
+        'https://shop.example/p#a?si=1',
+      );
+    });
+
+    test('keeps the rest of the URL exactly as written', () {
+      expect(
+        versionKey('https://shop.example/p?b=2&igsh=a&a=1#/item/1'),
+        'https://shop.example/p?b=2&a=1#/item/1',
+      );
+      expect(versionKey('https://shop.example/p'), 'https://shop.example/p');
+    });
   });
 }

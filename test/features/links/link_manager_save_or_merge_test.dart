@@ -74,7 +74,11 @@ void main() {
 
   const reelA =
       'https://www.instagram.com/reel/DeKio97zfoF/?stkn=aW4yNHE1cm9ubW00';
+  // Same reel, but through a creator campaign link: a real second version.
   const reelB =
+      'https://www.instagram.com/reel/DeKio97zfoF/?utm_source=creator';
+  // Same reel with only a different share token: not a version.
+  const reelAFreshToken =
       'https://www.instagram.com/reel/DeKio97zfoF/?stkn=c29tZXRoaW5nZWxzZQ';
 
   group('created', () {
@@ -154,20 +158,40 @@ void main() {
       expect(store['orig']!.otherUrls, isEmpty);
     });
 
+    test('a fresh share token alone is not another version', () async {
+      final result = await manager.saveOrMerge(
+        candidate('new', reelAFreshToken),
+      );
+
+      expect((result as SaveMerged).addedVersion, isFalse);
+      expect(store['orig']!.otherUrls, isEmpty);
+      expect(store['orig']!.shareCount, 2);
+    });
+
+    test('a version already kept is not added again', () async {
+      store['orig'] = original.copyWith(otherUrls: const [reelB]);
+
+      final result = await manager.saveOrMerge(candidate('new', reelB));
+
+      expect((result as SaveMerged).addedVersion, isFalse);
+      expect(store['orig']!.otherUrls, [reelB]);
+      expect(store['orig']!.shareCount, 2);
+    });
+
     test('keeps at most 5 other versions, dropping the oldest', () async {
       for (var i = 1; i <= 6; i++) {
         await manager.saveOrMerge(
           candidate(
             'n$i',
-            'https://www.instagram.com/reel/DeKio97zfoF/?stkn=v$i',
+            'https://www.instagram.com/reel/DeKio97zfoF/?utm_source=v$i',
           ),
         );
       }
 
       final versions = store['orig']!.otherUrls;
       expect(versions, hasLength(LinkManager.maxOtherUrls));
-      expect(versions.first, endsWith('stkn=v2'));
-      expect(versions.last, endsWith('stkn=v6'));
+      expect(versions.first, endsWith('utm_source=v2'));
+      expect(versions.last, endsWith('utm_source=v6'));
     });
 
     test('an archived link comes back unread and due', () async {

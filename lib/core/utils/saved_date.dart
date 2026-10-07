@@ -10,8 +10,10 @@ import '../../l10n/localization/app_localizations.dart';
 /// use `DateTime.fromMillisecondsSinceEpoch(ms)` (not `isUtc: true`), or a link
 /// saved at 00:30 IST would read as the previous day.
 String formatSavedDate(DateTime when, DateTime now, AppLocalizations l10n) {
-  final day = DateTime(when.year, when.month, when.day);
-  final today = DateTime(now.year, now.month, now.day);
+  // Calendar days as UTC midnights: local midnights are 23 or 25 hours apart
+  // across a DST change, which makes `inDays` round "yesterday" down to 0.
+  final day = DateTime.utc(when.year, when.month, when.day);
+  final today = DateTime.utc(now.year, now.month, now.day);
   final daysAgo = today.difference(day).inDays;
 
   if (daysAgo == 0) return l10n.dateToday;

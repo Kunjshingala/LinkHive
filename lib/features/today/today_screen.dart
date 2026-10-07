@@ -74,7 +74,8 @@ Future<void> _openResurfaced(BuildContext context, LinkModel link) async {
     return;
   }
   final choice = await showVersionPickerSheet(context, link);
-  if (choice == null) return;
+  // The screen can be left while the sheet is up; its bloc is closed by then.
+  if (choice == null || bloc.isClosed) return;
   bloc.add(TodayOpenRequested(url: choice.url, keepOnly: choice.keepOnly));
 }
 

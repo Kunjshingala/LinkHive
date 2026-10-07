@@ -3,6 +3,7 @@ import 'package:synchronized/synchronized.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/extensions/context_extension.dart';
+import '../../../core/utils/url_canonical.dart';
 import '../../../core/utils/utils.dart';
 import '../../../my_app.dart';
 import '../models/category_model.dart';
@@ -216,9 +217,12 @@ class LinkManager {
       }
 
       final now = _clock().toUtc().millisecondsSinceEpoch;
+      // A version is a URL that differs beyond per-share tokens: a fresh
+      // igsh/si on every share must not fill the picker.
+      final candidateKey = versionKey(candidate.url);
       final addedVersion =
-          candidate.url != existing.url &&
-          !existing.otherUrls.contains(candidate.url);
+          candidateKey != versionKey(existing.url) &&
+          !existing.otherUrls.any((url) => versionKey(url) == candidateKey);
       final otherUrls = addedVersion
           ? _keepNewest([...existing.otherUrls, candidate.url])
           : existing.otherUrls;
