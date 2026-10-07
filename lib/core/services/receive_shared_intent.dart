@@ -16,6 +16,7 @@ import '../utils/navigation/route.dart';
 import '../utils/utils.dart';
 import '../utils/validator/validator.dart';
 import 'link_metadata_service.dart';
+import 'share_event.dart';
 import 'share_feedback.dart';
 
 /// Listens for URLs shared into the app from the OS share sheet and saves them
@@ -89,6 +90,10 @@ class ReceiveSharedIntent {
         .getInitialMedia()
         .asStream()
         .listen((event) {
+          // The plugin hands the launch intent out again on every call until
+          // it is reset (Android replays it when the task is restored), which
+          // would count as another re-share of the same link.
+          ReceiveSharingIntent.instance.reset();
           final url = _extractUrl(event);
           if (url != null) {
             printLog(tag: _tag, msg: 'Cold-start shared URL: $url');
@@ -218,25 +223,9 @@ class ReceiveSharedIntent {
     }
   }
 
-  String? _extractUrl(dynamic event) {
-    if (event == null) return null;
-    final list = event as List<dynamic>;
-    if (list.isEmpty) return null;
-    final first = list.first;
-    final path = first?.path as String?;
-    // receive_sharing_intent passes the real URL in path for URL shares
-    if (path != null &&
-        (path.startsWith('http://') || path.startsWith('https://'))) {
-      return path;
-    }
-    return null;
-  }
+  String? _extractUrl(dynamic event) => shareEventUrl(event);
 
-  bool _hasContent(dynamic event) {
-    if (event == null) return false;
-    final list = event as List<dynamic>;
-    return list.isNotEmpty && list.first?.path != null;
-  }
+  bool _hasContent(dynamic event) => shareEventHasContent(event);
 
   void _stopListen() {
     _intentSubscription?.cancel();
