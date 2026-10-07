@@ -76,8 +76,17 @@ class LinkMetadataService {
   /// which breaks query strings like `?format=webp&amp;name=large` if left
   /// undecoded; titles commonly carry `&quot;`/`&#39;` around quoted text).
   /// Not a full HTML entity decoder — just the handful that matter here.
+  ///
+  /// Numeric entities that were escaped twice (`&amp;#39;`) are unwrapped
+  /// first. LinkedIn emits these in `og:description` ("can&amp;#39;t"), so a
+  /// single pass left a literal "&#39;" in the text. Only numeric entities get
+  /// this treatment; "&amp;lt;" still decodes to the literal text "&lt;".
   String _decodeHtmlEntities(String value) {
     return value
+        .replaceAllMapped(
+          RegExp(r'&amp;(#x?[0-9a-fA-F]+;)'),
+          (m) => '&${m.group(1)}',
+        )
         .replaceAllMapped(
           RegExp(r'&#x([0-9a-fA-F]+);'),
           (m) => String.fromCharCode(int.parse(m.group(1)!, radix: 16)),

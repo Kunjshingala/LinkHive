@@ -6,6 +6,7 @@ import '../../core/constants/app_enums.dart';
 import '../../core/extensions/context_extension.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
+import '../../core/utils/link_title.dart';
 import '../../core/utils/locator.dart';
 import '../../core/utils/utils.dart';
 import '../../sharedWidgets/common_app_bar.dart';
@@ -103,7 +104,7 @@ class _ResurfaceCard extends StatelessWidget {
                     ),
                   SizedBox(height: AppSpacing.lg),
                   Text(
-                    link.title.isNotEmpty ? link.title : link.url,
+                    displayTitle(link.title, link.url),
                     maxLines: 3,
                     overflow: TextOverflow.ellipsis,
                     style: Theme.of(context).textTheme.titleLarge,
