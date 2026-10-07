@@ -8,6 +8,7 @@ import '../core/theme/app_colors.dart';
 import '../core/theme/app_spacing.dart';
 import '../core/theme/app_typography.dart';
 import '../core/utils/category_utils.dart';
+import '../core/utils/link_title.dart';
 import '../core/utils/locator.dart';
 import '../core/utils/utils.dart';
 import '../features/links/manager/link_manager.dart';
@@ -173,10 +174,9 @@ class _LetterAvatar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Derive the display letter: prefer title, fall back to URL, then '?'.
-    final letter = link.title.isNotEmpty
-        ? link.title[0].toUpperCase()
-        : (link.url.isNotEmpty ? link.url[0].toUpperCase() : '?');
+    // Derive the display letter from the shown label, then '?'.
+    final label = displayTitle(link.title, link.url);
+    final letter = label.isNotEmpty ? label[0].toUpperCase() : '?';
 
     final colors = _avatarColor(letter, context);
 
@@ -237,11 +237,11 @@ class _LinkContent extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Title: shows link.title if available, otherwise falls back to the
-        // raw URL so the card always has a readable label.
+        // Title: shows link.title if available, otherwise a readable label
+        // built from the URL (see fallbackTitle).
         Text.rich(
           _highlightText(
-            link.title.isNotEmpty ? link.title : link.url,
+            displayTitle(link.title, link.url),
             searchQuery,
             Theme.of(context).textTheme.bodyMedium!.copyWith(
               fontWeight: FontWeight.w500,

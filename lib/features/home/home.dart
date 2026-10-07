@@ -9,6 +9,7 @@ import '../../core/theme/app_spacing.dart';
 import '../../core/extensions/context_extension.dart';
 import '../../core/services/sync_engine.dart';
 import '../../core/utils/category_utils.dart';
+import '../../core/utils/link_title.dart';
 import '../../core/utils/navigation/route.dart';
 import '../../core/utils/locator.dart';
 import '../../core/utils/utils.dart';
@@ -996,9 +997,7 @@ class _UpNextCardState extends State<_UpNextCard> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  widget.link.title.isNotEmpty
-                      ? widget.link.title
-                      : widget.link.url,
+                  displayTitle(widget.link.title, widget.link.url),
                   maxLines: 3,
                   overflow: TextOverflow.ellipsis,
                   // Keep bodySmall's compact size, but use onSurface (the
