@@ -158,5 +158,13 @@
   "linkDeleteTitle": "حذف الرابط؟",
   "linkDeleteMessage": "لا يمكن التراجع عن هذا الإجراء.",
   "linkUrlCopied": "تم نسخ الرابط إلى الحافظة",
+  "sharedAlreadySaved": "محفوظ مسبقًا ({date})، وسيعود في «اليوم»",
+  "sharedUnarchived": "لقد أرشفت هذا ({date})، وسيعود في «اليوم»",
+  "sharedAnotherVersion": "تم حفظ نسخة أخرى من هذا الرابط، وسيعود في «اليوم»",
+  "addAlreadySavedKept": "محفوظ مسبقًا ({date}). تم الاحتفاظ بتفاصيلك الحالية.",
+  "sharedSaveFailed": "تعذر حفظ هذا الرابط. حاول المشاركة مرة أخرى.",
+  "sharedOnlyUrls": "يمكن حفظ روابط URL فقط في LinkHive",
+  "dateToday": "اليوم",
+  "dateYesterday": "أمس",
   "linkOpenFailed": "تعذر فتح {url}"
 }

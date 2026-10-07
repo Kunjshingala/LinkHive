@@ -989,6 +989,54 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Could not open {url}'**
   String linkOpenFailed(Object url);
+
+  /// Bar shown when a shared link was already saved and got merged into it. {date} is when it was first saved: 'today', 'yesterday', 'Sep 28' or 'Sep 28, 2025'. 'Today' is the Today screen; write it exactly as todayTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Already saved {date}, it\'ll come back in Today'**
+  String sharedAlreadySaved(String date);
+
+  /// Bar shown when a shared link was already saved and had been archived/read; the merge brings it back. {date} reads 'today', 'yesterday' or a date, so don't put 'on' before it. Keep the Today screen name exactly as todayTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'You archived this {date}, it\'ll come back in Today'**
+  String sharedUnarchived(String date);
+
+  /// Bar shown when a shared link was already saved under a different URL (e.g. an affiliate link); both URLs are kept. Keep the Today screen name exactly as todayTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved another version of this link, it\'ll come back in Today'**
+  String get sharedAnotherVersion;
+
+  /// Bar shown after the Add form found the link already saved; the typed details were not applied. {date} as in sharedAlreadySaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Already saved {date}. Kept your existing details.'**
+  String addAlreadySavedKept(String date);
+
+  /// No description provided for @sharedSaveFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t save this link. Try sharing again.'**
+  String get sharedSaveFailed;
+
+  /// No description provided for @sharedOnlyUrls.
+  ///
+  /// In en, this message translates to:
+  /// **'Only URL links can be saved to LinkHive'**
+  String get sharedOnlyUrls;
+
+  /// Lower-case word used inside sentences like 'Already saved today'.
+  ///
+  /// In en, this message translates to:
+  /// **'today'**
+  String get dateToday;
+
+  /// Lower-case word used inside sentences like 'Already saved yesterday'.
+  ///
+  /// In en, this message translates to:
+  /// **'yesterday'**
+  String get dateYesterday;
 }
 
 class _AppLocalizationsDelegate

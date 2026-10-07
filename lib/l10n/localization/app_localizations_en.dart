@@ -467,4 +467,35 @@ class AppLocalizationsEn extends AppLocalizations {
   String linkOpenFailed(Object url) {
     return 'Could not open $url';
   }
+
+  @override
+  String sharedAlreadySaved(String date) {
+    return 'Already saved $date, it\'ll come back in Today';
+  }
+
+  @override
+  String sharedUnarchived(String date) {
+    return 'You archived this $date, it\'ll come back in Today';
+  }
+
+  @override
+  String get sharedAnotherVersion =>
+      'Saved another version of this link, it\'ll come back in Today';
+
+  @override
+  String addAlreadySavedKept(String date) {
+    return 'Already saved $date. Kept your existing details.';
+  }
+
+  @override
+  String get sharedSaveFailed => 'Couldn\'t save this link. Try sharing again.';
+
+  @override
+  String get sharedOnlyUrls => 'Only URL links can be saved to LinkHive';
+
+  @override
+  String get dateToday => 'today';
+
+  @override
+  String get dateYesterday => 'yesterday';
 }

@@ -468,4 +468,36 @@ class AppLocalizationsGu extends AppLocalizations {
   String linkOpenFailed(Object url) {
     return '$url ખોલી શકાયું નથી';
   }
+
+  @override
+  String sharedAlreadySaved(String date) {
+    return 'પહેલેથી સંગ્રહિત ($date), તે \"આજે\" માં પાછી આવશે';
+  }
+
+  @override
+  String sharedUnarchived(String date) {
+    return 'તમે આને આર્કાઇવ કર્યું હતું ($date), તે \"આજે\" માં પાછી આવશે';
+  }
+
+  @override
+  String get sharedAnotherVersion =>
+      'આ લિંકનું બીજું સંસ્કરણ સંગ્રહિત થયું, તે \"આજે\" માં પાછી આવશે';
+
+  @override
+  String addAlreadySavedKept(String date) {
+    return 'પહેલેથી સંગ્રહિત ($date). તમારી હાલની વિગતો રાખી.';
+  }
+
+  @override
+  String get sharedSaveFailed => 'આ લિંક સંગ્રહિત થઈ શકી નહીં. ફરીથી શેર કરો.';
+
+  @override
+  String get sharedOnlyUrls =>
+      'LinkHive માં ફક્ત URL લિંક જ સંગ્રહિત થઈ શકે છે';
+
+  @override
+  String get dateToday => 'આજે';
+
+  @override
+  String get dateYesterday => 'ગઈકાલે';
 }

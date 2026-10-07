@@ -158,5 +158,13 @@
   "linkDeleteTitle": "લિંક કાઢી નાખવી?",
   "linkDeleteMessage": "આ ક્રિયા પૂર્વવત કરી શકાશે નહીં.",
   "linkUrlCopied": "લિંક ક્લિપબોર્ડ પર કૉપિ થઈ",
+  "sharedAlreadySaved": "પહેલેથી સંગ્રહિત ({date}), તે \"આજે\" માં પાછી આવશે",
+  "sharedUnarchived": "તમે આને આર્કાઇવ કર્યું હતું ({date}), તે \"આજે\" માં પાછી આવશે",
+  "sharedAnotherVersion": "આ લિંકનું બીજું સંસ્કરણ સંગ્રહિત થયું, તે \"આજે\" માં પાછી આવશે",
+  "addAlreadySavedKept": "પહેલેથી સંગ્રહિત ({date}). તમારી હાલની વિગતો રાખી.",
+  "sharedSaveFailed": "આ લિંક સંગ્રહિત થઈ શકી નહીં. ફરીથી શેર કરો.",
+  "sharedOnlyUrls": "LinkHive માં ફક્ત URL લિંક જ સંગ્રહિત થઈ શકે છે",
+  "dateToday": "આજે",
+  "dateYesterday": "ગઈકાલે",
   "linkOpenFailed": "{url} ખોલી શકાયું નથી"
 }

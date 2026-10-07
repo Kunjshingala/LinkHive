@@ -470,4 +470,35 @@ class AppLocalizationsHi extends AppLocalizations {
   String linkOpenFailed(Object url) {
     return '$url नहीं खोला जा सका';
   }
+
+  @override
+  String sharedAlreadySaved(String date) {
+    return 'पहले से सहेजा गया ($date), यह \"आज\" में वापस आएगा';
+  }
+
+  @override
+  String sharedUnarchived(String date) {
+    return 'आपने इसे संग्रहित किया था ($date), यह \"आज\" में वापस आएगा';
+  }
+
+  @override
+  String get sharedAnotherVersion =>
+      'इस लिंक का एक और संस्करण सहेजा गया, यह \"आज\" में वापस आएगा';
+
+  @override
+  String addAlreadySavedKept(String date) {
+    return 'पहले से सहेजा गया ($date)। आपका मौजूदा विवरण रखा गया।';
+  }
+
+  @override
+  String get sharedSaveFailed => 'यह लिंक सहेजा नहीं जा सका। फिर से शेयर करें।';
+
+  @override
+  String get sharedOnlyUrls => 'LinkHive में केवल URL लिंक सहेजे जा सकते हैं';
+
+  @override
+  String get dateToday => 'आज';
+
+  @override
+  String get dateYesterday => 'कल';
 }

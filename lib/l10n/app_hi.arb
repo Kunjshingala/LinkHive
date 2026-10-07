@@ -158,5 +158,13 @@
   "linkDeleteTitle": "लिंक हटाएं?",
   "linkDeleteMessage": "यह क्रिया पूर्ववत नहीं की जा सकती।",
   "linkUrlCopied": "लिंक क्लिपबोर्ड पर कॉपी हो गया",
+  "sharedAlreadySaved": "पहले से सहेजा गया ({date}), यह \"आज\" में वापस आएगा",
+  "sharedUnarchived": "आपने इसे संग्रहित किया था ({date}), यह \"आज\" में वापस आएगा",
+  "sharedAnotherVersion": "इस लिंक का एक और संस्करण सहेजा गया, यह \"आज\" में वापस आएगा",
+  "addAlreadySavedKept": "पहले से सहेजा गया ({date})। आपका मौजूदा विवरण रखा गया।",
+  "sharedSaveFailed": "यह लिंक सहेजा नहीं जा सका। फिर से शेयर करें।",
+  "sharedOnlyUrls": "LinkHive में केवल URL लिंक सहेजे जा सकते हैं",
+  "dateToday": "आज",
+  "dateYesterday": "कल",
   "linkOpenFailed": "{url} नहीं खोला जा सका"
 }
