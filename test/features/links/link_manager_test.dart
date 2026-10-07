@@ -52,26 +52,40 @@ void main() {
       verify(() => launcher.launchUrl(link.url, any())).called(1);
     });
 
-    test('records BEFORE launching, so a killed process cannot lose it',
-        () async {
-      await manager.openLink(link);
+    test('opens a picked version instead of the main URL', () async {
+      const version = 'https://flutter.dev/?utm_source=youtube&cid=affiliate';
 
-      // The ordering is the whole point: on a cold start the browser
-      // backgrounds the app immediately and the continuation after the launch
-      // is not guaranteed to run.
-      verifyInOrder([
-        () => repository.markLinkAsRead('1'),
-        () => repository.markResurfaced('1'),
-        () => launcher.launchUrl(link.url, any()),
-      ]);
+      await manager.openLink(link, url: version);
+
+      verify(() => repository.markLinkAsRead('1')).called(1);
+      verify(() => launcher.launchUrl(version, any())).called(1);
+      verifyNever(() => launcher.launchUrl(link.url, any()));
     });
+
+    test(
+      'records BEFORE launching, so a killed process cannot lose it',
+      () async {
+        await manager.openLink(link);
+
+        // The ordering is the whole point: on a cold start the browser
+        // backgrounds the app immediately and the continuation after the launch
+        // is not guaranteed to run.
+        verifyInOrder([
+          () => repository.markLinkAsRead('1'),
+          () => repository.markResurfaced('1'),
+          () => launcher.launchUrl(link.url, any()),
+        ]);
+      },
+    );
 
     test('uses the in-app browser for https', () async {
       await manager.openLink(link);
 
       final options =
-          verify(() => launcher.launchUrl(link.url, captureAny())).captured
-              .single as LaunchOptions;
+          verify(
+                () => launcher.launchUrl(link.url, captureAny()),
+              ).captured.single
+              as LaunchOptions;
       expect(options.mode, PreferredLaunchMode.inAppBrowserView);
     });
 
@@ -88,8 +102,10 @@ void main() {
       await manager.openLink(mailto);
 
       final options =
-          verify(() => launcher.launchUrl(mailto.url, captureAny())).captured
-              .single as LaunchOptions;
+          verify(
+                () => launcher.launchUrl(mailto.url, captureAny()),
+              ).captured.single
+              as LaunchOptions;
       expect(options.mode, PreferredLaunchMode.externalApplication);
     });
 
@@ -128,16 +144,18 @@ void main() {
       verifyNever(() => launcher.launchUrl(any(), any()));
     });
 
-    test('swallows a repository failure instead of throwing at the caller',
-        () async {
-      // Callers are fire-and-forget (the widget path runs unawaited), so an
-      // exception here would vanish and look like a tap that did nothing.
-      when(
-        () => repository.markLinkAsRead(any()),
-      ).thenThrow(Exception('hive down'));
+    test(
+      'swallows a repository failure instead of throwing at the caller',
+      () async {
+        // Callers are fire-and-forget (the widget path runs unawaited), so an
+        // exception here would vanish and look like a tap that did nothing.
+        when(
+          () => repository.markLinkAsRead(any()),
+        ).thenThrow(Exception('hive down'));
 
-      await expectLater(manager.openLink(link), completes);
-    });
+        await expectLater(manager.openLink(link), completes);
+      },
+    );
   });
 
   group('archiveLink', () {

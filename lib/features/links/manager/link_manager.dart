@@ -146,15 +146,19 @@ class LinkManager {
   /// or reclaimed process cannot lose the write. A failed launch still leaves
   /// the link recorded, matching what TodayBloc always did (it marked read
   /// even when the launch threw).
-  Future<void> openLink(LinkModel link) async {
-    final uri = Uri.tryParse(link.url);
+  ///
+  /// [url] opens one of the link's other versions ([LinkModel.otherUrls])
+  /// picked in the version picker; it defaults to [LinkModel.url].
+  Future<void> openLink(LinkModel link, {String? url}) async {
+    final target = url ?? link.url;
+    final uri = Uri.tryParse(target);
     if (uri == null) {
-      printLog(tag: _tag, msg: 'Unparseable url: ${link.url}');
-      showSnackBar(_couldNotOpen(link.url));
+      printLog(tag: _tag, msg: 'Unparseable url: $target');
+      showSnackBar(_couldNotOpen(target));
       return;
     }
     await _recordConsumed(link.id);
-    await _launch(uri, link.url);
+    await _launch(uri, target);
   }
 
   /// Marks [link] consumed without opening it: already handled elsewhere, or

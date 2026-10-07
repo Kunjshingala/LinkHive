@@ -154,6 +154,12 @@ class HomeWidgetService {
       unawaited(_pushData());
       return;
     }
+    // Saved under more than one URL: the widget can't ask which one, so land
+    // on Today, whose Open shows the "Which version?" picker.
+    if (link.otherUrls.isNotEmpty) {
+      router.goNamed(MyRouteName.today);
+      return;
+    }
     await _manager.openLink(link);
   }
 

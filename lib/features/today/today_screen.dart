@@ -13,6 +13,7 @@ import '../../sharedWidgets/common_app_bar.dart';
 import '../../sharedWidgets/custom_button.dart';
 import '../../sharedWidgets/empty_state.dart';
 import '../../sharedWidgets/saved_count_chip.dart';
+import '../../sharedWidgets/version_picker_sheet.dart';
 import '../links/models/link_model.dart';
 import '../links/manager/link_manager.dart';
 import 'bloc/today_bloc.dart';
@@ -62,6 +63,19 @@ class _TodayContent extends StatelessWidget {
       ),
     );
   }
+}
+
+/// Asks "Which version?" first when the link was saved under more than one
+/// URL; the bloc then keeps/opens the chosen one.
+Future<void> _openResurfaced(BuildContext context, LinkModel link) async {
+  final bloc = context.read<TodayBloc>();
+  if (link.otherUrls.isEmpty) {
+    bloc.add(const TodayOpenRequested());
+    return;
+  }
+  final choice = await showVersionPickerSheet(context, link);
+  if (choice == null) return;
+  bloc.add(TodayOpenRequested(url: choice.url, keepOnly: choice.keepOnly));
 }
 
 class _ResurfaceCard extends StatelessWidget {
@@ -177,7 +191,7 @@ class _ResurfaceCard extends StatelessWidget {
             text: context.l10n.todayOpen,
             icon: Icons.open_in_new_rounded,
             shadowColor: AppColors.success,
-            onPressed: () => context.read<TodayBloc>().add(const TodayOpenRequested()),
+            onPressed: () => _openResurfaced(context, link),
           ),
         ],
       ),

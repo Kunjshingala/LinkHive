@@ -9,13 +9,13 @@ import '../core/theme/app_spacing.dart';
 import '../core/theme/app_typography.dart';
 import '../core/utils/category_utils.dart';
 import '../core/utils/link_title.dart';
-import '../core/utils/locator.dart';
 import '../core/utils/utils.dart';
 import '../features/links/manager/link_manager.dart';
 import '../features/links/models/link_model.dart';
 import 'confirmation_bottom_sheet.dart';
 import 'neo_popup_menu.dart';
 import 'priority_badge.dart';
+import 'version_picker_sheet.dart';
 
 /// Reusable card widget that displays a single [LinkModel] in a list.
 ///
@@ -88,7 +88,7 @@ class LinkCard extends StatelessWidget {
             color: Colors.transparent,
             child: InkWell(
               borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-              onTap: _openLink,
+              onTap: () => _openLink(context),
               child: Padding(
                 padding: EdgeInsetsDirectional.all(AppSpacing.cardPaddingH),
                 child: Row(
@@ -129,8 +129,11 @@ class LinkCard extends StatelessWidget {
   /// The card used to launch the URL and nothing else, so the most common way
   /// to open a link in the app (this row, on Home and in the Inbox) never
   /// recorded it and the link resurfaced forever. Routing through the manager
-  /// means a tap here behaves exactly like Open on Today or a widget tap.
-  Future<void> _openLink() => locator<LinkManager>().openLink(link);
+  /// means a tap here behaves exactly like Open on Today or a widget tap,
+  /// including the "Which version?" picker for links saved under more than
+  /// one URL.
+  Future<void> _openLink(BuildContext context) =>
+      openLinkWithVersions(context, link);
 }
 // ─── Favicon / Avatar ─────────────────────────────────────────────────────────
 

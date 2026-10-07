@@ -24,6 +24,7 @@ import '../../sharedWidgets/custom_button.dart';
 import '../../sharedWidgets/custom_text_field.dart';
 import '../../sharedWidgets/link_card.dart';
 import '../../sharedWidgets/app_logo.dart';
+import '../../sharedWidgets/version_picker_sheet.dart';
 import 'bloc/home_bloc.dart';
 import 'bloc/home_event.dart';
 import 'bloc/home_state.dart';
@@ -553,9 +554,10 @@ class _HomeScreenContentState extends State<_HomeScreenContent> {
   /// links box, and [LinkBloc] already rebuilds from `watchLinksBox()`, so the
   /// strip refreshes on its own. This also picks up `markResurfaced`, which
   /// this path used to skip — opening from Up Next marked a link read but
-  /// never recorded that it had been shown.
+  /// never recorded that it had been shown. Links saved under more than one
+  /// URL ask which version first.
   Future<void> _openUpNextLink(LinkModel link) =>
-      locator<LinkManager>().openLink(link);
+      openLinkWithVersions(context, link);
 
   Widget _buildSearchBar(BuildContext context) {
     return CustomTextField(
