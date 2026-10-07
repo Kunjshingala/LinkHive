@@ -36,6 +36,8 @@ dependencies:
   http: any
   internet_connection_checker_plus: any
   uuid: any
+  # Serializes save-or-merge so two quick shares can't both create a link.
+  synchronized: ^3.4.0
 
   # UI
   flutter_svg: any

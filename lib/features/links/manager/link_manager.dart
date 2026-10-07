@@ -1,4 +1,5 @@
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:synchronized/synchronized.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/extensions/context_extension.dart';
@@ -7,6 +8,9 @@ import '../../../my_app.dart';
 import '../models/category_model.dart';
 import '../models/link_model.dart';
 import '../repository/link_repository.dart';
+import 'save_result.dart';
+
+export 'save_result.dart';
 
 /// The single place that decides what happens to a link.
 ///
@@ -38,10 +42,25 @@ import '../repository/link_repository.dart';
 /// effectively fire-and-forget. Every path uses this order now, so there is
 /// one answer rather than four.
 class LinkManager {
-  LinkManager({required LinkRepository repository}) : _repository = repository;
+  LinkManager({
+    required LinkRepository repository,
+    DateTime Function() clock = DateTime.now,
+  }) : _repository = repository,
+       _clock = clock;
 
   final LinkRepository _repository;
+  final DateTime Function() _clock;
   static const _tag = 'LinkManager';
+
+  /// How many alternate URLs a link keeps in [LinkModel.otherUrls].
+  static const maxOtherUrls = 5;
+
+  /// Serializes [saveOrMerge], [undoMerge] and [keepOnlyVersion]. Each is a
+  /// read-then-write: without the lock, two quick shares of the same URL could
+  /// both miss the match and create two records, or both read the same
+  /// previous state and lose a count. The lock hands each caller its own
+  /// result or error and stays usable after a failure.
+  final _saveLock = Lock();
 
   /// The link the Daily Resurface engine wants to show next, or null when
   /// everything saved has been read.
@@ -151,6 +170,115 @@ class LinkManager {
       printLog(tag: _tag, msg: 'Failed to snooze ${link.id}: $e');
     }
   }
+
+  /// Saves [candidate], or merges it into the link it duplicates.
+  ///
+  /// Duplicates are found by [LinkRepository.findByCanonicalUrl], so the same
+  /// reel or video shared with different tracking params is one link.
+  ///
+  /// **Created:** [candidate] is stored with `shareCount = 1` and
+  /// `lastSharedAt = createdAt`.
+  ///
+  /// **Merged:** the existing record keeps every field it had, including its
+  /// URL, title and priority, and:
+  /// - comes back unread (re-sharing an archived link means "I want this
+  ///   again") and becomes due in Today;
+  /// - counts the share (`shareCount + 1`, `lastSharedAt = now`);
+  /// - unions in the candidate's categories;
+  /// - keeps the candidate's URL in [LinkModel.otherUrls] if it isn't one it
+  ///   already has (newest last, at most [maxOtherUrls]), so an affiliate
+  ///   variant isn't lost.
+  ///
+  /// The schedule follows the "When should this come back?" convention used
+  /// by `LinkModel.copyWith` and the Add form: [resurfaceAt] for Tonight /
+  /// Weekend, [clearResurfaceAt] for Someday, neither for "no pick". No pick
+  /// on a merge means due now. It applies to the new record on create too.
+  Future<SaveResult> saveOrMerge(
+    LinkModel candidate, {
+    int? resurfaceAt,
+    bool clearResurfaceAt = false,
+  }) {
+    return _saveLock.synchronized(() async {
+      final existing = _repository.findByCanonicalUrl(candidate.url);
+      if (existing == null) {
+        final created = candidate.copyWith(
+          shareCount: 1,
+          lastSharedAt: candidate.createdAt,
+          resurfaceAt: resurfaceAt,
+          clearResurfaceAt: clearResurfaceAt,
+        );
+        await _repository.addLink(created);
+        return SaveCreated(created);
+      }
+
+      final now = _clock().toUtc().millisecondsSinceEpoch;
+      final addedVersion =
+          candidate.url != existing.url &&
+          !existing.otherUrls.contains(candidate.url);
+      final otherUrls = addedVersion
+          ? _keepNewest([...existing.otherUrls, candidate.url])
+          : existing.otherUrls;
+
+      final merged = existing.copyWith(
+        isRead: false,
+        resurfaceAt: clearResurfaceAt ? null : (resurfaceAt ?? now),
+        clearResurfaceAt: clearResurfaceAt,
+        shareCount: existing.shareCount + 1,
+        lastSharedAt: now,
+        categories: {...existing.categories, ...candidate.categories}.toList(),
+        otherUrls: otherUrls,
+      );
+      await _repository.updateLink(merged);
+      return SaveMerged(
+        merged: merged,
+        previous: existing,
+        addedVersion: addedVersion,
+      );
+    });
+  }
+
+  /// Reverts a merge done by [saveOrMerge].
+  ///
+  /// Only the fields the merge wrote are put back, onto the **current**
+  /// record: metadata that arrived after the merge (a fetched title or image)
+  /// is kept. Nulls are restored through the `clear*` flags, since `copyWith`
+  /// can't write null otherwise; without that, an Undo would leave the link
+  /// due. Does nothing if the link was deleted meanwhile.
+  Future<void> undoMerge(LinkModel previous) {
+    return _saveLock.synchronized(() async {
+      final current = _repository.getLinkById(previous.id);
+      if (current == null) return;
+      await _repository.updateLink(
+        current.copyWith(
+          isRead: previous.isRead,
+          resurfaceAt: previous.resurfaceAt,
+          clearResurfaceAt: previous.resurfaceAt == null,
+          shareCount: previous.shareCount,
+          lastSharedAt: previous.lastSharedAt,
+          clearLastSharedAt: previous.lastSharedAt == null,
+          categories: previous.categories,
+          otherUrls: previous.otherUrls,
+        ),
+      );
+    });
+  }
+
+  /// Makes [url] the link's only URL, dropping the other versions.
+  ///
+  /// Backs "Keep only this one" in the version picker. Every version shares
+  /// the same canonical key, so duplicate matching is unaffected.
+  Future<void> keepOnlyVersion(LinkModel link, String url) {
+    return _saveLock.synchronized(() async {
+      final current = _repository.getLinkById(link.id) ?? link;
+      await _repository.updateLink(
+        current.copyWith(url: url, otherUrls: const []),
+      );
+    });
+  }
+
+  List<String> _keepNewest(List<String> urls) => urls.length <= maxOtherUrls
+      ? urls
+      : urls.sublist(urls.length - maxOtherUrls);
 
   /// Read + resurfaced, the pair that takes a link out of the resurface pool.
   ///
