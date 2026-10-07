@@ -38,4 +38,18 @@ Fix only the causes the diagnosis actually finds.
 **Priority:** P3
 **Depends on:** None
 
+## Design
+
+### Adopt the Anek + Readex Pro typeface in the app
+
+**What:** Bundle font subsets for Anek Latin, Anek Devanagari, Anek Gujarati and Readex Pro (Arabic), then wire them into `AppTypography` / `AppTheme` for all four locales (en, hi, gu, ar).
+
+**Why:** The app renders in the platform default font today, so Hindi and Gujarati look like fallback text. `DESIGN.md` records Anek + Readex Pro as the target.
+
+**Context:** Both families are on Google Fonts under the OFL license (verified 2026-10-07). Anek has a width axis: condensed for titles and numbers, normal for reading. Bundle subsets to limit APK size, and re-test every screen at 1.3x text scale in hi, gu and ar.
+
+**Effort:** M
+**Priority:** P3
+**Depends on:** None
+
 ## Completed

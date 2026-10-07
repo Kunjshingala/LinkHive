@@ -1,0 +1,16 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Everything LinkHive syncs lives under /users/{uid}/ (links, categories,
+    // deleted_links, deleted_categories). A signed-in user can read and write
+    // only their own subtree; everything else is denied.
+    //
+    // Fields are deliberately not validated here, so new LinkModel fields
+    // (shareCount, lastSharedAt, otherUrls, ...) never need a rules change.
+    match /users/{uid}/{document=**} {
+      allow read, write: if request.auth != null && request.auth.uid == uid;
+    }
+  }
+}
