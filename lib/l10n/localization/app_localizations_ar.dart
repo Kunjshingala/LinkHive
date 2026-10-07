@@ -499,4 +499,41 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get dateYesterday => 'أمس';
+
+  @override
+  String todaySavedCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'حُفظ $count مرة',
+      few: 'حُفظ $count مرات',
+      two: 'حُفظ مرتين',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String todaySavedCountA11y(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'حُفظ $count مرة',
+      few: 'حُفظ $count مرات',
+      two: 'حُفظ مرتين',
+      one: 'حُفظ مرة واحدة',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get versionPickerTitle => 'أي نسخة؟';
+
+  @override
+  String get versionPickerSavedFirst => 'المحفوظة أولًا';
+
+  @override
+  String get versionPickerNoTracking => 'بدون تتبع';
+
+  @override
+  String get versionPickerKeepOnly => 'الاحتفاظ بهذه فقط';
 }

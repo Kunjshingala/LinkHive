@@ -1037,6 +1037,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'yesterday'**
   String get dateYesterday;
+
+  /// Small chip on the Today card when a link was saved more than once (count is always 2 or more). Compact; Arabic should use words instead of ×.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, other{Saved {count}×}}'**
+  String todaySavedCount(int count);
+
+  /// What screen readers say for the todaySavedCount chip. Use full words, no × symbol.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Saved once} other{Saved {count} times}}'**
+  String todaySavedCountA11y(int count);
+
+  /// Title of the sheet shown when opening a link that was saved under more than one URL (e.g. with and without an affiliate tag).
+  ///
+  /// In en, this message translates to:
+  /// **'Which version?'**
+  String get versionPickerTitle;
+
+  /// Tag on the link's main (first saved) URL in the version picker.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved first'**
+  String get versionPickerSavedFirst;
+
+  /// Shown under a URL in the version picker when it has no query parameters.
+  ///
+  /// In en, this message translates to:
+  /// **'no tracking'**
+  String get versionPickerNoTracking;
+
+  /// Button: make the selected URL the link's only URL, then open it.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep only this one'**
+  String get versionPickerKeepOnly;
 }
 
 class _AppLocalizationsDelegate

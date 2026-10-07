@@ -166,5 +166,11 @@
   "sharedOnlyUrls": "LinkHive માં ફક્ત URL લિંક જ સંગ્રહિત થઈ શકે છે",
   "dateToday": "આજે",
   "dateYesterday": "ગઈકાલે",
+  "todaySavedCount": "{count, plural, other{{count}× સંગ્રહિત}}",
+  "todaySavedCountA11y": "{count, plural, =1{એક વખત સંગ્રહિત} other{{count} વખત સંગ્રહિત}}",
+  "versionPickerTitle": "કયું સંસ્કરણ?",
+  "versionPickerSavedFirst": "પહેલા સંગ્રહિત",
+  "versionPickerNoTracking": "કોઈ ટ્રેકિંગ નહીં",
+  "versionPickerKeepOnly": "ફક્ત આ જ રાખો",
   "linkOpenFailed": "{url} ખોલી શકાયું નથી"
 }

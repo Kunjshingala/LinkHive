@@ -498,4 +498,37 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get dateYesterday => 'yesterday';
+
+  @override
+  String todaySavedCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Saved $count×',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String todaySavedCountA11y(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Saved $count times',
+      one: 'Saved once',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get versionPickerTitle => 'Which version?';
+
+  @override
+  String get versionPickerSavedFirst => 'Saved first';
+
+  @override
+  String get versionPickerNoTracking => 'no tracking';
+
+  @override
+  String get versionPickerKeepOnly => 'Keep only this one';
 }

@@ -182,5 +182,23 @@
   "dateToday": "today",
   "@dateToday": { "description": "Lower-case word used inside sentences like 'Already saved today'." },
   "dateYesterday": "yesterday",
-  "@dateYesterday": { "description": "Lower-case word used inside sentences like 'Already saved yesterday'." }
+  "@dateYesterday": { "description": "Lower-case word used inside sentences like 'Already saved yesterday'." },
+  "todaySavedCount": "{count, plural, other{Saved {count}×}}",
+  "@todaySavedCount": {
+    "description": "Small chip on the Today card when a link was saved more than once (count is always 2 or more). Compact; Arabic should use words instead of ×.",
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "todaySavedCountA11y": "{count, plural, =1{Saved once} other{Saved {count} times}}",
+  "@todaySavedCountA11y": {
+    "description": "What screen readers say for the todaySavedCount chip. Use full words, no × symbol.",
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "versionPickerTitle": "Which version?",
+  "@versionPickerTitle": { "description": "Title of the sheet shown when opening a link that was saved under more than one URL (e.g. with and without an affiliate tag)." },
+  "versionPickerSavedFirst": "Saved first",
+  "@versionPickerSavedFirst": { "description": "Tag on the link's main (first saved) URL in the version picker." },
+  "versionPickerNoTracking": "no tracking",
+  "@versionPickerNoTracking": { "description": "Shown under a URL in the version picker when it has no query parameters." },
+  "versionPickerKeepOnly": "Keep only this one",
+  "@versionPickerKeepOnly": { "description": "Button: make the selected URL the link's only URL, then open it." }
 }

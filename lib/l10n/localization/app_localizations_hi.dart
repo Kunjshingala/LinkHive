@@ -501,4 +501,37 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get dateYesterday => 'कल';
+
+  @override
+  String todaySavedCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count× सहेजा गया',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String todaySavedCountA11y(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count बार सहेजा गया',
+      one: 'एक बार सहेजा गया',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get versionPickerTitle => 'कौन सा संस्करण?';
+
+  @override
+  String get versionPickerSavedFirst => 'पहले सहेजा गया';
+
+  @override
+  String get versionPickerNoTracking => 'कोई ट्रैकिंग नहीं';
+
+  @override
+  String get versionPickerKeepOnly => 'केवल यही रखें';
 }

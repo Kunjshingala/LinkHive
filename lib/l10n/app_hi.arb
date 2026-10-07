@@ -166,5 +166,11 @@
   "sharedOnlyUrls": "LinkHive में केवल URL लिंक सहेजे जा सकते हैं",
   "dateToday": "आज",
   "dateYesterday": "कल",
+  "todaySavedCount": "{count, plural, other{{count}× सहेजा गया}}",
+  "todaySavedCountA11y": "{count, plural, =1{एक बार सहेजा गया} other{{count} बार सहेजा गया}}",
+  "versionPickerTitle": "कौन सा संस्करण?",
+  "versionPickerSavedFirst": "पहले सहेजा गया",
+  "versionPickerNoTracking": "कोई ट्रैकिंग नहीं",
+  "versionPickerKeepOnly": "केवल यही रखें",
   "linkOpenFailed": "{url} नहीं खोला जा सका"
 }

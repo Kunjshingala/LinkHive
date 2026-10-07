@@ -116,21 +116,28 @@ void main() {
   testWidgets(
     'a long Hindi merge message fits at 360dp and 1.3x text without overflow',
     (tester) async {
+      // Set on the test window: MaterialApp builds its own MediaQuery from
+      // it, so wrapping the app in a MediaQuery would not take effect.
+      tester.platformDispatcher.textScaleFactorTestValue = 1.3;
+      addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+
       await tester.pumpWidget(
-        MediaQuery(
-          data: const MediaQueryData(textScaler: TextScaler.linear(1.3)),
-          child: host(
-            SavedLinkSnackContent(
-              message:
-                  'पहले से सहेजा गया (28 सित॰ 2025), यह "आज" में वापस आएगा',
-              onAddDetails: () {},
-              onUndo: () {},
-            ),
-            locale: const Locale('hi'),
+        host(
+          SavedLinkSnackContent(
+            message: 'पहले से सहेजा गया (28 सित॰ 2025), यह "आज" में वापस आएगा',
+            onAddDetails: () {},
+            onUndo: () {},
           ),
+          locale: const Locale('hi'),
         ),
       );
 
+      expect(
+        MediaQuery.of(
+          tester.element(find.byType(SavedLinkSnackContent)),
+        ).textScaler,
+        isA<TextScaler>().having((s) => s.scale(10), "scale(10)", 13),
+      );
       expect(tester.takeException(), isNull);
     },
   );

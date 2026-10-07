@@ -12,6 +12,7 @@ import '../../core/utils/utils.dart';
 import '../../sharedWidgets/common_app_bar.dart';
 import '../../sharedWidgets/custom_button.dart';
 import '../../sharedWidgets/empty_state.dart';
+import '../../sharedWidgets/saved_count_chip.dart';
 import '../links/models/link_model.dart';
 import '../links/manager/link_manager.dart';
 import 'bloc/today_bloc.dart';
@@ -110,11 +111,21 @@ class _ResurfaceCard extends StatelessWidget {
                     style: Theme.of(context).textTheme.titleLarge,
                   ),
                   SizedBox(height: AppSpacing.xs),
-                  Text(
-                    host,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: Theme.of(context).textTheme.labelLarge!.copyWith(color: Theme.of(context).colorScheme.primary),
+                  // Source and "Saved N×" share one line; a long host pushes
+                  // the chip to the next line instead of truncating it.
+                  Wrap(
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    spacing: AppSpacing.xs,
+                    runSpacing: AppSpacing.xs,
+                    children: [
+                      Text(
+                        host,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: Theme.of(context).textTheme.labelLarge!.copyWith(color: Theme.of(context).colorScheme.primary),
+                      ),
+                      SavedCountChip(count: link.shareCount),
+                    ],
                   ),
                   if (link.description.isNotEmpty) ...[
                     SizedBox(height: AppSpacing.md),

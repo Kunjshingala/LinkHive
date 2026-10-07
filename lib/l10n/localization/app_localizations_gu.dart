@@ -500,4 +500,37 @@ class AppLocalizationsGu extends AppLocalizations {
 
   @override
   String get dateYesterday => 'ગઈકાલે';
+
+  @override
+  String todaySavedCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count× સંગ્રહિત',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String todaySavedCountA11y(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count વખત સંગ્રહિત',
+      one: 'એક વખત સંગ્રહિત',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get versionPickerTitle => 'કયું સંસ્કરણ?';
+
+  @override
+  String get versionPickerSavedFirst => 'પહેલા સંગ્રહિત';
+
+  @override
+  String get versionPickerNoTracking => 'કોઈ ટ્રેકિંગ નહીં';
+
+  @override
+  String get versionPickerKeepOnly => 'ફક્ત આ જ રાખો';
 }
