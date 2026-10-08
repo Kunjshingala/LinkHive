@@ -325,10 +325,21 @@ class AddLinkBloc extends Bloc<AddLinkEvent, AddLinkState> {
           categories: current.categories,
           priority: current.priority,
           createdAt: DateTime.now().toUtc().millisecondsSinceEpoch,
-          resurfaceAt: current.resurfaceAt,
         );
 
-        await _manager.addLink(link);
+        // If the URL is already saved, this merges into that link instead of
+        // creating a duplicate. The "When should this come back?" pick goes
+        // through as-is: an explicit pick (Someday included) beats "due now".
+        final result = await _manager.saveOrMerge(
+          link,
+          resurfaceAt: current.resurfaceAt,
+          clearResurfaceAt: current.clearResurfaceAt,
+        );
+        if (result case SaveMerged(:final merged, :final previous)) {
+          printLog(tag: 'AddLinkBloc', msg: 'Merged into: ${merged.id}');
+          emit(AddLinkMerged(merged: merged, previous: previous));
+          return;
+        }
         printLog(tag: 'AddLinkBloc', msg: 'Saved link: ${link.title}');
       }
 

@@ -470,4 +470,68 @@ class AppLocalizationsHi extends AppLocalizations {
   String linkOpenFailed(Object url) {
     return '$url नहीं खोला जा सका';
   }
+
+  @override
+  String sharedAlreadySaved(String date) {
+    return 'पहले से सहेजा गया ($date), यह \"आज\" में वापस आएगा';
+  }
+
+  @override
+  String sharedUnarchived(String date) {
+    return 'आपने इसे संग्रहित किया था ($date), यह \"आज\" में वापस आएगा';
+  }
+
+  @override
+  String get sharedAnotherVersion =>
+      'इस लिंक का एक और संस्करण सहेजा गया, यह \"आज\" में वापस आएगा';
+
+  @override
+  String addAlreadySavedKept(String date) {
+    return 'पहले से सहेजा गया ($date)। आपका मौजूदा विवरण रखा गया।';
+  }
+
+  @override
+  String get sharedSaveFailed => 'यह लिंक सहेजा नहीं जा सका। फिर से शेयर करें।';
+
+  @override
+  String get sharedOnlyUrls => 'LinkHive में केवल URL लिंक सहेजे जा सकते हैं';
+
+  @override
+  String get dateToday => 'आज';
+
+  @override
+  String get dateYesterday => 'कल';
+
+  @override
+  String todaySavedCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count× सहेजा गया',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String todaySavedCountA11y(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count बार सहेजा गया',
+      one: 'एक बार सहेजा गया',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get versionPickerTitle => 'कौन सा संस्करण?';
+
+  @override
+  String get versionPickerSavedFirst => 'पहले सहेजा गया';
+
+  @override
+  String get versionPickerNoTracking => 'कोई ट्रैकिंग नहीं';
+
+  @override
+  String get versionPickerKeepOnly => 'केवल यही रखें';
 }

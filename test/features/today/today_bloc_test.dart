@@ -60,6 +60,7 @@ void main() {
 
   setUpAll(() {
     registerFallbackValue(const LaunchOptions());
+    registerFallbackValue(LinkModel(id: "", url: "", title: "", createdAt: 0));
   });
 
   setUp(() {
@@ -67,9 +68,7 @@ void main() {
     launcher = MockUrlLauncher();
     UrlLauncherPlatform.instance = launcher;
 
-    when(
-      () => launcher.launchUrl(any(), any()),
-    ).thenAnswer((_) async => true);
+    when(() => launcher.launchUrl(any(), any())).thenAnswer((_) async => true);
     when(() => repository.markLinkAsRead(any())).thenAnswer((_) async {});
     when(() => repository.markResurfaced(any())).thenAnswer((_) async {});
   });
@@ -148,6 +147,58 @@ void main() {
       verify: (_) {
         verifyNever(() => repository.markLinkAsRead(any()));
         verifyNever(() => launcher.launchUrl(any(), any()));
+      },
+    );
+
+    const affiliate =
+        'https://wellfound.com/jobs?utm_source=youtube&ref=creator';
+
+    blocTest<TodayBloc, TodayState>(
+      'opens the version picked in the sheet',
+      build: () {
+        stubCandidates([first, second]);
+        return TodayBloc(manager: LinkManager(repository: repository));
+      },
+      act: (bloc) async {
+        bloc.add(const TodayLoadRequested());
+        await Future<void>.delayed(Duration.zero);
+        bloc.add(const TodayOpenRequested(url: affiliate));
+      },
+      skip: 2,
+      expect: () => [TodayLoaded(second)],
+      verify: (_) {
+        verify(() => launcher.launchUrl(affiliate, any())).called(1);
+        verify(() => repository.markLinkAsRead('1')).called(1);
+        verifyNever(() => repository.updateLink(any()));
+      },
+    );
+
+    blocTest<TodayBloc, TodayState>(
+      '"Keep only this one" makes the pick the only URL, then opens it',
+      setUp: () {
+        when(
+          () => repository.getLinkById('1'),
+        ).thenReturn(first.copyWith(otherUrls: [affiliate]));
+        when(() => repository.updateLink(any())).thenAnswer((_) async {});
+      },
+      build: () {
+        stubCandidates([first, second]);
+        return TodayBloc(manager: LinkManager(repository: repository));
+      },
+      act: (bloc) async {
+        bloc.add(const TodayLoadRequested());
+        await Future<void>.delayed(Duration.zero);
+        bloc.add(const TodayOpenRequested(url: affiliate, keepOnly: true));
+      },
+      skip: 2,
+      expect: () => [TodayLoaded(second)],
+      verify: (_) {
+        final kept =
+            verify(() => repository.updateLink(captureAny())).captured.single
+                as LinkModel;
+        expect(kept.url, affiliate);
+        expect(kept.otherUrls, isEmpty);
+        verify(() => launcher.launchUrl(affiliate, any())).called(1);
       },
     );
   });

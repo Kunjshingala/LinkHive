@@ -31,13 +31,16 @@ class LinkModelAdapter extends TypeAdapter<LinkModel> {
       isQuickSaved: fields[11] == null ? false : fields[11] as bool,
       resurfaceAt: fields[12] as int?,
       lastResurfacedAt: fields[13] as int?,
+      shareCount: fields[14] == null ? 1 : fields[14] as int,
+      lastSharedAt: fields[15] as int?,
+      otherUrls: fields[16] == null ? [] : (fields[16] as List).cast<String>(),
     );
   }
 
   @override
   void write(BinaryWriter writer, LinkModel obj) {
     writer
-      ..writeByte(14)
+      ..writeByte(17)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -65,7 +68,13 @@ class LinkModelAdapter extends TypeAdapter<LinkModel> {
       ..writeByte(12)
       ..write(obj.resurfaceAt)
       ..writeByte(13)
-      ..write(obj.lastResurfacedAt);
+      ..write(obj.lastResurfacedAt)
+      ..writeByte(14)
+      ..write(obj.shareCount)
+      ..writeByte(15)
+      ..write(obj.lastSharedAt)
+      ..writeByte(16)
+      ..write(obj.otherUrls);
   }
 
   @override

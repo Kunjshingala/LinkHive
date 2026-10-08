@@ -467,4 +467,68 @@ class AppLocalizationsEn extends AppLocalizations {
   String linkOpenFailed(Object url) {
     return 'Could not open $url';
   }
+
+  @override
+  String sharedAlreadySaved(String date) {
+    return 'Already saved $date, it\'ll come back in Today';
+  }
+
+  @override
+  String sharedUnarchived(String date) {
+    return 'You archived this $date, it\'ll come back in Today';
+  }
+
+  @override
+  String get sharedAnotherVersion =>
+      'Saved another version of this link, it\'ll come back in Today';
+
+  @override
+  String addAlreadySavedKept(String date) {
+    return 'Already saved $date. Kept your existing details.';
+  }
+
+  @override
+  String get sharedSaveFailed => 'Couldn\'t save this link. Try sharing again.';
+
+  @override
+  String get sharedOnlyUrls => 'Only URL links can be saved to LinkHive';
+
+  @override
+  String get dateToday => 'today';
+
+  @override
+  String get dateYesterday => 'yesterday';
+
+  @override
+  String todaySavedCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Saved $count×',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String todaySavedCountA11y(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Saved $count times',
+      one: 'Saved once',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get versionPickerTitle => 'Which version?';
+
+  @override
+  String get versionPickerSavedFirst => 'Saved first';
+
+  @override
+  String get versionPickerNoTracking => 'no tracking';
+
+  @override
+  String get versionPickerKeepOnly => 'Keep only this one';
 }

@@ -468,4 +468,72 @@ class AppLocalizationsAr extends AppLocalizations {
   String linkOpenFailed(Object url) {
     return 'تعذر فتح $url';
   }
+
+  @override
+  String sharedAlreadySaved(String date) {
+    return 'محفوظ مسبقًا ($date)، وسيعود في «اليوم»';
+  }
+
+  @override
+  String sharedUnarchived(String date) {
+    return 'لقد أرشفت هذا ($date)، وسيعود في «اليوم»';
+  }
+
+  @override
+  String get sharedAnotherVersion =>
+      'تم حفظ نسخة أخرى من هذا الرابط، وسيعود في «اليوم»';
+
+  @override
+  String addAlreadySavedKept(String date) {
+    return 'محفوظ مسبقًا ($date). تم الاحتفاظ بتفاصيلك الحالية.';
+  }
+
+  @override
+  String get sharedSaveFailed => 'تعذر حفظ هذا الرابط. حاول المشاركة مرة أخرى.';
+
+  @override
+  String get sharedOnlyUrls => 'يمكن حفظ روابط URL فقط في LinkHive';
+
+  @override
+  String get dateToday => 'اليوم';
+
+  @override
+  String get dateYesterday => 'أمس';
+
+  @override
+  String todaySavedCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'حُفظ $count مرة',
+      few: 'حُفظ $count مرات',
+      two: 'حُفظ مرتين',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String todaySavedCountA11y(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'حُفظ $count مرة',
+      few: 'حُفظ $count مرات',
+      two: 'حُفظ مرتين',
+      one: 'حُفظ مرة واحدة',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get versionPickerTitle => 'أي نسخة؟';
+
+  @override
+  String get versionPickerSavedFirst => 'المحفوظة أولًا';
+
+  @override
+  String get versionPickerNoTracking => 'بدون تتبع';
+
+  @override
+  String get versionPickerKeepOnly => 'الاحتفاظ بهذه فقط';
 }

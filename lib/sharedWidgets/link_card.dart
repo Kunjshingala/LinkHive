@@ -8,13 +8,14 @@ import '../core/theme/app_colors.dart';
 import '../core/theme/app_spacing.dart';
 import '../core/theme/app_typography.dart';
 import '../core/utils/category_utils.dart';
-import '../core/utils/locator.dart';
+import '../core/utils/link_title.dart';
 import '../core/utils/utils.dart';
 import '../features/links/manager/link_manager.dart';
 import '../features/links/models/link_model.dart';
 import 'confirmation_bottom_sheet.dart';
 import 'neo_popup_menu.dart';
 import 'priority_badge.dart';
+import 'version_picker_sheet.dart';
 
 /// Reusable card widget that displays a single [LinkModel] in a list.
 ///
@@ -87,7 +88,7 @@ class LinkCard extends StatelessWidget {
             color: Colors.transparent,
             child: InkWell(
               borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-              onTap: _openLink,
+              onTap: () => _openLink(context),
               child: Padding(
                 padding: EdgeInsetsDirectional.all(AppSpacing.cardPaddingH),
                 child: Row(
@@ -128,8 +129,11 @@ class LinkCard extends StatelessWidget {
   /// The card used to launch the URL and nothing else, so the most common way
   /// to open a link in the app (this row, on Home and in the Inbox) never
   /// recorded it and the link resurfaced forever. Routing through the manager
-  /// means a tap here behaves exactly like Open on Today or a widget tap.
-  Future<void> _openLink() => locator<LinkManager>().openLink(link);
+  /// means a tap here behaves exactly like Open on Today or a widget tap,
+  /// including the "Which version?" picker for links saved under more than
+  /// one URL.
+  Future<void> _openLink(BuildContext context) =>
+      openLinkWithVersions(context, link);
 }
 // ─── Favicon / Avatar ─────────────────────────────────────────────────────────
 
@@ -173,10 +177,9 @@ class _LetterAvatar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Derive the display letter: prefer title, fall back to URL, then '?'.
-    final letter = link.title.isNotEmpty
-        ? link.title[0].toUpperCase()
-        : (link.url.isNotEmpty ? link.url[0].toUpperCase() : '?');
+    // Derive the display letter from the shown label, then '?'.
+    final label = displayTitle(link.title, link.url);
+    final letter = label.isNotEmpty ? label[0].toUpperCase() : '?';
 
     final colors = _avatarColor(letter, context);
 
@@ -237,11 +240,11 @@ class _LinkContent extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Title: shows link.title if available, otherwise falls back to the
-        // raw URL so the card always has a readable label.
+        // Title: shows link.title if available, otherwise a readable label
+        // built from the URL (see fallbackTitle).
         Text.rich(
           _highlightText(
-            link.title.isNotEmpty ? link.title : link.url,
+            displayTitle(link.title, link.url),
             searchQuery,
             Theme.of(context).textTheme.bodyMedium!.copyWith(
               fontWeight: FontWeight.w500,

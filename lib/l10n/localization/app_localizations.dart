@@ -989,6 +989,90 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Could not open {url}'**
   String linkOpenFailed(Object url);
+
+  /// Bar shown when a shared link was already saved and got merged into it. {date} is when it was first saved: 'today', 'yesterday', 'Sep 28' or 'Sep 28, 2025'. 'Today' is the Today screen; write it exactly as todayTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Already saved {date}, it\'ll come back in Today'**
+  String sharedAlreadySaved(String date);
+
+  /// Bar shown when a shared link was already saved and had been archived/read; the merge brings it back. {date} reads 'today', 'yesterday' or a date, so don't put 'on' before it. Keep the Today screen name exactly as todayTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'You archived this {date}, it\'ll come back in Today'**
+  String sharedUnarchived(String date);
+
+  /// Bar shown when a shared link was already saved under a different URL (e.g. an affiliate link); both URLs are kept. Keep the Today screen name exactly as todayTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved another version of this link, it\'ll come back in Today'**
+  String get sharedAnotherVersion;
+
+  /// Bar shown after the Add form found the link already saved; the typed details were not applied. {date} as in sharedAlreadySaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Already saved {date}. Kept your existing details.'**
+  String addAlreadySavedKept(String date);
+
+  /// No description provided for @sharedSaveFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t save this link. Try sharing again.'**
+  String get sharedSaveFailed;
+
+  /// No description provided for @sharedOnlyUrls.
+  ///
+  /// In en, this message translates to:
+  /// **'Only URL links can be saved to LinkHive'**
+  String get sharedOnlyUrls;
+
+  /// Lower-case word used inside sentences like 'Already saved today'.
+  ///
+  /// In en, this message translates to:
+  /// **'today'**
+  String get dateToday;
+
+  /// Lower-case word used inside sentences like 'Already saved yesterday'.
+  ///
+  /// In en, this message translates to:
+  /// **'yesterday'**
+  String get dateYesterday;
+
+  /// Small chip on the Today card when a link was saved more than once (count is always 2 or more). Compact; Arabic should use words instead of ×.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, other{Saved {count}×}}'**
+  String todaySavedCount(int count);
+
+  /// What screen readers say for the todaySavedCount chip. Use full words, no × symbol.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Saved once} other{Saved {count} times}}'**
+  String todaySavedCountA11y(int count);
+
+  /// Title of the sheet shown when opening a link that was saved under more than one URL (e.g. with and without an affiliate tag).
+  ///
+  /// In en, this message translates to:
+  /// **'Which version?'**
+  String get versionPickerTitle;
+
+  /// Tag on the link's main (first saved) URL in the version picker.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved first'**
+  String get versionPickerSavedFirst;
+
+  /// Shown under a URL in the version picker when it has no query parameters.
+  ///
+  /// In en, this message translates to:
+  /// **'no tracking'**
+  String get versionPickerNoTracking;
+
+  /// Button: make the selected URL the link's only URL, then open it.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep only this one'**
+  String get versionPickerKeepOnly;
 }
 
 class _AppLocalizationsDelegate

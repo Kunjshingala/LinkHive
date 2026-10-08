@@ -49,7 +49,11 @@ class TodayBloc extends Bloc<TodayEvent, TodayState> {
   ) async {
     final current = state;
     if (current is! TodayLoaded) return;
-    await _manager.openLink(current.link);
+    final url = event.url;
+    if (event.keepOnly && url != null) {
+      await _manager.keepOnlyVersion(current.link, url);
+    }
+    await _manager.openLink(current.link, url: url);
     await _emitCandidate(emit);
   }
 

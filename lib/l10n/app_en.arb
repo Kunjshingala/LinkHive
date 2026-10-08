@@ -157,5 +157,48 @@
   "linkDeleteTitle": "Delete Link?",
   "linkDeleteMessage": "This action cannot be undone.",
   "linkUrlCopied": "Link copied to clipboard",
-  "linkOpenFailed": "Could not open {url}"
+  "linkOpenFailed": "Could not open {url}",
+  "sharedAlreadySaved": "Already saved {date}, it'll come back in Today",
+  "@sharedAlreadySaved": {
+    "description": "Bar shown when a shared link was already saved and got merged into it. {date} is when it was first saved: 'today', 'yesterday', 'Sep 28' or 'Sep 28, 2025'. 'Today' is the Today screen; write it exactly as todayTitle.",
+    "placeholders": { "date": { "type": "String" } }
+  },
+  "sharedUnarchived": "You archived this {date}, it'll come back in Today",
+  "@sharedUnarchived": {
+    "description": "Bar shown when a shared link was already saved and had been archived/read; the merge brings it back. {date} reads 'today', 'yesterday' or a date, so don't put 'on' before it. Keep the Today screen name exactly as todayTitle.",
+    "placeholders": { "date": { "type": "String" } }
+  },
+  "sharedAnotherVersion": "Saved another version of this link, it'll come back in Today",
+  "@sharedAnotherVersion": {
+    "description": "Bar shown when a shared link was already saved under a different URL (e.g. an affiliate link); both URLs are kept. Keep the Today screen name exactly as todayTitle."
+  },
+  "addAlreadySavedKept": "Already saved {date}. Kept your existing details.",
+  "@addAlreadySavedKept": {
+    "description": "Bar shown after the Add form found the link already saved; the typed details were not applied. {date} as in sharedAlreadySaved.",
+    "placeholders": { "date": { "type": "String" } }
+  },
+  "sharedSaveFailed": "Couldn't save this link. Try sharing again.",
+  "sharedOnlyUrls": "Only URL links can be saved to LinkHive",
+  "dateToday": "today",
+  "@dateToday": { "description": "Lower-case word used inside sentences like 'Already saved today'." },
+  "dateYesterday": "yesterday",
+  "@dateYesterday": { "description": "Lower-case word used inside sentences like 'Already saved yesterday'." },
+  "todaySavedCount": "{count, plural, other{Saved {count}×}}",
+  "@todaySavedCount": {
+    "description": "Small chip on the Today card when a link was saved more than once (count is always 2 or more). Compact; Arabic should use words instead of ×.",
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "todaySavedCountA11y": "{count, plural, =1{Saved once} other{Saved {count} times}}",
+  "@todaySavedCountA11y": {
+    "description": "What screen readers say for the todaySavedCount chip. Use full words, no × symbol.",
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "versionPickerTitle": "Which version?",
+  "@versionPickerTitle": { "description": "Title of the sheet shown when opening a link that was saved under more than one URL (e.g. with and without an affiliate tag)." },
+  "versionPickerSavedFirst": "Saved first",
+  "@versionPickerSavedFirst": { "description": "Tag on the link's main (first saved) URL in the version picker." },
+  "versionPickerNoTracking": "no tracking",
+  "@versionPickerNoTracking": { "description": "Shown under a URL in the version picker when it has no query parameters." },
+  "versionPickerKeepOnly": "Keep only this one",
+  "@versionPickerKeepOnly": { "description": "Button: make the selected URL the link's only URL, then open it." }
 }

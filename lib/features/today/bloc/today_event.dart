@@ -12,8 +12,17 @@ class TodayLoadRequested extends TodayEvent {
 }
 
 /// Opens the current candidate's URL and marks it consumed.
+///
+/// [url] is a version picked in the "Which version?" sheet (defaults to the
+/// link's main URL); [keepOnly] first makes it the link's only URL.
 class TodayOpenRequested extends TodayEvent {
-  const TodayOpenRequested();
+  const TodayOpenRequested({this.url, this.keepOnly = false});
+
+  final String? url;
+  final bool keepOnly;
+
+  @override
+  List<Object?> get props => [url, keepOnly];
 }
 
 /// Marks the current candidate consumed without opening it.

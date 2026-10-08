@@ -6,11 +6,14 @@ import '../../core/constants/app_enums.dart';
 import '../../core/extensions/context_extension.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
+import '../../core/utils/link_title.dart';
 import '../../core/utils/locator.dart';
 import '../../core/utils/utils.dart';
 import '../../sharedWidgets/common_app_bar.dart';
 import '../../sharedWidgets/custom_button.dart';
 import '../../sharedWidgets/empty_state.dart';
+import '../../sharedWidgets/saved_count_chip.dart';
+import '../../sharedWidgets/version_picker_sheet.dart';
 import '../links/models/link_model.dart';
 import '../links/manager/link_manager.dart';
 import 'bloc/today_bloc.dart';
@@ -62,6 +65,20 @@ class _TodayContent extends StatelessWidget {
   }
 }
 
+/// Asks "Which version?" first when the link was saved under more than one
+/// URL; the bloc then keeps/opens the chosen one.
+Future<void> _openResurfaced(BuildContext context, LinkModel link) async {
+  final bloc = context.read<TodayBloc>();
+  if (link.otherUrls.isEmpty) {
+    bloc.add(const TodayOpenRequested());
+    return;
+  }
+  final choice = await showVersionPickerSheet(context, link);
+  // The screen can be left while the sheet is up; its bloc is closed by then.
+  if (choice == null || bloc.isClosed) return;
+  bloc.add(TodayOpenRequested(url: choice.url, keepOnly: choice.keepOnly));
+}
+
 class _ResurfaceCard extends StatelessWidget {
   final LinkModel link;
   const _ResurfaceCard({required this.link});
@@ -103,17 +120,27 @@ class _ResurfaceCard extends StatelessWidget {
                     ),
                   SizedBox(height: AppSpacing.lg),
                   Text(
-                    link.title.isNotEmpty ? link.title : link.url,
+                    displayTitle(link.title, link.url),
                     maxLines: 3,
                     overflow: TextOverflow.ellipsis,
                     style: Theme.of(context).textTheme.titleLarge,
                   ),
                   SizedBox(height: AppSpacing.xs),
-                  Text(
-                    host,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: Theme.of(context).textTheme.labelLarge!.copyWith(color: Theme.of(context).colorScheme.primary),
+                  // Source and "Saved N×" share one line; a long host pushes
+                  // the chip to the next line instead of truncating it.
+                  Wrap(
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    spacing: AppSpacing.xs,
+                    runSpacing: AppSpacing.xs,
+                    children: [
+                      Text(
+                        host,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: Theme.of(context).textTheme.labelLarge!.copyWith(color: Theme.of(context).colorScheme.primary),
+                      ),
+                      SavedCountChip(count: link.shareCount),
+                    ],
                   ),
                   if (link.description.isNotEmpty) ...[
                     SizedBox(height: AppSpacing.md),
@@ -165,7 +192,7 @@ class _ResurfaceCard extends StatelessWidget {
             text: context.l10n.todayOpen,
             icon: Icons.open_in_new_rounded,
             shadowColor: AppColors.success,
-            onPressed: () => context.read<TodayBloc>().add(const TodayOpenRequested()),
+            onPressed: () => _openResurfaced(context, link),
           ),
         ],
       ),

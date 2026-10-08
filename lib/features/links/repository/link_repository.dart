@@ -10,6 +10,7 @@ import '../../../core/services/firebase_firestore_service.dart';
 import '../../../core/utils/hive_helper.dart';
 import '../../../core/utils/sync_backoff.dart';
 import '../../../core/utils/sync_merge_helper.dart';
+import '../../../core/utils/url_canonical.dart';
 import '../../../core/utils/utils.dart';
 import '../../../core/utils/category_utils.dart';
 import '../models/category_model.dart';
@@ -146,6 +147,23 @@ class LinkRepository {
   /// Used by the share-intent instant-save flow to re-read a link before
   /// enriching it with background-fetched metadata.
   LinkModel? getLinkById(String id) => _linksBox.get(id);
+
+  /// The saved link that [url] is a duplicate of, or null.
+  ///
+  /// Compares [canonicalUrl] keys, so two shares of the same reel or video
+  /// with different tracking params match. A linear scan: fine at personal
+  /// scale (thousands of links), and it needs no stored key or migration.
+  /// When legacy duplicates already exist, the oldest wins so merges always
+  /// land on the same record.
+  LinkModel? findByCanonicalUrl(String url) {
+    final key = canonicalUrl(url);
+    LinkModel? oldest;
+    for (final link in _linksBox.values) {
+      if (canonicalUrl(link.url) != key) continue;
+      if (oldest == null || link.createdAt < oldest.createdAt) oldest = link;
+    }
+    return oldest;
+  }
 
   /// Returns all quick-saved (unorganized) links for the Inbox, newest first.
   ///

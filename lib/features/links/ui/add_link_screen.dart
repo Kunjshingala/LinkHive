@@ -8,6 +8,8 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/utils/category_utils.dart';
 import '../../../core/utils/locator.dart';
+import '../../../core/utils/navigation/route.dart';
+import '../../../core/utils/saved_date.dart';
 import '../../../core/utils/utils.dart';
 import '../../../core/utils/validator/validator.dart';
 import '../../../core/extensions/context_extension.dart';
@@ -16,6 +18,7 @@ import '../../../sharedWidgets/category_chip.dart';
 import '../../../sharedWidgets/common_app_bar.dart';
 import '../../../sharedWidgets/custom_button.dart';
 import '../../../sharedWidgets/custom_text_field.dart';
+import '../../../sharedWidgets/saved_link_snackbar.dart';
 import '../models/category_model.dart';
 import '../models/link_model.dart';
 import '../manager/link_manager.dart';
@@ -119,6 +122,32 @@ class _AddLinkContentState extends State<_AddLinkContent> {
     }
   }
 
+  /// The URL was already saved: close the form and say the existing details
+  /// were kept, with Edit (to change them) and Undo.
+  ///
+  /// The bar outlives this screen, and the AddLinkBloc closes with it, so both
+  /// actions go to LinkManager and the global router captured here, never
+  /// through the bloc. Edit re-reads the link so it never opens a stale copy.
+  void _onMerged(BuildContext context, AddLinkMerged state) {
+    final manager = locator<LinkManager>();
+    final previous = state.previous;
+    context.pop();
+    showSavedLinkSnackBar(
+      message: (context) => context.l10n.addAlreadySavedKept(
+        formatSavedDate(
+          DateTime.fromMillisecondsSinceEpoch(previous.createdAt),
+          DateTime.now(),
+          context.l10n,
+        ),
+      ),
+      onEdit: () => router.pushNamed(
+        MyRouteName.editLink,
+        extra: manager.linkById(previous.id) ?? state.merged,
+      ),
+      onUndo: () => manager.undoMerge(previous),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<AddLinkBloc, AddLinkState>(
@@ -128,6 +157,7 @@ class _AddLinkContentState extends State<_AddLinkContent> {
           showSnackBar(context.l10n.linkSavedSuccess);
           context.pop();
         }
+        if (state is AddLinkMerged) _onMerged(context, state);
         if (state is AddLinkError) {
           final message = switch (state.code) {
             AddLinkErrorCode.emptyUrl => context.l10n.addLinkUrlEmptyError,

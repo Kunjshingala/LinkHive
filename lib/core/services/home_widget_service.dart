@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:home_widget/home_widget.dart';
 
 import '../../features/links/manager/link_manager.dart';
+import '../utils/link_title.dart';
 import '../utils/navigation/route.dart';
 import '../utils/utils.dart';
 
@@ -79,7 +80,7 @@ class HomeWidgetService {
       await HomeWidget.saveWidgetData<bool>('has_pick', pick != null);
       await HomeWidget.saveWidgetData<String>(
         'pick_title',
-        pick == null ? '' : _displayTitle(pick.title, pick.url),
+        pick == null ? '' : displayTitle(pick.title, pick.url),
       );
       await HomeWidget.saveWidgetData<String>(
         'pick_host',
@@ -153,11 +154,14 @@ class HomeWidgetService {
       unawaited(_pushData());
       return;
     }
+    // Saved under more than one URL: the widget can't ask which one, so land
+    // on Today, whose Open shows the "Which version?" picker.
+    if (link.otherUrls.isNotEmpty) {
+      router.goNamed(MyRouteName.today);
+      return;
+    }
     await _manager.openLink(link);
   }
-
-  String _displayTitle(String title, String url) =>
-      title.isNotEmpty ? title : url;
 
   String _host(String url) {
     try {
