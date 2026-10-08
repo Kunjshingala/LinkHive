@@ -3,6 +3,8 @@ import 'package:rxdart/rxdart.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../../core/services/link_metadata_service.dart';
+import '../../../core/utils/category_suggester.dart';
+import '../../../core/utils/url_canonical.dart';
 import '../../../core/utils/utils.dart';
 import '../../../core/utils/validator/validator.dart';
 import '../models/link_model.dart';
@@ -82,6 +84,22 @@ class AddLinkBloc extends Bloc<AddLinkEvent, AddLinkState> {
     on<AddLinkSaveRequested>(_onSaveRequested);
   }
 
+  /// [form] with category suggestions for its URL's site. Recomputed only
+  /// when the site changes, not on every keystroke.
+  AddLinkForm _withSuggestions(AddLinkForm form) {
+    final host = sourceHost(form.url);
+    if (host == form.suggestionHost) return form;
+    return form.copyWith(
+      suggestionHost: host,
+      suggestedCategories: CategorySuggester.suggest(
+        host: host,
+        history: host.isEmpty
+            ? const []
+            : _manager.getCategoryCountsForHost(host),
+      ),
+    );
+  }
+
   EventTransformer<T> _debounce<T>(Duration duration) {
     // debounceTime waits until typing pauses; switchMap keeps only the newest
     // event subscription. A network call already in progress may still finish,
@@ -110,13 +128,15 @@ class AddLinkBloc extends Bloc<AddLinkEvent, AddLinkState> {
     if (_editingLink != null) {
       // Edit mode: populate every form field from the existing link.
       emit(
-        AddLinkForm(
-          url: _editingLink!.url,
-          title: _editingLink!.title,
-          description: _editingLink!.description,
-          image: _editingLink!.image,
-          priority: _editingLink!.priority,
-          categories: _editingLink!.categories,
+        _withSuggestions(
+          AddLinkForm(
+            url: _editingLink!.url,
+            title: _editingLink!.title,
+            description: _editingLink!.description,
+            image: _editingLink!.image,
+            priority: _editingLink!.priority,
+            categories: _editingLink!.categories,
+          ),
         ),
       );
 
@@ -134,7 +154,7 @@ class AddLinkBloc extends Bloc<AddLinkEvent, AddLinkState> {
       // Add mode: start with a blank form, optionally seeded with a URL.
       final prefillUrl = event.prefillUrl?.trim() ?? '';
       final normalizedUrl = normalizeUrl(prefillUrl);
-      emit(AddLinkForm(url: normalizedUrl ?? prefillUrl));
+      emit(_withSuggestions(AddLinkForm(url: normalizedUrl ?? prefillUrl)));
 
       // Auto-fetch metadata when a prefill URL is already available so the
       // user doesn't have to trigger it manually.
@@ -223,15 +243,17 @@ class AddLinkBloc extends Bloc<AddLinkEvent, AddLinkState> {
     }
 
     emit(
-      current.copyWith(
-        url: event.url,
-        title: event.title,
-        description: event.description,
-        priority: event.priority,
-        categories: event.categories,
-        isFetchingMetadata: event.url == null ? null : false,
-        resurfaceAt: event.resurfaceAt,
-        clearResurfaceAt: event.clearResurfaceAt,
+      _withSuggestions(
+        current.copyWith(
+          url: event.url,
+          title: event.title,
+          description: event.description,
+          priority: event.priority,
+          categories: event.categories,
+          isFetchingMetadata: event.url == null ? null : false,
+          resurfaceAt: event.resurfaceAt,
+          clearResurfaceAt: event.clearResurfaceAt,
+        ),
       ),
     );
 

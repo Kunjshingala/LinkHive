@@ -270,6 +270,48 @@ abstract class AppLocalizations {
   /// **'News'**
   String get catNews;
 
+  /// No description provided for @catWatch.
+  ///
+  /// In en, this message translates to:
+  /// **'Watch'**
+  String get catWatch;
+
+  /// No description provided for @catShop.
+  ///
+  /// In en, this message translates to:
+  /// **'Shop'**
+  String get catShop;
+
+  /// No description provided for @catRecipes.
+  ///
+  /// In en, this message translates to:
+  /// **'Recipes'**
+  String get catRecipes;
+
+  /// No description provided for @catTravel.
+  ///
+  /// In en, this message translates to:
+  /// **'Travel'**
+  String get catTravel;
+
+  /// No description provided for @catLearn.
+  ///
+  /// In en, this message translates to:
+  /// **'Learn'**
+  String get catLearn;
+
+  /// No description provided for @catWork.
+  ///
+  /// In en, this message translates to:
+  /// **'Work'**
+  String get catWork;
+
+  /// No description provided for @catIdeas.
+  ///
+  /// In en, this message translates to:
+  /// **'Ideas'**
+  String get catIdeas;
+
   /// No description provided for @addLinkUrlLabel.
   ///
   /// In en, this message translates to:
@@ -449,6 +491,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Archived'**
   String get todayArchivedConfirm;
+
+  /// No description provided for @todayBrowseLibrary.
+  ///
+  /// In en, this message translates to:
+  /// **'Browse Library'**
+  String get todayBrowseLibrary;
+
+  /// No description provided for @libraryTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Library'**
+  String get libraryTitle;
 
   /// No description provided for @priorityHigh.
   ///
@@ -1073,6 +1127,180 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Keep only this one'**
   String get versionPickerKeepOnly;
+
+  /// Under the Library title and list titles: how many links there are.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 link} other{{count} links}}'**
+  String libraryLinkCount(int count);
+
+  /// No description provided for @libraryUnread.
+  ///
+  /// In en, this message translates to:
+  /// **'Unread'**
+  String get libraryUnread;
+
+  /// Library tile: links saved two or more times. Arabic should use words instead of ×.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved 2×+'**
+  String get librarySavedTwice;
+
+  /// Library tile and list tab: links already read or archived (adjective, not the verb).
+  ///
+  /// In en, this message translates to:
+  /// **'Read'**
+  String get libraryRead;
+
+  /// Library section listing the websites links came from.
+  ///
+  /// In en, this message translates to:
+  /// **'Sources'**
+  String get librarySources;
+
+  /// Link next to the Sources heading that shows every source.
+  ///
+  /// In en, this message translates to:
+  /// **'All {count}'**
+  String librarySeeAll(int count);
+
+  /// No description provided for @libraryAllLinks.
+  ///
+  /// In en, this message translates to:
+  /// **'All links'**
+  String get libraryAllLinks;
+
+  /// No description provided for @listTabAll.
+  ///
+  /// In en, this message translates to:
+  /// **'All'**
+  String get listTabAll;
+
+  /// No description provided for @listFilterTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Filter'**
+  String get listFilterTitle;
+
+  /// Live count at the top of the filter sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{No links match} =1{1 link matches} other{{count} links match}}'**
+  String listFilterMatches(int count);
+
+  /// No description provided for @listFilterSource.
+  ///
+  /// In en, this message translates to:
+  /// **'Source'**
+  String get listFilterSource;
+
+  /// No description provided for @listFilterReset.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset'**
+  String get listFilterReset;
+
+  /// Filter sheet button that applies the filters and shows the matching links.
+  ///
+  /// In en, this message translates to:
+  /// **'Show {count}'**
+  String listFilterApply(int count);
+
+  /// No description provided for @listSortTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Sort by'**
+  String get listSortTitle;
+
+  /// No description provided for @sortNewest.
+  ///
+  /// In en, this message translates to:
+  /// **'Newest first'**
+  String get sortNewest;
+
+  /// No description provided for @sortOldest.
+  ///
+  /// In en, this message translates to:
+  /// **'Oldest first'**
+  String get sortOldest;
+
+  /// No description provided for @sortPriority.
+  ///
+  /// In en, this message translates to:
+  /// **'Priority'**
+  String get sortPriority;
+
+  /// No description provided for @sortMostSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Most saved'**
+  String get sortMostSaved;
+
+  /// No description provided for @sortSite.
+  ///
+  /// In en, this message translates to:
+  /// **'Site A–Z'**
+  String get sortSite;
+
+  /// Header title while selecting links in bulk.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} selected'**
+  String listSelectedCount(int count);
+
+  /// No description provided for @listSelectAll.
+  ///
+  /// In en, this message translates to:
+  /// **'Select all'**
+  String get listSelectAll;
+
+  /// No description provided for @listCancelSelection.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel selection'**
+  String get listCancelSelection;
+
+  /// No description provided for @bulkMarkRead.
+  ///
+  /// In en, this message translates to:
+  /// **'Mark read'**
+  String get bulkMarkRead;
+
+  /// No description provided for @bulkCategory.
+  ///
+  /// In en, this message translates to:
+  /// **'Category'**
+  String get bulkCategory;
+
+  /// Confirmation title before deleting the selected links.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Delete 1 link?} other{Delete {count} links?}}'**
+  String bulkDeleteTitle(int count);
+
+  /// No description provided for @bulkCategoryTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a category'**
+  String get bulkCategoryTitle;
+
+  /// Heading over category suggestions based on the website, e.g. 'Suggested for youtube.com'.
+  ///
+  /// In en, this message translates to:
+  /// **'Suggested for {host}'**
+  String bulkCategorySuggested(String host);
+
+  /// No description provided for @bulkCategoryAll.
+  ///
+  /// In en, this message translates to:
+  /// **'All categories'**
+  String get bulkCategoryAll;
+
+  /// Button in the category sheet that adds the chosen category to the selected links.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Add to 1 link} other{Add to {count} links}}'**
+  String bulkCategoryApply(int count);
 }
 
 class _AppLocalizationsDelegate

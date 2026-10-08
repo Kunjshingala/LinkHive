@@ -88,6 +88,12 @@ class AddLinkForm extends AddLinkState {
   /// untouched, which must NOT clear a schedule set on a previous edit.
   final bool clearResurfaceAt;
 
+  /// Site of [url] (`youtube.com`), shown in "Suggested for youtube.com".
+  final String suggestionHost;
+
+  /// Categories suggested for [suggestionHost] by `CategorySuggester`.
+  final List<String> suggestedCategories;
+
   const AddLinkForm({
     this.url = '',
     this.title = '',
@@ -98,6 +104,8 @@ class AddLinkForm extends AddLinkState {
     this.isFetchingMetadata = false,
     this.resurfaceAt,
     this.clearResurfaceAt = false,
+    this.suggestionHost = '',
+    this.suggestedCategories = const [],
   });
 
   /// Returns a copy of this state with the specified fields replaced.
@@ -114,6 +122,8 @@ class AddLinkForm extends AddLinkState {
     bool? isFetchingMetadata,
     int? resurfaceAt,
     bool? clearResurfaceAt,
+    String? suggestionHost,
+    List<String>? suggestedCategories,
   }) {
     return AddLinkForm(
       url: url ?? this.url,
@@ -125,6 +135,8 @@ class AddLinkForm extends AddLinkState {
       isFetchingMetadata: isFetchingMetadata ?? this.isFetchingMetadata,
       resurfaceAt: resurfaceAt ?? this.resurfaceAt,
       clearResurfaceAt: clearResurfaceAt ?? this.clearResurfaceAt,
+      suggestionHost: suggestionHost ?? this.suggestionHost,
+      suggestedCategories: suggestedCategories ?? this.suggestedCategories,
     );
   }
 
@@ -139,6 +151,8 @@ class AddLinkForm extends AddLinkState {
     isFetchingMetadata,
     resurfaceAt,
     clearResurfaceAt,
+    // suggestionHost and suggestedCategories are left out: both are derived
+    // from [url], which is already compared, so they never change on their own.
   ];
 }
 

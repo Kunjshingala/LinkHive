@@ -3,14 +3,17 @@ import 'package:synchronized/synchronized.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../core/extensions/context_extension.dart';
+import '../../../core/utils/category_utils.dart';
 import '../../../core/utils/url_canonical.dart';
 import '../../../core/utils/utils.dart';
 import '../../../my_app.dart';
 import '../models/category_model.dart';
 import '../models/link_model.dart';
+import '../models/link_query.dart';
 import '../repository/link_repository.dart';
 import 'save_result.dart';
 
+export '../models/link_query.dart';
 export 'save_result.dart';
 
 /// The single place that decides what happens to a link.
@@ -97,26 +100,48 @@ class LinkManager {
 
   LinkModel? linkById(String id) => _repository.getLinkById(id);
 
-  List<LinkModel> queryLinks({
-    String query = '',
-    String category = 'All',
-    String priority = 'All',
-    int limit = 20,
-    int offset = 0,
-  }) => _repository.queryLinks(
-    query: query,
-    category: category,
-    priority: priority,
-    limit: limit,
-    offset: offset,
-  );
-
   /// Quick-saved links, the Inbox contents.
   List<LinkModel> queryQuickLinks() => _repository.queryQuickLinks();
 
-  /// Oldest unread links for the Home "Up Next" strip.
-  List<LinkModel> getUpNextLinks({int count = 3}) =>
-      _repository.getUpNextLinks(count: count);
+  // ─── Library ────────────────────────────────────────────────────────────
+
+  List<LinkModel> findLinks(LinkQuery query, {int limit = 20, int offset = 0}) =>
+      _repository.findLinks(query, limit: limit, offset: offset);
+
+  int countLinks(LinkQuery query) => _repository.countLinks(query);
+
+  LibraryStats getLibraryStats() => _repository.getLibraryStats();
+
+  List<NamedCount> getSourceCounts() => _repository.getSourceCounts();
+
+  List<NamedCount> getCategoryCounts() => _repository.getCategoryCounts();
+
+  List<NamedCount> getCategoryCountsForHost(String host) =>
+      _repository.getCategoryCountsForHost(host);
+
+  /// Every category worth offering in a picker: the built-ins, the user's
+  /// own, and any name in use on a link (legacy built-ins included). No
+  /// duplicates, ignoring case; built-ins first.
+  List<String> categoryOptions() {
+    final seen = <String>{};
+    return [
+      ...CategoryUtils.suggestedCategories,
+      ..._repository.getCategories().map((c) => c.name),
+      ..._repository.getCategoryCounts().map((c) => c.name),
+    ].where((name) => seen.add(name.toLowerCase())).toList();
+  }
+
+  Future<void> markLinksRead(Iterable<String> ids) =>
+      _repository.markLinksRead(ids);
+
+  Future<void> addCategoryToLinks(Iterable<String> ids, String name) =>
+      _repository.addCategoryToLinks(ids, name);
+
+  Future<void> setPriorityForLinks(Iterable<String> ids, String priority) =>
+      _repository.setPriorityForLinks(ids, priority);
+
+  Future<void> deleteLinks(Iterable<String> ids) =>
+      _repository.deleteLinks(ids);
 
   Future<void> markAsRead(String id) => _repository.markLinkAsRead(id);
 

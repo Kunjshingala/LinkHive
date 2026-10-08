@@ -57,3 +57,6 @@ lib/firebase_options.dart
 .claude/settings.local.json
 .run/
 .vscode/settings.json
+
+# gstack reports and downloaded references
+.gstack/

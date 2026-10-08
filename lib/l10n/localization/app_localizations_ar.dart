@@ -93,6 +93,27 @@ class AppLocalizationsAr extends AppLocalizations {
   String get catNews => 'أخبار';
 
   @override
+  String get catWatch => 'مشاهدة';
+
+  @override
+  String get catShop => 'تسوق';
+
+  @override
+  String get catRecipes => 'وصفات';
+
+  @override
+  String get catTravel => 'سفر';
+
+  @override
+  String get catLearn => 'تعلّم';
+
+  @override
+  String get catWork => 'عمل';
+
+  @override
+  String get catIdeas => 'أفكار';
+
+  @override
   String get addLinkUrlLabel => 'الرابط';
 
   @override
@@ -182,6 +203,12 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get todayArchivedConfirm => 'تمت الأرشفة';
+
+  @override
+  String get todayBrowseLibrary => 'تصفح المكتبة';
+
+  @override
+  String get libraryTitle => 'المكتبة';
 
   @override
   String get priorityHigh => 'عالي';
@@ -536,4 +563,145 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get versionPickerKeepOnly => 'الاحتفاظ بهذه فقط';
+
+  @override
+  String libraryLinkCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count رابط',
+      many: '$count رابطًا',
+      few: '$count روابط',
+      two: 'رابطان',
+      one: 'رابط واحد',
+      zero: 'لا روابط',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get libraryUnread => 'غير مقروء';
+
+  @override
+  String get librarySavedTwice => 'محفوظ مرتين أو أكثر';
+
+  @override
+  String get libraryRead => 'مقروء';
+
+  @override
+  String get librarySources => 'المصادر';
+
+  @override
+  String librarySeeAll(int count) {
+    return 'الكل $count';
+  }
+
+  @override
+  String get libraryAllLinks => 'كل الروابط';
+
+  @override
+  String get listTabAll => 'الكل';
+
+  @override
+  String get listFilterTitle => 'تصفية';
+
+  @override
+  String listFilterMatches(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count رابط مطابق',
+      many: '$count رابطًا مطابقًا',
+      few: '$count روابط مطابقة',
+      two: 'رابطان مطابقان',
+      one: 'رابط واحد مطابق',
+      zero: 'لا توجد روابط مطابقة',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get listFilterSource => 'المصدر';
+
+  @override
+  String get listFilterReset => 'إعادة تعيين';
+
+  @override
+  String listFilterApply(int count) {
+    return 'عرض $count';
+  }
+
+  @override
+  String get listSortTitle => 'ترتيب حسب';
+
+  @override
+  String get sortNewest => 'الأحدث أولًا';
+
+  @override
+  String get sortOldest => 'الأقدم أولًا';
+
+  @override
+  String get sortPriority => 'الأولوية';
+
+  @override
+  String get sortMostSaved => 'الأكثر حفظًا';
+
+  @override
+  String get sortSite => 'الموقع أ–ي';
+
+  @override
+  String listSelectedCount(int count) {
+    return 'تم تحديد $count';
+  }
+
+  @override
+  String get listSelectAll => 'تحديد الكل';
+
+  @override
+  String get listCancelSelection => 'إلغاء التحديد';
+
+  @override
+  String get bulkMarkRead => 'تعليم كمقروء';
+
+  @override
+  String get bulkCategory => 'الفئة';
+
+  @override
+  String bulkDeleteTitle(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'حذف $count رابط؟',
+      many: 'حذف $count رابطًا؟',
+      few: 'حذف $count روابط؟',
+      two: 'حذف رابطين؟',
+      one: 'حذف رابط واحد؟',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get bulkCategoryTitle => 'إضافة فئة';
+
+  @override
+  String bulkCategorySuggested(String host) {
+    return 'مقترح لـ $host';
+  }
+
+  @override
+  String get bulkCategoryAll => 'كل الفئات';
+
+  @override
+  String bulkCategoryApply(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'إضافة إلى $count رابط',
+      many: 'إضافة إلى $count رابطًا',
+      few: 'إضافة إلى $count روابط',
+      two: 'إضافة إلى رابطين',
+      one: 'إضافة إلى رابط واحد',
+    );
+    return '$_temp0';
+  }
 }

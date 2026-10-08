@@ -30,7 +30,7 @@ class _SplashScreenContent extends StatelessWidget {
       listener: (context, state) {
         if (state is SplashComplete) {
           if (context.mounted) {
-            context.pushReplacementNamed(MyRouteName.homeScreen);
+            context.goNamed(MyRouteName.today);
           }
         }
       },

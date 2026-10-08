@@ -170,4 +170,66 @@ void main() {
       );
     },
   );
+
+  group('deleteCategory', () {
+    Box<LinkModel> links() => Hive.box<LinkModel>(HiveConstants.linksBox);
+
+    LinkModel link(String id, List<String> categories) => LinkModel(
+      id: id,
+      url: 'https://example.com/$id',
+      title: id,
+      categories: categories,
+      createdAt: 1,
+      isSynced: true,
+    );
+
+    test('removes the name from every link that has it', () async {
+      const category = CategoryModel(id: 'c1', name: 'Recipes');
+      await Hive.box<CategoryModel>(
+        HiveConstants.categoriesBox,
+      ).put(category.id, category);
+      await links().put('a', link('a', ['Recipes', 'Travel']));
+      await links().put('b', link('b', ['Recipes']));
+      await links().put('c', link('c', ['Travel']));
+
+      await repository.deleteCategory(category.id);
+
+      expect(links().get('a')!.categories, ['Travel']);
+      expect(links().get('b')!.categories, isEmpty);
+      expect(links().get('c')!.categories, ['Travel']);
+    });
+
+    test('queues a sync update only for the links it changed', () async {
+      const category = CategoryModel(id: 'c1', name: 'Recipes');
+      await Hive.box<CategoryModel>(
+        HiveConstants.categoriesBox,
+      ).put(category.id, category);
+      await links().put('a', link('a', ['Recipes']));
+      await links().put('c', link('c', ['Travel']));
+
+      await repository.deleteCategory(category.id);
+
+      final linkOps = repository.pendingSyncOperations
+          .where((op) => op.entityType == SyncOperation.linkEntity)
+          .toList();
+      expect(linkOps.map((op) => op.entityId), ['a']);
+      expect(linkOps.single.operationType, SyncOperation.update);
+      expect(links().get('a')!.isSynced, isFalse);
+      expect(links().get('c')!.isSynced, isTrue);
+    });
+
+    test('an unknown id leaves links untouched', () async {
+      await links().put('a', link('a', ['Recipes']));
+
+      await repository.deleteCategory('missing');
+
+      expect(links().get('a')!.categories, ['Recipes']);
+      expect(
+        repository.pendingSyncOperations.where(
+          (op) => op.entityType == SyncOperation.linkEntity,
+        ),
+        isEmpty,
+      );
+    });
+  });
 }

@@ -38,6 +38,11 @@ void main() {
       // a saved duplicate. By default nothing matches, so add mode keeps
       // creating new links; the merge tests below override this.
       when(() => mockRepository.findByCanonicalUrl(any())).thenReturn(null);
+      // No category history by default, so suggestions come from the
+      // built-in site map only.
+      when(
+        () => mockRepository.getCategoryCountsForHost(any()),
+      ).thenReturn(const []);
     });
 
     setUpAll(() {
@@ -58,6 +63,60 @@ void main() {
     });
 
     // ─── Initialization ──────────────────────────────────────────────
+
+    group('category suggestions', () {
+      // A valid URL also starts a metadata fetch; these tests don't care.
+      setUp(() {
+        when(() => mockMetadataService.fetchMetadata(any())).thenAnswer(
+          (_) async =>
+              const LinkMetadata(title: '', description: '', image: ''),
+        );
+      });
+
+      blocTest<AddLinkBloc, AddLinkState>(
+        'a URL from a known site suggests its category',
+        build: buildBloc,
+        seed: () => const AddLinkForm(),
+        act: (bloc) =>
+            bloc.add(const AddLinkFieldChanged(url: 'https://youtu.be/abc')),
+        verify: (bloc) {
+          final form = bloc.state as AddLinkForm;
+          expect(form.suggestionHost, 'youtube.com');
+          expect(form.suggestedCategories, ['Watch']);
+        },
+      );
+
+      blocTest<AddLinkBloc, AddLinkState>(
+        'your own history for the site wins over the built-in map',
+        build: () {
+          when(
+            () => mockRepository.getCategoryCountsForHost('youtube.com'),
+          ).thenReturn(const [NamedCount('Recipes', 4)]);
+          return buildBloc();
+        },
+        seed: () => const AddLinkForm(),
+        act: (bloc) =>
+            bloc.add(const AddLinkFieldChanged(url: 'https://youtu.be/abc')),
+        verify: (bloc) => expect(
+          (bloc.state as AddLinkForm).suggestedCategories,
+          ['Recipes'],
+        ),
+      );
+
+      blocTest<AddLinkBloc, AddLinkState>(
+        'typing within the same site does not query history again',
+        build: buildBloc,
+        seed: () => const AddLinkForm(),
+        act: (bloc) async {
+          bloc.add(const AddLinkFieldChanged(url: 'https://youtu.be/a'));
+          bloc.add(const AddLinkFieldChanged(url: 'https://youtu.be/ab'));
+          bloc.add(const AddLinkFieldChanged(url: 'https://youtu.be/abc'));
+        },
+        verify: (_) => verify(
+          () => mockRepository.getCategoryCountsForHost('youtube.com'),
+        ).called(1),
+      );
+    });
 
     group('AddLinkInitialized', () {
       blocTest<AddLinkBloc, AddLinkState>(

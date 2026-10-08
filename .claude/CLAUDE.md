@@ -76,12 +76,18 @@ locator<ReceiveSharedIntent>()
 |---|---|---|---|
 | `MyRouteName.splash` | `/` | `SplashScreen` | — |
 | `MyRouteName.login` | `/login` | `LoginScreen` | — |
-| `MyRouteName.homeScreen` | `/home` | `HomeScreen` | — |
+| `MyRouteName.homeScreen` | `/home` | redirects to `/today` | — |
+| `MyRouteName.today` | `/today` | `TodayScreen` (tab 1, app home) | — |
+| `MyRouteName.library` | `/library` | `LibraryScreen` (tab 2) | — |
+| `MyRouteName.linkList` | `/library/links` | `LinkListScreen` | `LinkListArgs args` |
+| `MyRouteName.inbox` | `/inbox` | `InboxScreen` (tab 3) | — |
 | `MyRouteName.accountScreen` | `/accountScreen` | `AccountScreen` | — |
 | `MyRouteName.signup` | `/signup` | `SignupScreen` | — |
 | `MyRouteName.addLink` | `/addLink` | `AddLinkScreen` | `String? prefillUrl` |
 | `MyRouteName.editLink` | `/editLink` | `AddLinkScreen` | `LinkModel existingLink` |
 | `MyRouteName.conflicts` | `/conflicts` | `ConflictScreen` | — |
+
+Today, Library and Inbox are branches of a `StatefulShellRoute.indexedStack` wrapped in `AppShell` (`lib/features/shell/`), which owns the bottom nav and the press-back-twice-to-exit logic. Switch tabs with `context.goNamed`, not `pushNamed`.
 
 Always use `context.goNamed(MyRouteName.xxx)` — never raw strings or `Navigator`.
 
@@ -104,8 +110,11 @@ lib/
 │       └── navigation/route.dart # GoRouter config + MyRouteName constants
 ├── features/
 │   ├── authentication/          # LoginScreen, SignupScreen, AuthBloc
-│   ├── home/                    # HomeScreen, HomeBloc
-│   ├── links/                   # AddLinkScreen, LinkBloc, AddLinkBloc, LinkRepository, LinkModel
+│   ├── shell/                   # AppShell (tabs + bottom nav), ShellBloc, InboxBadgeCubit
+│   ├── today/                   # TodayScreen, TodayBloc (default tab)
+│   ├── library/                 # LibraryScreen + LibraryBloc; link_list/ (LinkListScreen, LinkListBloc, sheet cubits)
+│   ├── inbox/                   # InboxScreen, InboxBloc
+│   ├── links/                   # AddLinkScreen, AddLinkBloc, LinkManager, LinkRepository, LinkModel, LinkQuery
 │   ├── account/                 # AccountScreen, AccountBloc
 │   └── splash/                  # SplashScreen, SplashBloc
 └── sharedWidgets/               # NeoBrutalistButton, CustomTextField, LinkCard, bottom sheets, etc.

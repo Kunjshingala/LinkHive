@@ -15,6 +15,7 @@ import '../../../core/utils/validator/validator.dart';
 import '../../../core/extensions/context_extension.dart';
 import '../../../sharedWidgets/add_category_chip.dart';
 import '../../../sharedWidgets/category_chip.dart';
+import '../../../sharedWidgets/category_suggestion_box.dart';
 import '../../../sharedWidgets/common_app_bar.dart';
 import '../../../sharedWidgets/custom_button.dart';
 import '../../../sharedWidgets/custom_text_field.dart';
@@ -170,6 +171,10 @@ class _AddLinkContentState extends State<_AddLinkContent> {
       builder: (context, state) {
         final isSaving = state is AddLinkSaving;
         final isFetching = state is AddLinkForm && state.isFetchingMetadata;
+        final suggestionHost = state is AddLinkForm ? state.suggestionHost : '';
+        final suggestedCategories = state is AddLinkForm
+            ? state.suggestedCategories
+            : const <String>[];
 
         return Scaffold(
           backgroundColor: Theme.of(context).scaffoldBackgroundColor,
@@ -353,6 +358,19 @@ class _AddLinkContentState extends State<_AddLinkContent> {
                 // ─── Categories ────────────────────────────────────
                 _SectionLabel(context.l10n.addLinkCategoriesLabel),
                 SizedBox(height: AppSpacing.sm),
+                if (suggestedCategories.isNotEmpty) ...[
+                  CategorySuggestionBox(
+                    host: suggestionHost,
+                    suggestions: suggestedCategories,
+                    isSelected: _selectedCategories.contains,
+                    onTap: (cat) => setState(() {
+                      _selectedCategories.contains(cat)
+                          ? _selectedCategories.remove(cat)
+                          : _selectedCategories.add(cat);
+                    }),
+                  ),
+                  SizedBox(height: AppSpacing.sm + AppSpacing.xs),
+                ],
                 // No BlocBuilder here — AddLinkScreen is a standalone GoRouter
                 // route with its own context; LinkBloc is not in scope.
                 // Custom categories are loaded from the repository at initState
@@ -392,6 +410,30 @@ class _AddLinkContentState extends State<_AddLinkContent> {
                         },
                       );
                     }),
+
+                    // ── Selected names not listed above (a legacy built-in
+                    // like "Dev"), so they stay visible and can be removed ──
+                    ..._selectedCategories
+                        .where(
+                          (name) =>
+                              !CategoryUtils.suggestedCategories.contains(
+                                name,
+                              ) &&
+                              !_customCategories.any((c) => c.name == name),
+                        )
+                        .toList()
+                        .map(
+                          (name) => CategoryChip(
+                            label: CategoryUtils.getLocalizedCategory(
+                              context,
+                              name,
+                            ),
+                            isSelected: true,
+                            onTap: () => setState(
+                              () => _selectedCategories.remove(name),
+                            ),
+                          ),
+                        ),
 
                     // ── "+ New" chip ──
                     AddCategoryChip(

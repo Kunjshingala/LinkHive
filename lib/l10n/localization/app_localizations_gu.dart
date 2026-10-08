@@ -94,6 +94,27 @@ class AppLocalizationsGu extends AppLocalizations {
   String get catNews => 'સમાચાર';
 
   @override
+  String get catWatch => 'જુઓ';
+
+  @override
+  String get catShop => 'ખરીદી';
+
+  @override
+  String get catRecipes => 'રેસીપી';
+
+  @override
+  String get catTravel => 'પ્રવાસ';
+
+  @override
+  String get catLearn => 'શીખો';
+
+  @override
+  String get catWork => 'કામ';
+
+  @override
+  String get catIdeas => 'વિચારો';
+
+  @override
   String get addLinkUrlLabel => 'URL';
 
   @override
@@ -183,6 +204,12 @@ class AppLocalizationsGu extends AppLocalizations {
 
   @override
   String get todayArchivedConfirm => 'સંગ્રહિત કર્યું';
+
+  @override
+  String get todayBrowseLibrary => 'લાઇબ્રેરી જુઓ';
+
+  @override
+  String get libraryTitle => 'લાઇબ્રેરી';
 
   @override
   String get priorityHigh => 'ઉચ્ચ';
@@ -533,4 +560,132 @@ class AppLocalizationsGu extends AppLocalizations {
 
   @override
   String get versionPickerKeepOnly => 'ફક્ત આ જ રાખો';
+
+  @override
+  String libraryLinkCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count લિંક',
+      one: '1 લિંક',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get libraryUnread => 'ન વાંચેલી';
+
+  @override
+  String get librarySavedTwice => '2×+ સેવ કરેલી';
+
+  @override
+  String get libraryRead => 'વાંચેલી';
+
+  @override
+  String get librarySources => 'સ્રોત';
+
+  @override
+  String librarySeeAll(int count) {
+    return 'બધા $count';
+  }
+
+  @override
+  String get libraryAllLinks => 'બધી લિંક';
+
+  @override
+  String get listTabAll => 'બધી';
+
+  @override
+  String get listFilterTitle => 'ફિલ્ટર';
+
+  @override
+  String listFilterMatches(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count લિંક મળી',
+      one: '1 લિંક મળી',
+      zero: 'કોઈ લિંક મળી નહીં',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get listFilterSource => 'સ્રોત';
+
+  @override
+  String get listFilterReset => 'રીસેટ';
+
+  @override
+  String listFilterApply(int count) {
+    return '$count બતાવો';
+  }
+
+  @override
+  String get listSortTitle => 'ક્રમ પસંદ કરો';
+
+  @override
+  String get sortNewest => 'નવી પહેલા';
+
+  @override
+  String get sortOldest => 'જૂની પહેલા';
+
+  @override
+  String get sortPriority => 'પ્રાથમિકતા';
+
+  @override
+  String get sortMostSaved => 'સૌથી વધુ સેવ';
+
+  @override
+  String get sortSite => 'સાઇટ A–Z';
+
+  @override
+  String listSelectedCount(int count) {
+    return '$count પસંદ કરી';
+  }
+
+  @override
+  String get listSelectAll => 'બધી પસંદ કરો';
+
+  @override
+  String get listCancelSelection => 'પસંદગી રદ કરો';
+
+  @override
+  String get bulkMarkRead => 'વાંચેલી કરો';
+
+  @override
+  String get bulkCategory => 'શ્રેણી';
+
+  @override
+  String bulkDeleteTitle(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count લિંક કાઢી નાખવી?',
+      one: '1 લિંક કાઢી નાખવી?',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get bulkCategoryTitle => 'શ્રેણી ઉમેરો';
+
+  @override
+  String bulkCategorySuggested(String host) {
+    return '$host માટે સૂચન';
+  }
+
+  @override
+  String get bulkCategoryAll => 'બધી શ્રેણીઓ';
+
+  @override
+  String bulkCategoryApply(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count લિંકમાં ઉમેરો',
+      one: '1 લિંકમાં ઉમેરો',
+    );
+    return '$_temp0';
+  }
 }

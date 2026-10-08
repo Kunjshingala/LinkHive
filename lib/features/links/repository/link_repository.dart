@@ -16,6 +16,7 @@ import '../../../core/utils/category_utils.dart';
 import '../models/category_model.dart';
 import '../models/link_exceptions.dart';
 import '../models/link_model.dart';
+import '../models/link_query.dart';
 
 /// Repository that manages all [LinkModel] and [CategoryModel] persistence.
 ///
@@ -179,6 +180,184 @@ class LinkRepository {
   /// Number of quick-saved links waiting in the Inbox — drives the Home badge.
   int get quickCount => _linksBox.values.where((l) => l.isQuickSaved).length;
 
+  // ─── Library ───────────────────────────────────────────────────────────────
+  //
+  // In-memory filters over the links box, like [queryLinks]. Inbox
+  // (quick-saved) links are excluded everywhere: they get their own tab.
+
+  Iterable<LinkModel> get _libraryLinks =>
+      _linksBox.values.where((l) => !l.isQuickSaved);
+
+  /// One page of the Library list for [query].
+  List<LinkModel> findLinks(LinkQuery query, {int limit = 20, int offset = 0}) {
+    final matches = _matching(query).toList()..sort(_comparatorFor(query.sort));
+    return matches.skip(offset).take(limit).toList();
+  }
+
+  /// Number of links [findLinks] would return across all pages.
+  int countLinks(LinkQuery query) => _matching(query).length;
+
+  Iterable<LinkModel> _matching(LinkQuery query) {
+    final q = query.search.trim().toLowerCase();
+    final priorities = query.priorities.map((p) => p.toLowerCase()).toSet();
+
+    return _libraryLinks.where((l) {
+      if (query.readFilter == ReadFilter.unread && l.isRead) return false;
+      if (query.readFilter == ReadFilter.read && !l.isRead) return false;
+      if (l.shareCount < query.minShareCount) return false;
+      if (query.host != null && sourceHost(l.url) != query.host) return false;
+      if (query.categories.isNotEmpty &&
+          !l.categories.any(query.categories.contains)) {
+        return false;
+      }
+      if (priorities.isNotEmpty &&
+          !priorities.contains(l.priority.toLowerCase())) {
+        return false;
+      }
+      if (q.isNotEmpty &&
+          !l.title.toLowerCase().contains(q) &&
+          !l.description.toLowerCase().contains(q) &&
+          !l.url.toLowerCase().contains(q)) {
+        return false;
+      }
+      return true;
+    });
+  }
+
+  int Function(LinkModel, LinkModel) _comparatorFor(LinkSort sort) {
+    int newestFirst(LinkModel a, LinkModel b) =>
+        b.createdAt.compareTo(a.createdAt);
+    switch (sort) {
+      case LinkSort.newest:
+        return newestFirst;
+      case LinkSort.oldest:
+        return (a, b) => a.createdAt.compareTo(b.createdAt);
+      case LinkSort.priority:
+        return (a, b) {
+          final byPriority = _priorityRank(
+            a.priority,
+          ).compareTo(_priorityRank(b.priority));
+          return byPriority != 0 ? byPriority : newestFirst(a, b);
+        };
+      case LinkSort.mostSaved:
+        return (a, b) {
+          final byCount = b.shareCount.compareTo(a.shareCount);
+          return byCount != 0 ? byCount : newestFirst(a, b);
+        };
+      case LinkSort.site:
+        return (a, b) {
+          final bySite = sourceHost(a.url).compareTo(sourceHost(b.url));
+          return bySite != 0 ? bySite : newestFirst(a, b);
+        };
+    }
+  }
+
+  static int _priorityRank(String priority) =>
+      switch (priority.toLowerCase()) {
+        'high' => 0,
+        'low' => 2,
+        _ => 1,
+      };
+
+  /// Counts for the Library overview tiles.
+  LibraryStats getLibraryStats() {
+    var total = 0, unread = 0, high = 0, savedTwicePlus = 0;
+    for (final l in _libraryLinks) {
+      total++;
+      if (!l.isRead) unread++;
+      if (l.priority.toLowerCase() == 'high') high++;
+      if (l.shareCount >= 2) savedTwicePlus++;
+    }
+    return LibraryStats(
+      total: total,
+      unread: unread,
+      high: high,
+      savedTwicePlus: savedTwicePlus,
+      read: total - unread,
+    );
+  }
+
+  /// Sites links come from, most links first. Links without a host are left
+  /// out.
+  List<NamedCount> getSourceCounts() =>
+      _countBy(_libraryLinks.map((l) => [sourceHost(l.url)]));
+
+  /// Every category name used by at least one link, most links first.
+  ///
+  /// Built from the links rather than the categories box, so legacy built-in
+  /// names that are no longer offered still show up while links use them.
+  List<NamedCount> getCategoryCounts() =>
+      _countBy(_libraryLinks.map((l) => l.categories));
+
+  static List<NamedCount> _countBy(Iterable<Iterable<String>> keysPerLink) {
+    final counts = <String, int>{};
+    for (final keys in keysPerLink) {
+      for (final key in keys.toSet()) {
+        if (key.isEmpty) continue;
+        counts[key] = (counts[key] ?? 0) + 1;
+      }
+    }
+    final result = counts.entries.map((e) => NamedCount(e.key, e.value)).toList()
+      ..sort((a, b) {
+        final byCount = b.count.compareTo(a.count);
+        return byCount != 0 ? byCount : a.name.compareTo(b.name);
+      });
+    return result;
+  }
+
+  /// Category names [host]'s links already have, most used first, keeping only
+  /// names on at least [minLinks] links. Backs the category suggestions.
+  List<NamedCount> getCategoryCountsForHost(String host, {int minLinks = 2}) =>
+      _countBy(
+        _libraryLinks
+            .where((l) => sourceHost(l.url) == host)
+            .map((l) => l.categories),
+      ).where((c) => c.count >= minLinks).toList();
+
+  // ─── Bulk writes ───────────────────────────────────────────────────────────
+  //
+  // Each changed link is written and queued for sync exactly like the
+  // single-link versions. Links that wouldn't change are skipped.
+
+  Future<void> markLinksRead(Iterable<String> ids) => _updateEach(
+    ids,
+    (l) => l.isRead ? null : l.copyWith(isRead: true),
+  );
+
+  Future<void> addCategoryToLinks(Iterable<String> ids, String name) =>
+      _updateEach(
+        ids,
+        (l) => l.categories.contains(name)
+            ? null
+            : l.copyWith(categories: [...l.categories, name]),
+      );
+
+  Future<void> setPriorityForLinks(Iterable<String> ids, String priority) =>
+      _updateEach(
+        ids,
+        (l) => l.priority.toLowerCase() == priority.toLowerCase()
+            ? null
+            : l.copyWith(priority: priority),
+      );
+
+  Future<void> deleteLinks(Iterable<String> ids) async {
+    for (final id in ids.toSet()) {
+      if (_linksBox.containsKey(id)) await deleteLink(id);
+    }
+  }
+
+  Future<void> _updateEach(
+    Iterable<String> ids,
+    LinkModel? Function(LinkModel) change,
+  ) async {
+    for (final id in ids.toSet()) {
+      final link = _linksBox.get(id);
+      if (link == null) continue;
+      final updated = change(link);
+      if (updated != null) await updateLink(updated);
+    }
+  }
+
   // ─── Daily Resurface ───────────────────────────────────────────────────────
 
   /// Picks the single link the Daily Resurface engine should show today.
@@ -298,9 +477,7 @@ class LinkRepository {
         ? CategoryModel(id: _uuid.v4(), name: category.name)
         : category;
     final normalizedName = c.name.trim().toLowerCase();
-    final existsInBuiltIns = CategoryUtils.suggestedCategories.any(
-      (name) => name.toLowerCase() == normalizedName,
-    );
+    final existsInBuiltIns = CategoryUtils.isBuiltIn(normalizedName);
     final existsInCustom = _categoriesBox.values.any(
       (existing) => existing.name.trim().toLowerCase() == normalizedName,
     );
@@ -317,7 +494,24 @@ class LinkRepository {
     );
   }
 
+  /// Deletes the category and removes its name from every link that has it.
+  ///
+  /// Links store category names, not ids, so without the second step the
+  /// links would keep a category that no longer exists anywhere else.
   Future<void> deleteCategory(String id) async {
+    final name = _categoriesBox.get(id)?.name;
+    if (name != null) {
+      final tagged = _linksBox.values
+          .where((l) => l.categories.contains(name))
+          .toList();
+      for (final link in tagged) {
+        await updateLink(
+          link.copyWith(
+            categories: link.categories.where((c) => c != name).toList(),
+          ),
+        );
+      }
+    }
     await _categoriesBox.delete(id);
     await _syncTombstonesBox.put(
       '${SyncOperation.categoryEntity}:$id',

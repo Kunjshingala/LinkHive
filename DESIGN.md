@@ -167,7 +167,7 @@ components:
 
 ## Layout
 
-Single column, phone first. Page inset is 20px (`spacing.page`), and every screen's content aligns to it, including the app bar's leading button. Spacing is a 4px base on a 4 / 8 / 16 / 24 / 32 / 48 scale. Cards stack with 16px between them. Density is medium: one decision per card, titles up to two lines, metadata on one wrapped row. Today shows exactly one card at a time.
+Single column, phone first. Page inset is 20px (`spacing.page`), and every screen's content aligns to it, including the app bar's leading button. Spacing is a 4px base on a 4 / 8 / 16 / 24 / 32 / 48 scale. Cards stack with 16px between them. Density is medium: one decision per card, titles up to two lines, metadata on one wrapped row. Today shows exactly one card at a time. The Library's 2 x 2 count tiles are the one two-column block.
 
 ## Elevation & Depth
 
@@ -184,6 +184,11 @@ Radii: 8 (small chips), 12 (text fields, compact cards), 16 (cards, snackbars), 
 - **Today card:** 20px radius, 24px padding, 16:9 thumbnail with 14px radius and outline, title 20 at 700, up to two lines, "Saved N×" chip in `return` next to the metadata.
 - **Merge bar and snackbar:** 16px radius, outline, no shadow. A 32px circular badge on the left, message 15 at 600, actions right-aligned. The merge bar badge is `return`.
 - **Bottom sheet:** 20px top radius, top outline only, 24px padding. Used for confirmations, option lists and the "Which version?" picker. Never use `AlertDialog`.
+- **Bottom nav (`AppBottomNav`):** surface bar with a 2px ink top border, 64px plus safe area, three items (Today, Library, Inbox) with icon and label. The active item is an `accent-green` pill with a 2px ink outline; text on it stays ink in both themes. The Inbox badge is an `accent-orange` pill with an ink outline. Bulk selection replaces the nav with an action bar of four boxed cells separated by 2px ink rules.
+- **Library tiles:** 2 x 2 count tiles, 16px radius, 2px outline, one hard pastel shadow each (mint, peach, lemon, sky). Label 13 at 600 with a 16px icon, count in `headline-lg`. "Saved 2×+" is the only tile with the `return` fill.
+- **Count rows (sources, categories):** 52px pill rows (100 radius) with a 2px outline, a 32px circular letter avatar on a pastel, the name in `title-sm`, the count and a chevron. No shadow.
+- **Segmented tabs:** 44px bar, 12px radius, 2px outline, 2px ink dividers; the selected segment is `primary` fill with `onPrimary` text.
+- **Suggestion box:** `shadow-lemon` fill, 16px radius, 2px ink outline, "Suggested for <site>" heading with a sparkle icon, then category chips that stay light in both themes.
 - **Text field (`CustomTextField`):** 2px outline, 12px radius, focus outline is 3px in the primary color, error outline is 2px in `error`.
 - **States to design every time:** empty, loading, error, long text, and 1.3x text scale.
 
@@ -214,3 +219,7 @@ Radii: 8 (small chips), 12 (text fields, compact cards), 16 (cards, snackbars), 
 | 2026-10-07 | Purple `return` (#F4EBFF) reserved for "it came back" states | The app's memorable thing is that it brings links back; one color owning that meaning makes return states recognizable at a glance |
 | 2026-10-07 | Target typeface: Anek Latin / Devanagari / Gujarati + Readex Pro (Arabic) | One family across four scripts, OFL license, verified on Google Fonts. Adoption is a separate follow-up, not part of this change |
 | 2026-10-07 | Not adopted: stamped return states on cards, "return lane" Home, ticket-style Today | Suggested by both outside voices; recorded as ideas, no decision to build |
+| 2026-10-08 | Home split into Today / Library / Inbox tabs; the app opens on Today | One Home screen with search and two chip rows broke down at a few hundred links. See `docs/designs/library-redesign.md` |
+| 2026-10-08 | App bar buttons stay round, raised 44px `NeoBrutalistButton`s | Keeps the 100ms press, the one authored moment. Litverse's flat boxed header was considered and not adopted |
+| 2026-10-08 | Library's 2 x 2 count tiles are the one exception to single-column layout | Four counts side by side read faster than a list of four rows |
+| 2026-10-08 | Built-in categories changed to Watch, Read, Shop, Recipes, Travel, Learn, Work, Ideas | The old developer set (Dev, Docs, AI...) didn't match people saving from Instagram, YouTube and shops. Old names keep their labels on existing links |

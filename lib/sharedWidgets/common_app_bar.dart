@@ -21,6 +21,10 @@ class CommonAppBar extends StatelessWidget implements PreferredSizeWidget {
   final double? toolbarHeight;
   final SystemUiOverlayStyle? systemUiOverlayStyle;
 
+  /// Width of the [leading] slot. Defaults to fitting the auto back button;
+  /// pass [AppSpacing.appBarLeadingWidth] for a custom 44px leading button.
+  final double? leadingWidth;
+
   const CommonAppBar({
     super.key,
     this.leading,
@@ -33,6 +37,7 @@ class CommonAppBar extends StatelessWidget implements PreferredSizeWidget {
     this.elevation = 0,
     this.toolbarHeight,
     this.systemUiOverlayStyle,
+    this.leadingWidth,
   });
 
   @override
@@ -64,7 +69,7 @@ class CommonAppBar extends StatelessWidget implements PreferredSizeWidget {
       automaticallyImplyLeading: false, // Handled manually above
       leading: leadingWidget,
       // Widen the leading slot so the full-size button at pageH doesn't clip.
-      leadingWidth: usesAutoLeading ? AppSpacing.appBarLeadingWidth : null,
+      leadingWidth: leadingWidth ?? (usesAutoLeading ? AppSpacing.appBarLeadingWidth : null),
       title: customTitle ?? Text(titleText, style: Theme.of(context).textTheme.titleMedium!),
       centerTitle: centerTitle,
       actions: actions,

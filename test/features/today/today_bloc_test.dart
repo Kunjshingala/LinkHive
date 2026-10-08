@@ -1,5 +1,8 @@
+import 'dart:async';
+
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'package:link_hive/features/links/manager/link_manager.dart';
 import 'package:link_hive/features/links/models/link_model.dart';
 import 'package:link_hive/features/links/repository/link_repository.dart';
@@ -71,6 +74,9 @@ void main() {
     when(() => launcher.launchUrl(any(), any())).thenAnswer((_) async => true);
     when(() => repository.markLinkAsRead(any())).thenAnswer((_) async {});
     when(() => repository.markResurfaced(any())).thenAnswer((_) async {});
+    when(
+      () => repository.watchLinksBox(),
+    ).thenAnswer((_) => const Stream.empty());
   });
 
   group('TodayBloc load', () {
@@ -92,6 +98,48 @@ void main() {
       },
       act: (bloc) => bloc.add(const TodayLoadRequested()),
       expect: () => [const TodayLoading(), const TodayEmpty()],
+    );
+  });
+
+  group('TodayBloc as a tab', () {
+    late StreamController<BoxEvent> changes;
+
+    setUp(() {
+      changes = StreamController<BoxEvent>();
+      when(() => repository.watchLinksBox()).thenAnswer((_) => changes.stream);
+    });
+
+    tearDown(() => changes.close());
+
+    blocTest<TodayBloc, TodayState>(
+      'a links change re-picks without showing Loading again',
+      build: () {
+        stubCandidates([first, second]);
+        return TodayBloc(manager: LinkManager(repository: repository));
+      },
+      act: (bloc) async {
+        bloc.add(const TodayLoadRequested());
+        await Future<void>.delayed(Duration.zero);
+        changes.add(BoxEvent('1', null, true));
+      },
+      expect: () => [
+        const TodayLoading(),
+        TodayLoaded(first),
+        TodayLoaded(second),
+      ],
+    );
+
+    blocTest<TodayBloc, TodayState>(
+      'ignores changes before the first load',
+      build: () {
+        stubCandidates([first]);
+        return TodayBloc(manager: LinkManager(repository: repository));
+      },
+      act: (bloc) async {
+        changes.add(BoxEvent('1', null, true));
+        await Future<void>.delayed(Duration.zero);
+      },
+      expect: () => const <TodayState>[],
     );
   });
 

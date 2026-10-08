@@ -34,3 +34,9 @@ class TodayArchiveRequested extends TodayEvent {
 class TodaySnoozeRequested extends TodayEvent {
   const TodaySnoozeRequested();
 }
+
+/// Re-picks the candidate without showing the loading state. Sent when links
+/// change elsewhere, since Today stays alive as a tab.
+class TodayRefreshRequested extends TodayEvent {
+  const TodayRefreshRequested();
+}

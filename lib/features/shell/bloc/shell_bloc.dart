@@ -1,36 +1,36 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import 'home_event.dart';
-import 'home_state.dart';
+import 'shell_event.dart';
+import 'shell_state.dart';
 
-/// BLoC that handles home screen business logic including back button handling
-class HomeBloc extends Bloc<HomeEvent, HomeState> {
+/// BLoC that handles the tab shell's back button: press twice to exit
+class ShellBloc extends Bloc<ShellEvent, ShellState> {
   static const _backPressTimeout = Duration(seconds: 3);
 
-  HomeBloc() : super(const HomeInitial()) {
-    on<HomeBackPressed>(_onBackPressed);
+  ShellBloc() : super(const ShellInitial()) {
+    on<ShellBackPressed>(_onBackPressed);
   }
 
   /// Handle back button press
   /// First press: show message and update state
   /// Second press within timeout: allow exit
-  void _onBackPressed(HomeBackPressed event, Emitter<HomeState> emit) {
+  void _onBackPressed(ShellBackPressed event, Emitter<ShellState> emit) {
     final currentState = state;
 
-    if (currentState is HomeBackPressedOnce) {
+    if (currentState is ShellBackPressedOnce) {
       final now = DateTime.now();
       final difference = now.difference(currentState.pressTime);
 
       if (difference > _backPressTimeout) {
         // Timeout passed, treat as first press again
-        emit(HomeBackPressedOnce(pressTime: now));
+        emit(ShellBackPressedOnce(pressTime: now));
       } else {
         // Within timeout, allow exit
-        emit(const HomeCanExit());
+        emit(const ShellCanExit());
       }
     } else {
       // First press
-      emit(HomeBackPressedOnce(pressTime: DateTime.now()));
+      emit(ShellBackPressedOnce(pressTime: DateTime.now()));
     }
   }
 }

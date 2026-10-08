@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -26,13 +28,31 @@ part 'today_state.dart';
 class TodayBloc extends Bloc<TodayEvent, TodayState> {
   final LinkManager _manager;
 
+  /// Today is a tab that stays alive, so it re-picks when links change
+  /// elsewhere (read in the Library, shared again, deleted). Cancelled in
+  /// [close].
+  late final StreamSubscription<void> _boxSubscription;
+
   TodayBloc({required LinkManager manager})
     : _manager = manager,
       super(const TodayInitial()) {
     on<TodayLoadRequested>(_onLoadRequested);
+    on<TodayRefreshRequested>(_onRefreshRequested);
     on<TodayOpenRequested>(_onOpenRequested);
     on<TodayArchiveRequested>(_onArchiveRequested);
     on<TodaySnoozeRequested>(_onSnoozeRequested);
+
+    _boxSubscription = _manager.watchLinks().listen((_) {
+      if (state is TodayLoaded || state is TodayEmpty) {
+        add(const TodayRefreshRequested());
+      }
+    });
+  }
+
+  @override
+  Future<void> close() {
+    _boxSubscription.cancel();
+    return super.close();
   }
 
   Future<void> _onLoadRequested(
@@ -42,6 +62,11 @@ class TodayBloc extends Bloc<TodayEvent, TodayState> {
     emit(const TodayLoading());
     await _emitCandidate(emit);
   }
+
+  Future<void> _onRefreshRequested(
+    TodayRefreshRequested event,
+    Emitter<TodayState> emit,
+  ) => _emitCandidate(emit);
 
   Future<void> _onOpenRequested(
     TodayOpenRequested event,

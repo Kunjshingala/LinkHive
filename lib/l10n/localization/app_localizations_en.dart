@@ -94,6 +94,27 @@ class AppLocalizationsEn extends AppLocalizations {
   String get catNews => 'News';
 
   @override
+  String get catWatch => 'Watch';
+
+  @override
+  String get catShop => 'Shop';
+
+  @override
+  String get catRecipes => 'Recipes';
+
+  @override
+  String get catTravel => 'Travel';
+
+  @override
+  String get catLearn => 'Learn';
+
+  @override
+  String get catWork => 'Work';
+
+  @override
+  String get catIdeas => 'Ideas';
+
+  @override
   String get addLinkUrlLabel => 'URL';
 
   @override
@@ -183,6 +204,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get todayArchivedConfirm => 'Archived';
+
+  @override
+  String get todayBrowseLibrary => 'Browse Library';
+
+  @override
+  String get libraryTitle => 'Library';
 
   @override
   String get priorityHigh => 'High';
@@ -531,4 +558,132 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get versionPickerKeepOnly => 'Keep only this one';
+
+  @override
+  String libraryLinkCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count links',
+      one: '1 link',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get libraryUnread => 'Unread';
+
+  @override
+  String get librarySavedTwice => 'Saved 2×+';
+
+  @override
+  String get libraryRead => 'Read';
+
+  @override
+  String get librarySources => 'Sources';
+
+  @override
+  String librarySeeAll(int count) {
+    return 'All $count';
+  }
+
+  @override
+  String get libraryAllLinks => 'All links';
+
+  @override
+  String get listTabAll => 'All';
+
+  @override
+  String get listFilterTitle => 'Filter';
+
+  @override
+  String listFilterMatches(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count links match',
+      one: '1 link matches',
+      zero: 'No links match',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get listFilterSource => 'Source';
+
+  @override
+  String get listFilterReset => 'Reset';
+
+  @override
+  String listFilterApply(int count) {
+    return 'Show $count';
+  }
+
+  @override
+  String get listSortTitle => 'Sort by';
+
+  @override
+  String get sortNewest => 'Newest first';
+
+  @override
+  String get sortOldest => 'Oldest first';
+
+  @override
+  String get sortPriority => 'Priority';
+
+  @override
+  String get sortMostSaved => 'Most saved';
+
+  @override
+  String get sortSite => 'Site A–Z';
+
+  @override
+  String listSelectedCount(int count) {
+    return '$count selected';
+  }
+
+  @override
+  String get listSelectAll => 'Select all';
+
+  @override
+  String get listCancelSelection => 'Cancel selection';
+
+  @override
+  String get bulkMarkRead => 'Mark read';
+
+  @override
+  String get bulkCategory => 'Category';
+
+  @override
+  String bulkDeleteTitle(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Delete $count links?',
+      one: 'Delete 1 link?',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get bulkCategoryTitle => 'Add a category';
+
+  @override
+  String bulkCategorySuggested(String host) {
+    return 'Suggested for $host';
+  }
+
+  @override
+  String get bulkCategoryAll => 'All categories';
+
+  @override
+  String bulkCategoryApply(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Add to $count links',
+      one: 'Add to 1 link',
+    );
+    return '$_temp0';
+  }
 }

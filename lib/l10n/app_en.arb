@@ -30,6 +30,13 @@
   "catAI": "AI",
   "catFinance": "Finance",
   "catNews": "News",
+  "catWatch": "Watch",
+  "catShop": "Shop",
+  "catRecipes": "Recipes",
+  "catTravel": "Travel",
+  "catLearn": "Learn",
+  "catWork": "Work",
+  "catIdeas": "Ideas",
 
   "addLinkUrlLabel": "URL",
   "addLinkUrlHint": "https://example.com",
@@ -61,6 +68,8 @@
   "todaySnooze": "Snooze",
   "todaySnoozedConfirm": "Snoozed for later",
   "todayArchivedConfirm": "Archived",
+  "todayBrowseLibrary": "Browse Library",
+  "libraryTitle": "Library",
 
   "priorityHigh": "High",
   "priorityNormal": "Normal",
@@ -200,5 +209,69 @@
   "versionPickerNoTracking": "no tracking",
   "@versionPickerNoTracking": { "description": "Shown under a URL in the version picker when it has no query parameters." },
   "versionPickerKeepOnly": "Keep only this one",
-  "@versionPickerKeepOnly": { "description": "Button: make the selected URL the link's only URL, then open it." }
+  "@versionPickerKeepOnly": { "description": "Button: make the selected URL the link's only URL, then open it." },
+  "libraryLinkCount": "{count, plural, =1{1 link} other{{count} links}}",
+  "@libraryLinkCount": {
+    "description": "Under the Library title and list titles: how many links there are.",
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "libraryUnread": "Unread",
+  "librarySavedTwice": "Saved 2×+",
+  "@librarySavedTwice": { "description": "Library tile: links saved two or more times. Arabic should use words instead of ×." },
+  "libraryRead": "Read",
+  "@libraryRead": { "description": "Library tile and list tab: links already read or archived (adjective, not the verb)." },
+  "librarySources": "Sources",
+  "@librarySources": { "description": "Library section listing the websites links came from." },
+  "librarySeeAll": "All {count}",
+  "@librarySeeAll": {
+    "description": "Link next to the Sources heading that shows every source.",
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "libraryAllLinks": "All links",
+  "listTabAll": "All",
+  "listFilterTitle": "Filter",
+  "listFilterMatches": "{count, plural, =0{No links match} =1{1 link matches} other{{count} links match}}",
+  "@listFilterMatches": {
+    "description": "Live count at the top of the filter sheet.",
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "listFilterSource": "Source",
+  "listFilterReset": "Reset",
+  "listFilterApply": "Show {count}",
+  "@listFilterApply": {
+    "description": "Filter sheet button that applies the filters and shows the matching links.",
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "listSortTitle": "Sort by",
+  "sortNewest": "Newest first",
+  "sortOldest": "Oldest first",
+  "sortPriority": "Priority",
+  "sortMostSaved": "Most saved",
+  "sortSite": "Site A–Z",
+  "listSelectedCount": "{count} selected",
+  "@listSelectedCount": {
+    "description": "Header title while selecting links in bulk.",
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "listSelectAll": "Select all",
+  "listCancelSelection": "Cancel selection",
+  "bulkMarkRead": "Mark read",
+  "bulkCategory": "Category",
+  "bulkDeleteTitle": "{count, plural, =1{Delete 1 link?} other{Delete {count} links?}}",
+  "@bulkDeleteTitle": {
+    "description": "Confirmation title before deleting the selected links.",
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "bulkCategoryTitle": "Add a category",
+  "bulkCategorySuggested": "Suggested for {host}",
+  "@bulkCategorySuggested": {
+    "description": "Heading over category suggestions based on the website, e.g. 'Suggested for youtube.com'.",
+    "placeholders": { "host": { "type": "String" } }
+  },
+  "bulkCategoryAll": "All categories",
+  "bulkCategoryApply": "{count, plural, =1{Add to 1 link} other{Add to {count} links}}",
+  "@bulkCategoryApply": {
+    "description": "Button in the category sheet that adds the chosen category to the selected links.",
+    "placeholders": { "count": { "type": "int" } }
+  }
 }

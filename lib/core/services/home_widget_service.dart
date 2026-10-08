@@ -116,7 +116,7 @@ class HomeWidgetService {
       case 'open':
         unawaited(_openPick());
       case 'today':
-        router.pushNamed(MyRouteName.today);
+        router.goNamed(MyRouteName.today);
       case 'home':
         router.goNamed(MyRouteName.homeScreen);
       default:

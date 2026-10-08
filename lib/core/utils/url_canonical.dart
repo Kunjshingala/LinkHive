@@ -191,3 +191,16 @@ String versionKey(String url) {
       .join('&');
   return '${beforeHash.substring(0, q)}${query.isEmpty ? '' : '?$query'}$fragment';
 }
+
+/// The site [url] is from, used to group links by source in the Library.
+///
+/// Lowercase host without a `www.`/`m.` prefix, with `youtu.be` folded into
+/// `youtube.com` so both short and full YouTube links land in one group.
+/// Returns an empty string when [url] has no host.
+String sourceHost(String url) {
+  final normalized = normalizeUrl(url) ?? url.trim();
+  final host = Uri.tryParse(normalized)?.host.toLowerCase() ?? '';
+  if (host.isEmpty) return '';
+  final stripped = _stripPrefix(host);
+  return stripped == 'youtu.be' ? 'youtube.com' : stripped;
+}

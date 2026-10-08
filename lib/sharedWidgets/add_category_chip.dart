@@ -4,8 +4,6 @@ import '../core/constants/app_enums.dart';
 import '../core/theme/app_spacing.dart';
 import '../core/extensions/context_extension.dart';
 import '../l10n/localization/app_localizations.dart';
-import '../features/links/bloc/link_bloc.dart';
-import '../features/links/bloc/link_event.dart';
 import 'custom_button.dart';
 import 'custom_text_field.dart';
 
@@ -19,8 +17,8 @@ import 'custom_text_field.dart';
 /// (category filter row).
 ///
 /// The [onAdd] callback is invoked with the trimmed, non-empty name the user
-/// typed. The caller is responsible for dispatching [LinkCustomCategoryAdded]
-/// to the [LinkBloc].
+/// typed. The caller is responsible for saving it (for example through
+/// `LinkManager.addCategory`).
 class AddCategoryChip extends StatelessWidget {
   final void Function(String name) onAdd;
 

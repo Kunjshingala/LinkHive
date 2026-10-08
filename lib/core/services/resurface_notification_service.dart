@@ -130,6 +130,6 @@ class ResurfaceNotificationService {
   }
 
   void _navigateToToday() {
-    router.pushNamed(MyRouteName.today);
+    router.goNamed(MyRouteName.today);
   }
 }
