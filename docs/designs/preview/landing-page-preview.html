@@ -1,0 +1,895 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LinkHive Landing Preview</title>
+<style>
+/* Fonts load from the app's bundled files, the same way the live site will self-host them. */
+@font-face { font-family: "Anek Latin"; src: url("../../../assets/fonts/AnekLatin-Medium.ttf"); font-weight: 500; }
+@font-face { font-family: "Anek Latin"; src: url("../../../assets/fonts/AnekLatin-SemiBold.ttf"); font-weight: 600; }
+@font-face { font-family: "Anek Latin"; src: url("../../../assets/fonts/AnekLatin-Bold.ttf"); font-weight: 700; }
+@font-face { font-family: "Anek Latin"; src: url("../../../assets/fonts/AnekLatin-ExtraBold.ttf"); font-weight: 800; }
+@font-face { font-family: "Anek Devanagari"; src: url("../../../assets/fonts/AnekDevanagari-SemiBold.ttf"); font-weight: 500 700; }
+@font-face { font-family: "Anek Gujarati"; src: url("../../../assets/fonts/AnekGujarati-SemiBold.ttf"); font-weight: 500 700; }
+@font-face { font-family: "Readex Pro"; src: url("../../../assets/fonts/ReadexPro-SemiBold.ttf"); font-weight: 500 700; }
+
+/* Tokens mirror DESIGN.md / lib/core/theme/app_colors.dart */
+:root {
+  --ink: #1E1E1E; --page: #ECE2D5; --bg: #FFFFFF; --surface: #FFFFFF; --muted: #F3F4F6;
+  --text: #1E1E1E; --text2: #4B5563; --text3: #9CA3AF; --border: #1E1E1E;
+  --primary: #1E1E1E; --on-primary: #FFFFFF; --frame: #1E1E1E; --band: #1E1E1E; --on-band: #FFFFFF;
+  --mint: #B5E4CA; --peach: #FFDAB9; --sky: #BBE4FB; --rose: #FFD1DC; --lemon: #FDF0A6;
+  --green: #D1FADF; --orange: #FEF0C7; --blue: #D1E9FF; --return: #F4EBFF;
+  --success: #22C55E; --warning: #F59E0B; --error: #EF4444; --scrim: rgba(30,30,30,.45);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --page: #0B0B0B; --bg: #121212; --surface: #1E1E1E; --muted: #2C2C2C;
+    --text: #E5E7EB; --text2: #A3A3A3; --text3: #737373; --border: #E5E7EB;
+    --primary: #FFFFFF; --on-primary: #1E1E1E; --frame: #3A3A3A; --band: #1E1E1E; --scrim: rgba(0,0,0,.6);
+  }
+}
+:root[data-theme="dark"], .dk {
+  --page: #0B0B0B; --bg: #121212; --surface: #1E1E1E; --muted: #2C2C2C;
+  --text: #E5E7EB; --text2: #A3A3A3; --text3: #737373; --border: #E5E7EB;
+  --primary: #FFFFFF; --on-primary: #1E1E1E; --frame: #3A3A3A; --band: #1E1E1E; --scrim: rgba(0,0,0,.6);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--page); color: var(--text);
+  font-family: "Anek Latin", "Anek Devanagari", "Anek Gujarati", "Readex Pro", system-ui, sans-serif;
+  font-weight: 500; -webkit-font-smoothing: antialiased; overflow-x: hidden;
+}
+a { color: inherit; }
+svg.i { width: 22px; height: 22px; fill: currentColor; flex: none; }
+svg.i.sm { width: 18px; height: 18px; }
+svg.i.xs { width: 14px; height: 14px; }
+svg.i.lg { width: 28px; height: 28px; }
+
+/* ── Preview chrome (not part of the site) ───────────────── */
+.pv { background: var(--lemon); color: var(--ink); border-bottom: 2px solid var(--ink); }
+.pv-in { max-width: 1200px; margin: 0 auto; padding: 14px 16px; display: flex; flex-wrap: wrap; gap: 12px 20px; align-items: center; justify-content: space-between; }
+.pv b { font-size: 16px; font-weight: 800; }
+.pv p { font-size: 13px; font-weight: 600; max-width: 560px; }
+.pv-ctl { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.pv-ctl a { font-size: 13px; font-weight: 700; }
+.seg { display: inline-flex; border: 2px solid var(--ink); border-radius: 100px; overflow: hidden; height: 40px; background: #fff; }
+.seg button { border: 0; background: transparent; color: var(--ink); font: inherit; font-size: 13px; font-weight: 700; padding: 0 14px; cursor: pointer; }
+.seg button + button { border-left: 2px solid var(--ink); }
+.seg button.on { background: var(--ink); color: #fff; }
+.pv-btn { height: 40px; padding: 0 16px; border-radius: 100px; border: 2px solid var(--ink); background: #fff; color: var(--ink); font: inherit; font-size: 13px; font-weight: 700; cursor: pointer; box-shadow: 3px 3px 0 var(--ink); }
+.pv-btn:active { transform: translate(3px,3px); box-shadow: none; }
+.divider { max-width: 1200px; margin: 0 auto; padding: 56px 16px 0; }
+.divider span { display: inline-block; font-size: 12px; font-weight: 800; letter-spacing: .6px; text-transform: uppercase; background: var(--lemon); color: var(--ink); border: 2px solid var(--ink); border-radius: 100px; padding: 4px 12px; }
+.note { font-size: 12px; font-weight: 700; color: var(--ink); background: var(--orange); border: 2px solid var(--ink); border-radius: 8px; padding: 2px 8px; display: inline-block; }
+
+/* ── Site layout ─────────────────────────────────────────── */
+.wrap { max-width: 1120px; margin: 0 auto; padding: 0 16px; }
+section.s { padding: 88px 0; }
+.eyebrow { font-size: 12px; font-weight: 800; letter-spacing: .8px; text-transform: uppercase; color: var(--text2); margin-bottom: 12px; }
+h2.h { font-size: clamp(30px, 4.4vw, 46px); font-weight: 800; letter-spacing: -1.4px; line-height: 1.05; max-width: 760px; }
+.lead { font-size: 18px; line-height: 1.55; color: var(--text2); max-width: 620px; margin-top: 14px; }
+.hl { background: var(--return); color: var(--ink); border: 2px solid var(--ink); border-radius: 12px; padding: 0 10px; box-shadow: 3px 3px 0 var(--ink); display: inline-block; transform: rotate(-1.5deg); }
+
+/* Buttons (NeoBrutalistButton) */
+.btn { height: 52px; padding: 0 24px; border-radius: 100px; border: 2px solid var(--border); background: var(--surface); color: var(--text); font: inherit; font-size: 16px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; gap: 10px; box-shadow: 4px 4px 0 var(--mint); text-decoration: none; cursor: pointer; transition: transform .1s, box-shadow .1s; white-space: nowrap; }
+.btn.primary { background: var(--primary); color: var(--on-primary); box-shadow: 4px 4px 0 var(--success); }
+.btn:active { transform: translate(4px,4px); box-shadow: none; }
+.btn.sm { height: 44px; padding: 0 18px; font-size: 14px; }
+.ctas { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 30px; }
+
+/* Top bar */
+.bar { position: sticky; top: 0; z-index: 20; background: var(--surface); border-bottom: 2px solid var(--border); }
+.bar .wrap { height: 68px; display: flex; align-items: center; gap: 24px; }
+.logo { display: flex; align-items: center; gap: 10px; font-size: 22px; font-weight: 800; letter-spacing: -.6px; text-decoration: none; }
+.logo .mk { width: 38px; height: 38px; border-radius: 12px; border: 2px solid var(--ink); background: var(--lemon); display: grid; place-items: center; color: var(--ink); box-shadow: 3px 3px 0 var(--ink); }
+.bar nav { display: flex; gap: 22px; margin-left: auto; }
+.bar nav a { text-decoration: none; font-size: 15px; font-weight: 700; color: var(--text2); }
+.bar nav a:hover { color: var(--text); }
+@media (max-width: 760px) { .bar nav { display: none; } .bar .btn { margin-left: auto; } }
+
+/* Hero */
+.hero { padding: 72px 0 96px; }
+.hero h1 { font-size: clamp(40px, 6.4vw, 72px); font-weight: 800; letter-spacing: -2.4px; line-height: 1; }
+.hero .sub { font-size: 19px; line-height: 1.55; color: var(--text2); max-width: 540px; margin-top: 22px; }
+.facts { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 28px; }
+.fact { height: 32px; padding: 0 12px; border-radius: 100px; border: 2px solid var(--border); background: var(--surface); font-size: 13px; font-weight: 700; display: inline-flex; align-items: center; gap: 6px; }
+.fact.lang { background: var(--blue); color: var(--ink); border-color: var(--ink); }
+
+.heroA { display: grid; grid-template-columns: 1.15fr .85fr; gap: 48px; align-items: center; }
+.heroA .art { position: relative; justify-self: center; }
+.heroA .notif { position: absolute; left: -96px; top: 120px; width: 250px; z-index: 3; transform: rotate(-3deg); }
+.heroA .stamp { position: absolute; right: -34px; top: 150px; z-index: 3; transform: rotate(6deg); }
+.heroB { text-align: center; }
+.heroB .sub, .heroB h1 { margin-left: auto; margin-right: auto; }
+.heroB h1 { max-width: 900px; }
+.heroB .ctas, .heroB .facts { justify-content: center; }
+.heroB .fan { display: flex; justify-content: center; align-items: flex-end; margin-top: 64px; }
+.heroB .fan .phone:nth-child(1) { zoom: .82; transform: rotate(-5deg) translateX(40px); }
+.heroB .fan .phone:nth-child(2) { z-index: 2; position: relative; }
+.heroB .fan .phone:nth-child(3) { zoom: .82; transform: rotate(5deg) translateX(-40px); }
+body:not(.hero-b) .heroB, body.hero-b .heroA { display: none; }
+@media (max-width: 860px) {
+  .heroA { grid-template-columns: 1fr; }
+  .heroA .notif { left: -20px; top: 40px; }
+  .heroA .stamp { right: -6px; }
+  .heroB .fan .phone:nth-child(1), .heroB .fan .phone:nth-child(3) { display: none; }
+}
+
+/* Notification + stamp atoms */
+.ntf { background: var(--surface); border: 2px solid var(--border); border-radius: 16px; padding: 12px 14px; box-shadow: 4px 4px 0 var(--lemon); display: flex; gap: 10px; }
+.ntf .ap { width: 32px; height: 32px; border-radius: 10px; background: var(--lemon); border: 2px solid var(--ink); display: grid; place-items: center; color: var(--ink); flex: none; }
+.ntf small { font-size: 11px; font-weight: 700; color: var(--text3); letter-spacing: .3px; display: block; }
+.ntf b { font-size: 14px; font-weight: 800; display: block; margin-top: 1px; }
+.ntf span { font-size: 13px; color: var(--text2); display: block; line-height: 1.35; margin-top: 2px; }
+.stampchip { background: var(--return); color: var(--ink); border: 2px solid var(--ink); border-radius: 100px; padding: 8px 16px; font-size: 18px; font-weight: 800; box-shadow: 4px 4px 0 var(--ink); display: inline-flex; gap: 6px; align-items: center; }
+
+/* Problem */
+.graves { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-top: 44px; }
+.grave { background: var(--surface); border: 2px solid var(--border); border-radius: 16px; padding: 22px; box-shadow: 4px 4px 0 var(--rose); }
+.grave .top { display: flex; gap: 12px; align-items: center; }
+.av { width: 40px; height: 40px; border-radius: 12px; border: 2px solid var(--ink); display: grid; place-items: center; font-weight: 800; color: var(--ink); flex: none; }
+.grave h3 { font-size: 20px; font-weight: 700; letter-spacing: -.3px; }
+.grave .io { margin-top: 18px; display: grid; gap: 8px; }
+.grave .io div { display: flex; justify-content: space-between; font-size: 15px; font-weight: 600; border-top: 2px solid var(--muted); padding-top: 8px; }
+.grave .io .no { color: var(--error); font-weight: 800; }
+.grave .io .yes { color: var(--success); font-weight: 800; }
+.fix { margin-top: 28px; background: var(--return); color: var(--ink); border: 2px solid var(--ink); border-radius: 16px; padding: 18px 22px; display: flex; gap: 14px; align-items: center; font-size: 18px; font-weight: 700; box-shadow: 4px 4px 0 var(--ink); }
+@media (max-width: 860px) { .graves { grid-template-columns: 1fr; } }
+
+/* How it works */
+.steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px; margin-top: 48px; }
+.step { background: var(--surface); border: 2px solid var(--border); border-radius: 20px; padding: 24px 24px 0; overflow: hidden; display: flex; flex-direction: column; }
+.step .n { width: 36px; height: 36px; border-radius: 10px; border: 2px solid var(--ink); background: var(--lemon); color: var(--ink); display: grid; place-items: center; font-weight: 800; font-size: 16px; }
+.step h3 { font-size: 22px; font-weight: 800; letter-spacing: -.5px; margin-top: 16px; }
+.step p { font-size: 15px; line-height: 1.5; color: var(--text2); margin-top: 6px; }
+.step .crop { margin-top: 24px; height: 300px; overflow: hidden; display: flex; justify-content: center; }
+.step .crop .phone { zoom: .78; border-bottom: 0; border-radius: 36px 36px 0 0; box-shadow: none; }
+.step .crop.end { align-items: flex-end; }
+.step .crop.end .phone { border-bottom: 3px solid var(--frame); border-top: 0; border-radius: 0 0 36px 36px; }
+@media (max-width: 860px) { .steps { grid-template-columns: 1fr; } }
+
+/* Features */
+.feats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-top: 48px; }
+.feat { background: var(--surface); border: 2px solid var(--border); border-radius: 16px; padding: 24px; }
+.feat .ic { width: 48px; height: 48px; border-radius: 14px; border: 2px solid var(--ink); display: grid; place-items: center; color: var(--ink); }
+.feat h3 { font-size: 20px; font-weight: 800; letter-spacing: -.4px; margin-top: 18px; }
+.feat p { font-size: 15px; line-height: 1.5; color: var(--text2); margin-top: 6px; }
+.feat.ret { background: var(--return); }
+.feat.ret h3, .feat.ret p { color: var(--ink); }
+.sh-mint { box-shadow: 4px 4px 0 var(--mint); } .sh-peach { box-shadow: 4px 4px 0 var(--peach); }
+.sh-sky { box-shadow: 4px 4px 0 var(--sky); } .sh-rose { box-shadow: 4px 4px 0 var(--rose); }
+.sh-lemon { box-shadow: 4px 4px 0 var(--lemon); } .sh-ink { box-shadow: 4px 4px 0 var(--ink); }
+.f-blue { background: var(--blue); } .f-green { background: var(--green); } .f-orange { background: var(--orange); }
+.f-purple { background: var(--return); } .f-rose { background: var(--rose); } .f-lemon { background: var(--lemon); }
+.f-mint { background: var(--mint); } .f-sky { background: var(--sky); } .f-peach { background: var(--peach); }
+@media (max-width: 960px) { .feats { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 620px) { .feats { grid-template-columns: 1fr; } }
+
+/* Screens strip */
+.strip { display: flex; gap: 36px; overflow-x: auto; scroll-snap-type: x mandatory; padding: 44px 16px 28px; margin: 0 -16px; scrollbar-width: thin; }
+.strip figure { flex: none; scroll-snap-align: center; }
+.strip figcaption { text-align: center; font-size: 15px; font-weight: 700; margin-top: 18px; }
+.strip figcaption span { display: block; font-size: 13px; color: var(--text2); font-weight: 600; margin-top: 2px; }
+
+/* Use cases */
+.uses { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-top: 44px; }
+.use { background: var(--surface); border: 2px solid var(--border); border-radius: 16px; padding: 20px; }
+.use h3 { font-size: 18px; font-weight: 800; letter-spacing: -.3px; display: flex; align-items: center; gap: 10px; }
+.use p { font-size: 15px; color: var(--text2); line-height: 1.5; margin-top: 6px; }
+.use .ex { margin-top: 14px; border: 2px solid var(--border); border-radius: 12px; padding: 10px 12px; display: flex; gap: 10px; align-items: center; background: var(--bg); }
+.use .ex .av { width: 30px; height: 30px; border-radius: 8px; font-size: 13px; }
+.use .ex b { font-size: 13px; font-weight: 600; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.use .ex small { font-size: 12px; color: var(--text2); font-weight: 600; }
+.use .ex div { min-width: 0; }
+@media (max-width: 960px) { .uses { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 620px) { .uses { grid-template-columns: 1fr; } }
+
+/* Under the hood */
+.hood { display: grid; grid-template-columns: 1.2fr .8fr; gap: 32px; margin-top: 44px; align-items: start; }
+.diagram { background: var(--surface); border: 2px solid var(--border); border-radius: 20px; padding: 28px; box-shadow: 4px 4px 0 var(--sky); }
+.flow { display: grid; grid-template-columns: 1fr auto 1fr auto 1fr; gap: 10px; align-items: center; }
+.node { border: 2px solid var(--border); border-radius: 12px; padding: 12px; text-align: center; background: var(--bg); }
+.node b { display: block; font-size: 15px; font-weight: 800; }
+.node small { display: block; font-size: 12px; color: var(--text2); font-weight: 600; margin-top: 2px; line-height: 1.3; }
+.node.k { background: var(--lemon); color: var(--ink); border-color: var(--ink); }
+.node.k small { color: var(--ink); }
+.arr { font-size: 22px; font-weight: 800; color: var(--text2); text-align: center; }
+.flow2 { display: grid; grid-template-columns: 1fr auto 1fr; gap: 10px; align-items: center; margin-top: 14px; }
+.down { text-align: center; font-size: 22px; font-weight: 800; color: var(--text2); line-height: 1; margin: 6px 0; }
+.legendl { margin-top: 18px; font-size: 13px; color: var(--text2); line-height: 1.6; }
+.hi-list { display: grid; gap: 14px; }
+.hi-item { background: var(--surface); border: 2px solid var(--border); border-radius: 16px; padding: 16px 18px; }
+.hi-item b { font-size: 16px; font-weight: 800; display: block; }
+.hi-item span { font-size: 14px; color: var(--text2); line-height: 1.5; display: block; margin-top: 4px; }
+.tech { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 28px; }
+.tech span { height: 34px; padding: 0 14px; border-radius: 100px; border: 2px solid var(--border); background: var(--surface); font-size: 14px; font-weight: 700; display: inline-flex; align-items: center; }
+@media (max-width: 960px) { .hood { grid-template-columns: 1fr; } }
+@media (max-width: 620px) { .flow, .flow2 { grid-template-columns: 1fr; } .arr { transform: rotate(90deg); } }
+
+/* Maker */
+.maker { background: var(--surface); border: 2px solid var(--border); border-radius: 20px; padding: 28px; display: flex; gap: 24px; align-items: center; box-shadow: 4px 4px 0 var(--peach); margin-top: 32px; flex-wrap: wrap; }
+.maker .ph { width: 88px; height: 88px; border-radius: 24px; border: 2px solid var(--ink); background: var(--mint); color: var(--ink); display: grid; place-items: center; font-size: 30px; font-weight: 800; flex: none; }
+.maker h3 { font-size: 24px; font-weight: 800; letter-spacing: -.5px; }
+.maker p { font-size: 16px; color: var(--text2); line-height: 1.5; margin-top: 4px; max-width: 560px; }
+.maker .links { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px; }
+.maker > div { flex: 1; min-width: 240px; }
+
+/* Final band + footer */
+.band { background: var(--band); color: var(--on-band); border-top: 2px solid var(--border); border-bottom: 2px solid var(--border); padding: 80px 0; text-align: center; }
+.band h2 { font-size: clamp(34px, 5vw, 56px); font-weight: 800; letter-spacing: -1.6px; line-height: 1.05; }
+.band p { font-size: 18px; color: #D1D5DB; margin-top: 12px; }
+.band .ctas { justify-content: center; }
+.band .btn { border-color: #fff; }
+.band .btn.primary { background: #fff; color: var(--ink); }
+.band .btn:not(.primary) { background: var(--band); color: #fff; box-shadow: 4px 4px 0 var(--sky); }
+footer { padding: 28px 0 40px; }
+footer .wrap { display: flex; flex-wrap: wrap; gap: 12px 24px; justify-content: space-between; font-size: 14px; color: var(--text2); font-weight: 600; }
+footer .wrap div { display: flex; gap: 18px; flex-wrap: wrap; }
+
+/* ── Phone mockup (mirrors the app as built) ─────────────── */
+.phone {
+  width: 300px; height: 620px; border: 3px solid var(--frame); border-radius: 36px; background: var(--bg);
+  overflow: hidden; position: relative; display: flex; flex-direction: column; box-shadow: 6px 6px 0 var(--frame);
+  color: var(--text); text-align: left; flex: none;
+}
+.status { height: 28px; padding: 0 22px; display: flex; justify-content: space-between; align-items: center; font-size: 12px; font-weight: 700; flex: none; }
+.ahdr { height: 56px; flex: none; display: flex; align-items: center; gap: 10px; padding: 0 16px; }
+.ahdr .cb { width: 40px; height: 40px; border-radius: 100px; border: 2px solid var(--border); background: var(--surface); display: grid; place-items: center; box-shadow: 3px 3px 0 var(--mint); flex: none; }
+.ahdr .cb.hide { visibility: hidden; }
+.ahdr b { flex: 1; text-align: center; font-size: 19px; font-weight: 800; letter-spacing: -.3px; }
+.pb { flex: 1; overflow: hidden; padding: 6px 16px 90px; position: relative; }
+.field { height: 44px; border: 2px solid var(--border); border-radius: 12px; background: var(--surface); display: flex; align-items: center; gap: 8px; padding: 0 12px; color: var(--text3); font-size: 14px; }
+.quick { display: flex; gap: 7px; overflow: hidden; margin: 12px -16px 0; padding: 2px 16px 6px; }
+.qc { flex: none; height: 32px; padding: 0 11px; border-radius: 100px; border: 2px solid var(--border); background: var(--surface); font-size: 13px; font-weight: 700; display: inline-flex; align-items: center; gap: 5px; }
+.qc em { font-style: normal; font-size: 11px; font-weight: 800; padding: 0 6px; border-radius: 100px; background: var(--muted); }
+.qc.on { background: var(--primary); color: var(--on-primary); box-shadow: 3px 3px 0 var(--mint); }
+.qc.on em { background: var(--on-primary); color: var(--primary); }
+.qc.ret em { background: var(--return); color: var(--ink); }
+.drops { display: flex; gap: 7px; margin-top: 8px; }
+.drop { flex: 1; min-width: 0; height: 36px; border-radius: 12px; border: 2px solid var(--border); background: var(--surface); font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: space-between; padding: 0 6px 0 10px; }
+.drop.set { background: var(--green); color: var(--ink); border-color: var(--ink); }
+.month { font-size: 10px; font-weight: 700; letter-spacing: .5px; text-transform: uppercase; color: var(--text2); margin: 14px 0 8px; }
+.cards { display: grid; gap: 12px; }
+.card { border: 2px solid var(--border); border-radius: 16px; background: var(--surface); padding: 12px 10px 12px 12px; display: flex; gap: 10px; position: relative; box-shadow: 3px 4px 0 var(--mint); }
+.card .av { width: 34px; height: 34px; border-radius: 10px; font-size: 14px; border-width: 0; }
+.card .ct { flex: 1; min-width: 0; }
+.card .t { font-size: 14px; font-weight: 500; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.card .hst { font-size: 12px; color: var(--text2); font-weight: 600; margin-top: 2px; }
+.card .meta { display: flex; gap: 5px; align-items: center; flex-wrap: wrap; margin-top: 6px; }
+.card .dot { position: absolute; top: 9px; right: 9px; width: 7px; height: 7px; border-radius: 50%; background: var(--warning); }
+.pill { font-size: 10px; font-weight: 700; padding: 1px 8px; border-radius: 100px; background: var(--muted); letter-spacing: .3px; }
+.pill.hi { background: var(--orange); color: var(--ink); border: 1.5px solid var(--ink); }
+.pill.ret { background: var(--return); color: var(--ink); border: 1.5px solid var(--ink); }
+.time { font-size: 10px; font-weight: 700; color: var(--text3); }
+.fab { position: absolute; right: 16px; bottom: 86px; width: 52px; height: 52px; border-radius: 100px; border: 2px solid var(--ink); background: var(--primary); color: var(--on-primary); display: grid; place-items: center; box-shadow: 4px 4px 0 var(--success); z-index: 2; }
+.pnav { position: absolute; left: 12px; right: 12px; bottom: 14px; height: 58px; border-radius: 100px; border: 2px solid var(--border); background: var(--surface); box-shadow: 4px 4px 0 var(--border); display: flex; align-items: center; justify-content: space-around; padding: 0 6px; z-index: 2; }
+.pnav .it { height: 42px; padding: 0 14px; border-radius: 100px; display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 800; color: var(--text2); position: relative; }
+.pnav .it.on { background: var(--primary); color: var(--on-primary); }
+.pnav .bdg { position: absolute; top: 2px; right: 2px; min-width: 18px; height: 18px; padding: 0 4px; border-radius: 100px; background: var(--orange); color: var(--ink); border: 2px solid var(--ink); font-size: 10px; font-weight: 800; display: grid; place-items: center; }
+.tcard { border: 2px solid var(--border); border-radius: 20px; background: var(--surface); padding: 16px; }
+.tcard .img { aspect-ratio: 16/9; border-radius: 14px; border: 2px solid var(--border); background: var(--blue); display: grid; place-items: center; }
+.tcard .img .play { width: 46px; height: 46px; border-radius: 100px; background: #fff; border: 2px solid var(--ink); display: grid; place-items: center; color: var(--ink); }
+.tcard h4 { font-size: 18px; font-weight: 700; letter-spacing: -.3px; line-height: 1.3; margin-top: 14px; }
+.tcard .hst { font-size: 12px; font-weight: 600; margin-top: 6px; display: flex; gap: 8px; align-items: center; color: var(--text2); }
+.tcard p { font-size: 13px; color: var(--text2); line-height: 1.45; margin-top: 8px; }
+.pbtn { height: 46px; border-radius: 100px; border: 2px solid var(--border); background: var(--surface); font-size: 14px; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 6px; box-shadow: 4px 4px 0 var(--mint); flex: 1; }
+.pbtn.ink { background: var(--primary); color: var(--on-primary); box-shadow: 4px 4px 0 var(--success); }
+.prow { display: flex; gap: 10px; margin-top: 16px; }
+.ibox { border: 2px solid var(--border); border-radius: 16px; background: var(--surface); padding: 12px; box-shadow: 3px 4px 0 var(--peach); }
+.ibox .tp { display: flex; gap: 10px; }
+.ibox .acts { display: flex; gap: 8px; margin-top: 10px; }
+.ibox .acts .pbtn { height: 36px; font-size: 12px; box-shadow: 3px 3px 0 var(--mint); }
+.ibox .acts .x { width: 36px; height: 36px; border-radius: 100px; border: 2px solid var(--border); display: grid; place-items: center; color: var(--error); box-shadow: 3px 3px 0 var(--rose); flex: none; }
+.merge { position: absolute; left: 12px; right: 12px; bottom: 86px; z-index: 3; background: var(--surface); border: 2px solid var(--border); border-radius: 16px; padding: 10px 12px; display: flex; gap: 10px; align-items: center; }
+.merge .bd { width: 32px; height: 32px; border-radius: 100px; background: var(--return); border: 2px solid var(--ink); color: var(--ink); display: grid; place-items: center; flex: none; }
+.merge span { font-size: 13px; font-weight: 600; line-height: 1.3; flex: 1; }
+.merge a { font-size: 13px; font-weight: 800; text-decoration: none; }
+.scrim { position: absolute; inset: 0; background: var(--scrim); z-index: 2; }
+.osheet { position: absolute; left: 0; right: 0; bottom: 0; z-index: 3; background: var(--surface); border-top: 2px solid var(--border); border-radius: 20px 20px 0 0; padding: 12px 18px 24px; }
+.osheet .grab { width: 36px; height: 5px; border-radius: 100px; background: var(--text3); margin: 0 auto 12px; }
+.osheet h5 { font-size: 13px; font-weight: 700; color: var(--text2); }
+.apps { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 14px; }
+.apps div { display: flex; flex-direction: column; align-items: center; gap: 6px; font-size: 11px; font-weight: 700; color: var(--text2); text-align: center; }
+.apps i { width: 48px; height: 48px; border-radius: 14px; background: var(--muted); display: grid; place-items: center; font-style: normal; font-weight: 800; color: var(--text2); }
+.apps .me i { background: var(--lemon); border: 2px solid var(--ink); color: var(--ink); box-shadow: 3px 3px 0 var(--ink); }
+.apps .me { color: var(--text); }
+.vid { aspect-ratio: 16/9; background: var(--muted); border-radius: 12px; display: grid; place-items: center; color: var(--text3); }
+.ln { height: 10px; border-radius: 100px; background: var(--muted); margin-top: 10px; }
+.home { background: var(--sky); }
+.dk .home { background: #24323B; }
+.widget { margin: 30px 16px 0; background: var(--surface); border: 2px solid var(--border); border-radius: 22px; padding: 14px; box-shadow: 4px 4px 0 var(--border); }
+.widget small { font-size: 10px; font-weight: 800; letter-spacing: .6px; text-transform: uppercase; color: var(--text2); display: flex; justify-content: space-between; }
+.widget b { display: block; font-size: 16px; font-weight: 700; line-height: 1.3; margin-top: 8px; }
+.widget .wc { display: flex; gap: 8px; margin-top: 12px; }
+.widget .wc span { flex: 1; border: 2px solid var(--border); border-radius: 12px; padding: 6px 8px; font-size: 11px; font-weight: 700; color: var(--text2); }
+.widget .wc span b { font-size: 18px; margin: 0; color: var(--text); }
+.icons { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; padding: 30px 26px 0; }
+.icons i { aspect-ratio: 1; border-radius: 16px; background: rgba(255,255,255,.55); border: 2px solid rgba(30,30,30,.15); }
+
+/* ── Product Hunt kit ────────────────────────────────────── */
+.kit { padding: 32px 0 96px; }
+.kit h2.h { margin-bottom: 8px; }
+.kgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; margin-top: 36px; align-items: start; }
+.box { background: var(--surface); border: 2px solid var(--border); border-radius: 16px; padding: 22px; }
+.box h3 { font-size: 18px; font-weight: 800; letter-spacing: -.3px; margin-bottom: 14px; display: flex; justify-content: space-between; gap: 10px; align-items: center; }
+.box h3 small { font-size: 12px; color: var(--text2); font-weight: 700; }
+.listing { display: flex; gap: 16px; align-items: center; }
+.thumb { width: 96px; height: 96px; border-radius: 20px; border: 2px solid var(--ink); background: var(--lemon); display: grid; place-items: center; color: var(--ink); box-shadow: 4px 4px 0 var(--ink); flex: none; }
+.listing .tx { flex: 1; min-width: 0; }
+.listing b { font-size: 22px; font-weight: 800; letter-spacing: -.5px; display: block; }
+.listing .tx > span { font-size: 15px; color: var(--text2); display: block; margin-top: 2px; }
+.listing .tp { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px; }
+.listing .tp em { font-style: normal; font-size: 12px; font-weight: 700; padding: 2px 10px; border-radius: 100px; border: 2px solid var(--border); }
+.up { width: 64px; height: 72px; border-radius: 14px; border: 2px solid var(--border); display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 13px; font-weight: 800; flex: none; }
+.fields { display: grid; gap: 14px; }
+.fld label { font-size: 12px; font-weight: 800; letter-spacing: .5px; text-transform: uppercase; color: var(--text2); display: flex; justify-content: space-between; }
+.fld label em { font-style: normal; letter-spacing: 0; text-transform: none; }
+.fld label em.over { color: var(--error); }
+.fld div { margin-top: 6px; border: 2px solid var(--border); border-radius: 12px; padding: 10px 12px; font-size: 15px; line-height: 1.5; background: var(--bg); }
+.thumbs { display: flex; gap: 20px; align-items: flex-end; flex-wrap: wrap; }
+.thumbs figure { text-align: center; }
+.thumbs figcaption { font-size: 12px; color: var(--text2); font-weight: 700; margin-top: 10px; }
+.t240 { width: 240px; height: 240px; border-radius: 0; border: 2px solid var(--ink); background: var(--lemon); display: grid; place-items: center; color: var(--ink); position: relative; overflow: hidden; }
+.t240 .chip { position: absolute; bottom: 22px; right: 18px; background: var(--return); border: 2px solid var(--ink); border-radius: 100px; padding: 3px 10px; font-size: 14px; font-weight: 800; box-shadow: 3px 3px 0 var(--ink); transform: rotate(6deg); }
+.comment { font-size: 15px; line-height: 1.6; color: var(--text); }
+.comment p + p { margin-top: 10px; }
+.comment ul { margin: 8px 0 0 20px; }
+.comment li { margin-top: 4px; }
+.gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 500px), 1fr)); gap: 28px; margin-top: 28px; }
+.slide-wrap figcaption { font-size: 13px; font-weight: 700; color: var(--text2); margin-top: 10px; }
+.sbox { width: 100%; aspect-ratio: 1270 / 760; border: 2px solid var(--ink); overflow: hidden; position: relative; }
+.slide { width: 1270px; height: 760px; position: absolute; left: 0; top: 0; transform-origin: 0 0; overflow: hidden; container-type: inline-size; color: var(--ink); }
+.slide .cp { position: absolute; left: 6cqw; top: 50%; transform: translateY(-50%); width: 44cqw; }
+.slide .cp small { font-size: 1.9cqw; font-weight: 800; letter-spacing: .15cqw; text-transform: uppercase; display: block; margin-bottom: 1.6cqw; }
+.slide .cp b { font-size: 5.6cqw; font-weight: 800; letter-spacing: -.25cqw; line-height: 1.02; display: block; }
+.slide .cp span { font-size: 2.3cqw; font-weight: 600; line-height: 1.45; display: block; margin-top: 2cqw; color: #374151; }
+.slide .art { position: absolute; right: 5cqw; top: 7cqw; display: flex; gap: 2cqw; align-items: flex-start; }
+.slide .art .phone { zoom: 1; }
+.slide .art.trio .phone { zoom: .78; }
+.slide .tag { position: absolute; left: 6cqw; bottom: 4.5cqw; display: flex; gap: 1cqw; align-items: center; font-size: 1.9cqw; font-weight: 800; }
+.slide .tag i { width: 3.4cqw; height: 3.4cqw; border-radius: .9cqw; border: .2cqw solid var(--ink); background: var(--lemon); display: grid; place-items: center; font-style: normal; }
+@media (max-width: 960px) { .kgrid { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+
+<!-- Icon sprite: Material Symbols paths (the app uses Icons.*_rounded) -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="logo" viewBox="0 0 24 24"><path d="M12 1.6l9 5.2v10.4l-9 5.2-9-5.2V6.8zm0 4.2L6.7 8.9v6.2l5.3 3.1 5.3-3.1V8.9z"/><circle cx="12" cy="12" r="2.1"/></symbol>
+  <symbol id="i-today" viewBox="0 0 24 24"><path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V9h14v11zM7 11h5v5H7z"/></symbol>
+  <symbol id="i-library" viewBox="0 0 24 24"><path d="M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm16-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 10l-2.5-1.5L15 12V4h5v8z"/></symbol>
+  <symbol id="i-inbox" viewBox="0 0 24 24"><path d="M19 3H4.99C3.88 3 3 3.9 3 5v14c0 1.1.88 2 1.99 2H19c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 12h-4c0 1.66-1.35 3-3 3s-3-1.34-3-3H4.99V5H19v10z"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.47 6.47 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></symbol>
+  <symbol id="i-sort" viewBox="0 0 24 24"><path d="M3 18h6v-2H3v2zM3 6v2h18V6H3zm0 7h12v-2H3v2z"/></symbol>
+  <symbol id="i-add" viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></symbol>
+  <symbol id="i-person" viewBox="0 0 24 24"><path d="M12 6c1.1 0 2 .9 2 2s-.9 2-2 2-2-.9-2-2 .9-2 2-2m0 10c2.7 0 5.8 1.29 6 2H6c.23-.72 3.31-2 6-2m0-12C9.79 4 8 5.79 8 8s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm0 10c-2.67 0-8 1.34-8 4v3h16v-3c0-2.66-5.33-4-8-4z"/></symbol>
+  <symbol id="i-chev" viewBox="0 0 24 24"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></symbol>
+  <symbol id="i-close" viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></symbol>
+  <symbol id="i-select" viewBox="0 0 24 24"><path d="M22 7h-9v2h9V7zm0 8h-9v2h9v-2zM5.54 11L2 7.46l1.41-1.41 2.12 2.12 4.24-4.24 1.41 1.41L5.54 11zm0 8L2 15.46l1.41-1.41 2.12 2.12 4.24-4.24 1.41 1.41L5.54 19z"/></symbol>
+  <symbol id="i-open" viewBox="0 0 24 24"><path d="M19 19H5V5h7V3H5a2 2 0 0 0-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"/></symbol>
+  <symbol id="i-snooze" viewBox="0 0 24 24"><path d="M7.88 3.39L6.6 1.86 2 5.71l1.29 1.53 4.59-3.85zM22 5.72l-4.6-3.86-1.29 1.53 4.6 3.86L22 5.72zM12 4c-4.97 0-9 4.03-9 9s4.02 9 9 9a9 9 0 0 0 0-18zm0 16c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7zm-3-9h3.63L9 15.2V17h6v-2h-3.63L15 10.8V9H9v2z"/></symbol>
+  <symbol id="i-archive" viewBox="0 0 24 24"><path d="M20.54 5.23l-1.39-1.68C18.88 3.21 18.47 3 18 3H6c-.47 0-.88.21-1.16.55L3.46 5.23C3.17 5.57 3 6.02 3 6.5V19c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V6.5c0-.48-.17-.93-.46-1.27zM12 17.5L6.5 12H10v-2h4v2h3.5L12 17.5zM5.12 5l.81-1h12l.94 1H5.12z"/></symbol>
+  <symbol id="i-delete" viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></symbol>
+  <symbol id="i-play" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></symbol>
+  <symbol id="i-loop" viewBox="0 0 24 24"><path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46A7.93 7.93 0 0 0 20 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74A7.93 7.93 0 0 0 4 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z"/></symbol>
+  <symbol id="i-share" viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11A2.99 2.99 0 0 0 21 5a3 3 0 1 0-5.91.7L8.04 9.81A2.99 2.99 0 0 0 3 12a3 3 0 0 0 5.04 2.19l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92-1.31-2.92-2.92-2.92z"/></symbol>
+  <symbol id="i-bell" viewBox="0 0 24 24"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.89 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/></symbol>
+  <symbol id="i-bolt" viewBox="0 0 24 24"><path d="M11 21h-1l1-7H7.5c-.88 0-.33-.75-.31-.78C8.48 10.94 10.42 7.54 13.01 3h1l-1 7h3.51c.4 0 .62.19.4.66C12.97 17.55 11 21 11 21z"/></symbol>
+  <symbol id="i-filter" viewBox="0 0 24 24"><path d="M4.25 5.61C6.27 8.2 10 13 10 13v6c0 .55.45 1 1 1h2c.55 0 1-.45 1-1v-6s3.72-4.8 5.74-7.39A.998.998 0 0 0 18.95 4H5.04c-.83 0-1.3.95-.79 1.61z"/></symbol>
+  <symbol id="i-cloudoff" viewBox="0 0 24 24"><path d="M19.35 10.04A7.49 7.49 0 0 0 12 4c-1.48 0-2.85.43-4.01 1.17l1.46 1.46a5.497 5.497 0 0 1 8.05 4.87v.5H19c1.66 0 3 1.34 3 3 0 1.13-.64 2.11-1.56 2.62l1.45 1.45C23.16 18.16 24 16.68 24 15c0-2.64-2.05-4.78-4.65-4.96zM3 5.27l2.75 2.74C2.56 8.15 0 10.77 0 14c0 3.31 2.69 6 6 6h11.73l2 2L21 20.73 4.27 4 3 5.27zM7.73 10l8 8H6c-2.21 0-4-1.79-4-4s1.79-4 4-4h1.73z"/></symbol>
+  <symbol id="i-lang" viewBox="0 0 24 24"><path d="M12.87 15.07l-2.54-2.51.03-.03A17.52 17.52 0 0 0 14.07 6H17V4h-7V2H8v2H1v1.99h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11.76-2.04zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2l-4.5-12zm-2.62 7l1.62-4.33L19.12 17h-3.24z"/></symbol>
+  <symbol id="i-code" viewBox="0 0 24 24"><path d="M9.4 16.6L4.8 12l4.6-4.6L8 6l-6 6 6 6 1.4-1.4zm5.2 0l4.6-4.6-4.6-4.6L16 6l6 6-6 6-1.4-1.4z"/></symbol>
+  <symbol id="i-android" viewBox="0 0 24 24"><path d="M17.6 9.48l1.84-3.18c.16-.31.04-.69-.26-.85a.637.637 0 0 0-.83.22l-1.88 3.24a11.43 11.43 0 0 0-8.94 0L5.65 5.67a.643.643 0 0 0-.87-.2c-.28.18-.37.54-.22.83L6.4 9.48A10.81 10.81 0 0 0 1 18h22a10.81 10.81 0 0 0-5.4-8.52zM7 15.25a1.25 1.25 0 1 1 0-2.5 1.25 1.25 0 0 1 0 2.5zm10 0a1.25 1.25 0 1 1 0-2.5 1.25 1.25 0 0 1 0 2.5z"/></symbol>
+  <symbol id="i-gh" viewBox="0 0 24 24"><path d="M12 2a10 10 0 0 0-3.16 19.49c.5.09.68-.22.68-.48v-1.7c-2.78.6-3.37-1.34-3.37-1.34-.45-1.16-1.11-1.47-1.11-1.47-.91-.62.07-.6.07-.6 1 .07 1.53 1.03 1.53 1.03.89 1.53 2.34 1.09 2.91.83.09-.65.35-1.09.63-1.34-2.22-.25-4.55-1.11-4.55-4.94 0-1.09.39-1.98 1.03-2.68-.1-.25-.45-1.27.1-2.65 0 0 .84-.27 2.75 1.02a9.5 9.5 0 0 1 5 0c1.91-1.29 2.75-1.02 2.75-1.02.55 1.38.2 2.4.1 2.65.64.7 1.03 1.59 1.03 2.68 0 3.84-2.34 4.68-4.57 4.93.36.31.68.92.68 1.85v2.74c0 .27.18.58.69.48A10 10 0 0 0 12 2z"/></symbol>
+</svg>
+
+<!-- ── Phone screens, defined once and cloned into each data-screen slot ── -->
+<template id="nav-links"><div class="pnav"><div class="it on"><svg class="i sm"><use href="#i-library"/></svg>Links</div><div class="it"><svg class="i sm"><use href="#i-today"/></svg></div><div class="it"><svg class="i sm"><use href="#i-inbox"/></svg><span class="bdg">4</span></div></div></template>
+<template id="nav-today"><div class="pnav"><div class="it"><svg class="i sm"><use href="#i-library"/></svg></div><div class="it on"><svg class="i sm"><use href="#i-today"/></svg>Today</div><div class="it"><svg class="i sm"><use href="#i-inbox"/></svg><span class="bdg">4</span></div></div></template>
+<template id="nav-inbox"><div class="pnav"><div class="it"><svg class="i sm"><use href="#i-library"/></svg></div><div class="it"><svg class="i sm"><use href="#i-today"/></svg></div><div class="it on"><svg class="i sm"><use href="#i-inbox"/></svg>Inbox</div></div></template>
+
+<template id="scr-links">
+  <div class="status"><span>9:41</span><span>●●●</span></div>
+  <div class="ahdr"><span class="cb"><svg class="i sm"><use href="#i-person"/></svg></span><b>Links</b><span class="cb"><svg class="i sm"><use href="#i-select"/></svg></span></div>
+  <div class="pb">
+    <div class="field"><svg class="i sm"><use href="#i-search"/></svg>Search 512 links...</div>
+    <div class="quick"><span class="qc on">All <em>512</em></span><span class="qc">Unread <em>202</em></span><span class="qc">High <em>12</em></span><span class="qc ret">Saved 2×+ <em>9</em></span></div>
+    <div class="drops"><span class="drop">Source<svg class="i xs"><use href="#i-chev"/></svg></span><span class="drop">Category<svg class="i xs"><use href="#i-chev"/></svg></span><span class="drop">Newest<svg class="i xs"><use href="#i-sort"/></svg></span></div>
+    <div class="month">Today</div>
+    <div class="cards">
+      <div class="card"><span class="dot"></span><span class="av f-rose">H</span><div class="ct"><div class="t">How to make perfect Neapolitan pizza at home</div><div class="hst">youtube.com</div><div class="meta"><span class="pill">Recipes</span><span class="pill ret">Saved 2×</span><span class="time">2h ago</span></div></div></div>
+      <div class="card"><span class="dot"></span><span class="av f-orange">D</span><div class="ct"><div class="t">5 desk setups under ₹20k</div><div class="hst">instagram.com</div><div class="meta"><span class="pill">Shop</span><span class="time">5h ago</span></div></div></div>
+    </div>
+    <div class="month">This week</div>
+    <div class="cards">
+      <div class="card"><span class="av f-blue">F</span><div class="ct"><div class="t">Flutter state management in 12 minutes</div><div class="hst">youtube.com</div><div class="meta"><span class="pill hi">High</span><span class="pill">Learn</span><span class="time">3d ago</span></div></div></div>
+    </div>
+  </div>
+  <div class="fab"><svg class="i"><use href="#i-add"/></svg></div>
+  <slot data-nav="nav-links"></slot>
+</template>
+
+<template id="scr-today">
+  <div class="status"><span>9:00</span><span>●●●</span></div>
+  <div class="ahdr"><span class="cb hide"></span><b>Today</b><span class="cb hide"></span></div>
+  <div class="pb">
+    <div class="tcard">
+      <div class="img"><div class="play"><svg class="i"><use href="#i-play"/></svg></div></div>
+      <h4>Kyoto in 3 days: the complete first-timer guide</h4>
+      <div class="hst">youtube.com <span class="pill ret">Saved 2×</span></div>
+      <p>Temples, food streets and the day trips worth taking.</p>
+    </div>
+    <div class="prow"><span class="pbtn"><svg class="i xs"><use href="#i-snooze"/></svg>Snooze</span><span class="pbtn"><svg class="i xs"><use href="#i-archive"/></svg>Archive</span></div>
+    <div class="prow"><span class="pbtn ink"><svg class="i xs"><use href="#i-open"/></svg>Open</span></div>
+  </div>
+  <slot data-nav="nav-today"></slot>
+</template>
+
+<template id="scr-today-hi">
+  <div class="status"><span>9:00</span><span>●●●</span></div>
+  <div class="ahdr"><span class="cb hide"></span><b>आज</b><span class="cb hide"></span></div>
+  <div class="pb">
+    <div class="tcard">
+      <div class="img" style="background:var(--green)"><div class="play"><svg class="i"><use href="#i-play"/></svg></div></div>
+      <h4>घर पर पनीर टिक्का बनाने का आसान तरीका</h4>
+      <div class="hst">youtube.com <span class="pill ret">2× सहेजा गया</span></div>
+    </div>
+    <div class="prow"><span class="pbtn">स्नूज़ करें</span><span class="pbtn">संग्रहित करें</span></div>
+    <div class="prow"><span class="pbtn ink">खोलें</span></div>
+  </div>
+  <div class="pnav"><div class="it"><svg class="i sm"><use href="#i-library"/></svg></div><div class="it on"><svg class="i sm"><use href="#i-today"/></svg>आज</div><div class="it"><svg class="i sm"><use href="#i-inbox"/></svg></div></div>
+</template>
+
+<template id="scr-today-ar">
+  <div class="status" dir="rtl"><span>9:00</span><span>●●●</span></div>
+  <div class="ahdr" dir="rtl"><span class="cb hide"></span><b>اليوم</b><span class="cb hide"></span></div>
+  <div class="pb" dir="rtl">
+    <div class="tcard">
+      <div class="img" style="background:var(--peach)"><div class="play"><svg class="i"><use href="#i-play"/></svg></div></div>
+      <h4>أفضل عشرة مقاهٍ في دبي لعام ٢٠٢٦</h4>
+      <div class="hst">youtube.com <span class="pill ret">حُفظ مرتين</span></div>
+    </div>
+    <div class="prow"><span class="pbtn">تأجيل</span><span class="pbtn">أرشفة</span></div>
+    <div class="prow"><span class="pbtn ink">فتح</span></div>
+  </div>
+  <div class="pnav" dir="rtl"><div class="it"><svg class="i sm"><use href="#i-library"/></svg></div><div class="it on"><svg class="i sm"><use href="#i-today"/></svg>اليوم</div><div class="it"><svg class="i sm"><use href="#i-inbox"/></svg></div></div>
+</template>
+
+<template id="scr-inbox">
+  <div class="status"><span>9:41</span><span>●●●</span></div>
+  <div class="ahdr"><span class="cb hide"></span><b>Inbox</b><span class="cb hide"></span></div>
+  <div class="pb">
+    <div class="cards">
+      <div class="ibox"><div class="tp"><span class="av f-orange" style="width:34px;height:34px;font-size:14px;border:0">R</span><div class="ct" style="flex:1;min-width:0"><div class="t" style="font-size:14px;line-height:1.3">One-pan creamy garlic pasta (reel)</div><div class="hst" style="font-size:12px;color:var(--text2);font-weight:600">instagram.com · just now</div></div></div><div class="acts"><span class="pbtn">Add details</span><span class="x"><svg class="i xs"><use href="#i-delete"/></svg></span></div></div>
+      <div class="ibox"><div class="tp"><span class="av f-blue" style="width:34px;height:34px;font-size:14px;border:0">S</span><div class="ct" style="flex:1;min-width:0"><div class="t" style="font-size:14px;line-height:1.3">Senior Flutter Developer, remote</div><div class="hst" style="font-size:12px;color:var(--text2);font-weight:600">linkedin.com · 1h ago</div></div></div><div class="acts"><span class="pbtn">Add details</span><span class="x"><svg class="i xs"><use href="#i-delete"/></svg></span></div></div>
+      <div class="ibox"><div class="tp"><span class="av f-lemon" style="width:34px;height:34px;font-size:14px;border:0">M</span><div class="ct" style="flex:1;min-width:0"><div class="t" style="font-size:14px;line-height:1.3">Mechanical keyboard, hot-swap, 75%</div><div class="hst" style="font-size:12px;color:var(--text2);font-weight:600">amazon.in · yesterday</div></div></div><div class="acts"><span class="pbtn">Add details</span><span class="x"><svg class="i xs"><use href="#i-delete"/></svg></span></div></div>
+    </div>
+  </div>
+  <slot data-nav="nav-inbox"></slot>
+</template>
+
+<template id="scr-share">
+  <div class="status"><span>9:41</span><span>●●●</span></div>
+  <div class="pb" style="padding-top:12px">
+    <div class="vid"><svg class="i lg"><use href="#i-play"/></svg></div>
+    <div class="ln" style="width:90%;height:14px;margin-top:14px"></div>
+    <div class="ln" style="width:60%"></div>
+    <div class="ln" style="width:75%"></div>
+  </div>
+  <div class="scrim"></div>
+  <div class="osheet">
+    <div class="grab"></div>
+    <h5>Share to</h5>
+    <div class="apps">
+      <div class="me"><i><svg class="i"><use href="#logo"/></svg></i>LinkHive</div>
+      <div><i>M</i>Messages</div>
+      <div><i>N</i>Notes</div>
+      <div><i>⧉</i>Copy link</div>
+    </div>
+  </div>
+</template>
+
+<template id="scr-merge">
+  <div class="status"><span>9:41</span><span>●●●</span></div>
+  <div class="ahdr"><span class="cb"><svg class="i sm"><use href="#i-person"/></svg></span><b>Links</b><span class="cb"><svg class="i sm"><use href="#i-select"/></svg></span></div>
+  <div class="pb">
+    <div class="field"><svg class="i sm"><use href="#i-search"/></svg>Search 512 links...</div>
+    <div class="month">Today</div>
+    <div class="cards">
+      <div class="card" style="background:var(--return);color:var(--ink)"><span class="av f-blue" style="border:2px solid var(--ink)">K</span><div class="ct"><div class="t">Kyoto in 3 days: the complete first-timer guide</div><div class="hst" style="color:var(--ink)">youtube.com</div><div class="meta"><span class="pill ret">Saved 2×</span><span class="pill" style="background:#fff;color:var(--ink)">Travel</span></div></div></div>
+      <div class="card"><span class="av f-rose">H</span><div class="ct"><div class="t">How to make perfect Neapolitan pizza at home</div><div class="hst">youtube.com</div><div class="meta"><span class="pill">Recipes</span><span class="time">2h ago</span></div></div></div>
+    </div>
+  </div>
+  <div class="merge"><span class="bd"><svg class="i xs"><use href="#i-loop"/></svg></span><span>Already saved 3 weeks ago, it'll come back in Today</span></div>
+  <slot data-nav="nav-links"></slot>
+</template>
+
+<template id="scr-widget">
+  <div class="status"><span>9:41</span><span>●●●</span></div>
+  <div class="pb home" style="padding:0">
+    <div class="widget">
+      <small><span>Today's pick</span><span>LinkHive</span></small>
+      <b>Kyoto in 3 days: the complete first-timer guide</b>
+      <div class="wc"><span><b>4</b>Inbox</span><span><b>202</b>Unread</span></div>
+    </div>
+    <div class="icons"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+  </div>
+</template>
+
+<!-- ── Preview chrome ── -->
+<div class="pv">
+  <div class="pv-in">
+    <div>
+      <b>LinkHive landing page + Product Hunt kit · preview</b>
+      <p>Mockups stand in for real screenshots, which get captured from the phone after approval. Pick a hero option, try dark mode, then scroll down for the Product Hunt kit.</p>
+    </div>
+    <div class="pv-ctl">
+      <div class="seg" id="heroseg"><button class="on" data-hero="a" type="button">Hero A · split</button><button data-hero="b" type="button">Hero B · centred</button></div>
+      <button class="pv-btn" id="theme" type="button">Dark mode</button>
+      <a href="#ph">Jump to Product Hunt kit ↓</a>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════ LANDING PAGE ══════════════════ -->
+<header class="bar">
+  <div class="wrap">
+    <a class="logo" href="#top"><span class="mk"><svg class="i"><use href="#logo"/></svg></span>LinkHive</a>
+    <nav><a href="#how">How it works</a><a href="#features">Features</a><a href="#screens">Screens</a><a href="#hood">Under the hood</a></nav>
+    <a class="btn sm" href="#"><svg class="i sm"><use href="#i-gh"/></svg>GitHub</a>
+  </div>
+</header>
+
+<main id="top">
+  <!-- 1. Hero -->
+  <section class="hero">
+    <div class="wrap heroA">
+      <div>
+        <h1>You saved it.<br><span class="hl">LinkHive</span> brings it back.</h1>
+        <p class="sub">Share a link from Instagram, YouTube, LinkedIn or any app. LinkHive saves it in one tap, then brings one back each morning, so your saves stop piling up unread.</p>
+        <div class="ctas">
+          <a class="btn primary" href="#"><svg class="i sm"><use href="#i-android"/></svg>Get it on Android</a>
+          <a class="btn" href="#"><svg class="i sm"><use href="#i-gh"/></svg>View code on GitHub</a>
+        </div>
+        <div class="facts">
+          <span class="fact">Free</span><span class="fact">Works offline</span><span class="fact">Android + iOS</span>
+          <span class="fact lang">English · हिन्दी · ગુજરાતી · العربية</span>
+        </div>
+      </div>
+      <div class="art">
+        <div class="ntf notif"><span class="ap"><svg class="i sm"><use href="#logo"/></svg></span><div><small>LINKHIVE · 9:00</small><b>Links waiting</b><span>Kyoto in 3 days: the complete first-timer guide</span></div></div>
+        <div class="phone" data-screen="scr-today"></div>
+        <div class="stamp"><span class="stampchip"><svg class="i sm"><use href="#i-loop"/></svg>Saved 2×</span></div>
+      </div>
+    </div>
+
+    <div class="wrap heroB">
+      <h1>You saved it. <span class="hl">LinkHive</span> brings it back.</h1>
+      <p class="sub">Share a link from Instagram, YouTube, LinkedIn or any app. LinkHive saves it in one tap, then brings one back each morning, so your saves stop piling up unread.</p>
+      <div class="ctas">
+        <a class="btn primary" href="#"><svg class="i sm"><use href="#i-android"/></svg>Get it on Android</a>
+        <a class="btn" href="#"><svg class="i sm"><use href="#i-gh"/></svg>View code on GitHub</a>
+      </div>
+      <div class="facts">
+        <span class="fact">Free</span><span class="fact">Works offline</span><span class="fact">Android + iOS</span>
+        <span class="fact lang">English · हिन्दी · ગુજરાતી · العربية</span>
+      </div>
+      <div class="fan">
+        <div class="phone" data-screen="scr-inbox"></div>
+        <div class="phone" data-screen="scr-today"></div>
+        <div class="phone" data-screen="scr-links"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2. Problem -->
+  <section class="s" style="padding-top:24px">
+    <div class="wrap">
+      <div class="eyebrow">The problem</div>
+      <h2 class="h">Every app has a save button. None of them give it back.</h2>
+      <p class="lead">Your saved links are spread over three apps, and none of those apps ever shows them to you again.</p>
+      <div class="graves">
+        <div class="grave"><div class="top"><span class="av f-rose">I</span><h3>Instagram saves</h3></div><div class="io"><div>Goes in<span class="yes">Every day</span></div><div>Comes back<span class="no">Never</span></div></div></div>
+        <div class="grave"><div class="top"><span class="av f-blue">L</span><h3>LinkedIn saves</h3></div><div class="io"><div>Goes in<span class="yes">Every week</span></div><div>Comes back<span class="no">Never</span></div></div></div>
+        <div class="grave"><div class="top"><span class="av f-green">W</span><h3>Chat with yourself</h3></div><div class="io"><div>Goes in<span class="yes">All the time</span></div><div>Comes back<span class="no">Lost in the scroll</span></div></div></div>
+      </div>
+      <div class="fix"><svg class="i lg"><use href="#i-loop"/></svg>LinkHive is one place for all of them, and it gives them back.</div>
+    </div>
+  </section>
+
+  <!-- 3. How it works -->
+  <section class="s" id="how" style="padding-top:24px">
+    <div class="wrap">
+      <div class="eyebrow">How it works</div>
+      <h2 class="h">Share it. Forget it. Get it back.</h2>
+      <div class="steps">
+        <div class="step sh-mint"><span class="n">1</span><h3>Share it</h3><p>Tap Share in any app and pick LinkHive. It's saved. No form to fill in.</p><div class="crop end"><div class="phone" data-screen="scr-share"></div></div></div>
+        <div class="step sh-peach"><span class="n">2</span><h3>Forget it</h3><p>It waits in your Inbox. Add a category later, or never.</p><div class="crop"><div class="phone" data-screen="scr-inbox"></div></div></div>
+        <div class="step sh-sky"><span class="n">3</span><h3>Get it back</h3><p>Every morning LinkHive picks one link. Open it, snooze it or archive it.</p><div class="crop"><div class="phone" data-screen="scr-today"></div></div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4. Features -->
+  <section class="s" id="features" style="padding-top:24px">
+    <div class="wrap">
+      <div class="eyebrow">Features</div>
+      <h2 class="h">Built for the 500th link, not the 5th.</h2>
+      <div class="feats">
+        <div class="feat sh-mint"><span class="ic f-mint"><svg class="i"><use href="#i-bolt"/></svg></span><h3>One-tap capture</h3><p>Saving takes the same tap as any share. Title and preview fill in afterwards.</p></div>
+        <div class="feat sh-lemon"><span class="ic f-lemon"><svg class="i"><use href="#i-bell"/></svg></span><h3>One link a day</h3><p>A 9am reminder, a Today screen and a home screen widget bring back one link at a time.</p></div>
+        <div class="feat ret sh-ink"><span class="ic" style="background:#fff"><svg class="i"><use href="#i-loop"/></svg></span><h3>Saved twice? Noted.</h3><p>Share the same link again and LinkHive merges it and marks it Saved 2×. Those come back first.</p></div>
+        <div class="feat sh-sky"><span class="ic f-sky"><svg class="i"><use href="#i-filter"/></svg></span><h3>Find anything</h3><p>Search, quick filters and Source / Category / Sort, made for hundreds of links.</p></div>
+        <div class="feat sh-peach"><span class="ic f-peach"><svg class="i"><use href="#i-cloudoff"/></svg></span><h3>Offline first</h3><p>Works without an account or a connection. Sign in and it syncs, with a screen to settle conflicts.</p></div>
+        <div class="feat sh-rose"><span class="ic f-rose"><svg class="i"><use href="#i-lang"/></svg></span><h3>Speaks your language</h3><p>English, Hindi, Gujarati and Arabic, right-to-left included. Light and dark.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5. Screens -->
+  <section class="s" id="screens" style="padding-top:24px">
+    <div class="wrap">
+      <div class="eyebrow">Screens</div>
+      <h2 class="h">Bold, simple, one-handed.</h2>
+      <p class="lead"><span class="note">Preview</span> On the live page these are real screenshots from the app.</p>
+      <div class="strip">
+        <figure><div class="phone" data-screen="scr-links"></div><figcaption>Links<span>Everything, one tap from any filter</span></figcaption></figure>
+        <figure><div class="phone" data-screen="scr-today"></div><figcaption>Today<span>One link a day</span></figcaption></figure>
+        <figure><div class="phone" data-screen="scr-inbox"></div><figcaption>Inbox<span>Saved in a hurry, sort later</span></figcaption></figure>
+        <figure><div class="phone" data-screen="scr-merge"></div><figcaption>Saved again<span>Merged, never duplicated</span></figcaption></figure>
+        <figure><div class="phone" data-screen="scr-widget"></div><figcaption>Widget<span>Today's pick on your home screen</span></figcaption></figure>
+        <figure><div class="phone dk" data-screen="scr-links"></div><figcaption>Dark mode<span>Follows your system</span></figcaption></figure>
+        <figure><div class="phone" data-screen="scr-today-hi"></div><figcaption>हिन्दी<span>Also Gujarati and Arabic</span></figcaption></figure>
+      </div>
+    </div>
+  </section>
+
+  <!-- 6. Use cases -->
+  <section class="s" style="padding-top:24px">
+    <div class="wrap">
+      <div class="eyebrow">Use cases</div>
+      <h2 class="h">What people keep in it.</h2>
+      <div class="uses">
+        <div class="use sh-rose"><h3>Recipes from Reels</h3><p>The pasta you saw at midnight comes back on Saturday morning.</p><div class="ex"><span class="av f-rose">R</span><div><b>One-pan creamy garlic pasta</b><small>instagram.com · Recipes</small></div></div></div>
+        <div class="use sh-sky"><h3>A trip you're planning</h3><p>Every video and guide in one place, filtered by Travel.</p><div class="ex"><span class="av f-blue">K</span><div><b>Kyoto in 3 days: first-timer guide</b><small>youtube.com · Travel</small></div></div></div>
+        <div class="use sh-lemon"><h3>Things to buy later</h3><p>A wishlist from every shop, with no account on any of them.</p><div class="ex"><span class="av f-lemon">M</span><div><b>Mechanical keyboard, hot-swap, 75%</b><small>amazon.in · Shop</small></div></div></div>
+        <div class="use sh-mint"><h3>Talks and courses</h3><p>Mark the important ones High, and they stay at the top.</p><div class="ex"><span class="av f-green">F</span><div><b>Flutter state management in 12 minutes</b><small>youtube.com · Learn · High</small></div></div></div>
+        <div class="use sh-peach"><h3>Job posts</h3><p>Save from LinkedIn now, apply when you're at a laptop.</p><div class="ex"><span class="av f-orange">S</span><div><b>Senior Flutter Developer, remote</b><small>linkedin.com · Work</small></div></div></div>
+        <div class="use sh-rose"><h3>Long reads</h3><p>Articles that deserve 10 quiet minutes, one per morning.</p><div class="ex"><span class="av f-purple">W</span><div><b>Why we forget what we save</b><small>medium.com · Read</small></div></div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 7. Under the hood -->
+  <section class="s" id="hood" style="padding-top:24px">
+    <div class="wrap">
+      <div class="eyebrow">Under the hood</div>
+      <h2 class="h">Offline-first Flutter, built to survive bad networks.</h2>
+      <p class="lead">Every write lands on the phone first. The cloud catches up when it can, and nothing gets silently overwritten.</p>
+      <div class="hood">
+        <div>
+          <div class="diagram">
+            <div class="flow">
+              <div class="node"><b>Any app</b><small>Share sheet</small></div><div class="arr">→</div>
+              <div class="node k"><b>LinkHive</b><small>BLoC + LinkManager</small></div><div class="arr">→</div>
+              <div class="node"><b>Hive</b><small>Saved instantly, on device</small></div>
+            </div>
+            <div class="down" style="text-align:right;padding-right:15%">↓</div>
+            <div class="flow2">
+              <div class="node"><b>Firestore</b><small>/users/{uid}, private</small></div><div class="arr">⇄</div>
+              <div class="node"><b>Outbox queue</b><small>Replays on reconnect or sign-in</small></div>
+            </div>
+            <div class="down" style="text-align:left;padding-left:15%">↓</div>
+            <div class="flow2" style="grid-template-columns:1fr">
+              <div class="node" style="max-width:50%"><b>Conflict screen</b><small>Keep mine, keep cloud, or merge</small></div>
+            </div>
+            <p class="legendl">Pulls are incremental with a cursor; deletes travel as tombstones; a periodic 5-minute sync covers missed events.</p>
+          </div>
+          <div class="tech"><span>Flutter</span><span>Dart</span><span>BLoC</span><span>Hive</span><span>Firebase Auth</span><span>Cloud Firestore</span><span>go_router</span><span>get_it</span><span>Jetpack Glance</span><span>flutter_localizations</span></div>
+        </div>
+        <div class="hi-list">
+          <div class="hi-item sh-mint"><b>Offline-first sync</b><span>Hive first, then an outbox queue to Firestore. Works as a guest; signing in uploads what's already there.</span></div>
+          <div class="hi-item sh-peach"><b>Conflict resolution</b><span>Field-level conflict records with keep-local, keep-cloud and custom merge.</span></div>
+          <div class="hi-item sh-sky"><b>One place for every action</b><span>Today, cards and the widget all open, archive and snooze through one LinkManager.</span></div>
+          <div class="hi-item sh-lemon"><b>Native where it counts</b><span>Android and iOS share targets, a Glance home screen widget, Custom Tabs for links, 4 locales with RTL.</span></div>
+          <a class="btn primary" href="#" style="justify-content:center"><svg class="i sm"><use href="#i-code"/></svg>Read the code</a>
+        </div>
+      </div>
+
+      <!-- 8. Built by -->
+      <div class="maker">
+        <span class="ph">KS</span>
+        <div>
+          <h3>Built by Kunj Shingala</h3>
+          <p><span class="note">Your bio</span> One or two lines about you: what you build, and what you're looking for.</p>
+          <div class="links"><a class="btn sm" href="#"><svg class="i sm"><use href="#i-gh"/></svg>GitHub</a><a class="btn sm" href="#">LinkedIn</a><a class="btn sm" href="#">Portfolio</a><a class="btn sm" href="#">Email</a></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 9. Final CTA -->
+  <section class="band">
+    <div class="wrap">
+      <h2>Stop losing links.</h2>
+      <p>Free, offline-first, and the code is on GitHub.</p>
+      <div class="ctas">
+        <a class="btn primary" href="#"><svg class="i sm"><use href="#i-android"/></svg>Get it on Android</a>
+        <a class="btn" href="#"><svg class="i sm"><use href="#i-gh"/></svg>Star on GitHub</a>
+      </div>
+    </div>
+  </section>
+  <footer>
+    <div class="wrap">
+      <span>© 2026 Kunj Shingala · LinkHive</span>
+      <div><a href="#">Privacy</a><a href="#">License</a><a href="#">GitHub</a></div>
+    </div>
+  </footer>
+</main>
+
+<!-- ══════════════════ PRODUCT HUNT KIT ══════════════════ -->
+<div class="divider" id="ph"><span>Not part of the site · Product Hunt kit</span></div>
+<section class="kit">
+  <div class="wrap">
+    <h2 class="h" style="margin-top:20px">Product Hunt listing</h2>
+    <p class="lead">Text, thumbnail, gallery and the maker's first comment. Limits are checked live below; re-check Product Hunt's current limits on launch day.</p>
+
+    <div class="kgrid">
+      <div class="box">
+        <h3>How the listing reads <small>mock, not Product Hunt's styling</small></h3>
+        <div class="listing">
+          <span class="thumb"><svg class="i" style="width:52px;height:52px"><use href="#logo"/></svg></span>
+          <div class="tx"><b>LinkHive</b><span data-mirror="tagline"></span><div class="tp"><em>Productivity</em><em>Android</em><em>Bookmarks</em></div></div>
+          <span class="up">▲<br>Upvote</span>
+        </div>
+      </div>
+      <div class="box">
+        <h3>Thumbnail <small>240 × 240, GIF allowed</small></h3>
+        <div class="thumbs">
+          <figure><div class="t240"><svg class="i" style="width:120px;height:120px"><use href="#logo"/></svg><span class="chip">2×</span></div><figcaption>Static (PNG)</figcaption></figure>
+          <figure><div class="thumb" style="width:72px;height:72px"><svg class="i" style="width:40px;height:40px"><use href="#logo"/></svg></div><figcaption>At list size</figcaption></figure>
+        </div>
+        <p style="font-size:13px;color:var(--text2);margin-top:12px;line-height:1.5">GIF idea: the 2× chip stamps onto the hexagon, loops every 3 seconds.</p>
+      </div>
+      <div class="box" style="grid-column:1/-1">
+        <h3>Listing text <small>editable here; counters update</small></h3>
+        <div class="fields">
+          <div class="fld"><label>Tagline <em data-count="tagline" data-max="60"></em></label><div contenteditable="true" data-field="tagline">The link saver that brings your links back</div></div>
+          <div class="fld"><label>Description <em data-count="desc" data-max="260"></em></label><div contenteditable="true" data-field="desc">Save links from any app in one tap. LinkHive puts one back in front of you every day, so saves from Instagram, YouTube and LinkedIn don't die in a pile. Offline-first, in 4 languages, and the code is on GitHub.</div></div>
+          <div class="fld"><label>Topics <em>up to 4</em></label><div>Productivity · Android · Bookmarks (add Open Source once the repo has a license)</div></div>
+          <div class="fld"><label>Links <em>3</em></label><div>Website (this page) · GitHub repo · Play Store or APK on GitHub Releases</div></div>
+        </div>
+      </div>
+      <div class="box" style="grid-column:1/-1">
+        <h3>Maker's first comment <small>posted right at launch</small></h3>
+        <div class="comment">
+          <p>Hey Product Hunt 👋 I'm Kunj, an application developer from Rajkot, India. I built LinkHive because I had three piles of saved links (Instagram saves, LinkedIn saves and a chat with myself) and never opened any of them.</p>
+          <p>Saving was never the problem. Getting links back was. So LinkHive does two things:</p>
+          <ul>
+            <li><b>Share → saved.</b> One tap from any app's share sheet. No form.</li>
+            <li><b>One link a day.</b> Every morning it picks one link and puts it on a Today screen, a notification and a home screen widget.</li>
+          </ul>
+          <p>If you save the same link twice, it merges them and marks it "Saved 2×". It works fully offline and without an account, and syncs when you sign in. It's in English, Hindi, Gujarati and Arabic.</p>
+          <p>It's built in Flutter and the code is on GitHub. I'd love to hear what you save and never come back to, and what would make you open it again.</p>
+        </div>
+      </div>
+    </div>
+
+    <h2 class="h" style="margin-top:64px;font-size:32px">Gallery · 6 slides at 1270 × 760</h2>
+    <p class="lead">Built in HTML from the same tokens and exported to PNG. Slide 1 doubles as the Open Graph image for link previews.</p>
+    <div class="gallery">
+      <figure class="slide-wrap">
+        <div class="slide" style="background:var(--lemon)">
+          <div class="cp"><small>LinkHive</small><b>You saved it. We bring it back.</b><span>The link saver that gives you one saved link a day.</span></div>
+          <div class="art"><div class="phone" data-screen="scr-today"></div></div>
+          <div class="tag"><i><svg class="i xs"><use href="#logo"/></svg></i>Free · Android · Code on GitHub</div>
+        </div>
+        <figcaption>1 · Hero</figcaption>
+      </figure>
+      <figure class="slide-wrap">
+        <div class="slide" style="background:var(--mint)">
+          <div class="cp"><small>Capture</small><b>Share. Saved. That's it.</b><span>Pick LinkHive in any app's share sheet. No form, no folder to choose.</span></div>
+          <div class="art"><div class="phone" data-screen="scr-share"></div></div>
+        </div>
+        <figcaption>2 · Share in one tap</figcaption>
+      </figure>
+      <figure class="slide-wrap">
+        <div class="slide" style="background:var(--sky)">
+          <div class="cp"><small>Return</small><b>One link a day.</b><span>A 9am nudge, a Today screen and a home screen widget. Open, snooze or archive.</span></div>
+          <div class="art"><div class="phone" data-screen="scr-widget"></div></div>
+        </div>
+        <figcaption>3 · Daily resurface</figcaption>
+      </figure>
+      <figure class="slide-wrap">
+        <div class="slide" style="background:var(--return)">
+          <div class="cp"><small>Duplicates</small><b>Saved twice? That means something.</b><span>Same link again? It merges, keeps your notes and marks it Saved 2×.</span></div>
+          <div class="art"><div class="phone" data-screen="scr-merge"></div></div>
+        </div>
+        <figcaption>4 · Saved 2×</figcaption>
+      </figure>
+      <figure class="slide-wrap">
+        <div class="slide" style="background:var(--peach)">
+          <div class="cp"><small>Organise</small><b>Find anything in 500 links.</b><span>Search, quick filters, and Source / Category / Sort right above the list.</span></div>
+          <div class="art"><div class="phone" data-screen="scr-links"></div></div>
+        </div>
+        <figcaption>5 · Find anything</figcaption>
+      </figure>
+      <figure class="slide-wrap">
+        <div class="slide" style="background:var(--rose)">
+          <div class="cp" style="width:30cqw"><small>For everyone</small><b>Offline. 4 languages. Code on GitHub.</b></div>
+          <div class="art trio" style="right:3cqw;top:5cqw;gap:1.4cqw"><div class="phone" data-screen="scr-today-hi"></div><div class="phone" data-screen="scr-today-ar"></div><div class="phone dk" data-screen="scr-links"></div></div>
+          <div class="tag"><i><svg class="i xs"><use href="#i-gh"/></svg></i>github.com/Kunjshingala/LinkHive</div>
+        </div>
+        <figcaption>6 · Languages, dark mode, code on GitHub</figcaption>
+      </figure>
+    </div>
+  </div>
+</section>
+
+<script>
+(function () {
+  // Fill every data-screen slot from its template, then its nav slot.
+  document.querySelectorAll('[data-screen]').forEach(function (el) {
+    var t = document.getElementById(el.getAttribute('data-screen'));
+    el.appendChild(t.content.cloneNode(true));
+    el.querySelectorAll('slot[data-nav]').forEach(function (s) {
+      s.replaceWith(document.getElementById(s.getAttribute('data-nav')).content.cloneNode(true));
+    });
+  });
+
+  // Gallery slides are laid out at their real 1270 × 760 size and scaled to fit.
+  var boxes = [];
+  document.querySelectorAll('.slide').forEach(function (s) {
+    var box = document.createElement('div');
+    box.className = 'sbox';
+    s.parentNode.insertBefore(box, s);
+    box.appendChild(s);
+    boxes.push(box);
+  });
+  function fit() {
+    boxes.forEach(function (b) { b.firstChild.style.transform = 'scale(' + (b.clientWidth / 1270) + ')'; });
+  }
+  window.addEventListener('resize', fit);
+  fit();
+
+  var root = document.documentElement;
+  var themeBtn = document.getElementById('theme');
+  function isDark() {
+    var t = root.getAttribute('data-theme');
+    if (t) return t === 'dark';
+    return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+  }
+  function label() { themeBtn.textContent = isDark() ? 'Light mode' : 'Dark mode'; }
+  themeBtn.addEventListener('click', function () { root.setAttribute('data-theme', isDark() ? 'light' : 'dark'); label(); });
+  label();
+
+  var seg = document.getElementById('heroseg');
+  seg.addEventListener('click', function (e) {
+    var b = e.target.closest('button'); if (!b) return;
+    seg.querySelectorAll('button').forEach(function (x) { x.classList.remove('on'); });
+    b.classList.add('on');
+    document.body.classList.toggle('hero-b', b.getAttribute('data-hero') === 'b');
+  });
+
+  function count(name) {
+    var f = document.querySelector('[data-field="' + name + '"]');
+    var c = document.querySelector('[data-count="' + name + '"]');
+    var max = +c.getAttribute('data-max');
+    var n = f.textContent.trim().length;
+    c.textContent = n + ' / ' + max;
+    c.classList.toggle('over', n > max);
+    var m = document.querySelector('[data-mirror="' + name + '"]');
+    if (m) m.textContent = f.textContent.trim();
+  }
+  ['tagline', 'desc'].forEach(function (n) {
+    count(n);
+    document.querySelector('[data-field="' + n + '"]').addEventListener('input', function () { count(n); });
+  });
+})();
+</script>
+</body>
+</html>

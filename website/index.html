@@ -1,0 +1,370 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LinkHive: the link saver that brings your links back</title>
+<meta name="description" content="Save links from any app in one tap. LinkHive brings one back every day, so saves from Instagram, YouTube and LinkedIn don't pile up unread. Free, offline-first, Android.">
+<meta name="theme-color" content="#ECE2D5" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0B0B0B" media="(prefers-color-scheme: dark)">
+<meta property="og:type" content="website">
+<meta property="og:title" content="LinkHive: the link saver that brings your links back">
+<meta property="og:description" content="Save links from any app in one tap. LinkHive brings one back every day.">
+<!-- Absolute URLs assume the Vercel project is named "linkhive". If Vercel gives a different domain, update these four lines. -->
+<link rel="canonical" href="https://linkhive.vercel.app/">
+<meta property="og:url" content="https://linkhive.vercel.app/">
+<meta property="og:image" content="https://linkhive.vercel.app/assets/img/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="LinkHive: You saved it. We bring it back.">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://linkhive.vercel.app/assets/img/og.png">
+<meta name="twitter:creator" content="@KunjShingala_09">
+<link rel="icon" href="assets/img/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="assets/img/apple-touch-icon.png">
+<link rel="preload" href="assets/fonts/AnekLatin-ExtraBold.ttf" as="font" type="font/ttf" crossorigin>
+<link rel="stylesheet" href="assets/css/style.css">
+<script>
+  try { var t = localStorage.getItem('lh-theme'); if (t === 'light' || t === 'dark') document.documentElement.setAttribute('data-theme', t); } catch (e) {}
+</script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<!-- Icon sprite: Material Symbols paths (the app uses Icons.*_rounded) -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="logo" viewBox="0 0 24 24"><path d="M12 1.6l9 5.2v10.4l-9 5.2-9-5.2V6.8zm0 4.2L6.7 8.9v6.2l5.3 3.1 5.3-3.1V8.9z"/><circle cx="12" cy="12" r="2.1"/></symbol>
+  <symbol id="i-today" viewBox="0 0 24 24"><path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V9h14v11zM7 11h5v5H7z"/></symbol>
+  <symbol id="i-library" viewBox="0 0 24 24"><path d="M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm16-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 10l-2.5-1.5L15 12V4h5v8z"/></symbol>
+  <symbol id="i-inbox" viewBox="0 0 24 24"><path d="M19 3H4.99C3.88 3 3 3.9 3 5v14c0 1.1.88 2 1.99 2H19c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 12h-4c0 1.66-1.35 3-3 3s-3-1.34-3-3H4.99V5H19v10z"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.47 6.47 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></symbol>
+  <symbol id="i-sort" viewBox="0 0 24 24"><path d="M3 18h6v-2H3v2zM3 6v2h18V6H3zm0 7h12v-2H3v2z"/></symbol>
+  <symbol id="i-add" viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></symbol>
+  <symbol id="i-person" viewBox="0 0 24 24"><path d="M12 6c1.1 0 2 .9 2 2s-.9 2-2 2-2-.9-2-2 .9-2 2-2m0 10c2.7 0 5.8 1.29 6 2H6c.23-.72 3.31-2 6-2m0-12C9.79 4 8 5.79 8 8s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm0 10c-2.67 0-8 1.34-8 4v3h16v-3c0-2.66-5.33-4-8-4z"/></symbol>
+  <symbol id="i-chev" viewBox="0 0 24 24"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></symbol>
+  <symbol id="i-select" viewBox="0 0 24 24"><path d="M22 7h-9v2h9V7zm0 8h-9v2h9v-2zM5.54 11L2 7.46l1.41-1.41 2.12 2.12 4.24-4.24 1.41 1.41L5.54 11zm0 8L2 15.46l1.41-1.41 2.12 2.12 4.24-4.24 1.41 1.41L5.54 19z"/></symbol>
+  <symbol id="i-open" viewBox="0 0 24 24"><path d="M19 19H5V5h7V3H5a2 2 0 0 0-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"/></symbol>
+  <symbol id="i-snooze" viewBox="0 0 24 24"><path d="M7.88 3.39L6.6 1.86 2 5.71l1.29 1.53 4.59-3.85zM22 5.72l-4.6-3.86-1.29 1.53 4.6 3.86L22 5.72zM12 4c-4.97 0-9 4.03-9 9s4.02 9 9 9a9 9 0 0 0 0-18zm0 16c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7zm-3-9h3.63L9 15.2V17h6v-2h-3.63L15 10.8V9H9v2z"/></symbol>
+  <symbol id="i-archive" viewBox="0 0 24 24"><path d="M20.54 5.23l-1.39-1.68C18.88 3.21 18.47 3 18 3H6c-.47 0-.88.21-1.16.55L3.46 5.23C3.17 5.57 3 6.02 3 6.5V19c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V6.5c0-.48-.17-.93-.46-1.27zM12 17.5L6.5 12H10v-2h4v2h3.5L12 17.5zM5.12 5l.81-1h12l.94 1H5.12z"/></symbol>
+  <symbol id="i-delete" viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></symbol>
+  <symbol id="i-play" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></symbol>
+  <symbol id="i-loop" viewBox="0 0 24 24"><path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46A7.93 7.93 0 0 0 20 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74A7.93 7.93 0 0 0 4 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z"/></symbol>
+  <symbol id="i-bell" viewBox="0 0 24 24"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.89 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/></symbol>
+  <symbol id="i-bolt" viewBox="0 0 24 24"><path d="M11 21h-1l1-7H7.5c-.88 0-.33-.75-.31-.78C8.48 10.94 10.42 7.54 13.01 3h1l-1 7h3.51c.4 0 .62.19.4.66C12.97 17.55 11 21 11 21z"/></symbol>
+  <symbol id="i-filter" viewBox="0 0 24 24"><path d="M4.25 5.61C6.27 8.2 10 13 10 13v6c0 .55.45 1 1 1h2c.55 0 1-.45 1-1v-6s3.72-4.8 5.74-7.39A.998.998 0 0 0 18.95 4H5.04c-.83 0-1.3.95-.79 1.61z"/></symbol>
+  <symbol id="i-cloudoff" viewBox="0 0 24 24"><path d="M19.35 10.04A7.49 7.49 0 0 0 12 4c-1.48 0-2.85.43-4.01 1.17l1.46 1.46a5.497 5.497 0 0 1 8.05 4.87v.5H19c1.66 0 3 1.34 3 3 0 1.13-.64 2.11-1.56 2.62l1.45 1.45C23.16 18.16 24 16.68 24 15c0-2.64-2.05-4.78-4.65-4.96zM3 5.27l2.75 2.74C2.56 8.15 0 10.77 0 14c0 3.31 2.69 6 6 6h11.73l2 2L21 20.73 4.27 4 3 5.27zM7.73 10l8 8H6c-2.21 0-4-1.79-4-4s1.79-4 4-4h1.73z"/></symbol>
+  <symbol id="i-lang" viewBox="0 0 24 24"><path d="M12.87 15.07l-2.54-2.51.03-.03A17.52 17.52 0 0 0 14.07 6H17V4h-7V2H8v2H1v1.99h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11.76-2.04zM18.5 10h-2L12 22h2l1.12-3h4.75L21 22h2l-4.5-12zm-2.62 7l1.62-4.33L19.12 17h-3.24z"/></symbol>
+  <symbol id="i-code" viewBox="0 0 24 24"><path d="M9.4 16.6L4.8 12l4.6-4.6L8 6l-6 6 6 6 1.4-1.4zm5.2 0l4.6-4.6-4.6-4.6L16 6l6 6-6 6-1.4-1.4z"/></symbol>
+  <symbol id="i-android" viewBox="0 0 24 24"><path d="M17.6 9.48l1.84-3.18c.16-.31.04-.69-.26-.85a.637.637 0 0 0-.83.22l-1.88 3.24a11.43 11.43 0 0 0-8.94 0L5.65 5.67a.643.643 0 0 0-.87-.2c-.28.18-.37.54-.22.83L6.4 9.48A10.81 10.81 0 0 0 1 18h22a10.81 10.81 0 0 0-5.4-8.52zM7 15.25a1.25 1.25 0 1 1 0-2.5 1.25 1.25 0 0 1 0 2.5zm10 0a1.25 1.25 0 1 1 0-2.5 1.25 1.25 0 0 1 0 2.5z"/></symbol>
+  <symbol id="i-gh" viewBox="0 0 24 24"><path d="M12 2a10 10 0 0 0-3.16 19.49c.5.09.68-.22.68-.48v-1.7c-2.78.6-3.37-1.34-3.37-1.34-.45-1.16-1.11-1.47-1.11-1.47-.91-.62.07-.6.07-.6 1 .07 1.53 1.03 1.53 1.03.89 1.53 2.34 1.09 2.91.83.09-.65.35-1.09.63-1.34-2.22-.25-4.55-1.11-4.55-4.94 0-1.09.39-1.98 1.03-2.68-.1-.25-.45-1.27.1-2.65 0 0 .84-.27 2.75 1.02a9.5 9.5 0 0 1 5 0c1.91-1.29 2.75-1.02 2.75-1.02.55 1.38.2 2.4.1 2.65.64.7 1.03 1.59 1.03 2.68 0 3.84-2.34 4.68-4.57 4.93.36.31.68.92.68 1.85v2.74c0 .27.18.58.69.48A10 10 0 0 0 12 2z"/></symbol>
+  <symbol id="i-moon" viewBox="0 0 24 24"><path d="M12 3a9 9 0 1 0 9 9c0-.46-.04-.92-.1-1.36a5.389 5.389 0 0 1-4.4 2.26 5.403 5.403 0 0 1-3.14-9.8c-.44-.06-.9-.1-1.36-.1z"/></symbol>
+  <symbol id="i-sun" viewBox="0 0 24 24"><path d="M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zM2 13h2c.55 0 1-.45 1-1s-.45-1-1-1H2c-.55 0-1 .45-1 1s.45 1 1 1zm18 0h2c.55 0 1-.45 1-1s-.45-1-1-1h-2c-.55 0-1 .45-1 1s.45 1 1 1zM11 2v2c0 .55.45 1 1 1s1-.45 1-1V2c0-.55-.45-1-1-1s-1 .45-1 1zm0 18v2c0 .55.45 1 1 1s1-.45 1-1v-2c0-.55-.45-1-1-1s-1 .45-1 1zM5.99 4.58a.996.996 0 0 0-1.41 0 .996.996 0 0 0 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0s.39-1.03 0-1.41L5.99 4.58zm12.37 12.37a.996.996 0 0 0-1.41 0 .996.996 0 0 0 0 1.41l1.06 1.06c.39.39 1.03.39 1.41 0a.996.996 0 0 0 0-1.41l-1.06-1.06zm1.06-10.96a.996.996 0 0 0 0-1.41.996.996 0 0 0-1.41 0l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06zM7.05 18.36a.996.996 0 0 0 0-1.41.996.996 0 0 0-1.41 0l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06z"/></symbol>
+</svg>
+
+<!-- Phone mockups, defined once and cloned into each data-screen slot by main.js.
+     To use a real screenshot instead, put <img src="assets/screens/x.webp" alt="..."> inside the .phone and drop data-screen. -->
+<template id="nav-links"><div class="pnav"><div class="it on"><svg class="i sm"><use href="#i-library"/></svg>Links</div><div class="it"><svg class="i sm"><use href="#i-today"/></svg></div><div class="it"><svg class="i sm"><use href="#i-inbox"/></svg><span class="bdg">4</span></div></div></template>
+<template id="nav-today"><div class="pnav"><div class="it"><svg class="i sm"><use href="#i-library"/></svg></div><div class="it on"><svg class="i sm"><use href="#i-today"/></svg>Today</div><div class="it"><svg class="i sm"><use href="#i-inbox"/></svg><span class="bdg">4</span></div></div></template>
+<template id="nav-inbox"><div class="pnav"><div class="it"><svg class="i sm"><use href="#i-library"/></svg></div><div class="it"><svg class="i sm"><use href="#i-today"/></svg></div><div class="it on"><svg class="i sm"><use href="#i-inbox"/></svg>Inbox</div></div></template>
+
+<template id="scr-links">
+  <div class="status"><span>9:41</span><span>●●●</span></div>
+  <div class="ahdr"><span class="cb"><svg class="i sm"><use href="#i-person"/></svg></span><b>Links</b><span class="cb"><svg class="i sm"><use href="#i-select"/></svg></span></div>
+  <div class="pb">
+    <div class="field"><svg class="i sm"><use href="#i-search"/></svg>Search 512 links...</div>
+    <div class="quick"><span class="qc on">All <em>512</em></span><span class="qc">Unread <em>202</em></span><span class="qc">High <em>12</em></span><span class="qc ret">Saved 2×+ <em>9</em></span></div>
+    <div class="drops"><span class="drop">Source<svg class="i xs"><use href="#i-chev"/></svg></span><span class="drop">Category<svg class="i xs"><use href="#i-chev"/></svg></span><span class="drop">Newest<svg class="i xs"><use href="#i-sort"/></svg></span></div>
+    <div class="month">Today</div>
+    <div class="cards">
+      <div class="card"><span class="dot"></span><span class="av f-rose">H</span><div class="ct"><div class="t">How to make perfect Neapolitan pizza at home</div><div class="hst">youtube.com</div><div class="meta"><span class="pill">Recipes</span><span class="pill ret">Saved 2×</span><span class="time">2h ago</span></div></div></div>
+      <div class="card"><span class="dot"></span><span class="av f-orange">D</span><div class="ct"><div class="t">5 desk setups under ₹20k</div><div class="hst">instagram.com</div><div class="meta"><span class="pill">Shop</span><span class="time">5h ago</span></div></div></div>
+    </div>
+    <div class="month">This week</div>
+    <div class="cards">
+      <div class="card"><span class="av f-blue">F</span><div class="ct"><div class="t">Flutter state management in 12 minutes</div><div class="hst">youtube.com</div><div class="meta"><span class="pill hi">High</span><span class="pill">Learn</span><span class="time">3d ago</span></div></div></div>
+    </div>
+  </div>
+  <div class="fab"><svg class="i"><use href="#i-add"/></svg></div>
+  <slot data-nav="nav-links"></slot>
+</template>
+
+<template id="scr-today">
+  <div class="status"><span>9:00</span><span>●●●</span></div>
+  <div class="ahdr"><span class="cb hide"></span><b>Today</b><span class="cb hide"></span></div>
+  <div class="pb">
+    <div class="tcard">
+      <div class="img"><div class="play"><svg class="i"><use href="#i-play"/></svg></div></div>
+      <h4>Kyoto in 3 days: the complete first-timer guide</h4>
+      <div class="hst">youtube.com <span class="pill ret">Saved 2×</span></div>
+      <p>Temples, food streets and the day trips worth taking.</p>
+    </div>
+    <div class="prow"><span class="pbtn"><svg class="i xs"><use href="#i-snooze"/></svg>Snooze</span><span class="pbtn"><svg class="i xs"><use href="#i-archive"/></svg>Archive</span></div>
+    <div class="prow"><span class="pbtn ink"><svg class="i xs"><use href="#i-open"/></svg>Open</span></div>
+  </div>
+  <slot data-nav="nav-today"></slot>
+</template>
+
+<template id="scr-today-hi">
+  <div class="status"><span>9:00</span><span>●●●</span></div>
+  <div class="ahdr" lang="hi"><span class="cb hide"></span><b>आज</b><span class="cb hide"></span></div>
+  <div class="pb" lang="hi">
+    <div class="tcard">
+      <div class="img g"><div class="play"><svg class="i"><use href="#i-play"/></svg></div></div>
+      <h4>घर पर पनीर टिक्का बनाने का आसान तरीका</h4>
+      <div class="hst">youtube.com <span class="pill ret">2× सहेजा गया</span></div>
+    </div>
+    <div class="prow"><span class="pbtn">स्नूज़ करें</span><span class="pbtn">संग्रहित करें</span></div>
+    <div class="prow"><span class="pbtn ink">खोलें</span></div>
+  </div>
+  <div class="pnav" lang="hi"><div class="it"><svg class="i sm"><use href="#i-library"/></svg></div><div class="it on"><svg class="i sm"><use href="#i-today"/></svg>आज</div><div class="it"><svg class="i sm"><use href="#i-inbox"/></svg></div></div>
+</template>
+
+<template id="scr-inbox">
+  <div class="status"><span>9:41</span><span>●●●</span></div>
+  <div class="ahdr"><span class="cb hide"></span><b>Inbox</b><span class="cb hide"></span></div>
+  <div class="pb">
+    <div class="cards">
+      <div class="ibox"><div class="tp"><span class="av f-orange">R</span><div class="ct"><div class="t">One-pan creamy garlic pasta (reel)</div><div class="hst">instagram.com · just now</div></div></div><div class="acts"><span class="pbtn">Add details</span><span class="x"><svg class="i xs"><use href="#i-delete"/></svg></span></div></div>
+      <div class="ibox"><div class="tp"><span class="av f-blue">S</span><div class="ct"><div class="t">Senior Flutter Developer, remote</div><div class="hst">linkedin.com · 1h ago</div></div></div><div class="acts"><span class="pbtn">Add details</span><span class="x"><svg class="i xs"><use href="#i-delete"/></svg></span></div></div>
+      <div class="ibox"><div class="tp"><span class="av f-lemon">M</span><div class="ct"><div class="t">Mechanical keyboard, hot-swap, 75%</div><div class="hst">amazon.in · yesterday</div></div></div><div class="acts"><span class="pbtn">Add details</span><span class="x"><svg class="i xs"><use href="#i-delete"/></svg></span></div></div>
+    </div>
+  </div>
+  <slot data-nav="nav-inbox"></slot>
+</template>
+
+<template id="scr-share">
+  <div class="status"><span>9:41</span><span>●●●</span></div>
+  <div class="pb" style="padding-top:12px">
+    <div class="vid"><svg class="i lg"><use href="#i-play"/></svg></div>
+    <div class="ln" style="width:90%;height:14px;margin-top:14px"></div>
+    <div class="ln" style="width:60%"></div>
+    <div class="ln" style="width:75%"></div>
+  </div>
+  <div class="scrim"></div>
+  <div class="osheet">
+    <div class="grab"></div>
+    <h5>Share to</h5>
+    <div class="apps">
+      <div class="me"><i><svg class="i"><use href="#logo"/></svg></i>LinkHive</div>
+      <div><i>M</i>Messages</div>
+      <div><i>N</i>Notes</div>
+      <div><i>⧉</i>Copy link</div>
+    </div>
+  </div>
+</template>
+
+<template id="scr-merge">
+  <div class="status"><span>9:41</span><span>●●●</span></div>
+  <div class="ahdr"><span class="cb"><svg class="i sm"><use href="#i-person"/></svg></span><b>Links</b><span class="cb"><svg class="i sm"><use href="#i-select"/></svg></span></div>
+  <div class="pb">
+    <div class="field"><svg class="i sm"><use href="#i-search"/></svg>Search 512 links...</div>
+    <div class="month">Today</div>
+    <div class="cards">
+      <div class="card ret"><span class="av f-blue">K</span><div class="ct"><div class="t">Kyoto in 3 days: the complete first-timer guide</div><div class="hst">youtube.com</div><div class="meta"><span class="pill ret">Saved 2×</span><span class="pill lt">Travel</span></div></div></div>
+      <div class="card"><span class="av f-rose">H</span><div class="ct"><div class="t">How to make perfect Neapolitan pizza at home</div><div class="hst">youtube.com</div><div class="meta"><span class="pill">Recipes</span><span class="time">2h ago</span></div></div></div>
+    </div>
+  </div>
+  <div class="merge"><span class="bd"><svg class="i xs"><use href="#i-loop"/></svg></span><span>Already saved 3 weeks ago, it'll come back in Today</span></div>
+  <slot data-nav="nav-links"></slot>
+</template>
+
+<template id="scr-widget">
+  <div class="status"><span>9:41</span><span>●●●</span></div>
+  <div class="pb home">
+    <div class="widget">
+      <small><span>Today's pick</span><span>LinkHive</span></small>
+      <b>Kyoto in 3 days: the complete first-timer guide</b>
+      <div class="wc"><span><b>4</b>Inbox</span><span><b>202</b>Unread</span></div>
+    </div>
+    <div class="icons"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+  </div>
+</template>
+
+<header class="bar">
+  <div class="wrap">
+    <a class="logo" href="#main" aria-label="LinkHive, back to top"><span class="mk"><svg class="i" aria-hidden="true"><use href="#logo"/></svg></span>LinkHive</a>
+    <nav aria-label="Sections"><a href="#how">How it works</a><a href="#features">Features</a><a href="#screens">Screens</a><a href="#hood">Under the hood</a></nav>
+    <div class="acts">
+      <button class="btn sm icon" id="theme" type="button" aria-label="Switch to dark mode" aria-pressed="false"><svg class="i sm" aria-hidden="true"><use href="#i-moon"/></svg></button>
+      <a class="btn sm" href="https://github.com/Kunjshingala/LinkHive"><svg class="i sm" aria-hidden="true"><use href="#i-gh"/></svg>GitHub</a>
+    </div>
+  </div>
+</header>
+
+<main id="main">
+  <!-- Hero -->
+  <section class="hero">
+    <div class="wrap hero-grid">
+      <div>
+        <h1>You saved it.<br><span class="hl">LinkHive</span> brings it back.</h1>
+        <p class="sub">Share a link from Instagram, YouTube, LinkedIn or any app. LinkHive saves it in one tap, then brings one back each morning, so your saves stop piling up unread.</p>
+        <div class="ctas">
+          <a class="btn primary" href="https://github.com/Kunjshingala/LinkHive/releases/latest"><svg class="i sm" aria-hidden="true"><use href="#i-android"/></svg>Download for Android</a>
+          <a class="btn" href="https://github.com/Kunjshingala/LinkHive"><svg class="i sm" aria-hidden="true"><use href="#i-gh"/></svg>View code on GitHub</a>
+        </div>
+        <p class="cta-note">Free APK from GitHub Releases. iOS builds from source.</p>
+        <ul class="facts" aria-label="At a glance">
+          <li class="fact">Free</li><li class="fact">Works offline</li><li class="fact">No account needed</li>
+          <li class="fact lang">English · <span lang="hi">हिन्दी</span> · <span lang="gu">ગુજરાતી</span> · <span lang="ar">العربية</span></li>
+        </ul>
+      </div>
+      <div class="art" aria-hidden="true">
+        <div class="ntf notif"><span class="ap"><svg class="i sm"><use href="#logo"/></svg></span><div><small>LINKHIVE · 9:00</small><b>Links waiting</b><span>Kyoto in 3 days: the complete first-timer guide</span></div></div>
+        <div class="phone" data-screen="scr-today"></div>
+        <div class="stamp"><span class="stampchip"><svg class="i sm"><use href="#i-loop"/></svg>Saved 2×</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Problem -->
+  <section class="s" aria-labelledby="problem-h">
+    <div class="wrap">
+      <p class="eyebrow">The problem</p>
+      <h2 class="h" id="problem-h">Every app has a save button. None of them give it back.</h2>
+      <p class="lead">Your saved links are spread over three apps, and none of those apps ever shows them to you again.</p>
+      <div class="graves">
+        <div class="grave"><div class="top"><span class="av f-rose" aria-hidden="true">I</span><h3>Instagram saves</h3></div><dl><div><dt>Goes in</dt><dd class="yes">Every day</dd></div><div><dt>Comes back</dt><dd class="no">Never</dd></div></dl></div>
+        <div class="grave"><div class="top"><span class="av f-blue" aria-hidden="true">L</span><h3>LinkedIn saves</h3></div><dl><div><dt>Goes in</dt><dd class="yes">Every week</dd></div><div><dt>Comes back</dt><dd class="no">Never</dd></div></dl></div>
+        <div class="grave"><div class="top"><span class="av f-green" aria-hidden="true">W</span><h3>Chat with yourself</h3></div><dl><div><dt>Goes in</dt><dd class="yes">All the time</dd></div><div><dt>Comes back</dt><dd class="no">Lost in the scroll</dd></div></dl></div>
+      </div>
+      <p class="fix"><svg class="i lg" aria-hidden="true"><use href="#i-loop"/></svg>LinkHive is one place for all of them, and it gives them back.</p>
+    </div>
+  </section>
+
+  <!-- How it works -->
+  <section class="s" id="how" aria-labelledby="how-h">
+    <div class="wrap">
+      <p class="eyebrow">How it works</p>
+      <h2 class="h" id="how-h">Share it. Forget it. Get it back.</h2>
+      <ol class="steps">
+        <li class="step sh-mint"><span class="n" aria-hidden="true">1</span><h3>Share it</h3><p>Tap Share in any app and pick LinkHive. It's saved. No form to fill in.</p><div class="crop end"><div class="phone" data-screen="scr-share" role="img" aria-label="Android share sheet with LinkHive as the first choice"></div></div></li>
+        <li class="step sh-peach"><span class="n" aria-hidden="true">2</span><h3>Forget it</h3><p>It waits in your Inbox. Add a category later, or never.</p><div class="crop"><div class="phone" data-screen="scr-inbox" role="img" aria-label="Inbox screen with three links saved in a hurry"></div></div></li>
+        <li class="step sh-sky"><span class="n" aria-hidden="true">3</span><h3>Get it back</h3><p>Every morning LinkHive picks one link. Open it, snooze it or archive it.</p><div class="crop"><div class="phone" data-screen="scr-today" role="img" aria-label="Today screen showing one link with Snooze, Archive and Open"></div></div></li>
+      </ol>
+    </div>
+  </section>
+
+  <!-- Features -->
+  <section class="s" id="features" aria-labelledby="features-h">
+    <div class="wrap">
+      <p class="eyebrow">Features</p>
+      <h2 class="h" id="features-h">Built for the 500th link, not the 5th.</h2>
+      <div class="feats">
+        <div class="feat sh-mint"><span class="ic f-mint" aria-hidden="true"><svg class="i"><use href="#i-bolt"/></svg></span><h3>One-tap capture</h3><p>Saving takes the same tap as any share. Title and preview fill in afterwards.</p></div>
+        <div class="feat sh-lemon"><span class="ic f-lemon" aria-hidden="true"><svg class="i"><use href="#i-bell"/></svg></span><h3>One link a day</h3><p>A 9am reminder, a Today screen and a home screen widget bring back one link at a time.</p></div>
+        <div class="feat ret sh-ink"><span class="ic f-white" aria-hidden="true"><svg class="i"><use href="#i-loop"/></svg></span><h3>Saved twice? Noted.</h3><p>Share the same link again and LinkHive merges it and marks it Saved 2×. Those come back first.</p></div>
+        <div class="feat sh-sky"><span class="ic f-sky" aria-hidden="true"><svg class="i"><use href="#i-filter"/></svg></span><h3>Find anything</h3><p>Search, quick filters and Source / Category / Sort, made for hundreds of links.</p></div>
+        <div class="feat sh-peach"><span class="ic f-peach" aria-hidden="true"><svg class="i"><use href="#i-cloudoff"/></svg></span><h3>Offline first</h3><p>Works without an account or a connection. Sign in and it syncs, with a screen to settle conflicts.</p></div>
+        <div class="feat sh-rose"><span class="ic f-rose" aria-hidden="true"><svg class="i"><use href="#i-lang"/></svg></span><h3>Speaks your language</h3><p>English, Hindi, Gujarati and Arabic, right-to-left included. Light and dark.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Screens -->
+  <section class="s" id="screens" aria-labelledby="screens-h">
+    <div class="wrap">
+      <p class="eyebrow">Screens</p>
+      <h2 class="h" id="screens-h">Bold, simple, one-handed.</h2>
+      <div class="strip" tabindex="0" aria-label="App screens, scroll sideways">
+        <figure><div class="phone" data-screen="scr-links" role="img" aria-label="Links tab with search, quick filters and the link list"></div><figcaption>Links<span>Everything, one tap from any filter</span></figcaption></figure>
+        <figure><div class="phone" data-screen="scr-today" role="img" aria-label="Today tab with one link to open, snooze or archive"></div><figcaption>Today<span>One link a day</span></figcaption></figure>
+        <figure><div class="phone" data-screen="scr-inbox" role="img" aria-label="Inbox with links waiting for details"></div><figcaption>Inbox<span>Saved in a hurry, sort later</span></figcaption></figure>
+        <figure><div class="phone" data-screen="scr-merge" role="img" aria-label="Links list with an Already saved bar and a Saved 2× link"></div><figcaption>Saved again<span>Merged, never duplicated</span></figcaption></figure>
+        <figure><div class="phone" data-screen="scr-widget" role="img" aria-label="Home screen widget showing today's pick"></div><figcaption>Widget<span>Today's pick on your home screen</span></figcaption></figure>
+        <figure><div class="phone dk" data-screen="scr-links" role="img" aria-label="Links tab in dark mode"></div><figcaption>Dark mode<span>Follows your system</span></figcaption></figure>
+        <figure><div class="phone" data-screen="scr-today-hi" role="img" aria-label="Today tab in Hindi"></div><figcaption><span lang="hi">हिन्दी</span><span>Also Gujarati and Arabic</span></figcaption></figure>
+      </div>
+    </div>
+  </section>
+
+  <!-- Use cases -->
+  <section class="s" aria-labelledby="uses-h">
+    <div class="wrap">
+      <p class="eyebrow">Use cases</p>
+      <h2 class="h" id="uses-h">What people keep in it.</h2>
+      <div class="uses">
+        <div class="use sh-rose"><h3>Recipes from Reels</h3><p>The pasta you saw at midnight comes back on Saturday morning.</p><div class="ex"><span class="av f-rose" aria-hidden="true">R</span><div><b>One-pan creamy garlic pasta</b><small>instagram.com · Recipes</small></div></div></div>
+        <div class="use sh-sky"><h3>A trip you're planning</h3><p>Every video and guide in one place, filtered by Travel.</p><div class="ex"><span class="av f-blue" aria-hidden="true">K</span><div><b>Kyoto in 3 days: first-timer guide</b><small>youtube.com · Travel</small></div></div></div>
+        <div class="use sh-lemon"><h3>Things to buy later</h3><p>A wishlist from every shop, with no account on any of them.</p><div class="ex"><span class="av f-lemon" aria-hidden="true">M</span><div><b>Mechanical keyboard, hot-swap, 75%</b><small>amazon.in · Shop</small></div></div></div>
+        <div class="use sh-mint"><h3>Talks and courses</h3><p>Mark the important ones High, and they stay at the top.</p><div class="ex"><span class="av f-green" aria-hidden="true">F</span><div><b>Flutter state management in 12 minutes</b><small>youtube.com · Learn · High</small></div></div></div>
+        <div class="use sh-peach"><h3>Job posts</h3><p>Save from LinkedIn now, apply when you're at a laptop.</p><div class="ex"><span class="av f-orange" aria-hidden="true">S</span><div><b>Senior Flutter Developer, remote</b><small>linkedin.com · Work</small></div></div></div>
+        <div class="use sh-rose"><h3>Long reads</h3><p>Articles that deserve 10 quiet minutes, one per morning.</p><div class="ex"><span class="av f-purple" aria-hidden="true">W</span><div><b>Why we forget what we save</b><small>medium.com · Read</small></div></div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Under the hood -->
+  <section class="s" id="hood" aria-labelledby="hood-h">
+    <div class="wrap">
+      <p class="eyebrow">Under the hood</p>
+      <h2 class="h" id="hood-h">Offline-first Flutter, built to survive bad networks.</h2>
+      <p class="lead">Every write lands on the phone first. The cloud catches up when it can, and nothing gets silently overwritten.</p>
+      <div class="hood">
+        <div>
+          <figure class="diagram" aria-label="Data flow: share sheet to LinkHive to Hive on the device, then an outbox queue syncs with Firestore, and conflicts go to a conflict screen">
+            <div class="flow">
+              <div class="node"><b>Any app</b><small>Share sheet</small></div><div class="arr" aria-hidden="true">→</div>
+              <div class="node k"><b>LinkHive</b><small>BLoC + LinkManager</small></div><div class="arr" aria-hidden="true">→</div>
+              <div class="node"><b>Hive</b><small>Saved instantly, on device</small></div>
+            </div>
+            <div class="down r" aria-hidden="true">↓</div>
+            <div class="flow2">
+              <div class="node"><b>Firestore</b><small>/users/{uid}, private</small></div><div class="arr" aria-hidden="true">⇄</div>
+              <div class="node"><b>Outbox queue</b><small>Replays on reconnect or sign-in</small></div>
+            </div>
+            <div class="down l" aria-hidden="true">↓</div>
+            <div class="node half"><b>Conflict screen</b><small>Keep mine, keep cloud, or merge</small></div>
+            <figcaption class="legendl">Pulls are incremental with a cursor; deletes travel as tombstones; a periodic 5-minute sync covers missed events.</figcaption>
+          </figure>
+          <ul class="tech" aria-label="Tech stack"><li>Flutter</li><li>Dart</li><li>BLoC</li><li>Hive</li><li>Firebase Auth</li><li>Cloud Firestore</li><li>go_router</li><li>get_it</li><li>Jetpack Glance</li><li>flutter_localizations</li></ul>
+        </div>
+        <div class="hi-list">
+          <div class="hi-item sh-mint"><h3>Offline-first sync</h3><p>Hive first, then an outbox queue to Firestore. Works as a guest; signing in uploads what's already there.</p></div>
+          <div class="hi-item sh-peach"><h3>Conflict resolution</h3><p>Field-level conflict records with keep-local, keep-cloud and custom merge.</p></div>
+          <div class="hi-item sh-sky"><h3>One place for every action</h3><p>Today, cards and the widget all open, archive and snooze through one LinkManager.</p></div>
+          <div class="hi-item sh-lemon"><h3>Native where it counts</h3><p>Android and iOS share targets, a Glance home screen widget, Custom Tabs for links, 4 locales with RTL.</p></div>
+          <a class="btn primary" href="https://github.com/Kunjshingala/LinkHive"><svg class="i sm" aria-hidden="true"><use href="#i-code"/></svg>Read the code</a>
+        </div>
+      </div>
+
+      <!-- Built by. Details from github.com/Kunjshingala/about (lib/core/constants/info.dart). -->
+      <div class="maker">
+        <span class="ph" aria-hidden="true">KS</span>
+        <div>
+          <h2>Built by Kunj Shingala</h2>
+          <p>Application developer in Rajkot, India. I build mobile apps that actually ship: 40+ production apps across delivery, transport, healthcare and home services. LinkHive is my own, designed and built end to end, from the product idea and design system to the Flutter app and its sync engine.</p>
+          <div class="links">
+            <a class="btn sm" href="https://kunjshingala.github.io/about/">Portfolio</a>
+            <a class="btn sm" href="https://github.com/Kunjshingala"><svg class="i sm" aria-hidden="true"><use href="#i-gh"/></svg>GitHub</a>
+            <a class="btn sm" href="https://www.linkedin.com/in/kunjshingala03/">LinkedIn</a>
+            <a class="btn sm" href="https://x.com/KunjShingala_09">X</a>
+            <a class="btn sm" href="mailto:kunjshingala.p@gmail.com">Email</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Final CTA -->
+  <section class="band" aria-labelledby="cta-h">
+    <div class="wrap">
+      <h2 id="cta-h">Stop losing links.</h2>
+      <p>Free, offline-first, and the code is on GitHub.</p>
+      <div class="ctas">
+        <a class="btn primary" href="https://github.com/Kunjshingala/LinkHive/releases/latest"><svg class="i sm" aria-hidden="true"><use href="#i-android"/></svg>Download for Android</a>
+        <a class="btn" href="https://github.com/Kunjshingala/LinkHive"><svg class="i sm" aria-hidden="true"><use href="#i-gh"/></svg>Star on GitHub</a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>© 2026 Kunj Shingala · LinkHive</span>
+    <nav aria-label="Footer"><a href="https://github.com/Kunjshingala/LinkHive">GitHub</a><a href="https://github.com/Kunjshingala/LinkHive/releases">Releases</a><a href="assets/fonts/OFL-Anek.txt">Font licenses</a></nav>
+  </div>
+</footer>
+
+<script src="assets/js/main.js"></script>
+</body>
+</html>
