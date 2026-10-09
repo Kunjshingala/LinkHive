@@ -13,25 +13,26 @@ import 'bloc/shell_bloc.dart';
 import 'bloc/shell_event.dart';
 import 'bloc/shell_state.dart';
 
-/// The Today / Library / Inbox tab shell.
+/// The Links / Today / Inbox tab shell.
 ///
 /// Each tab keeps its own navigation stack and state
 /// (`StatefulShellRoute.indexedStack`), so switching tabs never reloads a
 /// list or loses its scroll position.
 ///
-/// Back at a tab's first screen goes to Today; on Today it needs a second
-/// press within a few seconds to leave the app.
+/// Back at a tab's first screen goes to Links; on Links it needs a second
+/// press within a few seconds to leave the app. The nav floats over the
+/// content (`extendBody`), so lists scroll under it.
 class AppShell extends StatelessWidget {
   const AppShell({super.key, required this.navigationShell});
 
   final StatefulNavigationShell navigationShell;
 
   /// Hides the bottom nav while a screen shows its own bottom bar in its
-  /// place, such as the Library's bulk-selection actions.
+  /// place, such as the Links bulk-selection actions.
   static final navVisible = ValueNotifier<bool>(true);
 
-  /// Branch index of the Today tab, the app's home.
-  static const _todayIndex = 0;
+  /// Branch index of the Links tab, the app's home.
+  static const _homeIndex = 0;
 
   @override
   Widget build(BuildContext context) {
@@ -55,13 +56,14 @@ class AppShell extends StatelessWidget {
             canPop: false,
             onPopInvokedWithResult: (didPop, _) {
               if (didPop) return;
-              if (navigationShell.currentIndex != _todayIndex) {
-                navigationShell.goBranch(_todayIndex);
+              if (navigationShell.currentIndex != _homeIndex) {
+                navigationShell.goBranch(_homeIndex);
                 return;
               }
               context.read<ShellBloc>().add(const ShellBackPressed());
             },
             child: Scaffold(
+              extendBody: true,
               body: navigationShell,
               bottomNavigationBar: _bottomNav(context),
             ),
@@ -86,12 +88,12 @@ class AppShell extends StatelessWidget {
             ),
             items: [
               AppBottomNavItem(
-                icon: Icons.today_rounded,
-                label: context.l10n.todayTitle,
+                icon: Icons.collections_bookmark_rounded,
+                label: context.l10n.homeTitle,
               ),
               AppBottomNavItem(
-                icon: Icons.collections_bookmark_rounded,
-                label: context.l10n.libraryTitle,
+                icon: Icons.today_rounded,
+                label: context.l10n.todayTitle,
               ),
               AppBottomNavItem(
                 icon: Icons.inbox_rounded,

@@ -3,8 +3,7 @@ import 'dart:async';
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:link_hive/features/library/link_list/bloc/category_picker_cubit.dart';
-import 'package:link_hive/features/library/link_list/bloc/filter_sheet_cubit.dart';
+import 'package:link_hive/features/link_list/bloc/category_picker_cubit.dart';
 import 'package:link_hive/features/links/manager/link_manager.dart';
 import 'package:link_hive/features/links/models/link_model.dart';
 import 'package:link_hive/features/shell/bloc/inbox_badge_cubit.dart';
@@ -20,74 +19,6 @@ void main() {
   setUp(() {
     manager = MockLinkManager();
     when(() => manager.categoryOptions()).thenReturn(['Watch', 'Read', 'Dev']);
-    when(() => manager.getSourceCounts()).thenReturn(const [
-      NamedCount('youtube.com', 9),
-      NamedCount('amazon.in', 3),
-    ]);
-    // Match count = number of active filters, so each toggle is visible.
-    when(() => manager.countLinks(any())).thenAnswer(
-      (inv) => (inv.positionalArguments.first as LinkQuery).activeFilterCount,
-    );
-  });
-
-  group('FilterSheetCubit', () {
-    FilterSheetCubit build({
-      LinkQuery initial = const LinkQuery(),
-      LinkQuery scope = const LinkQuery(),
-    }) => FilterSheetCubit(manager: manager, initial: initial, scope: scope);
-
-    test('starts with the options and the live count', () {
-      final cubit = build(initial: const LinkQuery(categories: {'Watch'}));
-      expect(cubit.state.categories, ['Watch', 'Read', 'Dev']);
-      expect(cubit.state.sources, ['youtube.com', 'amazon.in']);
-      expect(cubit.state.matchCount, 1);
-    });
-
-    blocTest<FilterSheetCubit, FilterSheetState>(
-      'toggles add and remove filters and update the count',
-      build: build,
-      act: (cubit) => cubit
-        ..toggleCategory('Watch')
-        ..togglePriority('High')
-        ..toggleSource('amazon.in')
-        ..toggleCategory('Watch'),
-      verify: (cubit) {
-        expect(
-          cubit.state.query,
-          const LinkQuery(priorities: {'High'}, host: 'amazon.in'),
-        );
-        expect(cubit.state.matchCount, 2);
-      },
-    );
-
-    test('a selected source outside the top list is still offered', () {
-      final cubit = build(initial: const LinkQuery(host: 'rare.site'));
-      expect(cubit.state.sources, ['youtube.com', 'amazon.in', 'rare.site']);
-    });
-
-    blocTest<FilterSheetCubit, FilterSheetState>(
-      'reset returns to the scope but keeps tab, sort and search',
-      build: () => build(
-        initial: const LinkQuery(
-          host: 'youtube.com',
-          categories: {'Read'},
-          readFilter: ReadFilter.unread,
-          sort: LinkSort.oldest,
-          search: 'pizza',
-        ),
-        scope: const LinkQuery(host: 'youtube.com'),
-      ),
-      act: (cubit) => cubit.reset(),
-      verify: (cubit) => expect(
-        cubit.state.query,
-        const LinkQuery(
-          host: 'youtube.com',
-          readFilter: ReadFilter.unread,
-          sort: LinkSort.oldest,
-          search: 'pizza',
-        ),
-      ),
-    );
   });
 
   group('CategoryPickerCubit', () {

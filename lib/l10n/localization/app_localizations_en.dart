@@ -49,25 +49,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get categoryAll => 'All';
 
   @override
-  String get homeCategoriesLabel => 'Categories';
-
-  @override
-  String get homePrioritiesLabel => 'Priorities';
-
-  @override
   String get homeSectionToday => 'Today';
 
   @override
   String get homeSectionThisWeek => 'This week';
-
-  @override
-  String get homeSectionOlder => 'Older';
-
-  @override
-  String get homeAllCaughtUpTitle => 'All caught up!';
-
-  @override
-  String get homeAllCaughtUpSubtitle => 'You\'ve opened every saved link.';
 
   @override
   String get catDev => 'Dev';
@@ -206,10 +191,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get todayArchivedConfirm => 'Archived';
 
   @override
-  String get todayBrowseLibrary => 'Browse Library';
-
-  @override
-  String get libraryTitle => 'Library';
+  String get todayBrowseLibrary => 'Browse links';
 
   @override
   String get priorityHigh => 'High';
@@ -580,44 +562,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get libraryRead => 'Read';
 
   @override
-  String get librarySources => 'Sources';
-
-  @override
-  String librarySeeAll(int count) {
-    return 'All $count';
-  }
-
-  @override
-  String get libraryAllLinks => 'All links';
-
-  @override
   String get listTabAll => 'All';
 
   @override
-  String get listFilterTitle => 'Filter';
-
-  @override
-  String listFilterMatches(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count links match',
-      one: '1 link matches',
-      zero: 'No links match',
-    );
-    return '$_temp0';
-  }
-
-  @override
   String get listFilterSource => 'Source';
-
-  @override
-  String get listFilterReset => 'Reset';
-
-  @override
-  String listFilterApply(int count) {
-    return 'Show $count';
-  }
 
   @override
   String get listSortTitle => 'Sort by';
@@ -635,7 +583,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get sortMostSaved => 'Most saved';
 
   @override
-  String get sortSite => 'Site A–Z';
+  String get sortSite => 'By site';
 
   @override
   String listSelectedCount(int count) {
@@ -686,4 +634,100 @@ class AppLocalizationsEn extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String linksSearchHint(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Search $count links...',
+      one: 'Search 1 link...',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String sourceSheetCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count sites',
+      one: '1 site',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get sourceSearchHint => 'Find a site...';
+
+  @override
+  String get sourceAll => 'All sites';
+
+  @override
+  String get categoryNone => 'No category';
+
+  @override
+  String get listSelectTitle => 'Select links';
+
+  @override
+  String get listSelect => 'Select';
+
+  @override
+  String get editLinkTitle => 'Update Link';
+
+  @override
+  String get updateLinkButton => 'Update Link';
+
+  @override
+  String get linkCopyUrl => 'Copy URL';
+
+  @override
+  String get linkShare => 'Share';
+
+  @override
+  String get conflictsEmpty => 'No conflicts require attention.';
+
+  @override
+  String get conflictDeletedInCloud => 'Deleted in cloud';
+
+  @override
+  String conflictLocalVersion(String title) {
+    return 'Local: $title';
+  }
+
+  @override
+  String conflictCloudVersion(String title) {
+    return 'Cloud: $title';
+  }
+
+  @override
+  String conflictFields(String fields) {
+    return 'Fields: $fields';
+  }
+
+  @override
+  String get conflictKeepLocal => 'Keep local';
+
+  @override
+  String get conflictKeepCloud => 'Keep cloud';
+
+  @override
+  String get notificationTitle => 'Links waiting';
+
+  @override
+  String get notificationBody =>
+      'You saved something worth another look — tap to see one.';
+
+  @override
+  String get notificationChannelName => 'Daily Resurface';
+
+  @override
+  String get notificationChannelDescription =>
+      'One daily reminder to look at a saved link';
+
+  @override
+  String get widgetTodaysPick => 'Today\'s pick';
+
+  @override
+  String get widgetNothingWaiting => 'Nothing waiting';
 }

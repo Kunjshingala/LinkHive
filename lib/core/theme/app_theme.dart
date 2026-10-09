@@ -58,6 +58,8 @@ ThemeData _buildTheme({
     useMaterial3: true,
     brightness: brightness,
     scaffoldBackgroundColor: background,
+    fontFamily: AppTypography.fontFamily,
+    fontFamilyFallback: AppTypography.fontFamilyFallback,
 
     // ─── Color Scheme ─────────────────────────────────────────────
     colorScheme: ColorScheme(

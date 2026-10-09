@@ -6,6 +6,17 @@ abstract final class AppTypography {
   // timespent uses a very bold, rounded-looking font for headers.
   // We'll emulate it with high weights and tight tracking.
 
+  // ─── Typeface (DESIGN.md) ─────────────────────────────────────────
+  /// Anek Latin for Latin text; set on the theme, so every style uses it.
+  static const String fontFamily = 'AnekLatin';
+
+  /// Scripts Anek Latin doesn't cover: Hindi, Gujarati, then Arabic.
+  static const List<String> fontFamilyFallback = [
+    'AnekDevanagari',
+    'AnekGujarati',
+    'ReadexPro',
+  ];
+
   // ─── Screen Titles ────────────────────────────────────────────────
   static const TextStyle displayLarge = TextStyle(
     fontSize: 34,

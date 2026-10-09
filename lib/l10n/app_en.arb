@@ -14,13 +14,8 @@
   "searchHint": "Search links...",
   "searchClearTooltip": "Clear search",
   "categoryAll": "All",
-  "homeCategoriesLabel": "Categories",
-  "homePrioritiesLabel": "Priorities",
   "homeSectionToday": "Today",
   "homeSectionThisWeek": "This week",
-  "homeSectionOlder": "Older",
-  "homeAllCaughtUpTitle": "All caught up!",
-  "homeAllCaughtUpSubtitle": "You've opened every saved link.",
 
   "catDev": "Dev",
   "catDesign": "Design",
@@ -68,8 +63,7 @@
   "todaySnooze": "Snooze",
   "todaySnoozedConfirm": "Snoozed for later",
   "todayArchivedConfirm": "Archived",
-  "todayBrowseLibrary": "Browse Library",
-  "libraryTitle": "Library",
+  "todayBrowseLibrary": "Browse links",
 
   "priorityHigh": "High",
   "priorityNormal": "Normal",
@@ -220,34 +214,14 @@
   "@librarySavedTwice": { "description": "Library tile: links saved two or more times. Arabic should use words instead of ×." },
   "libraryRead": "Read",
   "@libraryRead": { "description": "Library tile and list tab: links already read or archived (adjective, not the verb)." },
-  "librarySources": "Sources",
-  "@librarySources": { "description": "Library section listing the websites links came from." },
-  "librarySeeAll": "All {count}",
-  "@librarySeeAll": {
-    "description": "Link next to the Sources heading that shows every source.",
-    "placeholders": { "count": { "type": "int" } }
-  },
-  "libraryAllLinks": "All links",
   "listTabAll": "All",
-  "listFilterTitle": "Filter",
-  "listFilterMatches": "{count, plural, =0{No links match} =1{1 link matches} other{{count} links match}}",
-  "@listFilterMatches": {
-    "description": "Live count at the top of the filter sheet.",
-    "placeholders": { "count": { "type": "int" } }
-  },
   "listFilterSource": "Source",
-  "listFilterReset": "Reset",
-  "listFilterApply": "Show {count}",
-  "@listFilterApply": {
-    "description": "Filter sheet button that applies the filters and shows the matching links.",
-    "placeholders": { "count": { "type": "int" } }
-  },
   "listSortTitle": "Sort by",
   "sortNewest": "Newest first",
   "sortOldest": "Oldest first",
   "sortPriority": "Priority",
   "sortMostSaved": "Most saved",
-  "sortSite": "Site A–Z",
+  "sortSite": "By site",
   "listSelectedCount": "{count} selected",
   "@listSelectedCount": {
     "description": "Header title while selecting links in bulk.",
@@ -273,5 +247,56 @@
   "@bulkCategoryApply": {
     "description": "Button in the category sheet that adds the chosen category to the selected links.",
     "placeholders": { "count": { "type": "int" } }
-  }
+  },
+  "linksSearchHint": "{count, plural, =1{Search 1 link...} other{Search {count} links...}}",
+  "@linksSearchHint": {
+    "description": "Hint in the search field at the top of the Links tab.",
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "sourceSheetCount": "{count, plural, =1{1 site} other{{count} sites}}",
+  "@sourceSheetCount": {
+    "description": "Next to the Source sheet title: how many websites links come from.",
+    "placeholders": { "count": { "type": "int" } }
+  },
+  "sourceSearchHint": "Find a site...",
+  "sourceAll": "All sites",
+  "categoryNone": "No category",
+  "@categoryNone": { "description": "Category sheet option that shows links without any category." },
+  "listSelectTitle": "Select links",
+  "listSelect": "Select",
+  "editLinkTitle": "Update Link",
+  "@editLinkTitle": { "description": "Screen title when editing a saved link." },
+  "updateLinkButton": "Update Link",
+  "@updateLinkButton": { "description": "Save button on the edit-link form." },
+  "linkCopyUrl": "Copy URL",
+  "linkShare": "Share",
+  "conflictsEmpty": "No conflicts require attention.",
+  "conflictDeletedInCloud": "Deleted in cloud",
+  "conflictLocalVersion": "Local: {title}",
+  "@conflictLocalVersion": {
+    "description": "The version of a link saved on this device, in a sync conflict.",
+    "placeholders": { "title": { "type": "String" } }
+  },
+  "conflictCloudVersion": "Cloud: {title}",
+  "@conflictCloudVersion": {
+    "description": "The version of a link saved in the cloud, in a sync conflict.",
+    "placeholders": { "title": { "type": "String" } }
+  },
+  "conflictFields": "Fields: {fields}",
+  "@conflictFields": {
+    "description": "Which fields differ between the two versions. {fields} is a list of internal field names.",
+    "placeholders": { "fields": { "type": "String" } }
+  },
+  "conflictKeepLocal": "Keep local",
+  "conflictKeepCloud": "Keep cloud",
+  "notificationTitle": "Links waiting",
+  "@notificationTitle": { "description": "Title of the daily 9am reminder notification." },
+  "notificationBody": "You saved something worth another look — tap to see one.",
+  "notificationChannelName": "Daily Resurface",
+  "@notificationChannelName": { "description": "Name of the notification channel, shown in Android notification settings." },
+  "notificationChannelDescription": "One daily reminder to look at a saved link",
+  "widgetTodaysPick": "Today's pick",
+  "@widgetTodaysPick": { "description": "Home-screen widget heading above the resurfaced link. Shown in capitals." },
+  "widgetNothingWaiting": "Nothing waiting",
+  "@widgetNothingWaiting": { "description": "Home-screen widget heading when there is no link to show. Shown in capitals." }
 }

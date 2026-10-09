@@ -180,18 +180,6 @@ abstract class AppLocalizations {
   /// **'All'**
   String get categoryAll;
 
-  /// No description provided for @homeCategoriesLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'Categories'**
-  String get homeCategoriesLabel;
-
-  /// No description provided for @homePrioritiesLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'Priorities'**
-  String get homePrioritiesLabel;
-
   /// No description provided for @homeSectionToday.
   ///
   /// In en, this message translates to:
@@ -203,24 +191,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'This week'**
   String get homeSectionThisWeek;
-
-  /// No description provided for @homeSectionOlder.
-  ///
-  /// In en, this message translates to:
-  /// **'Older'**
-  String get homeSectionOlder;
-
-  /// No description provided for @homeAllCaughtUpTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'All caught up!'**
-  String get homeAllCaughtUpTitle;
-
-  /// No description provided for @homeAllCaughtUpSubtitle.
-  ///
-  /// In en, this message translates to:
-  /// **'You\'ve opened every saved link.'**
-  String get homeAllCaughtUpSubtitle;
 
   /// No description provided for @catDev.
   ///
@@ -495,14 +465,8 @@ abstract class AppLocalizations {
   /// No description provided for @todayBrowseLibrary.
   ///
   /// In en, this message translates to:
-  /// **'Browse Library'**
+  /// **'Browse links'**
   String get todayBrowseLibrary;
-
-  /// No description provided for @libraryTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Library'**
-  String get libraryTitle;
 
   /// No description provided for @priorityHigh.
   ///
@@ -1152,59 +1116,17 @@ abstract class AppLocalizations {
   /// **'Read'**
   String get libraryRead;
 
-  /// Library section listing the websites links came from.
-  ///
-  /// In en, this message translates to:
-  /// **'Sources'**
-  String get librarySources;
-
-  /// Link next to the Sources heading that shows every source.
-  ///
-  /// In en, this message translates to:
-  /// **'All {count}'**
-  String librarySeeAll(int count);
-
-  /// No description provided for @libraryAllLinks.
-  ///
-  /// In en, this message translates to:
-  /// **'All links'**
-  String get libraryAllLinks;
-
   /// No description provided for @listTabAll.
   ///
   /// In en, this message translates to:
   /// **'All'**
   String get listTabAll;
 
-  /// No description provided for @listFilterTitle.
-  ///
-  /// In en, this message translates to:
-  /// **'Filter'**
-  String get listFilterTitle;
-
-  /// Live count at the top of the filter sheet.
-  ///
-  /// In en, this message translates to:
-  /// **'{count, plural, =0{No links match} =1{1 link matches} other{{count} links match}}'**
-  String listFilterMatches(int count);
-
   /// No description provided for @listFilterSource.
   ///
   /// In en, this message translates to:
   /// **'Source'**
   String get listFilterSource;
-
-  /// No description provided for @listFilterReset.
-  ///
-  /// In en, this message translates to:
-  /// **'Reset'**
-  String get listFilterReset;
-
-  /// Filter sheet button that applies the filters and shows the matching links.
-  ///
-  /// In en, this message translates to:
-  /// **'Show {count}'**
-  String listFilterApply(int count);
 
   /// No description provided for @listSortTitle.
   ///
@@ -1239,7 +1161,7 @@ abstract class AppLocalizations {
   /// No description provided for @sortSite.
   ///
   /// In en, this message translates to:
-  /// **'Site A–Z'**
+  /// **'By site'**
   String get sortSite;
 
   /// Header title while selecting links in bulk.
@@ -1301,6 +1223,150 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{count, plural, =1{Add to 1 link} other{Add to {count} links}}'**
   String bulkCategoryApply(int count);
+
+  /// Hint in the search field at the top of the Links tab.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Search 1 link...} other{Search {count} links...}}'**
+  String linksSearchHint(int count);
+
+  /// Next to the Source sheet title: how many websites links come from.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 site} other{{count} sites}}'**
+  String sourceSheetCount(int count);
+
+  /// No description provided for @sourceSearchHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Find a site...'**
+  String get sourceSearchHint;
+
+  /// No description provided for @sourceAll.
+  ///
+  /// In en, this message translates to:
+  /// **'All sites'**
+  String get sourceAll;
+
+  /// Category sheet option that shows links without any category.
+  ///
+  /// In en, this message translates to:
+  /// **'No category'**
+  String get categoryNone;
+
+  /// No description provided for @listSelectTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Select links'**
+  String get listSelectTitle;
+
+  /// No description provided for @listSelect.
+  ///
+  /// In en, this message translates to:
+  /// **'Select'**
+  String get listSelect;
+
+  /// Screen title when editing a saved link.
+  ///
+  /// In en, this message translates to:
+  /// **'Update Link'**
+  String get editLinkTitle;
+
+  /// Save button on the edit-link form.
+  ///
+  /// In en, this message translates to:
+  /// **'Update Link'**
+  String get updateLinkButton;
+
+  /// No description provided for @linkCopyUrl.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy URL'**
+  String get linkCopyUrl;
+
+  /// No description provided for @linkShare.
+  ///
+  /// In en, this message translates to:
+  /// **'Share'**
+  String get linkShare;
+
+  /// No description provided for @conflictsEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No conflicts require attention.'**
+  String get conflictsEmpty;
+
+  /// No description provided for @conflictDeletedInCloud.
+  ///
+  /// In en, this message translates to:
+  /// **'Deleted in cloud'**
+  String get conflictDeletedInCloud;
+
+  /// The version of a link saved on this device, in a sync conflict.
+  ///
+  /// In en, this message translates to:
+  /// **'Local: {title}'**
+  String conflictLocalVersion(String title);
+
+  /// The version of a link saved in the cloud, in a sync conflict.
+  ///
+  /// In en, this message translates to:
+  /// **'Cloud: {title}'**
+  String conflictCloudVersion(String title);
+
+  /// Which fields differ between the two versions. {fields} is a list of internal field names.
+  ///
+  /// In en, this message translates to:
+  /// **'Fields: {fields}'**
+  String conflictFields(String fields);
+
+  /// No description provided for @conflictKeepLocal.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep local'**
+  String get conflictKeepLocal;
+
+  /// No description provided for @conflictKeepCloud.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep cloud'**
+  String get conflictKeepCloud;
+
+  /// Title of the daily 9am reminder notification.
+  ///
+  /// In en, this message translates to:
+  /// **'Links waiting'**
+  String get notificationTitle;
+
+  /// No description provided for @notificationBody.
+  ///
+  /// In en, this message translates to:
+  /// **'You saved something worth another look — tap to see one.'**
+  String get notificationBody;
+
+  /// Name of the notification channel, shown in Android notification settings.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily Resurface'**
+  String get notificationChannelName;
+
+  /// No description provided for @notificationChannelDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'One daily reminder to look at a saved link'**
+  String get notificationChannelDescription;
+
+  /// Home-screen widget heading above the resurfaced link. Shown in capitals.
+  ///
+  /// In en, this message translates to:
+  /// **'Today\'s pick'**
+  String get widgetTodaysPick;
+
+  /// Home-screen widget heading when there is no link to show. Shown in capitals.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing waiting'**
+  String get widgetNothingWaiting;
 }
 
 class _AppLocalizationsDelegate

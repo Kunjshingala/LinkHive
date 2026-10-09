@@ -1,0 +1,662 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LinkHive Links Preview</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anek+Latin:wght@500;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* Tokens mirror lib/core/theme/app_colors.dart and DESIGN.md */
+:root {
+  --ink: #1E1E1E;
+  --page: #ECE2D5;
+  --bg: #FFFFFF;
+  --surface: #FFFFFF;
+  --muted: #F3F4F6;
+  --text: #1E1E1E;
+  --text2: #4B5563;
+  --text3: #9CA3AF;
+  --border: #1E1E1E;
+  --primary: #1E1E1E;
+  --on-primary: #FFFFFF;
+  --frame: #1E1E1E;
+  --mint: #B5E4CA; --peach: #FFDAB9; --sky: #BBE4FB; --rose: #FFD1DC; --lemon: #FDF0A6;
+  --green: #D1FADF; --orange: #FEF0C7; --blue: #D1E9FF; --return: #F4EBFF;
+  --success: #22C55E; --warning: #F59E0B; --error: #EF4444;
+  --scrim: rgba(30, 30, 30, .45);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --page: #0B0B0B; --bg: #121212; --surface: #1E1E1E; --muted: #2C2C2C;
+    --text: #E5E7EB; --text2: #A3A3A3; --text3: #737373; --border: #E5E7EB;
+    --primary: #FFFFFF; --on-primary: #1E1E1E; --frame: #3A3A3A; --scrim: rgba(0,0,0,.6);
+  }
+}
+:root[data-theme="dark"] {
+  --page: #0B0B0B; --bg: #121212; --surface: #1E1E1E; --muted: #2C2C2C;
+  --text: #E5E7EB; --text2: #A3A3A3; --text3: #737373; --border: #E5E7EB;
+  --primary: #FFFFFF; --on-primary: #1E1E1E; --frame: #3A3A3A; --scrim: rgba(0,0,0,.6);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: var(--page);
+  color: var(--text);
+  font-family: "Anek Latin", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font-weight: 500;
+  -webkit-font-smoothing: antialiased;
+}
+svg.i { width: 22px; height: 22px; fill: currentColor; flex: none; }
+svg.i.sm { width: 18px; height: 18px; }
+svg.i.xs { width: 14px; height: 14px; }
+
+/* ── Page chrome ─────────────────────────────────────────── */
+.top {
+  max-width: 1200px; margin: 0 auto; padding: 32px 16px 8px;
+  display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-end; justify-content: space-between;
+}
+.top h1 { font-size: 34px; font-weight: 800; letter-spacing: -1px; line-height: 1.1; color: var(--text); }
+.top p { color: var(--text2); font-size: 15px; margin-top: 6px; max-width: 640px; line-height: 1.5; }
+.legend { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.tag { font-size: 11px; font-weight: 700; letter-spacing: .5px; padding: 3px 8px; border-radius: 100px; border: 2px solid var(--ink); color: var(--ink); text-transform: uppercase; }
+.tag.new { background: var(--green); }
+.tag.chg { background: var(--orange); }
+.tag.same { background: var(--muted); color: var(--text); border-color: var(--border); }
+.toggle {
+  height: 44px; padding: 0 18px; border-radius: 100px; border: 2px solid var(--border);
+  background: var(--surface); color: var(--text); font: inherit; font-weight: 700; font-size: 14px;
+  box-shadow: 4px 4px 0 var(--mint); cursor: pointer;
+}
+.toggle:active { transform: translate(4px, 4px); box-shadow: none; }
+
+.grid {
+  max-width: 1200px; margin: 0 auto; padding: 24px 16px 64px;
+  display: flex; flex-wrap: wrap; gap: 48px 40px; justify-content: center;
+}
+.shot { width: 360px; max-width: 100%; }
+.shot h2 { font-size: 18px; font-weight: 700; letter-spacing: -.2px; margin-bottom: 4px; display: flex; gap: 8px; align-items: center; }
+.shot h2 .n { width: 26px; height: 26px; border-radius: 8px; border: 2px solid var(--ink); background: var(--lemon); color: var(--ink); display: grid; place-items: center; font-size: 13px; }
+.shot .sub { font-size: 13px; color: var(--text2); margin-bottom: 12px; }
+.notes { margin-top: 14px; list-style: none; display: grid; gap: 8px; }
+.notes li { font-size: 13px; line-height: 1.6; color: var(--text2); }
+.notes li .tag { margin-right: 6px; font-size: 10px; padding: 1px 7px; vertical-align: 1px; }
+.notes code, .top code { font-size: 12px; background: var(--muted); color: var(--text); padding: 1px 5px; border-radius: 6px; }
+
+/* ── Phone ───────────────────────────────────────────────── */
+.phone {
+  width: 360px; max-width: 100%; height: 760px; border: 3px solid var(--frame); border-radius: 40px;
+  background: var(--bg); overflow: hidden; position: relative; display: flex; flex-direction: column;
+  box-shadow: 6px 6px 0 var(--frame);
+}
+.status { height: 34px; padding: 0 26px; display: flex; justify-content: space-between; align-items: center; font-size: 13px; font-weight: 700; color: var(--text); flex: none; }
+.status .dots { letter-spacing: 2px; }
+
+/* Boxed header (Litverse layout, DESIGN.md borders) */
+.hdr { height: 56px; flex: none; display: flex; border-top: 2px solid var(--border); border-bottom: 2px solid var(--border); background: var(--surface); }
+.hdr .cell { width: 56px; display: grid; place-items: center; color: var(--text); }
+.hdr .cell.l { border-right: 2px solid var(--border); }
+.hdr .cell.r { border-left: 2px solid var(--border); }
+.hdr .cell.txt { font-weight: 700; font-size: 14px; }
+.hdr .title { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; min-width: 0; }
+.hdr .title b { font-size: 20px; font-weight: 800; letter-spacing: -.3px; line-height: 1.1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+.hdr .title small { font-size: 12px; color: var(--text2); font-weight: 600; }
+
+/* Raised header (as built today: CommonAppBar + round NeoBrutalistButton, 44px, hard shadow) */
+body.raised .hdr { height: 64px; border-top: 0; border-bottom: 0; background: var(--bg); padding: 0 20px; align-items: center; gap: 12px; }
+body.raised .hdr .cell { width: 44px; height: 44px; border: 2px solid var(--border); border-radius: 100px; background: var(--surface); box-shadow: 4px 4px 0 var(--mint); }
+body.raised .hdr .cell.add { box-shadow: 4px 4px 0 var(--success); }
+body.raised .hdr .cell.txt { width: auto; padding: 0 16px; }
+body.raised .hdr .cell:empty { visibility: hidden; }
+body.raised .hdr .cell:active { transform: translate(4px, 4px); box-shadow: none; }
+.seg { display: inline-flex; border: 2px solid var(--border); border-radius: 100px; overflow: hidden; height: 44px; background: var(--surface); }
+.seg button { border: 0; background: transparent; color: var(--text); font: inherit; font-size: 14px; font-weight: 700; padding: 0 14px; cursor: pointer; }
+.seg button + button { border-left: 2px solid var(--border); }
+.seg button.on { background: var(--primary); color: var(--on-primary); }
+.seglabel { font-size: 13px; font-weight: 700; color: var(--text2); }
+
+.body { flex: 1; overflow-y: auto; padding: 16px 20px 24px; scrollbar-width: none; position: relative; }
+.body::-webkit-scrollbar { display: none; }
+
+/* Bottom nav */
+.nav { height: 70px; flex: none; border-top: 2px solid var(--border); background: var(--surface); display: flex; justify-content: space-around; align-items: center; padding: 0 8px 6px; }
+.nav .it { display: flex; flex-direction: column; align-items: center; gap: 1px; font-size: 12px; font-weight: 700; color: var(--text2); padding: 5px 16px; border-radius: 100px; border: 2px solid transparent; position: relative; }
+.nav .it.on { background: var(--green); border-color: var(--ink); color: var(--ink); }
+.nav .badge { position: absolute; top: -2px; right: 6px; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 100px; background: var(--orange); color: var(--ink); border: 2px solid var(--ink); font-size: 10px; font-weight: 800; display: grid; place-items: center; }
+
+/* ── Shared atoms ────────────────────────────────────────── */
+.label { font-size: 11px; font-weight: 700; letter-spacing: .5px; text-transform: uppercase; color: var(--text2); display: flex; justify-content: space-between; align-items: center; margin: 22px 0 10px; }
+.label a { color: var(--text); text-decoration: none; letter-spacing: .2px; text-transform: none; font-size: 13px; font-weight: 700; display: flex; align-items: center; }
+.search { display: flex; gap: 10px; }
+.field { flex: 1; height: 48px; border: 2px solid var(--border); border-radius: 12px; background: var(--surface); display: flex; align-items: center; gap: 8px; padding: 0 14px; color: var(--text3); font-size: 15px; }
+.field.typed { color: var(--text); }
+.sq { width: 48px; height: 48px; border-radius: 16px; border: 2px solid var(--border); background: var(--surface); color: var(--text); display: grid; place-items: center; box-shadow: 4px 4px 0 var(--sky); position: relative; flex: none; }
+.sq .cnt { position: absolute; top: -8px; right: -8px; min-width: 20px; height: 20px; border-radius: 100px; background: var(--primary); color: var(--on-primary); font-size: 11px; font-weight: 800; display: grid; place-items: center; padding: 0 5px; }
+
+.tiles { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 18px; }
+.tile { border: 2px solid var(--border); border-radius: 16px; background: var(--surface); padding: 12px 14px; display: flex; flex-direction: column; gap: 2px; cursor: pointer; }
+.tile span { font-size: 13px; font-weight: 600; color: var(--text2); display: flex; align-items: center; gap: 6px; }
+.tile b { font-size: 28px; font-weight: 800; letter-spacing: -.8px; line-height: 1.15; }
+.tile.ret { background: var(--return); }
+.tile.ret span, .tile.ret b { color: var(--ink); }
+.sh-mint { box-shadow: 4px 4px 0 var(--mint); }
+.sh-peach { box-shadow: 4px 4px 0 var(--peach); }
+.sh-sky { box-shadow: 4px 4px 0 var(--sky); }
+.sh-rose { box-shadow: 4px 4px 0 var(--rose); }
+.sh-lemon { box-shadow: 4px 4px 0 var(--lemon); }
+
+.rows { display: grid; gap: 8px; }
+.row { height: 52px; border: 2px solid var(--border); border-radius: 100px; background: var(--surface); display: flex; align-items: center; gap: 10px; padding: 0 12px 0 8px; cursor: pointer; }
+.row .fav { width: 32px; height: 32px; border-radius: 100px; display: grid; place-items: center; font-size: 13px; font-weight: 800; color: var(--ink); border: 2px solid var(--ink); flex: none; }
+.row .nm { flex: 1; font-size: 15px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.row .nm em { font-style: normal; font-size: 12px; color: var(--text3); font-weight: 600; margin-left: 4px; }
+.row .ct { font-size: 13px; font-weight: 700; color: var(--text2); }
+.row svg { color: var(--text2); }
+.row.all { background: var(--muted); }
+
+.f-blue { background: var(--blue); } .f-green { background: var(--green); } .f-orange { background: var(--orange); }
+.f-purple { background: var(--return); } .f-rose { background: var(--rose); } .f-lemon { background: var(--lemon); }
+
+/* Tabs (Litverse square tabs) */
+.tabbar { display: flex; gap: 10px; align-items: center; }
+.tabs { flex: 1; display: flex; border: 2px solid var(--border); border-radius: 12px; overflow: hidden; background: var(--surface); height: 44px; }
+.tabs button { flex: 1; border: 0; background: transparent; color: var(--text); font: inherit; font-size: 14px; font-weight: 700; cursor: pointer; }
+.tabs button + button { border-left: 2px solid var(--border); }
+.tabs button.on { background: var(--primary); color: var(--on-primary); }
+.tabbar .sq { width: 44px; height: 44px; }
+
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip { height: 32px; padding: 0 14px; border-radius: 100px; border: 2px solid var(--border); background: var(--surface); color: var(--text); font: inherit; font-size: 13px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; cursor: pointer; }
+.chip.sel { background: var(--primary); color: var(--on-primary); font-weight: 700; box-shadow: 2px 2px 0 var(--border); }
+.chip.act { background: var(--green); color: var(--ink); border-color: var(--ink); }
+.chip.sug { background: var(--lemon); color: var(--ink); border-color: var(--ink); }
+.chip.new { border-style: dashed; color: var(--text2); }
+.chip.legacy { color: var(--text2); }
+.filters { margin-top: 12px; }
+
+.month { font-size: 11px; font-weight: 700; letter-spacing: .5px; text-transform: uppercase; color: var(--text2); margin: 18px 0 10px; }
+
+/* Link card (mirrors lib/sharedWidgets/link_card.dart) */
+.cards { display: grid; gap: 16px; }
+.card { border: 2px solid var(--border); border-radius: 16px; background: var(--surface); padding: 14px 12px 14px 16px; display: flex; gap: 12px; position: relative; box-shadow: 3px 4px 0 var(--mint); }
+.card .av { width: 38px; height: 38px; border-radius: 10px; display: grid; place-items: center; font-weight: 800; font-size: 16px; color: var(--ink); flex: none; }
+.card .ct { flex: 1; min-width: 0; }
+.card .t { font-size: 15px; font-weight: 500; line-height: 1.35; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.card .h { font-size: 13px; color: var(--primary); font-weight: 600; margin-top: 2px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.card .meta { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; margin-top: 8px; }
+.pill { font-size: 11px; font-weight: 700; padding: 2px 9px; border-radius: 100px; background: var(--muted); color: var(--text); letter-spacing: .3px; }
+.pill.hi { background: var(--orange); color: var(--ink); border: 1.5px solid var(--ink); }
+.pill.ret { background: var(--return); color: var(--ink); border: 1.5px solid var(--ink); }
+.time { font-size: 11px; font-weight: 700; color: var(--text3); letter-spacing: .3px; }
+.card .more { color: var(--text2); align-self: flex-start; }
+.card .dot { position: absolute; top: 10px; right: 10px; width: 8px; height: 8px; border-radius: 50%; background: var(--warning); }
+.card.read { opacity: .72; }
+
+/* Selection */
+.card.selectable { cursor: pointer; }
+.card .ck { width: 26px; height: 26px; border-radius: 100px; border: 2px solid var(--border); background: var(--surface); display: grid; place-items: center; flex: none; align-self: center; color: transparent; }
+.card.picked { background: var(--green); box-shadow: 3px 4px 0 var(--border); }
+.card.picked .t, .card.picked .h, .card.picked .time { color: var(--ink); }
+.card.picked .ck { background: var(--ink); border-color: var(--ink); color: #fff; }
+.actionbar { height: 70px; flex: none; display: flex; border-top: 2px solid var(--border); background: var(--surface); }
+.actionbar div { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; font-size: 12px; font-weight: 700; color: var(--text); padding-bottom: 6px; }
+.actionbar div + div { border-left: 2px solid var(--border); }
+.actionbar .del { color: var(--error); }
+
+/* Buttons (mirror NeoBrutalistButton) */
+.btn { height: 52px; border-radius: 100px; border: 2px solid var(--border); background: var(--surface); color: var(--text); font: inherit; font-size: 16px; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 4px 4px 0 var(--mint); width: 100%; cursor: pointer; }
+.btn.primary { background: var(--primary); color: var(--on-primary); }
+.btn.go { box-shadow: 4px 4px 0 var(--success); }
+.btn:active { transform: translate(4px, 4px); box-shadow: none; }
+.btnrow { display: flex; gap: 10px; }
+
+/* Today card */
+.today { border: 2px solid var(--border); border-radius: 20px; background: var(--surface); padding: 20px; }
+.today .img { aspect-ratio: 16 / 9; border-radius: 14px; border: 2px solid var(--border); background: var(--blue); display: grid; place-items: center; color: var(--ink); position: relative; overflow: hidden; }
+.today .img .play { width: 52px; height: 52px; border-radius: 100px; background: var(--surface); border: 2px solid var(--ink); display: grid; place-items: center; color: var(--text); }
+.today h3 { font-size: 20px; font-weight: 700; letter-spacing: -.3px; line-height: 1.3; margin-top: 18px; }
+.today .h { font-size: 13px; font-weight: 600; margin-top: 6px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.today p { font-size: 15px; color: var(--text2); line-height: 1.5; margin-top: 12px; }
+
+.empty { text-align: center; padding: 70px 10px 0; display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.empty .ico { width: 88px; height: 88px; border-radius: 24px; border: 2px solid var(--border); background: var(--green); color: var(--ink); display: grid; place-items: center; box-shadow: 4px 4px 0 var(--border); margin-bottom: 10px; }
+.empty .ico svg { width: 40px; height: 40px; }
+.empty h3 { font-size: 22px; font-weight: 700; letter-spacing: -.5px; }
+.empty p { font-size: 15px; color: var(--text2); line-height: 1.5; max-width: 260px; }
+
+/* Sheets */
+.scrim { position: absolute; inset: 0; background: var(--scrim); z-index: 2; }
+.sheet { position: absolute; left: 0; right: 0; bottom: 0; z-index: 3; background: var(--surface); border-top: 2px solid var(--border); border-radius: 20px 20px 0 0; padding: 12px 20px 22px; max-height: 84%; overflow-y: auto; scrollbar-width: none; }
+.sheet::-webkit-scrollbar { display: none; }
+.sheet .grab { width: 40px; height: 5px; border-radius: 100px; background: var(--text3); margin: 0 auto 14px; }
+.sheet h3 { font-size: 22px; font-weight: 700; letter-spacing: -.5px; display: flex; justify-content: space-between; align-items: center; }
+.sheet h3 small { font-size: 13px; font-weight: 700; color: var(--text2); letter-spacing: 0; }
+.sheet .label { margin-top: 18px; }
+.sheet .btnrow { margin-top: 22px; }
+.opt { height: 52px; display: flex; align-items: center; gap: 12px; border-bottom: 2px solid var(--muted); font-size: 16px; font-weight: 600; }
+.opt:last-of-type { border-bottom: 0; }
+.opt .rad { width: 24px; height: 24px; border-radius: 100px; border: 2px solid var(--border); display: grid; place-items: center; flex: none; color: transparent; }
+.opt.on .rad { background: var(--primary); color: var(--on-primary); }
+.opt span { flex: 1; }
+.opt em { font-style: normal; font-size: 13px; color: var(--text2); font-weight: 600; }
+.why { font-size: 12px; color: var(--text2); margin-top: 8px; display: flex; gap: 6px; align-items: center; }
+
+/* Inbox */
+.inbox { border: 2px solid var(--border); border-radius: 16px; background: var(--surface); padding: 14px 16px; box-shadow: 3px 4px 0 var(--peach); }
+.inbox .top2 { display: flex; gap: 12px; }
+.inbox .acts { display: flex; gap: 8px; margin-top: 12px; }
+.inbox .acts .btn { height: 40px; font-size: 14px; box-shadow: 3px 3px 0 var(--mint); }
+.inbox .acts .sq { width: 40px; height: 40px; box-shadow: 3px 3px 0 var(--rose); border-radius: 100px; color: var(--error); }
+
+/* Form */
+.flabel { font-size: 13px; font-weight: 700; color: var(--text2); margin: 16px 0 8px; }
+.sug { border: 2px solid var(--ink); border-radius: 16px; background: var(--lemon); color: var(--ink); padding: 12px; }
+.sug .hd { font-size: 12px; font-weight: 700; display: flex; gap: 6px; align-items: center; margin-bottom: 10px; }
+.sug .chip { background: #fff; color: var(--ink); border-color: var(--ink); }
+.sug .chip.sel { background: var(--ink); color: #fff; }
+
+@media (max-width: 420px) {
+  .top h1 { font-size: 28px; }
+  .grid { gap: 40px; padding-left: 12px; padding-right: 12px; }
+}
+</style>
+</head>
+<body class="raised">
+
+<!-- Icon sprite: Material Symbols paths, same family the app uses (Icons.*_rounded) -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-today" viewBox="0 0 24 24"><path d="M19 4h-1V2h-2v2H8V2H6v2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V9h14v11zM7 11h5v5H7z"/></symbol>
+  <symbol id="i-library" viewBox="0 0 24 24"><path d="M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm16-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 10l-2.5-1.5L15 12V4h5v8z"/></symbol>
+  <symbol id="i-inbox" viewBox="0 0 24 24"><path d="M19 3H4.99C3.88 3 3 3.9 3 5v14c0 1.1.88 2 1.99 2H19c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 12h-4c0 1.66-1.35 3-3 3s-3-1.34-3-3H4.99V5H19v10z"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.47 6.47 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></symbol>
+  <symbol id="i-tune" viewBox="0 0 24 24"><path d="M3 17v2h6v-2H3zM3 5v2h10V5H3zm10 16v-2h8v-2h-8v-2h-2v6h2zM7 9v2H3v2h4v2h2V9H7zm14 4v-2H11v2h10zm-6-4h2V7h4V5h-4V3h-2v6z"/></symbol>
+  <symbol id="i-sort" viewBox="0 0 24 24"><path d="M3 18h6v-2H3v2zM3 6v2h18V6H3zm0 7h12v-2H3v2z"/></symbol>
+  <symbol id="i-add" viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></symbol>
+  <symbol id="i-person" viewBox="0 0 24 24"><path d="M12 6c1.1 0 2 .9 2 2s-.9 2-2 2-2-.9-2-2 .9-2 2-2m0 10c2.7 0 5.8 1.29 6 2H6c.23-.72 3.31-2 6-2m0-12C9.79 4 8 5.79 8 8s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4zm0 10c-2.67 0-8 1.34-8 4v3h16v-3c0-2.66-5.33-4-8-4z"/></symbol>
+  <symbol id="i-chev" viewBox="0 0 24 24"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></symbol>
+  <symbol id="i-back" viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></symbol>
+  <symbol id="i-close" viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></symbol>
+  <symbol id="i-more" viewBox="0 0 24 24"><path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/></symbol>
+  <symbol id="i-open" viewBox="0 0 24 24"><path d="M19 19H5V5h7V3H5a2 2 0 0 0-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"/></symbol>
+  <symbol id="i-snooze" viewBox="0 0 24 24"><path d="M7.88 3.39L6.6 1.86 2 5.71l1.29 1.53 4.59-3.85zM22 5.72l-4.6-3.86-1.29 1.53 4.6 3.86L22 5.72zM12 4c-4.97 0-9 4.03-9 9s4.02 9 9 9a9 9 0 0 0 0-18zm0 16c-3.87 0-7-3.13-7-7s3.13-7 7-7 7 3.13 7 7-3.13 7-7 7zm-3-9h3.63L9 15.2V17h6v-2h-3.63L15 10.8V9H9v2z"/></symbol>
+  <symbol id="i-archive" viewBox="0 0 24 24"><path d="M20.54 5.23l-1.39-1.68C18.88 3.21 18.47 3 18 3H6c-.47 0-.88.21-1.16.55L3.46 5.23C3.17 5.57 3 6.02 3 6.5V19c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V6.5c0-.48-.17-.93-.46-1.27zM12 17.5L6.5 12H10v-2h4v2h3.5L12 17.5zM5.12 5l.81-1h12l.94 1H5.12z"/></symbol>
+  <symbol id="i-doneall" viewBox="0 0 24 24"><path d="M18 7l-1.41-1.41-6.34 6.34 1.41 1.41L18 7zm4.24-1.41L11.66 16.17 7.48 12l-1.41 1.41L11.66 19l12-12-1.42-1.41zM.41 13.41L6 19l1.41-1.41L1.83 12 .41 13.41z"/></symbol>
+  <symbol id="i-label" viewBox="0 0 24 24"><path d="M17.63 5.84C17.27 5.33 16.67 5 16 5L5 5.01C3.9 5.01 3 5.9 3 7v10c0 1.1.9 1.99 2 1.99L16 19c.67 0 1.27-.33 1.63-.84L22 12l-4.37-6.16zM16 17H5V7h11l3.55 5L16 17z"/></symbol>
+  <symbol id="i-flag" viewBox="0 0 24 24"><path d="M14.4 6L14 4H5v17h2v-7h5.6l.4 2h7V6z"/></symbol>
+  <symbol id="i-delete" viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></symbol>
+  <symbol id="i-spark" viewBox="0 0 24 24"><path d="M19 9l1.25-2.75L23 5l-2.75-1.25L19 1l-1.25 2.75L15 5l2.75 1.25L19 9zm-7.5.5L9 4 6.5 9.5 1 12l5.5 2.5L9 20l2.5-5.5L17 12l-5.5-2.5zM19 15l-1.25 2.75L15 19l2.75 1.25L19 23l1.25-2.75L23 19l-2.75-1.25L19 15z"/></symbol>
+  <symbol id="i-edit" viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a.996.996 0 0 0 0-1.41l-2.34-2.34a.996.996 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></symbol>
+  <symbol id="i-play" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></symbol>
+  <symbol id="i-unread" viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></symbol>
+  <symbol id="i-select" viewBox="0 0 24 24"><path d="M22 7h-9v2h9V7zm0 8h-9v2h9v-2zM5.54 11L2 7.46l1.41-1.41 2.12 2.12 4.24-4.24 1.41 1.41L5.54 11zm0 8L2 15.46l1.41-1.41 2.12 2.12 4.24-4.24 1.41 1.41L5.54 19z"/></symbol>
+  <symbol id="i-loop" viewBox="0 0 24 24"><path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46A7.93 7.93 0 0 0 20 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74A7.93 7.93 0 0 0 4 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z"/></symbol>
+</svg>
+
+
+<style>
+/* v2 additions */
+body.sysfont, body.sysfont button { font-family: Roboto, "Segoe UI", system-ui, sans-serif; }
+.btn.ink { background: var(--primary); color: var(--on-primary); }
+.searchbar { display: flex; gap: 10px; align-items: center; }
+.quick { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; margin: 14px -20px 0; padding: 2px 20px 6px; }
+.quick::-webkit-scrollbar { display: none; }
+.qc { flex: none; height: 36px; padding: 0 14px; border-radius: 100px; border: 2px solid var(--border); background: var(--surface); color: var(--text); font: inherit; font-size: 14px; font-weight: 700; display: inline-flex; align-items: center; gap: 6px; cursor: pointer; }
+.qc em { font-style: normal; font-size: 12px; font-weight: 800; padding: 1px 7px; border-radius: 100px; background: var(--muted); color: var(--text); }
+.qc.on { background: var(--primary); color: var(--on-primary); box-shadow: 3px 3px 0 var(--mint); }
+.qc.on em { background: var(--on-primary); color: var(--primary); }
+.qc.ret em { background: var(--return); color: var(--ink); }
+.drops { display: flex; gap: 8px; margin-top: 10px; }
+.drop { flex: 1; min-width: 0; height: 40px; border-radius: 12px; border: 2px solid var(--border); background: var(--surface); color: var(--text); font: inherit; font-size: 13px; font-weight: 700; display: flex; align-items: center; justify-content: space-between; gap: 4px; padding: 0 8px 0 12px; cursor: pointer; }
+.drop span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.drop.set { background: var(--green); color: var(--ink); border-color: var(--ink); }
+.listhead { display: flex; justify-content: space-between; align-items: baseline; margin: 16px 0 2px; }
+.listhead b { font-size: 13px; font-weight: 700; color: var(--text2); }
+.fab { position: absolute; right: 20px; bottom: 86px; width: 58px; height: 58px; border-radius: 100px; border: 2px solid var(--ink); background: var(--primary); color: var(--on-primary); display: grid; place-items: center; box-shadow: 4px 4px 0 var(--success); z-index: 1; }
+.fab svg { width: 28px; height: 28px; }
+.srclist { margin-top: 12px; }
+.src { height: 54px; display: flex; align-items: center; gap: 12px; border-bottom: 2px solid var(--muted); font-size: 16px; font-weight: 600; }
+.src:last-child { border-bottom: 0; }
+.src .fav { width: 32px; height: 32px; border-radius: 100px; display: grid; place-items: center; font-size: 13px; font-weight: 800; color: var(--ink); border: 2px solid var(--ink); flex: none; }
+.src span { flex: 1; }
+.src em { font-style: normal; font-size: 13px; font-weight: 700; color: var(--text2); }
+.src.on span { font-weight: 800; }
+.src .tick { width: 24px; height: 24px; border-radius: 100px; background: var(--primary); color: var(--on-primary); display: grid; place-items: center; }
+.sheet .field { margin-top: 12px; }
+</style>
+
+<header class="top">
+  <div>
+    <h1>LinkHive: Links-first preview (v2)</h1>
+    <p>Your links are the main tab. Search, quick filters and Source / Category / Sort sit on top of the list, so nothing is more than one tap away. The app opens here. Today and Inbox stay as tabs. Chips and tabs are clickable.</p>
+  </div>
+  <div class="legend">
+    <span class="tag new">New in v2</span>
+    <span class="tag chg">Changed from v1</span>
+    <span class="tag same">Same as v1</span>
+    <span class="seglabel">Font</span>
+    <div class="seg" id="fontseg"><button class="on" data-font="anek" type="button">Anek (target)</button><button data-font="sys" type="button">System (now)</button></div>
+    <button class="toggle" id="theme" type="button">Dark mode</button>
+  </div>
+</header>
+
+<main class="grid">
+
+  <!-- 1. Links tab -->
+  <section class="shot">
+    <h2><span class="n">1</span>Links (opens here)</h2>
+    <div class="sub">Your links straight away. Everything else is a filter on top.</div>
+    <div class="phone">
+      <div class="status"><span>9:41</span><span class="dots">●●●</span></div>
+      <div class="hdr">
+        <div class="cell l"><svg class="i"><use href="#i-person"/></svg></div>
+        <div class="title"><b>Links</b></div>
+        <div class="cell r"><svg class="i"><use href="#i-select"/></svg></div>
+      </div>
+      <div class="body">
+        <div class="field"><svg class="i sm"><use href="#i-search"/></svg>Search 512 links...</div>
+        <div class="quick" data-group-q>
+          <button class="qc on">All <em>512</em></button>
+          <button class="qc">Unread <em>202</em></button>
+          <button class="qc">High <em>12</em></button>
+          <button class="qc ret">Saved 2×+ <em>9</em></button>
+          <button class="qc">Read <em>310</em></button>
+        </div>
+        <div class="drops">
+          <button class="drop"><span>Source</span><svg class="i xs"><use href="#i-chev"/></svg></button>
+          <button class="drop"><span>Category</span><svg class="i xs"><use href="#i-chev"/></svg></button>
+          <button class="drop"><span>Newest</span><svg class="i xs"><use href="#i-sort"/></svg></button>
+        </div>
+
+        <div class="month">Today</div>
+        <div class="cards">
+          <div class="card"><span class="dot"></span>
+            <span class="av f-rose">H</span>
+            <div class="ct"><div class="t">How to make perfect Neapolitan pizza at home</div>
+              <div class="h">youtube.com</div>
+              <div class="meta"><span class="pill">Recipes</span><span class="pill ret">Saved 2×</span><span class="time">2h ago</span></div></div>
+            <svg class="i sm more"><use href="#i-more"/></svg>
+          </div>
+          <div class="card"><span class="dot"></span>
+            <span class="av f-orange">I</span>
+            <div class="ct"><div class="t">5 desk setups under ₹20k</div>
+              <div class="h">instagram.com</div>
+              <div class="meta"><span class="pill">Shop</span><span class="time">5h ago</span></div></div>
+            <svg class="i sm more"><use href="#i-more"/></svg>
+          </div>
+        </div>
+        <div class="month">This week</div>
+        <div class="cards">
+          <div class="card"><span class="dot"></span>
+            <span class="av f-blue">F</span>
+            <div class="ct"><div class="t">Flutter 4 keynote in 12 minutes</div>
+              <div class="h">youtube.com <span class="pill hi">High</span></div>
+              <div class="meta"><span class="pill">Learn</span><span class="time">3d ago</span></div></div>
+            <svg class="i sm more"><use href="#i-more"/></svg>
+          </div>
+        </div>
+      </div>
+      <div class="fab"><svg class="i"><use href="#i-add"/></svg></div>
+      <nav class="nav">
+        <div class="it on"><svg class="i"><use href="#i-library"/></svg>Links</div>
+        <div class="it"><svg class="i"><use href="#i-today"/></svg>Today</div>
+        <div class="it"><svg class="i"><use href="#i-inbox"/></svg>Inbox<span class="badge">4</span></div>
+      </nav>
+    </div>
+    <ul class="notes">
+      <li><span class="tag chg">Changed</span>Opens on your links, not Today. The Library overview screen is gone; its counts became the quick chips.</li>
+      <li><span class="tag new">New</span>Search field is always visible and shows how many links it searches.</li>
+      <li><span class="tag new">New</span>Quick chips with live counts: one tap to Unread, High, Saved 2×+ or Read.</li>
+      <li><span class="tag new">New</span>Source, Category and Sort buttons on top of the list. Add moves to a round button at the bottom right, within thumb reach.</li>
+      <li><span class="tag new">New</span>A Select button (top right) starts bulk select, so you don't have to know about long-press.</li>
+      <li><span class="tag chg">Changed</span>Groups are Today / This week / then months, so recent links stay on top.</li>
+    </ul>
+  </section>
+
+  <!-- 2. Source sheet -->
+  <section class="shot">
+    <h2><span class="n">2</span>Source button</h2>
+    <div class="sub">Pick one site. Searchable when you have many.</div>
+    <div class="phone">
+      <div class="status"><span>9:41</span><span class="dots">●●●</span></div>
+      <div class="hdr">
+        <div class="cell l"><svg class="i"><use href="#i-person"/></svg></div>
+        <div class="title"><b>Links</b></div>
+        <div class="cell r"><svg class="i"><use href="#i-select"/></svg></div>
+      </div>
+      <div class="body"></div>
+      <div class="scrim"></div>
+      <div class="sheet">
+        <div class="grab"></div>
+        <h3>Source <small>23 sites</small></h3>
+        <div class="field"><svg class="i sm"><use href="#i-search"/></svg>Find a site...</div>
+        <div class="srclist">
+          <div class="src"><span class="fav f-lemon">∗</span><span>All sites</span><em>512</em></div>
+          <div class="src on"><span class="fav f-rose">Y</span><span>youtube.com</span><em>88</em><span class="tick"><svg class="i xs"><use href="#i-check"/></svg></span></div>
+          <div class="src"><span class="fav f-orange">I</span><span>instagram.com</span><em>61</em></div>
+          <div class="src"><span class="fav f-blue">L</span><span>linkedin.com</span><em>40</em></div>
+          <div class="src"><span class="fav f-lemon">A</span><span>amazon.in</span><em>22</em></div>
+          <div class="src"><span class="fav f-green">M</span><span>medium.com</span><em>19</em></div>
+        </div>
+      </div>
+    </div>
+    <ul class="notes">
+      <li><span class="tag new">New</span>One list of sites with counts, most links first. Tap one and the sheet closes.</li>
+      <li><span class="tag new">New</span>"Find a site" filters the list when you have dozens.</li>
+      <li><span class="tag chg">Changed</span>Replaces the Sources section of the old Library overview.</li>
+    </ul>
+  </section>
+
+  <!-- 3. Filtered -->
+  <section class="shot">
+    <h2><span class="n">3</span>Filters applied</h2>
+    <div class="sub">youtube.com + Recipes + Unread, on the same screen.</div>
+    <div class="phone">
+      <div class="status"><span>9:41</span><span class="dots">●●●</span></div>
+      <div class="hdr">
+        <div class="cell l"><svg class="i"><use href="#i-person"/></svg></div>
+        <div class="title"><b>Links</b></div>
+        <div class="cell r"><svg class="i"><use href="#i-select"/></svg></div>
+      </div>
+      <div class="body">
+        <div class="field"><svg class="i sm"><use href="#i-search"/></svg>Search 512 links...</div>
+        <div class="quick" data-group-q>
+          <button class="qc">All <em>512</em></button>
+          <button class="qc on">Unread <em>202</em></button>
+          <button class="qc">High <em>12</em></button>
+          <button class="qc ret">Saved 2×+ <em>9</em></button>
+          <button class="qc">Read <em>310</em></button>
+        </div>
+        <div class="drops">
+          <button class="drop set"><span>youtube.com</span><svg class="i xs"><use href="#i-close"/></svg></button>
+          <button class="drop set"><span>Recipes</span><svg class="i xs"><use href="#i-close"/></svg></button>
+          <button class="drop"><span>Newest</span><svg class="i xs"><use href="#i-sort"/></svg></button>
+        </div>
+        <div class="listhead"><b>6 links</b></div>
+        <div class="month">This week</div>
+        <div class="cards">
+          <div class="card"><span class="dot"></span>
+            <span class="av f-rose">H</span>
+            <div class="ct"><div class="t">How to make perfect Neapolitan pizza at home</div>
+              <div class="h">youtube.com</div>
+              <div class="meta"><span class="pill">Recipes</span><span class="time">2d ago</span></div></div>
+            <svg class="i sm more"><use href="#i-more"/></svg>
+          </div>
+        </div>
+        <div class="month">September 2026</div>
+        <div class="cards">
+          <div class="card"><span class="dot"></span>
+            <span class="av f-orange">R</span>
+            <div class="ct"><div class="t">Tokyo-style ramen from scratch (12 hour broth)</div>
+              <div class="h">youtube.com</div>
+              <div class="meta"><span class="pill">Recipes</span><span class="time">4w ago</span></div></div>
+            <svg class="i sm more"><use href="#i-more"/></svg>
+          </div>
+        </div>
+      </div>
+      <div class="fab"><svg class="i"><use href="#i-add"/></svg></div>
+      <nav class="nav">
+        <div class="it on"><svg class="i"><use href="#i-library"/></svg>Links</div>
+        <div class="it"><svg class="i"><use href="#i-today"/></svg>Today</div>
+        <div class="it"><svg class="i"><use href="#i-inbox"/></svg>Inbox<span class="badge">4</span></div>
+      </nav>
+    </div>
+    <ul class="notes">
+      <li><span class="tag new">New</span>A chosen source or category turns its button green and shows ✕ to clear it. No extra chip row.</li>
+      <li><span class="tag new">New</span>"6 links" shows how many match, right above the list.</li>
+      <li><span class="tag chg">Changed</span>No separate list screen: filtering happens in place, and Back never gets lost.</li>
+    </ul>
+  </section>
+
+  <!-- 4. Category sheet -->
+  <section class="shot">
+    <h2><span class="n">4</span>Category button</h2>
+    <div class="sub">Your categories with counts, plus links with none.</div>
+    <div class="phone">
+      <div class="status"><span>9:41</span><span class="dots">●●●</span></div>
+      <div class="hdr">
+        <div class="cell l"><svg class="i"><use href="#i-person"/></svg></div>
+        <div class="title"><b>Links</b></div>
+        <div class="cell r"><svg class="i"><use href="#i-select"/></svg></div>
+      </div>
+      <div class="body"></div>
+      <div class="scrim"></div>
+      <div class="sheet">
+        <div class="grab"></div>
+        <h3>Category</h3>
+        <div class="srclist">
+          <div class="src"><span class="fav f-lemon">∗</span><span>All categories</span><em>512</em></div>
+          <div class="src"><span class="fav f-purple">?</span><span>No category</span><em>287</em></div>
+          <div class="src"><span class="fav f-green">W</span><span>Watch</span><em>34</em></div>
+          <div class="src on"><span class="fav f-purple">R</span><span>Recipes</span><em>18</em><span class="tick"><svg class="i xs"><use href="#i-check"/></svg></span></div>
+          <div class="src"><span class="fav f-blue">W</span><span>Work</span><em>15</em></div>
+          <div class="src"><span class="fav f-orange">D</span><span>Dev</span><em>5</em></div>
+        </div>
+      </div>
+    </div>
+    <ul class="notes">
+      <li><span class="tag new">New</span>"No category" finds the links you never sorted, so you can tidy them with bulk select.</li>
+      <li><span class="tag chg">Changed</span>Single pick with counts, like Source. Multi-select and priority move to the sort/filter sheet.</li>
+    </ul>
+  </section>
+
+  <!-- 5. Bulk select -->
+  <section class="shot">
+    <h2><span class="n">5</span>Bulk select</h2>
+    <div class="sub">Long-press a link. Tap cards here to try it.</div>
+    <div class="phone" data-select>
+      <div class="status"><span>9:41</span><span class="dots">●●●</span></div>
+      <div class="hdr">
+        <div class="cell l"><svg class="i"><use href="#i-close"/></svg></div>
+        <div class="title"><b data-count>2 selected</b></div>
+        <div class="cell r txt">All</div>
+      </div>
+      <div class="body">
+        <div class="month" style="margin-top:4px">No category · 287</div>
+        <div class="cards">
+          <div class="card selectable picked"><span class="ck"><svg class="i xs"><use href="#i-check"/></svg></span>
+            <div class="ct"><div class="t">Street food tour of Osaka, all under ₹1000</div>
+              <div class="h">youtube.com</div>
+              <div class="meta"><span class="time">6d ago</span></div></div>
+          </div>
+          <div class="card selectable picked"><span class="ck"><svg class="i xs"><use href="#i-check"/></svg></span>
+            <div class="ct"><div class="t">Kyoto in 3 days: the complete guide</div>
+              <div class="h">youtube.com</div>
+              <div class="meta"><span class="time">3w ago</span></div></div>
+          </div>
+          <div class="card selectable"><span class="ck"><svg class="i xs"><use href="#i-check"/></svg></span>
+            <div class="ct"><div class="t">Mechanical keyboard, hot-swap, 75%</div>
+              <div class="h">amazon.in</div>
+              <div class="meta"><span class="time">1mo ago</span></div></div>
+          </div>
+        </div>
+      </div>
+      <div class="actionbar">
+        <div><svg class="i"><use href="#i-doneall"/></svg>Mark read</div>
+        <div><svg class="i"><use href="#i-label"/></svg>Category</div>
+        <div><svg class="i"><use href="#i-flag"/></svg>Priority</div>
+        <div class="del"><svg class="i"><use href="#i-delete"/></svg>Delete</div>
+      </div>
+    </div>
+    <ul class="notes">
+      <li><span class="tag same">Same</span>Long-press to start, action bar replaces the nav, category sheet suggests by site.</li>
+      <li><span class="tag new">New</span>Works right on the Links tab, so "No category → select all → Category → Travel" tidies hundreds of links in four taps.</li>
+    </ul>
+  </section>
+
+  <!-- 6. Today -->
+  <section class="shot">
+    <h2><span class="n">6</span>Today tab</h2>
+    <div class="sub">Still one link at a time, now the second tab.</div>
+    <div class="phone">
+      <div class="status"><span>9:41</span><span class="dots">●●●</span></div>
+      <div class="hdr"><div class="title"><b>Today</b></div></div>
+      <div class="body">
+        <div class="today">
+          <div class="img"><div class="play"><svg class="i"><use href="#i-play"/></svg></div></div>
+          <h3>Kyoto in 3 days: the complete first-timer guide</h3>
+          <div class="h">youtube.com <span class="pill ret">Saved 2×</span></div>
+          <p>Temples, food streets and the day trips worth taking.</p>
+        </div>
+        <div class="btnrow" style="margin-top:20px">
+          <button class="btn"><svg class="i sm"><use href="#i-snooze"/></svg>Snooze</button>
+          <button class="btn"><svg class="i sm"><use href="#i-archive"/></svg>Archive</button>
+        </div>
+        <button class="btn ink go" style="margin-top:10px"><svg class="i sm"><use href="#i-open"/></svg>Open</button>
+      </div>
+      <nav class="nav">
+        <div class="it"><svg class="i"><use href="#i-library"/></svg>Links</div>
+        <div class="it on"><svg class="i"><use href="#i-today"/></svg>Today</div>
+        <div class="it"><svg class="i"><use href="#i-inbox"/></svg>Inbox<span class="badge">4</span></div>
+      </nav>
+    </div>
+    <ul class="notes">
+      <li><span class="tag chg">Changed</span>Second tab. The 9am notification and the widget still open it directly.</li>
+      <li><span class="tag new">New</span>The main action (Open) is a solid ink button, so it stands out from Snooze and Archive.</li>
+    </ul>
+  </section>
+
+</main>
+
+<script>
+(function () {
+  var root = document.documentElement;
+  var btn = document.getElementById('theme');
+  function isDark() {
+    var t = root.getAttribute('data-theme');
+    if (t) return t === 'dark';
+    return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+  }
+  function label() { btn.textContent = isDark() ? 'Light mode' : 'Dark mode'; }
+  btn.addEventListener('click', function () { root.setAttribute('data-theme', isDark() ? 'light' : 'dark'); label(); });
+  label();
+
+  var seg = document.getElementById('fontseg');
+  seg.addEventListener('click', function (e) {
+    var b = e.target.closest('button'); if (!b) return;
+    seg.querySelectorAll('button').forEach(function (x) { x.classList.remove('on'); });
+    b.classList.add('on');
+    document.body.classList.toggle('sysfont', b.getAttribute('data-font') === 'sys');
+  });
+
+  document.querySelectorAll('[data-group-q]').forEach(function (g) {
+    g.addEventListener('click', function (e) {
+      var b = e.target.closest('.qc'); if (!b) return;
+      g.querySelectorAll('.qc').forEach(function (x) { x.classList.remove('on'); });
+      b.classList.add('on');
+    });
+  });
+
+  document.querySelectorAll('[data-select]').forEach(function (p) {
+    var count = p.querySelector('[data-count]');
+    p.addEventListener('click', function (e) {
+      var c = e.target.closest('.card.selectable'); if (!c) return;
+      c.classList.toggle('picked');
+      count.textContent = p.querySelectorAll('.card.picked').length + ' selected';
+    });
+  });
+})();
+</script>
+</body>
+</html>

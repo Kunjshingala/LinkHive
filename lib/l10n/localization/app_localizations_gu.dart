@@ -49,25 +49,10 @@ class AppLocalizationsGu extends AppLocalizations {
   String get categoryAll => 'બધા';
 
   @override
-  String get homeCategoriesLabel => 'શ્રેણીઓ';
-
-  @override
-  String get homePrioritiesLabel => 'પ્રાધાન્યતા';
-
-  @override
   String get homeSectionToday => 'આજે';
 
   @override
   String get homeSectionThisWeek => 'આ અઠવાડિયે';
-
-  @override
-  String get homeSectionOlder => 'જૂના';
-
-  @override
-  String get homeAllCaughtUpTitle => 'બધું પૂરું થઈ ગયું!';
-
-  @override
-  String get homeAllCaughtUpSubtitle => 'તમે દરેક સાચવેલી લિંક ખોલી છે.';
 
   @override
   String get catDev => 'ડેવ';
@@ -206,10 +191,7 @@ class AppLocalizationsGu extends AppLocalizations {
   String get todayArchivedConfirm => 'સંગ્રહિત કર્યું';
 
   @override
-  String get todayBrowseLibrary => 'લાઇબ્રેરી જુઓ';
-
-  @override
-  String get libraryTitle => 'લાઇબ્રેરી';
+  String get todayBrowseLibrary => 'લિંક જુઓ';
 
   @override
   String get priorityHigh => 'ઉચ્ચ';
@@ -582,44 +564,10 @@ class AppLocalizationsGu extends AppLocalizations {
   String get libraryRead => 'વાંચેલી';
 
   @override
-  String get librarySources => 'સ્રોત';
-
-  @override
-  String librarySeeAll(int count) {
-    return 'બધા $count';
-  }
-
-  @override
-  String get libraryAllLinks => 'બધી લિંક';
-
-  @override
   String get listTabAll => 'બધી';
 
   @override
-  String get listFilterTitle => 'ફિલ્ટર';
-
-  @override
-  String listFilterMatches(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count લિંક મળી',
-      one: '1 લિંક મળી',
-      zero: 'કોઈ લિંક મળી નહીં',
-    );
-    return '$_temp0';
-  }
-
-  @override
   String get listFilterSource => 'સ્રોત';
-
-  @override
-  String get listFilterReset => 'રીસેટ';
-
-  @override
-  String listFilterApply(int count) {
-    return '$count બતાવો';
-  }
 
   @override
   String get listSortTitle => 'ક્રમ પસંદ કરો';
@@ -637,7 +585,7 @@ class AppLocalizationsGu extends AppLocalizations {
   String get sortMostSaved => 'સૌથી વધુ સેવ';
 
   @override
-  String get sortSite => 'સાઇટ A–Z';
+  String get sortSite => 'સાઇટ પ્રમાણે';
 
   @override
   String listSelectedCount(int count) {
@@ -688,4 +636,100 @@ class AppLocalizationsGu extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String linksSearchHint(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count લિંક શોધો...',
+      one: '1 લિંક શોધો...',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String sourceSheetCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count સાઇટ',
+      one: '1 સાઇટ',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get sourceSearchHint => 'સાઇટ શોધો...';
+
+  @override
+  String get sourceAll => 'બધી સાઇટ';
+
+  @override
+  String get categoryNone => 'કોઈ શ્રેણી નથી';
+
+  @override
+  String get listSelectTitle => 'લિંક પસંદ કરો';
+
+  @override
+  String get listSelect => 'પસંદ કરો';
+
+  @override
+  String get editLinkTitle => 'લિંક અપડેટ કરો';
+
+  @override
+  String get updateLinkButton => 'લિંક અપડેટ કરો';
+
+  @override
+  String get linkCopyUrl => 'URL કૉપિ કરો';
+
+  @override
+  String get linkShare => 'શેર કરો';
+
+  @override
+  String get conflictsEmpty => 'કોઈ કોન્ફ્લિક્ટ પર ધ્યાન આપવાની જરૂર નથી.';
+
+  @override
+  String get conflictDeletedInCloud => 'ક્લાઉડમાં કાઢી નાખ્યું';
+
+  @override
+  String conflictLocalVersion(String title) {
+    return 'ડિવાઇસ: $title';
+  }
+
+  @override
+  String conflictCloudVersion(String title) {
+    return 'ક્લાઉડ: $title';
+  }
+
+  @override
+  String conflictFields(String fields) {
+    return 'ફીલ્ડ: $fields';
+  }
+
+  @override
+  String get conflictKeepLocal => 'ડિવાઇસવાળું રાખો';
+
+  @override
+  String get conflictKeepCloud => 'ક્લાઉડવાળું રાખો';
+
+  @override
+  String get notificationTitle => 'લિંક તમારી રાહ જુએ છે';
+
+  @override
+  String get notificationBody =>
+      'તમે કંઈક એવું સેવ કર્યું છે જે ફરી જોવા જેવું છે — એક જોવા માટે ટૅપ કરો.';
+
+  @override
+  String get notificationChannelName => 'દૈનિક રિમાઇન્ડર';
+
+  @override
+  String get notificationChannelDescription =>
+      'સેવ કરેલી લિંક જોવા માટે રોજ એક રિમાઇન્ડર';
+
+  @override
+  String get widgetTodaysPick => 'આજની લિંક';
+
+  @override
+  String get widgetNothingWaiting => 'કંઈ બાકી નથી';
 }

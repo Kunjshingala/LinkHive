@@ -107,10 +107,29 @@ class TodayGlanceWidget : GlanceAppWidget() {
           pickHost = data.getString("pick_host", null) ?: "",
           inboxCount = data.getInt("inbox_count", 0),
           unreadCount = data.getInt("unread_count", 0),
+          labels = WidgetLabels(
+              pick = data.getString("label_pick", null) ?: "Today's pick",
+              nothingWaiting = data.getString("label_nothing_waiting", null) ?: "Nothing waiting",
+              caughtUp = data.getString("label_caught_up", null) ?: "All caught up",
+              inbox = data.getString("label_inbox", null) ?: "Inbox",
+              unread = data.getString("label_unread", null) ?: "Unread",
+          ),
       )
     }
   }
 }
+
+/**
+ * Text in the app's chosen language, sent by HomeWidgetService. Each has an
+ * English fallback for prefs written before the app sent labels.
+ */
+private data class WidgetLabels(
+    val pick: String,
+    val nothingWaiting: String,
+    val caughtUp: String,
+    val inbox: String,
+    val unread: String,
+)
 
 @Composable
 private fun TodayWidgetContent(
@@ -120,6 +139,7 @@ private fun TodayWidgetContent(
     pickHost: String,
     inboxCount: Int,
     unreadCount: Int,
+    labels: WidgetLabels,
 ) {
   val homeIntent = actionStartActivity<MainActivity>(context, Uri.parse("$SCHEME://home"))
 
@@ -162,11 +182,11 @@ private fun TodayWidgetContent(
     Column(modifier = GlanceModifier.fillMaxSize()) {
       BrandRow()
       Spacer(modifier = GlanceModifier.height(12.dp))
-      PickBlock(hasPick, pickTitle, pickHost)
+      PickBlock(hasPick, pickTitle, pickHost, labels)
       Spacer(modifier = GlanceModifier.defaultWeight())
       // Keeps its own click: a child view consumes the touch before the root,
       // so the pills still go to the app rather than opening the link.
-      StatsRow(inboxCount, unreadCount, homeIntent)
+      StatsRow(inboxCount, unreadCount, labels, homeIntent)
     }
   }
 }
@@ -191,15 +211,15 @@ private fun BrandRow() {
 }
 
 @Composable
-private fun PickBlock(hasPick: Boolean, pickTitle: String, pickHost: String) {
+private fun PickBlock(hasPick: Boolean, pickTitle: String, pickHost: String, labels: WidgetLabels) {
   Column(modifier = GlanceModifier.fillMaxWidth()) {
     Text(
-        if (hasPick) "TODAY'S PICK" else "NOTHING WAITING",
+        (if (hasPick) labels.pick else labels.nothingWaiting).uppercase(),
         style = TextStyle(fontSize = 12.sp, fontWeight = FontWeight.Bold, color = TEXT_TERTIARY),
     )
     Spacer(modifier = GlanceModifier.height(7.dp))
     Text(
-        if (hasPick) pickTitle else "All caught up",
+        if (hasPick) pickTitle else labels.caughtUp,
         // 3 lines rather than 2: a long title filling more of the widget is
         // better than truncating it and leaving the space empty instead.
         maxLines = 3,
@@ -217,11 +237,11 @@ private fun PickBlock(hasPick: Boolean, pickTitle: String, pickHost: String) {
 }
 
 @Composable
-private fun StatsRow(inboxCount: Int, unreadCount: Int, onClick: Action) {
+private fun StatsRow(inboxCount: Int, unreadCount: Int, labels: WidgetLabels, onClick: Action) {
   Row(modifier = GlanceModifier.fillMaxWidth().clickable(onClick)) {
-    Pill("Inbox $inboxCount", R.drawable.widget_pill_orange)
+    Pill("${labels.inbox} $inboxCount", R.drawable.widget_pill_orange)
     Spacer(modifier = GlanceModifier.width(8.dp))
-    Pill("Unread $unreadCount", R.drawable.widget_pill_blue)
+    Pill("${labels.unread} $unreadCount", R.drawable.widget_pill_blue)
   }
 }
 

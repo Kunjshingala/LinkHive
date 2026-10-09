@@ -1,8 +1,10 @@
 import 'dart:async';
 
+import 'package:flutter/widgets.dart';
 import 'package:home_widget/home_widget.dart';
 
 import '../../features/links/manager/link_manager.dart';
+import '../../l10n/localization/app_localizations.dart';
 import '../utils/link_title.dart';
 import '../utils/navigation/route.dart';
 import '../utils/utils.dart';
@@ -38,6 +40,10 @@ class HomeWidgetService {
   /// that _pushData's catch used to swallow).
   static const _androidWidgetName = 'com.link.hive.widget.TodayWidgetReceiver';
 
+  /// Language of the widget's labels. A service has no BuildContext, so the
+  /// app passes it in ([initialize], [setLocale]).
+  Locale _locale = const Locale('en');
+
   StreamSubscription<void>? _boxSubscription;
   StreamSubscription<Uri?>? _clickSubscription;
 
@@ -45,7 +51,8 @@ class HomeWidgetService {
   /// wires up widget-tap deep links. Safe to call once at app startup;
   /// failures are logged and swallowed — a broken widget bridge shouldn't
   /// block the app.
-  Future<void> initialize() async {
+  Future<void> initialize({required Locale locale}) async {
+    _locale = locale;
     try {
       await _pushData();
 
@@ -74,6 +81,13 @@ class HomeWidgetService {
   /// `didChangePlatformBrightness`.
   Future<void> refresh() => _pushData();
 
+  /// Redraws the widget's labels in [locale] after a language change.
+  Future<void> setLocale(Locale locale) async {
+    if (locale == _locale) return;
+    _locale = locale;
+    await _pushData();
+  }
+
   Future<void> _pushData() async {
     try {
       final pick = _manager.currentPick();
@@ -94,6 +108,15 @@ class HomeWidgetService {
         'unread_count',
         _manager.unreadCount,
       );
+      final l10n = lookupAppLocalizations(_locale);
+      await HomeWidget.saveWidgetData<String>('label_pick', l10n.widgetTodaysPick);
+      await HomeWidget.saveWidgetData<String>(
+        'label_nothing_waiting',
+        l10n.widgetNothingWaiting,
+      );
+      await HomeWidget.saveWidgetData<String>('label_caught_up', l10n.todayEmptyTitle);
+      await HomeWidget.saveWidgetData<String>('label_inbox', l10n.inboxTitle);
+      await HomeWidget.saveWidgetData<String>('label_unread', l10n.libraryUnread);
       await HomeWidget.updateWidget(qualifiedAndroidName: _androidWidgetName);
     } catch (e) {
       // Deliberately loud: a silent catch here hid a broken widget-class

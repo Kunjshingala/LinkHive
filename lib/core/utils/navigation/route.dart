@@ -3,18 +3,15 @@ import 'package:go_router/go_router.dart';
 import '../../../features/account/account.dart';
 import '../../../features/authentication/login_screen.dart';
 import '../../../features/authentication/signup_screen.dart';
-import '../../../features/library/library_screen.dart';
-import '../../../features/library/link_list/link_list_screen.dart';
+import '../../../features/link_list/link_list_screen.dart';
 import '../../../features/inbox/inbox_screen.dart';
 import '../../../features/links/ui/add_link_screen.dart';
 import '../../../features/links/models/link_model.dart';
-import '../../../features/links/models/link_query.dart';
 import '../../../features/shell/app_shell.dart';
 import '../../../features/splash/splash_screen.dart';
 import '../../../features/sync/conflict_screen.dart';
 import '../../../features/today/today_screen.dart';
 import '../../../my_app.dart';
-import '../../extensions/context_extension.dart';
 
 final class MyRouteName {
   MyRouteName._();
@@ -29,8 +26,7 @@ final class MyRouteName {
   static const String conflicts = 'conflicts';
   static const String inbox = 'inbox';
   static const String today = 'today';
-  static const String library = 'library';
-  static const String linkList = 'linkList';
+  static const String links = 'links';
 }
 
 final router = GoRouter(
@@ -48,11 +44,11 @@ final router = GoRouter(
       builder: (context, state) => const LoginScreen(),
     ),
     // Old entry point, kept so login, signup, account, share and widget
-    // callers keep working: the app's home is now the Today tab.
+    // callers keep working: the app's home is now the Links tab.
     GoRoute(
       path: '/home',
       name: MyRouteName.homeScreen,
-      redirect: (context, state) => '/today',
+      redirect: (context, state) => '/links',
     ),
     StatefulShellRoute.indexedStack(
       builder: (context, state, navigationShell) =>
@@ -61,35 +57,18 @@ final router = GoRouter(
         StatefulShellBranch(
           routes: [
             GoRoute(
-              path: '/today',
-              name: MyRouteName.today,
-              builder: (context, state) => const TodayScreen(),
+              path: '/links',
+              name: MyRouteName.links,
+              builder: (context, state) => const LinkListScreen(),
             ),
           ],
         ),
         StatefulShellBranch(
           routes: [
             GoRoute(
-              path: '/library',
-              name: MyRouteName.library,
-              builder: (context, state) => const LibraryScreen(),
-              routes: [
-                GoRoute(
-                  path: 'links',
-                  name: MyRouteName.linkList,
-                  builder: (context, state) {
-                    // extra is missing only if the route is restored without
-                    // it; fall back to every link rather than crash.
-                    final args = state.extra is LinkListArgs
-                        ? state.extra as LinkListArgs
-                        : LinkListArgs(
-                            title: context.l10n.libraryAllLinks,
-                            query: const LinkQuery(),
-                          );
-                    return LinkListScreen(args: args);
-                  },
-                ),
-              ],
+              path: '/today',
+              name: MyRouteName.today,
+              builder: (context, state) => const TodayScreen(),
             ),
           ],
         ),

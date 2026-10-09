@@ -218,9 +218,49 @@ void main() {
       expect(ids(const LinkQuery(sort: LinkSort.mostSaved)), ['c', 'a', 'b']);
     });
 
-    test('site A–Z', () {
+    test('by site with one link per site falls back to A–Z', () {
       expect(ids(const LinkQuery(sort: LinkSort.site)), ['b', 'a', 'c']);
     });
+
+    test('by site puts the site with most links first, newest within', () async {
+      await put('d', url: 'https://c-site.com/2', createdAt: 9);
+      await put('e', url: 'https://c-site.com/3', createdAt: 1);
+      expect(ids(const LinkQuery(sort: LinkSort.site)), [
+        'd',
+        'c',
+        'e',
+        'b',
+        'a',
+      ]);
+    });
+  });
+
+  group('no category', () {
+    setUp(() async {
+      await put('tagged', categories: ['Watch']);
+      await put('plain');
+    });
+
+    test('uncategorized keeps only links without a category', () {
+      expect(ids(const LinkQuery(uncategorized: true)), ['plain']);
+    });
+
+    test('stats count uncategorized links', () {
+      expect(repository.getLibraryStats().uncategorized, 1);
+    });
+  });
+
+  test('getSourceCounts within a query counts only matching links', () async {
+    await put('a', url: 'https://youtu.be/1', categories: ['Watch']);
+    await put('b', url: 'https://youtu.be/2');
+    await put('c', url: 'https://amazon.in/x', categories: ['Watch']);
+
+    expect(
+      repository.getSourceCounts(
+        within: const LinkQuery(categories: {'Watch'}),
+      ),
+      const [NamedCount('amazon.in', 1), NamedCount('youtube.com', 1)],
+    );
   });
 
   group('overview counts', () {

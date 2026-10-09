@@ -188,10 +188,34 @@ class LinkRepository {
   Iterable<LinkModel> get _libraryLinks =>
       _linksBox.values.where((l) => !l.isQuickSaved);
 
-  /// One page of the Library list for [query].
+  /// One page of the Links list for [query].
   List<LinkModel> findLinks(LinkQuery query, {int limit = 20, int offset = 0}) {
-    final matches = _matching(query).toList()..sort(_comparatorFor(query.sort));
+    final matches = _matching(query).toList();
+    final comparator = query.sort == LinkSort.site
+        ? _bySiteComparator(matches)
+        : _comparatorFor(query.sort);
+    matches.sort(comparator);
     return matches.skip(offset).take(limit).toList();
+  }
+
+  /// Sites with the most matching links first (ties A–Z), newest first within
+  /// a site, so the list reads as one group per site.
+  int Function(LinkModel, LinkModel) _bySiteComparator(
+    List<LinkModel> matches,
+  ) {
+    final hosts = {for (final l in matches) l.id: sourceHost(l.url)};
+    final counts = <String, int>{};
+    for (final host in hosts.values) {
+      counts[host] = (counts[host] ?? 0) + 1;
+    }
+    return (a, b) {
+      final hostA = hosts[a.id]!, hostB = hosts[b.id]!;
+      if (hostA != hostB) {
+        final byCount = counts[hostB]!.compareTo(counts[hostA]!);
+        return byCount != 0 ? byCount : hostA.compareTo(hostB);
+      }
+      return b.createdAt.compareTo(a.createdAt);
+    };
   }
 
   /// Number of links [findLinks] would return across all pages.
@@ -206,6 +230,7 @@ class LinkRepository {
       if (query.readFilter == ReadFilter.read && !l.isRead) return false;
       if (l.shareCount < query.minShareCount) return false;
       if (query.host != null && sourceHost(l.url) != query.host) return false;
+      if (query.uncategorized && l.categories.isNotEmpty) return false;
       if (query.categories.isNotEmpty &&
           !l.categories.any(query.categories.contains)) {
         return false;
@@ -245,10 +270,8 @@ class LinkRepository {
           return byCount != 0 ? byCount : newestFirst(a, b);
         };
       case LinkSort.site:
-        return (a, b) {
-          final bySite = sourceHost(a.url).compareTo(sourceHost(b.url));
-          return bySite != 0 ? bySite : newestFirst(a, b);
-        };
+        // Needs per-site counts; findLinks uses _bySiteComparator instead.
+        return newestFirst;
     }
   }
 
@@ -259,14 +282,15 @@ class LinkRepository {
         _ => 1,
       };
 
-  /// Counts for the Library overview tiles.
+  /// Counts for the quick chips and "No category".
   LibraryStats getLibraryStats() {
-    var total = 0, unread = 0, high = 0, savedTwicePlus = 0;
+    var total = 0, unread = 0, high = 0, savedTwicePlus = 0, uncategorized = 0;
     for (final l in _libraryLinks) {
       total++;
       if (!l.isRead) unread++;
       if (l.priority.toLowerCase() == 'high') high++;
       if (l.shareCount >= 2) savedTwicePlus++;
+      if (l.categories.isEmpty) uncategorized++;
     }
     return LibraryStats(
       total: total,
@@ -274,13 +298,18 @@ class LinkRepository {
       high: high,
       savedTwicePlus: savedTwicePlus,
       read: total - unread,
+      uncategorized: uncategorized,
     );
   }
 
   /// Sites links come from, most links first. Links without a host are left
-  /// out.
-  List<NamedCount> getSourceCounts() =>
-      _countBy(_libraryLinks.map((l) => [sourceHost(l.url)]));
+  /// out. With [within], counts only links matching that query (for the
+  /// per-site group headers).
+  List<NamedCount> getSourceCounts({LinkQuery? within}) => _countBy(
+    (within == null ? _libraryLinks : _matching(within)).map(
+      (l) => [sourceHost(l.url)],
+    ),
+  );
 
   /// Every category name used by at least one link, most links first.
   ///

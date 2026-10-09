@@ -455,13 +455,13 @@ class _MoreMenu extends StatelessWidget {
         }
       },
       items: [
-        const NeoPopupMenuItem(
-          label: 'Copy URL',
+        NeoPopupMenuItem(
+          label: context.l10n.linkCopyUrl,
           value: 'copy',
           icon: Icons.copy_rounded,
         ),
-        const NeoPopupMenuItem(
-          label: 'Share',
+        NeoPopupMenuItem(
+          label: context.l10n.linkShare,
           value: 'share',
           icon: Icons.share_rounded,
         ),

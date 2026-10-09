@@ -48,25 +48,10 @@ class AppLocalizationsAr extends AppLocalizations {
   String get categoryAll => 'الكل';
 
   @override
-  String get homeCategoriesLabel => 'الفئات';
-
-  @override
-  String get homePrioritiesLabel => 'الأولويات';
-
-  @override
   String get homeSectionToday => 'اليوم';
 
   @override
   String get homeSectionThisWeek => 'هذا الأسبوع';
-
-  @override
-  String get homeSectionOlder => 'أقدم';
-
-  @override
-  String get homeAllCaughtUpTitle => 'أنت على اطلاع تام!';
-
-  @override
-  String get homeAllCaughtUpSubtitle => 'لقد فتحت كل رابط محفوظ.';
 
   @override
   String get catDev => 'برمجة';
@@ -205,10 +190,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get todayArchivedConfirm => 'تمت الأرشفة';
 
   @override
-  String get todayBrowseLibrary => 'تصفح المكتبة';
-
-  @override
-  String get libraryTitle => 'المكتبة';
+  String get todayBrowseLibrary => 'تصفح الروابط';
 
   @override
   String get priorityHigh => 'عالي';
@@ -589,47 +571,10 @@ class AppLocalizationsAr extends AppLocalizations {
   String get libraryRead => 'مقروء';
 
   @override
-  String get librarySources => 'المصادر';
-
-  @override
-  String librarySeeAll(int count) {
-    return 'الكل $count';
-  }
-
-  @override
-  String get libraryAllLinks => 'كل الروابط';
-
-  @override
   String get listTabAll => 'الكل';
 
   @override
-  String get listFilterTitle => 'تصفية';
-
-  @override
-  String listFilterMatches(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count رابط مطابق',
-      many: '$count رابطًا مطابقًا',
-      few: '$count روابط مطابقة',
-      two: 'رابطان مطابقان',
-      one: 'رابط واحد مطابق',
-      zero: 'لا توجد روابط مطابقة',
-    );
-    return '$_temp0';
-  }
-
-  @override
   String get listFilterSource => 'المصدر';
-
-  @override
-  String get listFilterReset => 'إعادة تعيين';
-
-  @override
-  String listFilterApply(int count) {
-    return 'عرض $count';
-  }
 
   @override
   String get listSortTitle => 'ترتيب حسب';
@@ -647,7 +592,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get sortMostSaved => 'الأكثر حفظًا';
 
   @override
-  String get sortSite => 'الموقع أ–ي';
+  String get sortSite => 'حسب الموقع';
 
   @override
   String listSelectedCount(int count) {
@@ -704,4 +649,106 @@ class AppLocalizationsAr extends AppLocalizations {
     );
     return '$_temp0';
   }
+
+  @override
+  String linksSearchHint(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'ابحث في $count رابط...',
+      many: 'ابحث في $count رابطًا...',
+      few: 'ابحث في $count روابط...',
+      two: 'ابحث في رابطين...',
+      one: 'ابحث في رابط واحد...',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String sourceSheetCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count موقع',
+      many: '$count موقعًا',
+      few: '$count مواقع',
+      two: 'موقعان',
+      one: 'موقع واحد',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get sourceSearchHint => 'ابحث عن موقع...';
+
+  @override
+  String get sourceAll => 'كل المواقع';
+
+  @override
+  String get categoryNone => 'بلا فئة';
+
+  @override
+  String get listSelectTitle => 'تحديد الروابط';
+
+  @override
+  String get listSelect => 'تحديد';
+
+  @override
+  String get editLinkTitle => 'تحديث الرابط';
+
+  @override
+  String get updateLinkButton => 'تحديث الرابط';
+
+  @override
+  String get linkCopyUrl => 'نسخ الرابط';
+
+  @override
+  String get linkShare => 'مشاركة';
+
+  @override
+  String get conflictsEmpty => 'لا توجد تعارضات تحتاج إلى انتباه.';
+
+  @override
+  String get conflictDeletedInCloud => 'محذوف من السحابة';
+
+  @override
+  String conflictLocalVersion(String title) {
+    return 'على الجهاز: $title';
+  }
+
+  @override
+  String conflictCloudVersion(String title) {
+    return 'في السحابة: $title';
+  }
+
+  @override
+  String conflictFields(String fields) {
+    return 'الحقول: $fields';
+  }
+
+  @override
+  String get conflictKeepLocal => 'الاحتفاظ بنسخة الجهاز';
+
+  @override
+  String get conflictKeepCloud => 'الاحتفاظ بنسخة السحابة';
+
+  @override
+  String get notificationTitle => 'روابط بانتظارك';
+
+  @override
+  String get notificationBody =>
+      'حفظت شيئًا يستحق نظرة أخرى، اضغط لترى واحدًا.';
+
+  @override
+  String get notificationChannelName => 'تذكير يومي';
+
+  @override
+  String get notificationChannelDescription =>
+      'تذكير يومي واحد لإلقاء نظرة على رابط محفوظ';
+
+  @override
+  String get widgetTodaysPick => 'اختيار اليوم';
+
+  @override
+  String get widgetNothingWaiting => 'لا شيء بانتظارك';
 }

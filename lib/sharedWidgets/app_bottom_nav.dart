@@ -19,10 +19,12 @@ class AppBottomNavItem {
   final int badgeCount;
 }
 
-/// Neo-Brutalist bottom navigation: a surface bar with a 2px ink top rule.
+/// Floating pill navigation: a rounded bar with a 2px outline and a hard ink
+/// shadow, floating above the content.
 ///
-/// The active item is an `accentGreen` pill with an ink outline. Text on the
-/// pastel stays ink in both themes, per DESIGN.md.
+/// The active item is a solid `primary` pill with its icon and label; the
+/// others show their icon only (screen readers still get the label). Put it
+/// in a `Scaffold` with `extendBody: true` so content scrolls under it.
 class AppBottomNav extends StatelessWidget {
   const AppBottomNav({
     super.key,
@@ -35,34 +37,45 @@ class AppBottomNav extends StatelessWidget {
   final int currentIndex;
   final ValueChanged<int> onTap;
 
-  static const double height = 64;
+  /// Height of the pill itself, without the outer margin.
+  static const double barHeight = 64;
 
   @override
   Widget build(BuildContext context) {
     final neo = context.neoBrutal;
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
-        border: Border(
-          top: BorderSide(color: neo.borderColor, width: neo.borderWidth),
-        ),
+    return SafeArea(
+      top: false,
+      minimum: const EdgeInsets.fromLTRB(
+        AppSpacing.md,
+        0,
+        AppSpacing.md,
+        AppSpacing.md,
       ),
-      child: SafeArea(
-        top: false,
-        child: SizedBox(
-          height: height,
-          child: Row(
-            children: [
-              for (var i = 0; i < items.length; i++)
-                Expanded(
-                  child: _NavButton(
-                    item: items[i],
-                    selected: i == currentIndex,
-                    onTap: () => onTap(i),
-                  ),
-                ),
-            ],
-          ),
+      child: Container(
+        height: barHeight,
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.surface,
+          borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
+          border: Border.all(color: neo.borderColor, width: neo.borderWidth),
+          boxShadow: [
+            BoxShadow(
+              color: neo.borderColor,
+              offset: Offset(neo.shadowOffset, neo.shadowOffset),
+              blurRadius: 0,
+            ),
+          ],
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            for (var i = 0; i < items.length; i++)
+              _NavButton(
+                item: items[i],
+                selected: i == currentIndex,
+                onTap: () => onTap(i),
+              ),
+          ],
         ),
       ),
     );
@@ -82,9 +95,9 @@ class _NavButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final neo = context.neoBrutal;
+    final cs = Theme.of(context).colorScheme;
     final idleColor = Theme.of(context).textTheme.labelLarge!.color;
-    final color = selected ? AppColors.black : idleColor;
+    final color = selected ? cs.onPrimary : idleColor;
 
     return Semantics(
       button: true,
@@ -94,41 +107,39 @@ class _NavButton extends StatelessWidget {
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
         onTap: onTap,
-        child: Center(
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 150),
-            curve: Curves.easeOut,
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppSpacing.md,
-              vertical: AppSpacing.xs,
-            ),
-            decoration: BoxDecoration(
-              color: selected ? AppColors.accentGreen : AppColors.transparent,
-              borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
-              border: Border.all(
-                color: selected ? AppColors.black : AppColors.transparent,
-                width: neo.borderWidth,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          curve: Curves.easeOut,
+          height: 48,
+          constraints: const BoxConstraints(minWidth: 56),
+          padding: EdgeInsets.symmetric(
+            horizontal: selected ? AppSpacing.md + 2 : AppSpacing.md,
+          ),
+          decoration: BoxDecoration(
+            color: selected ? cs.primary : AppColors.transparent,
+            borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _IconWithBadge(
+                icon: item.icon,
+                color: color,
+                count: item.badgeCount,
               ),
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                _IconWithBadge(
-                  icon: item.icon,
-                  color: color,
-                  count: item.badgeCount,
-                ),
+              if (selected) ...[
+                const SizedBox(width: AppSpacing.sm),
                 Text(
                   item.label,
                   maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
                   style: Theme.of(context).textTheme.labelLarge!.copyWith(
                     color: color,
                     fontWeight: FontWeight.w700,
+                    fontSize: 14,
                   ),
                 ),
               ],
-            ),
+            ],
           ),
         ),
       ),
@@ -149,7 +160,7 @@ class _IconWithBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final iconWidget = Icon(icon, color: color, size: 22);
+    final iconWidget = Icon(icon, color: color, size: 24);
     if (count <= 0) return iconWidget;
 
     return Stack(
@@ -158,9 +169,9 @@ class _IconWithBadge extends StatelessWidget {
         iconWidget,
         PositionedDirectional(
           top: -AppSpacing.sm,
-          end: -AppSpacing.md,
+          end: -AppSpacing.sm - 2,
           child: Container(
-            constraints: const BoxConstraints(minWidth: 20, minHeight: 20),
+            constraints: const BoxConstraints(minWidth: 18, minHeight: 18),
             padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xs),
             alignment: Alignment.center,
             decoration: BoxDecoration(

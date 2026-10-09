@@ -62,7 +62,7 @@ class _TodayContent extends StatelessWidget {
                 title: context.l10n.todayEmptyTitle,
                 subtitle: context.l10n.todayEmptySubtitle,
                 actionLabel: context.l10n.todayBrowseLibrary,
-                onAction: () => context.goNamed(MyRouteName.library),
+                onAction: () => context.goNamed(MyRouteName.links),
               ),
               TodayLoaded(:final link) => _ResurfaceCard(link: link),
             };
@@ -209,6 +209,8 @@ class _ResurfaceCard extends StatelessWidget {
           NeoBrutalistButton(
             text: context.l10n.todayOpen,
             icon: Icons.open_in_new_rounded,
+            backgroundColor: Theme.of(context).colorScheme.primary,
+            textColor: Theme.of(context).colorScheme.onPrimary,
             shadowColor: AppColors.success,
             onPressed: () => _openResurfaced(context, link),
           ),

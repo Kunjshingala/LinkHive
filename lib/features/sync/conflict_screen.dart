@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../core/constants/app_enums.dart';
+import '../../core/extensions/context_extension.dart';
 import '../../core/models/conflict_record.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/utils/locator.dart';
@@ -30,7 +31,7 @@ class _ConflictScreenContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: const CommonAppBar(titleText: 'Resolve conflicts'),
+      appBar: CommonAppBar(titleText: context.l10n.accountResolveConflicts),
       body: BlocBuilder<ConflictBloc, ConflictState>(
         builder: (context, state) {
           if (state is ConflictLoading) {
@@ -40,7 +41,7 @@ class _ConflictScreenContent extends StatelessWidget {
             return Center(child: Text(state.message));
           }
           if (state is! ConflictLoaded || state.conflicts.isEmpty) {
-            return const Center(child: Text('No conflicts require attention.'));
+            return Center(child: Text(context.l10n.conflictsEmpty));
           }
 
           return ListView.separated(
@@ -66,7 +67,7 @@ class _ConflictCard extends StatelessWidget {
     final localTitle =
         conflict.localVersion['title'] as String? ?? conflict.linkId;
     final cloudTitle =
-        conflict.cloudVersion?['title'] as String? ?? 'Deleted in cloud';
+        conflict.cloudVersion?['title'] as String? ?? context.l10n.conflictDeletedInCloud;
     final bloc = context.read<ConflictBloc>();
 
     return Container(
@@ -84,15 +85,17 @@ class _ConflictCard extends StatelessWidget {
         children: [
           Text(localTitle, style: Theme.of(context).textTheme.titleMedium),
           const SizedBox(height: AppSpacing.xs),
-          Text('Local: $localTitle'),
-          Text('Cloud: $cloudTitle'),
-          Text('Fields: ${conflict.conflictingFields.join(', ')}'),
+          Text(context.l10n.conflictLocalVersion(localTitle)),
+          Text(context.l10n.conflictCloudVersion(cloudTitle)),
+          Text(
+            context.l10n.conflictFields(conflict.conflictingFields.join(', ')),
+          ),
           const SizedBox(height: AppSpacing.md),
           Row(
             children: [
               Expanded(
                 child: NeoBrutalistButton(
-                  text: 'Keep local',
+                  text: context.l10n.conflictKeepLocal,
                   variant: ButtonVariant.outlined,
                   onPressed: () =>
                       bloc.add(ConflictKeepLocalRequested(conflict.conflictId)),
@@ -101,7 +104,7 @@ class _ConflictCard extends StatelessWidget {
               const SizedBox(width: AppSpacing.sm),
               Expanded(
                 child: NeoBrutalistButton(
-                  text: 'Keep cloud',
+                  text: context.l10n.conflictKeepCloud,
                   onPressed: () =>
                       bloc.add(ConflictKeepCloudRequested(conflict.conflictId)),
                 ),

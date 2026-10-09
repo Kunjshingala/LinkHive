@@ -1,8 +1,10 @@
+import 'package:flutter/widgets.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:timezone/data/latest.dart' as tz_data;
 import 'package:timezone/timezone.dart' as tz;
 
+import '../../l10n/localization/app_localizations.dart';
 import '../utils/navigation/route.dart';
 import '../utils/utils.dart';
 
@@ -22,8 +24,6 @@ import '../utils/utils.dart';
 class ResurfaceNotificationService {
   static const _notificationId = 1001;
   static const _channelId = 'daily_resurface';
-  static const _channelName = 'Daily Resurface';
-  static const _channelDescription = 'One daily reminder to look at a saved link';
   static const _payload = 'today';
   static const _tag = 'ResurfaceNotificationService';
 
@@ -35,10 +35,20 @@ class ResurfaceNotificationService {
 
   final FlutterLocalNotificationsPlugin _plugin = FlutterLocalNotificationsPlugin();
 
+  /// Language of the notification and its channel. A service has no
+  /// BuildContext, so the app passes it in ([initialize], [setLocale]).
+  Locale _locale = const Locale('en');
+
+  /// True once [initialize] has scheduled the notification.
+  bool _ready = false;
+
+  AppLocalizations get _l10n => lookupAppLocalizations(_locale);
+
   /// Initializes the plugin, requests permission, and schedules the daily
   /// notification. Safe to call once at app startup; no-ops silently on any
   /// failure (a missed notification setup shouldn't block app launch).
-  Future<void> initialize() async {
+  Future<void> initialize({required Locale locale}) async {
+    _locale = locale;
     try {
       tz_data.initializeTimeZones();
       final localZone = await FlutterTimezone.getLocalTimezone();
@@ -58,6 +68,7 @@ class ResurfaceNotificationService {
       await _requestPermissions();
       await _createAndroidChannel();
       await _scheduleDaily();
+      _ready = true;
 
       // Cold start via notification tap: the app wasn't running when tapped,
       // so no callback fired — check explicitly once the plugin is ready.
@@ -67,6 +78,20 @@ class ResurfaceNotificationService {
       }
     } catch (e) {
       printLog(tag: _tag, msg: 'Initialization failed (non-fatal): $e');
+    }
+  }
+
+  /// Re-creates the channel and re-schedules the notification in [locale],
+  /// so a language change shows up in tomorrow's reminder.
+  Future<void> setLocale(Locale locale) async {
+    if (locale == _locale) return;
+    _locale = locale;
+    if (!_ready) return;
+    try {
+      await _createAndroidChannel();
+      await _scheduleDaily();
+    } catch (e) {
+      printLog(tag: _tag, msg: 'Re-scheduling for $locale failed (non-fatal): $e');
     }
   }
 
@@ -80,10 +105,10 @@ class ResurfaceNotificationService {
   }
 
   Future<void> _createAndroidChannel() async {
-    const channel = AndroidNotificationChannel(
+    final channel = AndroidNotificationChannel(
       _channelId,
-      _channelName,
-      description: _channelDescription,
+      _l10n.notificationChannelName,
+      description: _l10n.notificationChannelDescription,
       importance: Importance.defaultImportance,
     );
     await _plugin
@@ -94,18 +119,18 @@ class ResurfaceNotificationService {
   Future<void> _scheduleDaily() async {
     await _plugin.zonedSchedule(
       id: _notificationId,
-      title: 'Links waiting',
-      body: 'You saved something worth another look — tap to see one.',
+      title: _l10n.notificationTitle,
+      body: _l10n.notificationBody,
       scheduledDate: _nextInstanceOfDailyTime(),
-      notificationDetails: const NotificationDetails(
+      notificationDetails: NotificationDetails(
         android: AndroidNotificationDetails(
           _channelId,
-          _channelName,
-          channelDescription: _channelDescription,
+          _l10n.notificationChannelName,
+          channelDescription: _l10n.notificationChannelDescription,
           importance: Importance.defaultImportance,
           priority: Priority.defaultPriority,
         ),
-        iOS: DarwinNotificationDetails(),
+        iOS: const DarwinNotificationDetails(),
       ),
       // Inexact timing avoids needing Android 12+'s SCHEDULE_EXACT_ALARM
       // permission — a rough "around 9am" is fine for a daily habit nudge,

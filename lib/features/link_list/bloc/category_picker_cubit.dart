@@ -1,10 +1,10 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../../../core/utils/category_suggester.dart';
-import '../../../../core/utils/url_canonical.dart';
-import '../../../links/manager/link_manager.dart';
-import '../../../links/models/link_model.dart';
+import '../../../core/utils/category_suggester.dart';
+import '../../../core/utils/url_canonical.dart';
+import '../../links/manager/link_manager.dart';
+import '../../links/models/link_model.dart';
 
 class CategoryPickerState extends Equatable {
   const CategoryPickerState({

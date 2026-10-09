@@ -40,16 +40,18 @@ Fix only the causes the diagnosis actually finds.
 
 ## Design
 
-### Adopt the Anek + Readex Pro typeface in the app
+### Condensed Anek for titles and numbers
 
-**What:** Bundle font subsets for Anek Latin, Anek Devanagari, Anek Gujarati and Readex Pro (Arabic), then wire them into `AppTypography` / `AppTheme` for all four locales (en, hi, gu, ar).
+**What:** Use Anek's condensed width for titles and counts, as `DESIGN.md` describes.
 
-**Why:** The app renders in the platform default font today, so Hindi and Gujarati look like fallback text. `DESIGN.md` records Anek + Readex Pro as the target.
+**Why:** The bundled fonts are static files at normal width only (from the Google Fonts CSS API), so the width axis isn't available yet.
 
-**Context:** Both families are on Google Fonts under the OFL license (verified 2026-10-07). Anek has a width axis: condensed for titles and numbers, normal for reading. Bundle subsets to limit APK size, and re-test every screen at 1.3x text scale in hi, gu and ar.
+**Context:** Needs either the variable font files (`AnekLatin[wdth,wght].ttf` from `google/fonts`) with `FontVariation`, or condensed static instances. Check APK size, and re-test hi, gu and ar at 1.3x text scale.
 
-**Effort:** M
+**Effort:** S
 **Priority:** P3
 **Depends on:** None
 
 ## Completed
+
+- **Adopt the Anek + Readex Pro typeface** (2026-10-09, `feat/ui-redesign`): static weights 400 to 800 in `assets/fonts/`, OFL licenses in `assets/licenses/` registered in `main.dart`.

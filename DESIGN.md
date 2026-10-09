@@ -140,7 +140,7 @@ components:
 - Purple appears only when something came back.
 - Pill buttons (52px tall) and 44px icon buttons.
 
-**As built vs target.** This file records the system as the code implements it today, plus two decisions: the purple "return" rule and the Anek + Readex Pro typeface. The app still renders in the platform default font. Adopting the typeface is a tracked follow-up (TODOS.md), not part of this file's source of truth until it lands.
+**As built.** This file records the system as the code implements it, including the purple "return" rule and the Anek + Readex Pro typeface (bundled 2026-10-09).
 
 ## Colors
 
@@ -156,7 +156,7 @@ components:
 
 ## Typography
 
-**Target:** Anek (Ek Type) for Latin, Devanagari and Gujarati, Readex Pro for Arabic. Both are on Google Fonts under the OFL license (checked 2026-10-07). Anek has a width axis: use the condensed width for titles and numbers, normal width for reading text. One family across three scripts keeps Hindi and Gujarati from looking like fallback text.
+**Typeface (built):** Anek (Ek Type) for Latin, Devanagari and Gujarati, Readex Pro for Arabic, bundled as static weights 400 to 800 in `assets/fonts/` (`AppTypography.fontFamily` plus `fontFamilyFallback`). Licenses ship in `assets/licenses/` and show on the license page. Both are on Google Fonts under the OFL license (checked 2026-10-07). Anek has a width axis: use the condensed width for titles and numbers, normal width for reading text. One family across three scripts keeps Hindi and Gujarati from looking like fallback text.
 
 **Scale (as built):** 34 / 28 / 22 / 20 / 18 / 16 at weight 700 to 800 for display and titles; body 15 at 500 (16 at 600 for emphasized body); label 13 at 600; caption 11 at 700. Titles use negative tracking; labels and captions use positive.
 
@@ -167,7 +167,7 @@ components:
 
 ## Layout
 
-Single column, phone first. Page inset is 20px (`spacing.page`), and every screen's content aligns to it, including the app bar's leading button. Spacing is a 4px base on a 4 / 8 / 16 / 24 / 32 / 48 scale. Cards stack with 16px between them. Density is medium: one decision per card, titles up to two lines, metadata on one wrapped row. Today shows exactly one card at a time. The Library's 2 x 2 count tiles are the one two-column block.
+Single column, phone first. Page inset is 20px (`spacing.page`), and every screen's content aligns to it, including the app bar's leading button. Spacing is a 4px base on a 4 / 8 / 16 / 24 / 32 / 48 scale. Cards stack with 16px between them. Density is medium: one decision per card, titles up to two lines, metadata on one wrapped row. Today shows exactly one card at a time.
 
 ## Elevation & Depth
 
@@ -184,10 +184,11 @@ Radii: 8 (small chips), 12 (text fields, compact cards), 16 (cards, snackbars), 
 - **Today card:** 20px radius, 24px padding, 16:9 thumbnail with 14px radius and outline, title 20 at 700, up to two lines, "Saved N×" chip in `return` next to the metadata.
 - **Merge bar and snackbar:** 16px radius, outline, no shadow. A 32px circular badge on the left, message 15 at 600, actions right-aligned. The merge bar badge is `return`.
 - **Bottom sheet:** 20px top radius, top outline only, 24px padding. Used for confirmations, option lists and the "Which version?" picker. Never use `AlertDialog`.
-- **Bottom nav (`AppBottomNav`):** surface bar with a 2px ink top border, 64px plus safe area, three items (Today, Library, Inbox) with icon and label. The active item is an `accent-green` pill with a 2px ink outline; text on it stays ink in both themes. The Inbox badge is an `accent-orange` pill with an ink outline. Bulk selection replaces the nav with an action bar of four boxed cells separated by 2px ink rules.
-- **Library tiles:** 2 x 2 count tiles, 16px radius, 2px outline, one hard pastel shadow each (mint, peach, lemon, sky). Label 13 at 600 with a 16px icon, count in `headline-lg`. "Saved 2×+" is the only tile with the `return` fill.
-- **Count rows (sources, categories):** 52px pill rows (100 radius) with a 2px outline, a 32px circular letter avatar on a pastel, the name in `title-sm`, the count and a chevron. No shadow.
-- **Segmented tabs:** 44px bar, 12px radius, 2px outline, 2px ink dividers; the selected segment is `primary` fill with `onPrimary` text.
+- **Bottom nav (`AppBottomNav`):** a floating pill: 64px tall, 16px from the screen edges and bottom, 100 radius, 2px outline and a hard ink shadow at (4, 4). Three tabs: Links, Today, Inbox. The active tab is a solid `primary` pill with icon and label; the others show only their icon (the label stays for screen readers). The Inbox badge is an `accent-orange` pill with an ink outline. The shell uses `extendBody`, so lists scroll under the nav and pad their bottom. Bulk selection replaces the nav with an action bar of four boxed cells separated by 2px ink rules.
+- **Quick chips:** 38px pills on one scrolling row (All, Unread, High, Saved 2×+, Read), each with a count badge. One is active at a time: `primary` fill, `onPrimary` text and a mint hard shadow at (3, 3). The Saved 2×+ count badge uses the `return` fill.
+- **Filter buttons (Source, Category, Sort):** three equal 42px boxes, 12px radius, 2px outline. A chosen source or category fills `accent-green` with ink text and a ✕ to clear it.
+- **Add button:** a 56px solid `primary` circle with a `success` hard shadow, bottom right above the nav.
+- **Pick rows (Source and Category sheets):** 54px rows with a 2px divider, a 32px circular letter avatar on a pastel, the name in `title-sm` (800 when picked), the count and a filled check when picked.
 - **Suggestion box:** `shadow-lemon` fill, 16px radius, 2px ink outline, "Suggested for <site>" heading with a sparkle icon, then category chips that stay light in both themes.
 - **Text field (`CustomTextField`):** 2px outline, 12px radius, focus outline is 3px in the primary color, error outline is 2px in `error`.
 - **States to design every time:** empty, loading, error, long text, and 1.3x text scale.
@@ -221,5 +222,8 @@ Radii: 8 (small chips), 12 (text fields, compact cards), 16 (cards, snackbars), 
 | 2026-10-07 | Not adopted: stamped return states on cards, "return lane" Home, ticket-style Today | Suggested by both outside voices; recorded as ideas, no decision to build |
 | 2026-10-08 | Home split into Today / Library / Inbox tabs; the app opens on Today | One Home screen with search and two chip rows broke down at a few hundred links. See `docs/designs/library-redesign.md` |
 | 2026-10-08 | App bar buttons stay round, raised 44px `NeoBrutalistButton`s | Keeps the 100ms press, the one authored moment. Litverse's flat boxed header was considered and not adopted |
-| 2026-10-08 | Library's 2 x 2 count tiles are the one exception to single-column layout | Four counts side by side read faster than a list of four rows |
 | 2026-10-08 | Built-in categories changed to Watch, Read, Shop, Recipes, Travel, Learn, Work, Ideas | The old developer set (Dev, Docs, AI...) didn't match people saving from Instagram, YouTube and shops. Old names keep their labels on existing links |
+| 2026-10-09 | Links-first: the app opens on a Links tab (search, quick chips, Source / Category / Sort above the list). Library overview removed; tabs are Links, Today, Inbox | After a first try on the phone, the overview put links one tap too far away and felt like everything loaded at once. Approved in preview v2 |
+| 2026-10-09 | Floating pill bottom nav | Picked from three options (floating pill, centre Add, boxed tabs) in `docs/designs/preview/nav-options.html` |
+| 2026-10-09 | Main actions (Open, Save, Add) are solid `primary` buttons | They stand out from the white secondary buttons, as approved in preview v2 |
+| 2026-10-09 | Anek + Readex Pro bundled | Approved with preview v2; the system font was the main reason the app looked plainer than the preview |

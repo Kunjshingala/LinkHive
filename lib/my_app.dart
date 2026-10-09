@@ -27,6 +27,12 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   ReceiveSharedIntent? _receiveSharedIntent;
   HomeWidgetService? _homeWidgetService;
 
+  /// Created here rather than in build so the notification service can start
+  /// in the saved language (see initState).
+  late final LocaleCubit _localeCubit = LocaleCubit(
+    hiveHelper: locator<HiveHelper>(),
+  );
+
   @override
   void initState() {
     super.initState();
@@ -38,12 +44,14 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
     // the router is attached (needed for a cold-start notification tap to
     // navigate), fails silently on its own — see
     // ResurfaceNotificationService.initialize().
-    locator<ResurfaceNotificationService>().initialize();
+    locator<ResurfaceNotificationService>().initialize(
+      locale: _localeCubit.state,
+    );
     // Same fire-and-forget pattern: pushes initial data to the home-screen
     // widget and starts watching for changes. Android only for now — see
     // HomeWidgetService's doc comment.
     _homeWidgetService ??= locator<HomeWidgetService>();
-    _homeWidgetService?.initialize();
+    _homeWidgetService?.initialize(locale: _localeCubit.state);
   }
 
   @override
@@ -66,6 +74,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   void dispose() {
     _receiveSharedIntent?.dispose();
     _homeWidgetService?.dispose();
+    _localeCubit.close();
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
@@ -74,14 +83,18 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [
-        BlocProvider(
-          create: (_) => LocaleCubit(hiveHelper: locator<HiveHelper>()),
-        ),
+        BlocProvider.value(value: _localeCubit),
         BlocProvider(
           create: (_) => ThemeCubit(hiveHelper: locator<HiveHelper>()),
         ),
       ],
-      child: BlocBuilder<LocaleCubit, Locale>(
+      child: BlocConsumer<LocaleCubit, Locale>(
+        // Keep the daily notification and the home-screen widget in the
+        // app's language.
+        listener: (context, locale) {
+          locator<ResurfaceNotificationService>().setLocale(locale);
+          _homeWidgetService?.setLocale(locale);
+        },
         builder: (context, locale) {
           return BlocBuilder<ThemeCubit, ThemeMode>(
             builder: (context, themeMode) {

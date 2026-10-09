@@ -18,7 +18,8 @@ class LinkListLoadRequested extends LinkListEvent {
   List<Object?> get props => [silent];
 }
 
-/// Replaces the filters, read tab or sort, and reloads from the first page.
+/// Replaces the quick chip, source, category or sort, and reloads from the
+/// first page.
 class LinkListQueryChanged extends LinkListEvent {
   const LinkListQueryChanged(this.query);
 
@@ -42,6 +43,17 @@ class LinkListNextPageRequested extends LinkListEvent {
   const LinkListNextPageRequested();
 }
 
+/// Pull-to-refresh: pushes local changes, pulls from the cloud, then reloads.
+/// [completer] finishes when the refresh indicator can stop.
+class LinkListSyncRequested extends LinkListEvent {
+  const LinkListSyncRequested({this.completer});
+
+  final Completer<void>? completer;
+
+  @override
+  List<Object?> get props => [completer];
+}
+
 /// Swipe right on one card: marks it read, or unread if it already is.
 class LinkListReadToggled extends LinkListEvent {
   const LinkListReadToggled(this.link);
@@ -61,7 +73,13 @@ class LinkListLinkDeleted extends LinkListEvent {
   List<Object?> get props => [id];
 }
 
-/// Long-press, or a tap while selecting: adds or removes one link.
+/// The Select button: enters selection mode with nothing picked yet.
+class LinkListSelectionStarted extends LinkListEvent {
+  const LinkListSelectionStarted();
+}
+
+/// Long-press, or a tap while selecting: adds or removes one link. A
+/// long-press outside selection mode also starts it.
 class LinkListSelectionToggled extends LinkListEvent {
   const LinkListSelectionToggled(this.id);
 
@@ -76,6 +94,7 @@ class LinkListSelectAllRequested extends LinkListEvent {
   const LinkListSelectAllRequested();
 }
 
+/// Leaves selection mode.
 class LinkListSelectionCleared extends LinkListEvent {
   const LinkListSelectionCleared();
 }

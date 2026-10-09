@@ -314,3 +314,20 @@ Where the build differs from the plan above:
 - **Primary buttons** use the real `NeoBrutalistButton` primary style (white fill, colored shadow), not the solid ink fill drawn in the preview.
 - **Open questions resolved by default:** "Read" is the label for finished links; Account appears only on Library; the widget's "home" link goes to Today.
 - **Not done:** "Manage" categories link (phase 2), on-device check.
+
+## v2: Links-first (2026-10-09)
+
+After 5-6 minutes on the phone the user said the overall UX was not good:
+links were too far away (the Library overview was a dashboard, not a list),
+opening on Today was wrong, it looked plain, things were hard to find, and
+everything felt loaded at once. v2 was previewed (`docs/designs/preview/ui-redesign-preview-v2.html`,
+nav picked from `nav-options.html`) and approved before building.
+
+- **Tabs:** Links (opens here) · Today · Inbox, in a floating pill nav. Back on Today or Inbox goes to Links.
+- **Links tab = the list.** Search (always visible), quick chips with counts (All, Unread, High, Saved 2×+, Read), then Source / Category / Sort buttons, then the links. Filters apply in place; "N links" shows when anything narrows the list. The Library overview, its bloc, the multi-select filter sheet and `/library/links` are gone.
+- **Grouping:** Today / This week / month headers for date sorts; **By site** groups under "youtube.com · 88" headers, sites with most links first; Priority groups by High / Normal / Low.
+- **Category sheet** adds "No category" (`LinkQuery.uncategorized`) so unsorted links can be tidied with bulk select.
+- **Select button** in the header starts bulk select with nothing picked; long-press still works.
+- **Add** is a solid ink round button; Open, Save and "Add to N links" are solid ink too.
+- **Anek + Readex Pro** bundled (see `DESIGN.md`).
+- Code: `lib/features/link_list/` (screen, `LinkListBloc` with sync and overview counts, `CategoryPickerCubit`); `LinkQuery` gained `QuickFilter` presets and `hasFilters`.

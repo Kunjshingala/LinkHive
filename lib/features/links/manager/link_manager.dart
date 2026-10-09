@@ -112,7 +112,8 @@ class LinkManager {
 
   LibraryStats getLibraryStats() => _repository.getLibraryStats();
 
-  List<NamedCount> getSourceCounts() => _repository.getSourceCounts();
+  List<NamedCount> getSourceCounts({LinkQuery? within}) =>
+      _repository.getSourceCounts(within: within);
 
   List<NamedCount> getCategoryCounts() => _repository.getCategoryCounts();
 

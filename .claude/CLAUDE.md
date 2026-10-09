@@ -76,10 +76,9 @@ locator<ReceiveSharedIntent>()
 |---|---|---|---|
 | `MyRouteName.splash` | `/` | `SplashScreen` | — |
 | `MyRouteName.login` | `/login` | `LoginScreen` | — |
-| `MyRouteName.homeScreen` | `/home` | redirects to `/today` | — |
-| `MyRouteName.today` | `/today` | `TodayScreen` (tab 1, app home) | — |
-| `MyRouteName.library` | `/library` | `LibraryScreen` (tab 2) | — |
-| `MyRouteName.linkList` | `/library/links` | `LinkListScreen` | `LinkListArgs args` |
+| `MyRouteName.homeScreen` | `/home` | redirects to `/links` | — |
+| `MyRouteName.links` | `/links` | `LinkListScreen` (tab 1, app home) | — |
+| `MyRouteName.today` | `/today` | `TodayScreen` (tab 2) | — |
 | `MyRouteName.inbox` | `/inbox` | `InboxScreen` (tab 3) | — |
 | `MyRouteName.accountScreen` | `/accountScreen` | `AccountScreen` | — |
 | `MyRouteName.signup` | `/signup` | `SignupScreen` | — |
@@ -87,7 +86,7 @@ locator<ReceiveSharedIntent>()
 | `MyRouteName.editLink` | `/editLink` | `AddLinkScreen` | `LinkModel existingLink` |
 | `MyRouteName.conflicts` | `/conflicts` | `ConflictScreen` | — |
 
-Today, Library and Inbox are branches of a `StatefulShellRoute.indexedStack` wrapped in `AppShell` (`lib/features/shell/`), which owns the bottom nav and the press-back-twice-to-exit logic. Switch tabs with `context.goNamed`, not `pushNamed`.
+Links, Today and Inbox are branches of a `StatefulShellRoute.indexedStack` wrapped in `AppShell` (`lib/features/shell/`), which owns the floating bottom nav and the press-back-twice-to-exit logic. Switch tabs with `context.goNamed`, not `pushNamed`.
 
 Always use `context.goNamed(MyRouteName.xxx)` — never raw strings or `Navigator`.
 
@@ -111,8 +110,8 @@ lib/
 ├── features/
 │   ├── authentication/          # LoginScreen, SignupScreen, AuthBloc
 │   ├── shell/                   # AppShell (tabs + bottom nav), ShellBloc, InboxBadgeCubit
-│   ├── today/                   # TodayScreen, TodayBloc (default tab)
-│   ├── library/                 # LibraryScreen + LibraryBloc; link_list/ (LinkListScreen, LinkListBloc, sheet cubits)
+│   ├── link_list/               # LinkListScreen (Links tab, app home), LinkListBloc, CategoryPickerCubit
+│   ├── today/                   # TodayScreen, TodayBloc
 │   ├── inbox/                   # InboxScreen, InboxBloc
 │   ├── links/                   # AddLinkScreen, AddLinkBloc, LinkManager, LinkRepository, LinkModel, LinkQuery
 │   ├── account/                 # AccountScreen, AccountBloc

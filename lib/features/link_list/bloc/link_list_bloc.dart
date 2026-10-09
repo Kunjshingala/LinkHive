@@ -4,29 +4,34 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:rxdart/rxdart.dart';
 
-import '../../../links/manager/link_manager.dart';
-import '../../../links/models/link_model.dart';
+import '../../../core/services/sync_engine.dart';
+import '../../links/manager/link_manager.dart';
+import '../../links/models/link_model.dart';
 
 part 'link_list_event.dart';
 part 'link_list_state.dart';
 
-/// One Library list: a [LinkQuery] (source, category, smart list or search),
-/// paged, with bulk selection.
+/// The Links tab: every saved link, narrowed by search, a quick chip, a
+/// source and a category, in one of five orders. Paged, with bulk selection
+/// and pull-to-refresh sync.
 ///
 /// Reloads silently whenever links change, so swipes, bulk actions and edits
 /// made elsewhere show up without a spinner.
 class LinkListBloc extends Bloc<LinkListEvent, LinkListState> {
   final LinkManager _manager;
-  final LinkQuery _initialQuery;
+  final SyncEngine? _syncEngine;
 
   /// Subscription to the links box. Cancelled in [close].
   late final StreamSubscription<void> _boxSubscription;
 
   static const pageSize = 20;
 
-  LinkListBloc({required LinkManager manager, required LinkQuery query})
+  /// Shortest time the refresh spinner shows, so a fast sync doesn't flicker.
+  static const _minRefreshDuration = Duration(milliseconds: 500);
+
+  LinkListBloc({required LinkManager manager, SyncEngine? syncEngine})
     : _manager = manager,
-      _initialQuery = query,
+      _syncEngine = syncEngine,
       super(const LinkListInitial()) {
     on<LinkListLoadRequested>(_onLoadRequested);
     on<LinkListQueryChanged>(_onQueryChanged);
@@ -37,8 +42,10 @@ class LinkListBloc extends Bloc<LinkListEvent, LinkListState> {
           .switchMap(mapper),
     );
     on<LinkListNextPageRequested>(_onNextPageRequested);
+    on<LinkListSyncRequested>(_onSyncRequested);
     on<LinkListReadToggled>(_onReadToggled);
     on<LinkListLinkDeleted>(_onLinkDeleted);
+    on<LinkListSelectionStarted>(_onSelectionStarted);
     on<LinkListSelectionToggled>(_onSelectionToggled);
     on<LinkListSelectAllRequested>(_onSelectAllRequested);
     on<LinkListSelectionCleared>(_onSelectionCleared);
@@ -62,7 +69,7 @@ class LinkListBloc extends Bloc<LinkListEvent, LinkListState> {
 
   LinkQuery get _query {
     final current = state;
-    return current is LinkListLoaded ? current.query : _initialQuery;
+    return current is LinkListLoaded ? current.query : const LinkQuery();
   }
 
   void _onLoadRequested(
@@ -71,15 +78,41 @@ class LinkListBloc extends Bloc<LinkListEvent, LinkListState> {
   ) {
     final current = state;
     if (event.silent && current is LinkListLoaded) {
-      try {
-        _emitReloaded(emit, current);
-      } catch (e) {
-        emit(LinkListError(message: e.toString()));
-      }
+      _guard(emit, () => _emitReloaded(emit, current));
       return;
     }
     emit(const LinkListLoading());
     _emitFirstPage(emit, _query);
+  }
+
+  void _onQueryChanged(
+    LinkListQueryChanged event,
+    Emitter<LinkListState> emit,
+  ) => _emitFirstPage(emit, event.query);
+
+  void _onSearchChanged(
+    LinkListSearchChanged event,
+    Emitter<LinkListState> emit,
+  ) => _emitFirstPage(emit, _query.copyWith(search: event.search));
+
+  /// Loads page one of [query], keeping selection mode if it was on.
+  void _emitFirstPage(Emitter<LinkListState> emit, LinkQuery query) {
+    final current = state;
+    _guard(emit, () {
+      final links = _manager.findLinks(query, limit: pageSize);
+      final total = _manager.countLinks(query);
+      emit(
+        _withOverview(
+          LinkListLoaded(
+            query: query,
+            links: links,
+            total: total,
+            hasReachedMax: links.length >= total,
+            isSelecting: current is LinkListLoaded && current.isSelecting,
+          ),
+        ),
+      );
+    });
   }
 
   /// Reloads [current] in place: keeps as many links as were loaded, so the
@@ -100,37 +133,33 @@ class LinkListBloc extends Bloc<LinkListEvent, LinkListState> {
       selected = selected.where(matching.contains).toSet();
     }
     emit(
-      current.copyWith(
-        links: links,
-        total: total,
-        hasReachedMax: links.length >= total,
-        selectedIds: selected,
+      _withOverview(
+        current.copyWith(
+          links: links,
+          total: total,
+          hasReachedMax: links.length >= total,
+          selectedIds: selected,
+        ),
       ),
     );
   }
 
-  void _onQueryChanged(
-    LinkListQueryChanged event,
-    Emitter<LinkListState> emit,
-  ) => _emitFirstPage(emit, event.query);
+  /// [loaded] with the counts behind the chips, sheets and site headers.
+  LinkListLoaded _withOverview(LinkListLoaded loaded) => loaded.copyWith(
+    stats: _manager.getLibraryStats(),
+    sources: _manager.getSourceCounts(),
+    categories: _manager.getCategoryCounts(),
+    siteCounts: loaded.query.sort == LinkSort.site
+        ? {
+            for (final c in _manager.getSourceCounts(within: loaded.query))
+              c.name: c.count,
+          }
+        : const {},
+  );
 
-  void _onSearchChanged(
-    LinkListSearchChanged event,
-    Emitter<LinkListState> emit,
-  ) => _emitFirstPage(emit, _query.copyWith(search: event.search));
-
-  void _emitFirstPage(Emitter<LinkListState> emit, LinkQuery query) {
+  void _guard(Emitter<LinkListState> emit, void Function() body) {
     try {
-      final links = _manager.findLinks(query, limit: pageSize);
-      final total = _manager.countLinks(query);
-      emit(
-        LinkListLoaded(
-          query: query,
-          links: links,
-          total: total,
-          hasReachedMax: links.length >= total,
-        ),
-      );
+      body();
     } catch (e) {
       emit(LinkListError(message: e.toString()));
     }
@@ -156,6 +185,38 @@ class LinkListBloc extends Bloc<LinkListEvent, LinkListState> {
     );
   }
 
+  Future<void> _onSyncRequested(
+    LinkListSyncRequested event,
+    Emitter<LinkListState> emit,
+  ) async {
+    final startedAt = DateTime.now();
+    try {
+      // Push and pull stay one serialized operation when the engine is wired.
+      final engine = _syncEngine;
+      if (engine != null) {
+        await engine.requestSync(pull: true);
+      } else {
+        await _manager.syncPendingLinks();
+        await _manager.pullFromCloud();
+      }
+      final current = state;
+      if (current is LinkListLoaded) {
+        _emitReloaded(emit, current);
+      } else {
+        _emitFirstPage(emit, _query);
+      }
+      final elapsed = DateTime.now().difference(startedAt);
+      if (elapsed < _minRefreshDuration) {
+        await Future<void>.delayed(_minRefreshDuration - elapsed);
+      }
+    } catch (e) {
+      emit(LinkListError(message: e.toString()));
+    } finally {
+      final completer = event.completer;
+      if (completer != null && !completer.isCompleted) completer.complete();
+    }
+  }
+
   Future<void> _onReadToggled(
     LinkListReadToggled event,
     Emitter<LinkListState> emit,
@@ -168,6 +229,14 @@ class LinkListBloc extends Bloc<LinkListEvent, LinkListState> {
     Emitter<LinkListState> emit,
   ) => _manager.deleteLink(event.id);
 
+  void _onSelectionStarted(
+    LinkListSelectionStarted event,
+    Emitter<LinkListState> emit,
+  ) {
+    final current = state;
+    if (current is LinkListLoaded) emit(current.copyWith(isSelecting: true));
+  }
+
   void _onSelectionToggled(
     LinkListSelectionToggled event,
     Emitter<LinkListState> emit,
@@ -176,7 +245,7 @@ class LinkListBloc extends Bloc<LinkListEvent, LinkListState> {
     if (current is! LinkListLoaded) return;
     final selected = {...current.selectedIds};
     if (!selected.remove(event.id)) selected.add(event.id);
-    emit(current.copyWith(selectedIds: selected));
+    emit(current.copyWith(isSelecting: true, selectedIds: selected));
   }
 
   void _onSelectAllRequested(
@@ -194,7 +263,9 @@ class LinkListBloc extends Bloc<LinkListEvent, LinkListState> {
     Emitter<LinkListState> emit,
   ) {
     final current = state;
-    if (current is LinkListLoaded) emit(current.copyWith(selectedIds: {}));
+    if (current is LinkListLoaded) {
+      emit(current.copyWith(isSelecting: false, selectedIds: {}));
+    }
   }
 
   Future<void> _onBulkMarkRead(
@@ -230,12 +301,15 @@ class LinkListBloc extends Bloc<LinkListEvent, LinkListState> {
     Future<void> Function(Set<String> ids) action,
   ) async {
     final current = state;
-    if (current is! LinkListLoaded || !current.isSelecting) return;
+    if (current is! LinkListLoaded || current.selectedIds.isEmpty) return;
     try {
       await action(current.selectedIds);
       final latest = state;
       if (latest is LinkListLoaded) {
-        _emitReloaded(emit, latest.copyWith(selectedIds: {}));
+        _emitReloaded(
+          emit,
+          latest.copyWith(isSelecting: false, selectedIds: {}),
+        );
       }
     } catch (e) {
       emit(LinkListError(message: e.toString()));

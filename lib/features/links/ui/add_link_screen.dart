@@ -180,7 +180,7 @@ class _AddLinkContentState extends State<_AddLinkContent> {
           backgroundColor: Theme.of(context).scaffoldBackgroundColor,
           appBar: CommonAppBar(
             titleText: widget.isEditing
-                ? 'Update Link'
+                ? context.l10n.editLinkTitle
                 : context.l10n.addLinkTitle,
           ),
           body: SingleChildScrollView(
@@ -463,8 +463,11 @@ class _AddLinkContentState extends State<_AddLinkContent> {
                 // ─── Save Button ───────────────────────────────────
                 NeoBrutalistButton(
                   text: widget.isEditing
-                      ? 'Update Link'
+                      ? context.l10n.updateLinkButton
                       : context.l10n.saveLinkButton,
+                  backgroundColor: Theme.of(context).colorScheme.primary,
+                  textColor: Theme.of(context).colorScheme.onPrimary,
+                  shadowColor: AppColors.success,
                   isLoading: isSaving,
                   onPressed: () {
                     final rawUrl = _urlCtrl.text.trim();

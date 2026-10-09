@@ -78,3 +78,54 @@ flutter:
 
   assets:
     - assets/
+    - assets/licenses/
+
+  # Anek (Latin, Devanagari, Gujarati) and Readex Pro (Arabic), OFL 1.1.
+  # Licenses in assets/licenses/, registered in main.dart. See DESIGN.md.
+  fonts:
+    - family: AnekLatin
+      fonts:
+        - asset: assets/fonts/AnekLatin-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/AnekLatin-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/AnekLatin-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/AnekLatin-Bold.ttf
+          weight: 700
+        - asset: assets/fonts/AnekLatin-ExtraBold.ttf
+          weight: 800
+    - family: AnekDevanagari
+      fonts:
+        - asset: assets/fonts/AnekDevanagari-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/AnekDevanagari-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/AnekDevanagari-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/AnekDevanagari-Bold.ttf
+          weight: 700
+        - asset: assets/fonts/AnekDevanagari-ExtraBold.ttf
+          weight: 800
+    - family: AnekGujarati
+      fonts:
+        - asset: assets/fonts/AnekGujarati-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/AnekGujarati-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/AnekGujarati-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/AnekGujarati-Bold.ttf
+          weight: 700
+        - asset: assets/fonts/AnekGujarati-ExtraBold.ttf
+          weight: 800
+    - family: ReadexPro
+      fonts:
+        - asset: assets/fonts/ReadexPro-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/ReadexPro-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/ReadexPro-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/ReadexPro-Bold.ttf
+          weight: 700

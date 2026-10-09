@@ -7,9 +7,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:link_hive/core/services/sync_engine.dart';
 import 'package:link_hive/core/theme/app_theme.dart';
 import 'package:link_hive/core/utils/locator.dart';
-import 'package:link_hive/core/utils/navigation/route.dart';
-import 'package:link_hive/features/library/library_screen.dart';
-import 'package:link_hive/features/library/link_list/link_list_screen.dart';
+import 'package:link_hive/features/link_list/link_list_screen.dart';
 import 'package:link_hive/features/links/manager/link_manager.dart';
 import 'package:link_hive/features/links/models/link_model.dart';
 import 'package:link_hive/features/shell/app_shell.dart';
@@ -30,13 +28,13 @@ void main() {
       id: 'a',
       url: 'https://youtu.be/1',
       title: 'Pizza video',
-      createdAt: 0,
+      createdAt: DateTime.now().toUtc().millisecondsSinceEpoch,
     ),
     LinkModel(
       id: 'b',
       url: 'https://amazon.in/x',
       title: 'Keyboard',
-      createdAt: 0,
+      createdAt: DateTime.now().toUtc().millisecondsSinceEpoch,
     ),
   ];
 
@@ -49,9 +47,11 @@ void main() {
     locator.registerSingleton<SyncEngine>(MockSyncEngine());
     when(() => manager.watchLinks()).thenAnswer((_) => changes.stream);
     when(() => manager.getLibraryStats()).thenReturn(
-      const LibraryStats(total: 2, unread: 2, high: 1, savedTwicePlus: 1),
+      const LibraryStats(total: 2, unread: 2, high: 1, uncategorized: 1),
     );
-    when(() => manager.getSourceCounts()).thenReturn(const [
+    when(
+      () => manager.getSourceCounts(within: any(named: 'within')),
+    ).thenReturn(const [
       NamedCount('youtube.com', 1),
       NamedCount('amazon.in', 1),
     ]);
@@ -74,47 +74,44 @@ void main() {
     locator.reset();
   });
 
-  /// The Library and its list under a minimal router, like the real branch.
   Widget app() => MaterialApp.router(
     localizationsDelegates: AppLocalizations.localizationsDelegates,
     supportedLocales: AppLocalizations.supportedLocales,
     theme: buildLinkHiveTheme(),
     routerConfig: GoRouter(
-      initialLocation: '/library',
-      routes: [
-        GoRoute(
-          path: '/library',
-          builder: (_, _) => const LibraryScreen(),
-          routes: [
-            GoRoute(
-              path: 'links',
-              name: MyRouteName.linkList,
-              builder: (_, state) =>
-                  LinkListScreen(args: state.extra! as LinkListArgs),
-            ),
-          ],
-        ),
-      ],
+      routes: [GoRoute(path: '/', builder: (_, _) => const LinkListScreen())],
     ),
   );
 
-  testWidgets('Library shows counts, sources and categories', (tester) async {
+  testWidgets('shows search, quick chips, filter buttons and the links', (
+    tester,
+  ) async {
     await tester.pumpWidget(app());
     await tester.pumpAndSettle();
 
+    expect(find.text('Links'), findsOneWidget);
+    expect(find.text('Search 2 links...'), findsOneWidget);
     expect(find.text('Unread'), findsOneWidget);
     expect(find.text('Saved 2×+'), findsOneWidget);
-    expect(find.text('youtube.com'), findsOneWidget);
-    expect(find.text('amazon.in'), findsOneWidget);
-    expect(find.text('Watch'), findsOneWidget);
-    await tester.scrollUntilVisible(find.text('All links'), 200);
-    expect(find.text('All links'), findsOneWidget);
+    expect(find.text('Source'), findsOneWidget);
+    expect(find.text('Category'), findsOneWidget);
+    expect(find.text('Newest first'), findsOneWidget);
+    expect(find.text('TODAY'), findsOneWidget);
+    expect(find.text('Pizza video'), findsOneWidget);
   });
 
-  testWidgets('Library shows the empty state with no links', (tester) async {
+  testWidgets('shows the empty state when nothing is saved yet', (
+    tester,
+  ) async {
     when(() => manager.getLibraryStats()).thenReturn(const LibraryStats());
-    when(() => manager.getSourceCounts()).thenReturn(const []);
-    when(() => manager.getCategoryCounts()).thenReturn(const []);
+    when(
+      () => manager.findLinks(
+        any(),
+        limit: any(named: 'limit'),
+        offset: any(named: 'offset'),
+      ),
+    ).thenReturn(const []);
+    when(() => manager.countLinks(any())).thenReturn(0);
 
     await tester.pumpWidget(app());
     await tester.pumpAndSettle();
@@ -122,40 +119,81 @@ void main() {
     expect(find.text('No Links yet!'), findsOneWidget);
   });
 
-  testWidgets('tapping a source opens its list, scoped to that site', (
+  testWidgets('a quick chip filters the list in place', (tester) async {
+    await tester.pumpWidget(app());
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Unread'));
+    await tester.pumpAndSettle();
+
+    verify(
+      () => manager.findLinks(
+        const LinkQuery(readFilter: ReadFilter.unread),
+        limit: any(named: 'limit'),
+        offset: any(named: 'offset'),
+      ),
+    ).called(greaterThan(0));
+    // A filter is on, so the match count shows.
+    expect(find.text('2 links'), findsOneWidget);
+  });
+
+  testWidgets('the Source sheet picks a site and the button turns into it', (
     tester,
   ) async {
     await tester.pumpWidget(app());
     await tester.pumpAndSettle();
 
-    await tester.tap(find.text('youtube.com'));
+    await tester.tap(find.text('Source'));
+    await tester.pumpAndSettle();
+    expect(find.text('All sites'), findsOneWidget);
+
+    await tester.tap(find.text('amazon.in').last);
     await tester.pumpAndSettle();
 
-    expect(find.byType(LinkListScreen), findsOneWidget);
-    final screen = tester.widget<LinkListScreen>(find.byType(LinkListScreen));
-    expect(screen.args.query, const LinkQuery(host: 'youtube.com'));
-    expect(find.text('Pizza video'), findsOneWidget);
+    verify(
+      () => manager.findLinks(
+        const LinkQuery(host: 'amazon.in'),
+        limit: any(named: 'limit'),
+        offset: any(named: 'offset'),
+      ),
+    ).called(greaterThan(0));
+    // The button now names the site instead of "Source".
+    expect(find.text('Source'), findsNothing);
+  });
+
+  testWidgets('the Category sheet offers "No category"', (tester) async {
+    await tester.pumpWidget(app());
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Category'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('No category'));
+    await tester.pumpAndSettle();
+
+    verify(
+      () => manager.findLinks(
+        const LinkQuery(uncategorized: true),
+        limit: any(named: 'limit'),
+        offset: any(named: 'offset'),
+      ),
+    ).called(greaterThan(0));
   });
 
   testWidgets(
-    'long-press starts selection: action bar shows, nav hides, close ends it',
+    'Select enters selection mode: action bar shows, nav hides, close ends it',
     (tester) async {
       await tester.pumpWidget(app());
       await tester.pumpAndSettle();
-      await tester.scrollUntilVisible(find.text('All links'), 200);
-      await tester.tap(find.text('All links'));
-      await tester.pumpAndSettle();
 
-      await tester.longPress(find.text('Pizza video'));
+      await tester.tap(find.byIcon(Icons.checklist_rounded));
       await tester.pumpAndSettle();
-
-      expect(find.text('1 selected'), findsOneWidget);
+      expect(find.text('Select links'), findsOneWidget);
       expect(find.text('Mark read'), findsOneWidget);
       expect(AppShell.navVisible.value, isFalse);
 
       await tester.tap(find.text('Keyboard'));
       await tester.pumpAndSettle();
-      expect(find.text('2 selected'), findsOneWidget);
+      expect(find.text('1 selected'), findsOneWidget);
 
       await tester.tap(find.byIcon(Icons.close_rounded));
       await tester.pumpAndSettle();
@@ -164,7 +202,19 @@ void main() {
     },
   );
 
-  testWidgets('bottom nav reports taps and shows the Inbox badge', (
+  testWidgets('long-press also starts selection with that link picked', (
+    tester,
+  ) async {
+    await tester.pumpWidget(app());
+    await tester.pumpAndSettle();
+
+    await tester.longPress(find.text('Pizza video'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('1 selected'), findsOneWidget);
+  });
+
+  testWidgets('floating nav labels only the active tab and shows the badge', (
     tester,
   ) async {
     int? tapped;
@@ -176,6 +226,10 @@ void main() {
             currentIndex: 0,
             onTap: (i) => tapped = i,
             items: const [
+              AppBottomNavItem(
+                icon: Icons.collections_bookmark_rounded,
+                label: 'Links',
+              ),
               AppBottomNavItem(icon: Icons.today_rounded, label: 'Today'),
               AppBottomNavItem(
                 icon: Icons.inbox_rounded,
@@ -188,8 +242,11 @@ void main() {
       ),
     );
 
+    expect(find.text('Links'), findsOneWidget);
+    expect(find.text('Today'), findsNothing);
     expect(find.text('4'), findsOneWidget);
-    await tester.tap(find.text('Inbox'));
-    expect(tapped, 1);
+
+    await tester.tap(find.byIcon(Icons.inbox_rounded));
+    expect(tapped, 2);
   });
 }
