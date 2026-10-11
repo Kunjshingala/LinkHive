@@ -336,6 +336,7 @@ footer nav { display: flex; gap: 18px; flex-wrap: wrap; }
 
 /* Home screen widget (TodayGlanceWidget.kt): no border or shadow, a surface, a brand row, two stat pills */
 .phone .home { background: var(--wall); padding: 0; }
+.phone:has(.home) { background: var(--wall); } /* the wallpaper runs under the status bar */
 .phone .widget { margin: 44px 16px 0; background: var(--surface); border-radius: 24px; padding: 16px; min-height: 170px; display: flex; flex-direction: column; }
 .phone .widget .wb { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 700; color: var(--text2); }
 .phone .widget .ico { width: 22px; height: 22px; border-radius: 6px; background: var(--lemon); color: var(--ink); display: grid; place-items: center; }
