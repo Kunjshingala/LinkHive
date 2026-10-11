@@ -24,8 +24,9 @@ Future<UnsyncedSummary?> showSignOutSheet(BuildContext context) {
     context: context,
     isScrollControlled: true,
     backgroundColor: Theme.of(context).colorScheme.surface,
-    shape: const RoundedRectangleBorder(
-      borderRadius: BorderRadius.vertical(
+    shape: RoundedRectangleBorder(
+      side: BorderSide(color: Theme.of(context).colorScheme.outline, width: 2),
+      borderRadius: const BorderRadius.vertical(
         top: Radius.circular(AppSpacing.radiusXl),
       ),
     ),
@@ -46,7 +47,7 @@ class _SignOutSheet extends StatelessWidget {
 
     return SafeArea(
       child: SingleChildScrollView(
-        padding: const EdgeInsets.all(AppSpacing.xl),
+        padding: const EdgeInsets.all(AppSpacing.lg),
         child: BlocBuilder<SignOutCubit, SyncSnapshot>(
           builder: (context, snapshot) {
             final unsynced = snapshot.unsynced;
@@ -71,11 +72,16 @@ class _SignOutSheet extends StatelessWidget {
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: AppSpacing.sm),
-                Text(
-                  _messageFor(l10n, snapshot),
-                  textAlign: TextAlign.center,
-                  style: AppTypography.bodyMedium.copyWith(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                // A live region: a screen reader announces it when the state
+                // changes while the sheet is open.
+                Semantics(
+                  liveRegion: true,
+                  child: Text(
+                    _messageFor(l10n, snapshot),
+                    textAlign: TextAlign.center,
+                    style: AppTypography.bodyMedium.copyWith(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
                   ),
                 ),
                 const SizedBox(height: AppSpacing.xl),

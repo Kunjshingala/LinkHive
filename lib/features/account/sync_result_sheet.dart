@@ -18,8 +18,9 @@ Future<bool?> showSyncResultSheet(BuildContext context, SyncSnapshot snapshot) {
     context: context,
     isScrollControlled: true,
     backgroundColor: Theme.of(context).colorScheme.surface,
-    shape: const RoundedRectangleBorder(
-      borderRadius: BorderRadius.vertical(
+    shape: RoundedRectangleBorder(
+      side: BorderSide(color: Theme.of(context).colorScheme.outline, width: 2),
+      borderRadius: const BorderRadius.vertical(
         top: Radius.circular(AppSpacing.radiusXl),
       ),
     ),
@@ -42,7 +43,7 @@ class _SyncResultSheet extends StatelessWidget {
 
     return SafeArea(
       child: SingleChildScrollView(
-        padding: const EdgeInsets.all(AppSpacing.xl),
+        padding: const EdgeInsets.all(AppSpacing.lg),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [

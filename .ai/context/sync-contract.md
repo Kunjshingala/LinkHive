@@ -71,20 +71,46 @@ pull-to-refresh and the Account screen.
      recount: grew since the sheet opened -> abort, show the sheet again
      refuse new sync runs
      marker on -> wipe (generation + 1) -> AuthService.signOut -> marker off
-   login screen shows "Signed out. This phone's copy was removed; your links are safe in your account."
+   afterwards a snackbar says "Signed out. This phone's copy was cleared." once
 ```
 
-"Delete local data" uses the same wipe path and waits for any running sync first.
+The sheet shows the safe choice first: "Sync now" when syncing can help (online, no
+conflict), otherwise "Cancel". "Sign out anyway" hands back exactly the counts
+the user was shown. The sheet only reports; `AccountBloc` runs the sign-out
+through `AccountSessionService`.
+
+"Delete local data" and "Delete cloud data" use the same wipe path. Deleting
+cloud data is its own row with its own confirmation and is never part of
+sign-out.
+
+### Sync Data and full resync
+
+```
+ tap Sync Data -> push, then pull what changed since the cursor
+   result sheet (same words as the status tile, from describeSync)
+   "Check everything again" (not offered while waiting for internet):
+     wait for any run that is going -> push -> forget the cursor -> pull everything
+```
+
+A full resync deletes nothing on the phone: pulled links merge exactly as on a
+first sync. The engine waits for a running pull first, so that pull cannot
+write the old cursor back over the reset.
 
 ### Status shown to the user
 
 ```
- offline and pending > 0 -> Waiting for internet, N pending
+ offline and pending > 0 -> Waiting for internet, N changes will sync when back online
  online and a run active -> Syncing
- online and an error     -> Could not sync, will retry
- pending == 0            -> All synced
+ online and an error     -> Sync failed, with the reason and a Retry
+ pending > 0 (idle)      -> Waiting to sync, N changes have not reached the cloud
+ pending == 0            -> All synced, Last synced <time> (Ready to sync until the first pull)
+ guest                   -> Local Only
  precedence: conflict, failed (online), waiting, syncing, idle
 ```
+
+One tile (`SyncStatusCard`) owns this on the Account screen, and the shadow color
+follows the state: mint in sync, sky syncing, lemon waiting, rose failed,
+peach conflict.
 
 ## Edge cases
 

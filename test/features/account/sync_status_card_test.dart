@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:link_hive/core/services/sync_status.dart';
+import 'package:link_hive/core/theme/app_colors.dart';
 import 'package:link_hive/core/theme/app_theme.dart';
 import 'package:link_hive/features/account/sync_status_card.dart';
 import 'package:link_hive/features/sync/bloc/sync_status_bloc.dart';
@@ -175,6 +176,46 @@ void main() {
       expect(find.text(words), findsOneWidget);
     });
   }
+
+  Finder shadowOf(Color color) => find.byWidgetPredicate(
+    (w) =>
+        w is Container &&
+        w.decoration is BoxDecoration &&
+        (w.decoration as BoxDecoration).color == color,
+  );
+
+  testWidgets('in sync is mint', (tester) async {
+    await pumpCard(tester, SyncSnapshot(lastSyncedAt: syncedAt));
+
+    expect(shadowOf(AppColors.shadowMint), findsOneWidget);
+  });
+
+  testWidgets('waiting for internet is lemon, not the failure color', (
+    tester,
+  ) async {
+    await pumpCard(
+      tester,
+      const SyncSnapshot(
+        status: SyncStatus.waitingForInternet,
+        pendingChanges: 1,
+      ),
+    );
+
+    expect(shadowOf(AppColors.shadowLemon), findsOneWidget);
+    expect(shadowOf(AppColors.shadowRose), findsNothing);
+  });
+
+  testWidgets('a failure is rose', (tester) async {
+    await pumpCard(
+      tester,
+      const SyncSnapshot(
+        status: SyncStatus.failed,
+        failure: SyncFailure.timeout,
+      ),
+    );
+
+    expect(shadowOf(AppColors.shadowRose), findsOneWidget);
+  });
 
   testWidgets('conflicts are named, with how many', (tester) async {
     await pumpCard(

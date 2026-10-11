@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../core/extensions/context_extension.dart';
 import '../../core/services/sync_status.dart';
+import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_spacing.dart';
 import '../../core/theme/app_typography.dart';
 import '../../sharedWidgets/custom_button.dart';
@@ -33,6 +34,7 @@ class SyncStatusCard extends StatelessWidget {
       return _CardShell(
         icon: Icons.phone_android_rounded,
         title: context.l10n.accountStatLocal,
+        shadowColor: AppColors.shadowPeach,
       );
     }
 
@@ -44,6 +46,7 @@ class SyncStatusCard extends StatelessWidget {
           icon: description.icon,
           title: description.title,
           details: description.details,
+          shadowColor: _shadowFor(snapshot),
           onRetry: snapshot.status == SyncStatus.failed ? onRetry : null,
         );
       },
@@ -51,16 +54,32 @@ class SyncStatusCard extends StatelessWidget {
   }
 }
 
+/// The hard shadow says the state at a glance: mint for in sync, sky while
+/// syncing, lemon for waiting, rose for failed, peach for a conflict. Never
+/// purple, which is reserved for "it came back".
+Color _shadowFor(SyncSnapshot snapshot) {
+  return switch (snapshot.status) {
+    SyncStatus.conflict => AppColors.shadowPeach,
+    SyncStatus.failed => AppColors.shadowRose,
+    SyncStatus.waitingForInternet => AppColors.shadowLemon,
+    SyncStatus.syncing => AppColors.shadowSky,
+    SyncStatus.idle when snapshot.pendingChanges > 0 => AppColors.shadowLemon,
+    SyncStatus.idle => AppColors.shadowMint,
+  };
+}
+
 class _CardShell extends StatelessWidget {
   const _CardShell({
     required this.icon,
     required this.title,
+    required this.shadowColor,
     this.details = const [],
     this.onRetry,
   });
 
   final IconData icon;
   final String title;
+  final Color shadowColor;
   final List<String> details;
   final VoidCallback? onRetry;
 
@@ -68,50 +87,71 @@ class _CardShell extends StatelessWidget {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
 
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(AppSpacing.md),
-      decoration: BoxDecoration(
-        color: scheme.surface,
-        border: Border.all(color: scheme.outline, width: 2),
-        borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+    // A live region, so a screen reader announces a change of state.
+    return Semantics(
+      container: true,
+      liveRegion: true,
+      child: Stack(
         children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Icon(icon),
-              const SizedBox(width: AppSpacing.sm),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(title, style: AppTypography.titleSmall),
-                    for (final line in details) ...[
-                      const SizedBox(height: AppSpacing.xs),
-                      Text(
-                        line,
-                        style: AppTypography.caption.copyWith(
-                          color: scheme.onSurfaceVariant,
-                        ),
-                      ),
-                    ],
-                  ],
+          Positioned.fill(
+            child: Transform.translate(
+              offset: const Offset(4, 4),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: shadowColor,
+                  borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+                  border: Border.all(color: scheme.outline, width: 2),
                 ),
               ),
-            ],
-          ),
-          if (onRetry != null) ...[
-            const SizedBox(height: AppSpacing.md),
-            NeoBrutalistButton(
-              text: context.l10n.accountRetry,
-              icon: Icons.refresh_rounded,
-              height: 44,
-              onPressed: onRetry!,
             ),
-          ],
+          ),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(AppSpacing.md),
+            decoration: BoxDecoration(
+              color: scheme.surface,
+              border: Border.all(color: scheme.outline, width: 2),
+              borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Icon(icon),
+                    const SizedBox(width: AppSpacing.sm),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(title, style: AppTypography.titleSmall),
+                          for (final line in details) ...[
+                            const SizedBox(height: AppSpacing.xs),
+                            Text(
+                              line,
+                              style: AppTypography.caption.copyWith(
+                                color: scheme.onSurfaceVariant,
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                if (onRetry != null) ...[
+                  const SizedBox(height: AppSpacing.md),
+                  NeoBrutalistButton(
+                    text: context.l10n.accountRetry,
+                    icon: Icons.refresh_rounded,
+                    height: 44,
+                    onPressed: onRetry!,
+                  ),
+                ],
+              ],
+            ),
+          ),
         ],
       ),
     );
