@@ -17,6 +17,14 @@ if (localPropertiesFile.exists()) {
 val flutterVersionCode = localProperties.getProperty("flutter.versionCode") ?: "1"
 val flutterVersionName = localProperties.getProperty("flutter.versionName") ?: "1.0"
 
+// Release signing. android/key.properties and the keystore are gitignored;
+// without them, release builds fall back to the debug key.
+val keystoreProperties = Properties()
+val keystorePropertiesFile = rootProject.file("key.properties")
+if (keystorePropertiesFile.exists()) {
+    keystoreProperties.load(keystorePropertiesFile.inputStream())
+}
+
 android {
     namespace = "com.link.hive"
     compileSdk = (project.property("compileSdkVersion") as String).toInt()
@@ -51,11 +59,24 @@ android {
         versionName = flutterVersionName
     }
 
+    signingConfigs {
+        if (keystorePropertiesFile.exists()) {
+            create("release") {
+                keyAlias = keystoreProperties["keyAlias"] as String
+                keyPassword = keystoreProperties["keyPassword"] as String
+                storeFile = file(keystoreProperties["storeFile"] as String)
+                storePassword = keystoreProperties["storePassword"] as String
+            }
+        }
+    }
+
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig = signingConfigs.getByName("debug")
+            signingConfig = if (keystorePropertiesFile.exists()) {
+                signingConfigs.getByName("release")
+            } else {
+                signingConfigs.getByName("debug")
+            }
         }
     }
 }
