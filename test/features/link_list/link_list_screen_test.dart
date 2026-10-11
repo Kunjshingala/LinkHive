@@ -214,6 +214,46 @@ void main() {
     expect(find.text('1 selected'), findsOneWidget);
   });
 
+  testWidgets('the Add button sits above the floating nav, not under it', (
+    tester,
+  ) async {
+    // Same layout as AppShell: the nav floats over the body (extendBody).
+    await tester.pumpWidget(
+      MaterialApp.router(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        theme: buildLinkHiveTheme(),
+        routerConfig: GoRouter(
+          routes: [
+            GoRoute(
+              path: '/',
+              builder: (_, _) => Scaffold(
+                extendBody: true,
+                body: const LinkListScreen(),
+                bottomNavigationBar: AppBottomNav(
+                  currentIndex: 0,
+                  onTap: (_) {},
+                  items: const [
+                    AppBottomNavItem(
+                      icon: Icons.collections_bookmark_rounded,
+                      label: 'Links',
+                    ),
+                    AppBottomNavItem(icon: Icons.today_rounded, label: 'Today'),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final addButton = tester.getRect(find.byIcon(Icons.add_rounded));
+    final nav = tester.getRect(find.byType(AppBottomNav));
+    expect(addButton.bottom, lessThanOrEqualTo(nav.top));
+  });
+
   testWidgets('floating nav labels only the active tab and shows the badge', (
     tester,
   ) async {
