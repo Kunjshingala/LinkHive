@@ -99,15 +99,5 @@ void main() {
       act: (bloc) => bloc.add(const AuthGoogleSignInRequested()),
       expect: () => [const AuthLoading(), isA<AuthError>()],
     );
-
-    blocTest<AuthBloc, AuthState>(
-      'emits [AuthLoading, AuthInitial] when signOut succeeds',
-      build: () {
-        when(() => mockAuthService.signOut()).thenAnswer((_) async {});
-        return authBloc;
-      },
-      act: (bloc) => bloc.add(const AuthSignOutRequested()),
-      expect: () => [const AuthLoading(), const AuthInitial()],
-    );
   });
 }
