@@ -372,6 +372,9 @@ class AppLocalizationsHi extends AppLocalizations {
       'विरोधों पर ध्यान देने की आवश्यकता है';
 
   @override
+  String get accountSyncStatusWaiting => 'इंटरनेट का इंतज़ार';
+
+  @override
   String get accountRetry => 'पुनः प्रयास करें';
 
   @override

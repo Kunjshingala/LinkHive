@@ -1,12 +1,14 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:link_hive/core/constants/hive_constants.dart';
 import 'package:link_hive/core/models/conflict_record.dart';
 import 'package:link_hive/core/models/sync_operation.dart';
 import 'package:link_hive/core/models/sync_tombstone.dart';
+import 'package:link_hive/core/services/sync_status.dart';
 import 'package:link_hive/core/utils/hive_helper.dart';
 import 'package:link_hive/features/links/models/category_model.dart';
 import 'package:link_hive/features/links/models/link_model.dart';
@@ -189,6 +191,57 @@ void main() {
 
       expect(localIds(), isEmpty);
       expect(setting(HiveConstants.lastPulledAtKey), isNull);
+    });
+  });
+
+  group('what the sync status reports', () {
+    test(
+      'counts queued writes and the ones that failed their last attempt',
+      () async {
+        currentUid = accountA;
+        await repository.addLink(link('a-1'));
+        await repository.addLink(link('a-2'));
+        var saves = 0;
+        cloud.onCall = (method, uid) async {
+          if (method == 'saveLink' && ++saves == 2) {
+            throw FirebaseException(
+              plugin: 'cloud_firestore',
+              code: 'unavailable',
+            );
+          }
+        };
+
+        await repository.syncPendingLinks();
+
+        final summary = repository.unsyncedSummary();
+        expect(summary.changes, 1);
+        expect(summary.failedChanges, 1);
+        expect(summary.conflicts, 0);
+        expect(repository.lastFailure, SyncFailure.unavailable);
+      },
+    );
+
+    test('a push that starts clears the last failure', () async {
+      currentUid = accountA;
+      await repository.addLink(link('a-1'));
+      cloud.onCall = (method, uid) async => throw TimeoutException('slow');
+      await repository.syncPendingLinks();
+      expect(repository.lastFailure, SyncFailure.timeout);
+
+      cloud.onCall = null;
+      await repository.syncPendingLinks(); // the retry is not due yet
+
+      expect(repository.lastFailure, isNull);
+      expect(repository.unsyncedSummary().failedChanges, 1);
+    });
+
+    test('lastPulledAt is the time of the last successful pull', () async {
+      currentUid = accountA;
+      expect(repository.lastPulledAt, isNull);
+
+      await repository.pullFromCloud();
+
+      expect(repository.lastPulledAt, isNotNull);
     });
   });
 

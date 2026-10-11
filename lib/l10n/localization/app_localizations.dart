@@ -816,6 +816,12 @@ abstract class AppLocalizations {
   /// **'Conflicts need attention'**
   String get accountSyncStatusConflict;
 
+  /// No description provided for @accountSyncStatusWaiting.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting for internet'**
+  String get accountSyncStatusWaiting;
+
   /// No description provided for @accountRetry.
   ///
   /// In en, this message translates to:

@@ -128,6 +128,7 @@
   "accountSyncStatusSyncing": "સમન્વયન થઈ રહ્યું છે…",
   "accountSyncStatusFailed": "સમન્વયન નિષ્ફળ",
   "accountSyncStatusConflict": "વિરોધો પર ધ્યાન આપવાની જરૂર છે",
+  "accountSyncStatusWaiting": "ઇન્ટરનેટની રાહ જોઈ રહ્યું છે",
   "accountRetry": "ફરી પ્રયાસ કરો",
   "accountSyncStatusLabel": "સમન્વયન સ્થિતિ",
   "accountPendingCount": "{count} બાકી",

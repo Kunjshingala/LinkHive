@@ -370,6 +370,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get accountSyncStatusConflict => 'Conflicts need attention';
 
   @override
+  String get accountSyncStatusWaiting => 'Waiting for internet';
+
+  @override
   String get accountRetry => 'Retry';
 
   @override

@@ -121,6 +121,7 @@ class _SyncStatusCard extends StatelessWidget {
         final (label, icon) = switch (state.status) {
           SyncStatus.idle => (context.l10n.accountSyncStatusReady, Icons.cloud_done_rounded),
           SyncStatus.syncing => (context.l10n.accountSyncStatusSyncing, Icons.sync_rounded),
+          SyncStatus.waitingForInternet => (context.l10n.accountSyncStatusWaiting, Icons.wifi_off_rounded),
           SyncStatus.failed => (context.l10n.accountSyncStatusFailed, Icons.cloud_off_rounded),
           SyncStatus.conflict => (context.l10n.accountSyncStatusConflict, Icons.warning_amber_rounded),
         };

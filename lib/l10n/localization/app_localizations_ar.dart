@@ -369,6 +369,9 @@ class AppLocalizationsAr extends AppLocalizations {
   String get accountSyncStatusConflict => 'تعارضات تحتاج إلى انتباه';
 
   @override
+  String get accountSyncStatusWaiting => 'في انتظار الإنترنت';
+
+  @override
   String get accountRetry => 'إعادة المحاولة';
 
   @override

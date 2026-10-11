@@ -128,6 +128,7 @@
   "accountSyncStatusSyncing": "सिंक हो रहा है…",
   "accountSyncStatusFailed": "सिंक विफल",
   "accountSyncStatusConflict": "विरोधों पर ध्यान देने की आवश्यकता है",
+  "accountSyncStatusWaiting": "इंटरनेट का इंतज़ार",
   "accountRetry": "पुनः प्रयास करें",
   "accountSyncStatusLabel": "सिंक स्थिति",
   "accountPendingCount": "{count} लंबित",

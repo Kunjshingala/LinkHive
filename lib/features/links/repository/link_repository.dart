@@ -7,6 +7,7 @@ import '../../../core/models/conflict_record.dart';
 import '../../../core/models/sync_operation.dart';
 import '../../../core/models/sync_tombstone.dart';
 import '../../../core/services/firebase_firestore_service.dart';
+import '../../../core/services/sync_status.dart';
 import '../../../core/utils/hive_helper.dart';
 import '../../../core/utils/sync_backoff.dart';
 import '../../../core/utils/sync_merge_helper.dart';
@@ -55,6 +56,10 @@ class LinkRepository {
   int _wipeGeneration = 0;
 
   bool _isCurrentRun(int generation) => generation == _wipeGeneration;
+
+  /// Why the last attempt to push a queued write failed, or null if none did.
+  /// Reset when a push starts; lives in memory only.
+  SyncFailure? _lastFailure;
 
   String? get _uid => _uidProvider();
 
@@ -601,6 +606,7 @@ class LinkRepository {
     if (uid == null) return;
     await claimOrResetFor(uid);
     final generation = _wipeGeneration;
+    _lastFailure = null;
 
     final now = DateTime.now().toUtc().millisecondsSinceEpoch;
     final operations =
@@ -627,6 +633,7 @@ class LinkRepository {
         await _syncOperationsBox.delete(processingOperation.operationId);
       } catch (e) {
         if (!_isCurrentRun(generation)) return;
+        _lastFailure = SyncFailure.fromError(e);
         final attemptCount = processingOperation.attemptCount + 1;
         final retryAt =
             now + SyncBackoff.delayForAttempt(attemptCount).inMilliseconds;
@@ -648,6 +655,28 @@ class LinkRepository {
   List<SyncOperation> get pendingSyncOperations =>
       _syncOperationsBox.values.toList()
         ..sort((a, b) => a.createdAt.compareTo(b.createdAt));
+
+  /// What has not reached the cloud yet: queued writes (links and categories),
+  /// how many of them failed their last attempt, and unresolved conflicts.
+  UnsyncedSummary unsyncedSummary() {
+    final operations = _syncOperationsBox.values;
+    return UnsyncedSummary(
+      changes: operations.length,
+      failedChanges: operations
+          .where((operation) => operation.state == SyncOperation.failed)
+          .length,
+      conflicts: conflicts.length,
+    );
+  }
+
+  /// Emits whenever the queue of unsynced writes changes.
+  Stream<BoxEvent> watchSyncOperations() => _syncOperationsBox.watch();
+
+  /// When the last successful pull finished, in milliseconds since the epoch.
+  int? get lastPulledAt => _readCursor();
+
+  /// Why the last push attempt failed, or null if none did since it started.
+  SyncFailure? get lastFailure => _lastFailure;
 
   Future<void> _syncOperation(
     String uid,

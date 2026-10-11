@@ -370,6 +370,9 @@ class AppLocalizationsGu extends AppLocalizations {
   String get accountSyncStatusConflict => 'વિરોધો પર ધ્યાન આપવાની જરૂર છે';
 
   @override
+  String get accountSyncStatusWaiting => 'ઇન્ટરનેટની રાહ જોઈ રહ્યું છે';
+
+  @override
   String get accountRetry => 'ફરી પ્રયાસ કરો';
 
   @override
