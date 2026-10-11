@@ -265,4 +265,4 @@ fvm flutter analyze
 All Flutter and Dart commands go through FVM (`fvm flutter`, `fvm dart`) so everyone builds against the pinned SDK.
 
 ## 📄 License
-This is a private project. All rights reserved.
+Copyright © 2026 Kunj Shingala. All rights reserved. The source is public so it can be read, but it is not open source: see [LICENSE](LICENSE). Third-party fonts keep their own licenses in `assets/licenses/`.

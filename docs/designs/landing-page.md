@@ -138,7 +138,7 @@ Launch checklist (later, after the page is live):
 
 1. Hero: **Option A (split)**.
 2. Install link: **APK on GitHub Releases** (`/releases/latest`). iOS is "builds from source".
-3. Repo: **public**. There is no LICENSE file yet, so the page says "the code is on GitHub" rather than "open source".
+3. Repo: **public**. The LICENSE is all rights reserved, so the page says "the code is on GitHub" rather than "open source".
 4. Hosting: **Vercel (Hobby, free)**. Chosen over GitHub Pages for the cleaner URL and a preview link per branch, and over Firebase because Firebase's free plan caps transfer at 360 MB a day.
 5. "Built by": bio, portfolio, GitHub, LinkedIn, X and email, taken from `github.com/Kunjshingala/about` (`lib/core/constants/info.dart`).
 
@@ -166,5 +166,5 @@ Re-export the Product Hunt images and `og.png` after changing the preview: `bash
 
 - **Release APK.** "Download for Android" points to `/releases/latest`, which is empty until a signed release APK is published there.
 - **Real screenshots.** The screens are HTML mockups. Capture them from a phone with demo links (no personal data), then swap each mockup for an `<img>` and re-run the export.
-- **License.** The repo is public but has no LICENSE, and the README says "all rights reserved", so the page says "the code is on GitHub" rather than "open source". With an MIT license, the "Open Source" topic and wording can come back.
+- **License.** The repo is public with an all-rights-reserved LICENSE (decided 2026-10-11; may be opened up after development), so the page says "the code is on GitHub" rather than "open source". With an MIT license, the "Open Source" topic and wording can come back.
 - **Font weight.** About 1.2 MB of TTF fonts load on a first visit. Converting to subset WOFF2 would roughly halve it.
