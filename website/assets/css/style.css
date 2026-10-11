@@ -1,13 +1,13 @@
 /* LinkHive landing page. Tokens mirror DESIGN.md and lib/core/theme/app_colors.dart. */
 
 /* Fonts: bundled from assets/fonts (OFL, licenses next to the files). Script fonts load only when their characters appear. */
-@font-face { font-family: "Anek Latin"; src: url("../fonts/AnekLatin-Medium.ttf") format("truetype"); font-weight: 500; font-display: swap; }
-@font-face { font-family: "Anek Latin"; src: url("../fonts/AnekLatin-SemiBold.ttf") format("truetype"); font-weight: 600; font-display: swap; }
-@font-face { font-family: "Anek Latin"; src: url("../fonts/AnekLatin-Bold.ttf") format("truetype"); font-weight: 700; font-display: swap; }
-@font-face { font-family: "Anek Latin"; src: url("../fonts/AnekLatin-ExtraBold.ttf") format("truetype"); font-weight: 800; font-display: swap; }
-@font-face { font-family: "Anek Devanagari"; src: url("../fonts/AnekDevanagari-SemiBold.ttf") format("truetype"); font-weight: 500 800; font-display: swap; unicode-range: U+0900-097F, U+1CD0-1CFF, U+A8E0-A8FF; }
-@font-face { font-family: "Anek Gujarati"; src: url("../fonts/AnekGujarati-SemiBold.ttf") format("truetype"); font-weight: 500 800; font-display: swap; unicode-range: U+0A80-0AFF; }
-@font-face { font-family: "Readex Pro"; src: url("../fonts/ReadexPro-SemiBold.ttf") format("truetype"); font-weight: 500 800; font-display: swap; unicode-range: U+0600-06FF, U+0750-077F, U+FB50-FDFF, U+FE70-FEFF; }
+@font-face { font-family: "Anek Latin"; src: url("../fonts/AnekLatin-Medium.woff2") format("woff2"), url("../fonts/AnekLatin-Medium.ttf") format("truetype"); font-weight: 500; font-display: swap; }
+@font-face { font-family: "Anek Latin"; src: url("../fonts/AnekLatin-SemiBold.woff2") format("woff2"), url("../fonts/AnekLatin-SemiBold.ttf") format("truetype"); font-weight: 600; font-display: swap; }
+@font-face { font-family: "Anek Latin"; src: url("../fonts/AnekLatin-Bold.woff2") format("woff2"), url("../fonts/AnekLatin-Bold.ttf") format("truetype"); font-weight: 700; font-display: swap; }
+@font-face { font-family: "Anek Latin"; src: url("../fonts/AnekLatin-ExtraBold.woff2") format("woff2"), url("../fonts/AnekLatin-ExtraBold.ttf") format("truetype"); font-weight: 800; font-display: swap; }
+@font-face { font-family: "Anek Devanagari"; src: url("../fonts/AnekDevanagari-SemiBold.woff2") format("woff2"), url("../fonts/AnekDevanagari-SemiBold.ttf") format("truetype"); font-weight: 500 800; font-display: swap; unicode-range: U+0900-097F, U+1CD0-1CFF, U+A8E0-A8FF; }
+@font-face { font-family: "Anek Gujarati"; src: url("../fonts/AnekGujarati-SemiBold.woff2") format("woff2"), url("../fonts/AnekGujarati-SemiBold.ttf") format("truetype"); font-weight: 500 800; font-display: swap; unicode-range: U+0A80-0AFF; }
+@font-face { font-family: "Readex Pro"; src: url("../fonts/ReadexPro-SemiBold.woff2") format("woff2"), url("../fonts/ReadexPro-SemiBold.ttf") format("truetype"); font-weight: 500 800; font-display: swap; unicode-range: U+0600-06FF, U+0750-077F, U+FB50-FDFF, U+FE70-FEFF; }
 
 :root {
   --ink: #1E1E1E; --page: #ECE2D5; --bg: #FFFFFF; --surface: #FFFFFF; --muted: #F3F4F6;
