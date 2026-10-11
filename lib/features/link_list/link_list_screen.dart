@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -112,7 +113,10 @@ class _LinkListContentState extends State<_LinkListContent> {
             ),
             floatingActionButton: selecting || loaded == null
                 ? null
-                : const _AddButton(),
+                : Padding(
+                    padding: EdgeInsets.only(bottom: _navClearance(context)),
+                    child: const _AddButton(),
+                  ),
             bottomNavigationBar: selecting
                 ? _SelectionActionBar(selectedCount: loaded!.selectedIds.length)
                 : null,
@@ -124,6 +128,17 @@ class _LinkListContentState extends State<_LinkListContent> {
 
   static bool _isSelecting(LinkListState state) =>
       state is LinkListLoaded && state.isSelecting;
+
+  /// How far the shell's floating nav reaches above the system inset.
+  ///
+  /// The shell uses `extendBody`, so the nav overlaps this screen and its
+  /// height arrives as extra bottom padding. This Scaffold only lifts the Add
+  /// button by the system inset, which would leave it under the nav.
+  static double _navClearance(BuildContext context) => math.max(
+    0,
+    MediaQuery.paddingOf(context).bottom -
+        MediaQuery.viewPaddingOf(context).bottom,
+  );
 
   PreferredSizeWidget _appBar(BuildContext context) {
     return CommonAppBar(
