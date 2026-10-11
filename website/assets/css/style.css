@@ -63,6 +63,8 @@ h2.h { font-size: clamp(30px, 4.4vw, 46px); font-weight: 800; letter-spacing: -1
 .btn { height: 52px; padding: 0 24px; border-radius: 100px; border: 2px solid var(--border); background: var(--surface); color: var(--text); font: inherit; font-size: 16px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; gap: 10px; box-shadow: 4px 4px 0 var(--mint); text-decoration: none; cursor: pointer; transition: transform .1s ease-out, box-shadow .1s ease-out; white-space: nowrap; }
 .btn.primary { background: var(--primary); color: var(--on-primary); box-shadow: 4px 4px 0 var(--success); }
 .btn:active { transform: translate(4px, 4px); box-shadow: none; }
+.btn:disabled { cursor: default; }
+.btn.soon:active { transform: none; box-shadow: 4px 4px 0 var(--success); }
 .btn.sm { height: 44px; padding: 0 18px; font-size: 14px; }
 .btn.icon { width: 44px; padding: 0; }
 .ctas { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 30px; }
