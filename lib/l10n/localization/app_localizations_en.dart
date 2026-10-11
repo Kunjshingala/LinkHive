@@ -391,7 +391,24 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get accountDeleteConfirm =>
-      'This will clear all links saved locally. Links synced continuously with the cloud will be restored on next sync.';
+      'This clears the links on this phone. Everything synced comes back on the next sync.';
+
+  @override
+  String accountDeleteConfirmUnsynced(num count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          'This clears the links on this phone. $count changes that are not synced yet will be lost. Everything synced comes back on the next sync.',
+      one:
+          'This clears the links on this phone. 1 change that is not synced yet will be lost. Everything synced comes back on the next sync.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get accountDeleteConfirmGuest =>
+      'This clears every link on this phone. Nothing is saved in an account, so this cannot be undone.';
 
   @override
   String get accountCancel => 'Cancel';
@@ -405,6 +422,40 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get accountDeleteFail => 'Failed to clear local data.';
+
+  @override
+  String get accountDeleteCloudData => 'Delete Cloud Data';
+
+  @override
+  String get accountDeleteCloudTitle => 'Delete cloud data?';
+
+  @override
+  String accountDeleteCloudConfirm(num count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          'This permanently deletes the $count links saved in your account and clears this phone. This cannot be undone.',
+      one:
+          'This permanently deletes the 1 link saved in your account and clears this phone. This cannot be undone.',
+      zero: 'No links are saved in your account. This only clears this phone.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get accountDeleteCloudAction => 'Delete for good';
+
+  @override
+  String get accountDeleteCloudSuccess => 'Cloud data deleted';
+
+  @override
+  String get accountDeleteCloudFail =>
+      'Could not delete cloud data. Try again.';
+
+  @override
+  String get accountActionReconfirm =>
+      'Something changed while you were confirming. Please try again.';
 
   @override
   String get langEnglish => 'English';

@@ -393,7 +393,24 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get accountDeleteConfirm =>
-      'यह स्थानीय रूप से सहेजे गए सभी लिंक हटा देगा। क्लाउड के साथ सिंक किए गए लिंक अगली सिंक पर पुनर्स्थापित हो जाएंगे।';
+      'यह इस फ़ोन के लिंक हटा देगा। जो कुछ सिंक हो चुका है वह अगले सिंक पर वापस आ जाएगा।';
+
+  @override
+  String accountDeleteConfirmUnsynced(num count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          'यह इस फ़ोन के लिंक हटा देगा। अभी तक सिंक न हुए $count बदलाव खो जाएँगे। जो कुछ सिंक हो चुका है वह अगले सिंक पर वापस आ जाएगा।',
+      one:
+          'यह इस फ़ोन के लिंक हटा देगा। अभी तक सिंक न हुआ 1 बदलाव खो जाएगा। जो कुछ सिंक हो चुका है वह अगले सिंक पर वापस आ जाएगा।',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get accountDeleteConfirmGuest =>
+      'यह इस फ़ोन के सभी लिंक हटा देगा। कुछ भी किसी खाते में सहेजा नहीं गया है, इसलिए इसे वापस नहीं किया जा सकता।';
 
   @override
   String get accountCancel => 'रद्द करें';
@@ -407,6 +424,41 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get accountDeleteFail => 'स्थानीय डेटा साफ़ करने में विफल।';
+
+  @override
+  String get accountDeleteCloudData => 'क्लाउड डेटा हटाएँ';
+
+  @override
+  String get accountDeleteCloudTitle => 'क्लाउड डेटा हटाएँ?';
+
+  @override
+  String accountDeleteCloudConfirm(num count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          'यह आपके खाते में सहेजे गए $count लिंक को हमेशा के लिए हटा देगा और इस फ़ोन को खाली कर देगा। इसे वापस नहीं किया जा सकता।',
+      one:
+          'यह आपके खाते में सहेजे गए 1 लिंक को हमेशा के लिए हटा देगा और इस फ़ोन को खाली कर देगा। इसे वापस नहीं किया जा सकता।',
+      zero:
+          'आपके खाते में कोई लिंक सहेजा नहीं गया है। इससे केवल यह फ़ोन खाली होगा।',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get accountDeleteCloudAction => 'हमेशा के लिए हटाएँ';
+
+  @override
+  String get accountDeleteCloudSuccess => 'क्लाउड डेटा हटा दिया गया';
+
+  @override
+  String get accountDeleteCloudFail =>
+      'क्लाउड डेटा नहीं हटाया जा सका। फिर से कोशिश करें।';
+
+  @override
+  String get accountActionReconfirm =>
+      'पुष्टि करते समय कुछ बदल गया। कृपया फिर से कोशिश करें।';
 
   @override
   String get langEnglish => 'अंग्रेज़ी';

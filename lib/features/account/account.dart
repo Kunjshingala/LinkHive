@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../core/constants/app_enums.dart';
 import '../../core/extensions/context_extension.dart';
 import '../../core/localization/locale_cubit.dart';
+import '../../core/services/account_session_service.dart';
 import '../../core/services/auth_service.dart';
 import '../../core/services/sync_service.dart';
 import '../../core/theme/app_colors.dart';
@@ -39,6 +40,7 @@ class AccountScreen extends StatelessWidget {
           create: (context) => AccountBloc(
             authService: locator<AuthService>(),
             linkRepository: locator<LinkRepository>(),
+            sessionService: locator<AccountSessionService>(),
           ),
         ),
         BlocProvider(
@@ -62,6 +64,17 @@ class _AccountScreenContent extends StatelessWidget {
         } else if (state is AccountSignedOut) {
           showSnackBar(context.l10n.accountSignedOutSuccess);
           context.goNamed(MyRouteName.homeScreen);
+        } else if (state is AccountLocalWiped) {
+          showSnackBar(context.l10n.accountDeleteSuccess);
+        } else if (state is AccountCloudDeleted) {
+          showSnackBar(context.l10n.accountDeleteCloudSuccess);
+        } else if (state is AccountNeedsReconfirmation) {
+          showSnackBar(context.l10n.accountActionReconfirm);
+        } else if (state is AccountActionFailed) {
+          showSnackBar(switch (state.action) {
+            AccountAction.wipeLocal => context.l10n.accountDeleteFail,
+            AccountAction.deleteCloud => context.l10n.accountDeleteCloudFail,
+          });
         }
       },
       builder: (context, state) {
@@ -441,6 +454,13 @@ class _SettingsList extends StatelessWidget {
         '',
         AccountItem.deleteLocalData,
       ),
+      if (isAuthenticated)
+        (
+          Icons.cloud_off_rounded,
+          context.l10n.accountDeleteCloudData,
+          '',
+          AccountItem.deleteCloudData,
+        ),
       // (Icons.help_outline_rounded, context.l10n.accountHelpFeedback, '', AccountItem.helpFeedback),
       if (isAuthenticated)
         (
@@ -642,30 +662,47 @@ class _SettingsList extends StatelessWidget {
         break;
 
       case AccountItem.deleteLocalData:
+        // What is unsynced right now is what this wipe would lose; it is what
+        // the user is told, and the wipe refuses to lose more than that.
+        final shown = locator<AccountSessionService>().unsyncedSummary();
+        final l10n = context.l10n;
         final confirm = await showConfirmationBottomSheet(
           context: context,
-          title: context.l10n.accountDeleteTitle,
-          message: context.l10n.accountDeleteConfirm,
-          confirmLabel: context.l10n.accountDelete,
-          cancelLabel: context.l10n.accountCancel,
+          title: l10n.accountDeleteTitle,
+          message: !isAuthenticated
+              ? l10n.accountDeleteConfirmGuest
+              : shown.changes > 0
+              ? l10n.accountDeleteConfirmUnsynced(shown.changes)
+              : l10n.accountDeleteConfirm,
+          confirmLabel: l10n.accountDelete,
+          cancelLabel: l10n.accountCancel,
           titleIcon: Icons.warning_amber_rounded,
           isDestructive: true,
         );
-        if (confirm == true) {
-          if (!context.mounted) return;
-          final l10n = context.l10n;
-          final repo = locator<LinkRepository>();
-          try {
-            await repo.clearLocalData();
-            if (context.mounted) {
-              context.read<AccountBloc>().add(const AccountLoadRequested());
-              showSnackBar(l10n.accountDeleteSuccess);
-            }
-          } catch (e) {
-            if (context.mounted) {
-              showSnackBar(l10n.accountDeleteFail);
-            }
-          }
+        if (confirm == true && context.mounted) {
+          context.read<AccountBloc>().add(
+            AccountWipeLocalRequested(confirmed: shown),
+          );
+        }
+        break;
+
+      case AccountItem.deleteCloudData:
+        final shown = locator<AccountSessionService>().unsyncedSummary();
+        final linkCount = locator<LinkRepository>().getLinkStats().$1;
+        final l10n = context.l10n;
+        final confirm = await showConfirmationBottomSheet(
+          context: context,
+          title: l10n.accountDeleteCloudTitle,
+          message: l10n.accountDeleteCloudConfirm(linkCount),
+          confirmLabel: l10n.accountDeleteCloudAction,
+          cancelLabel: l10n.accountCancel,
+          titleIcon: Icons.warning_amber_rounded,
+          isDestructive: true,
+        );
+        if (confirm == true && context.mounted) {
+          context.read<AccountBloc>().add(
+            AccountDeleteCloudDataRequested(confirmed: shown),
+          );
         }
         break;
 

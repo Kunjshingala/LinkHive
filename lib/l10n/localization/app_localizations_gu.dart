@@ -391,7 +391,24 @@ class AppLocalizationsGu extends AppLocalizations {
 
   @override
   String get accountDeleteConfirm =>
-      'આ સ્થાનિક રીતે સાચવેલી બધી કડીઓ ભૂંસી નાખશે. ક્લાઉડ સાથે સમન્વયિત કડીઓ આગામી સમન્વય વખતે પુનઃસ્થાપિત થશે.';
+      'આ આ ફોનની કડીઓ ભૂંસી નાખશે. જે સમન્વયિત થઈ ચૂક્યું છે તે આગામી સમન્વય વખતે પાછું આવશે.';
+
+  @override
+  String accountDeleteConfirmUnsynced(num count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          'આ આ ફોનની કડીઓ ભૂંસી નાખશે. હજુ સમન્વયિત ન થયેલા $count ફેરફારો ખોવાઈ જશે. જે સમન્વયિત થઈ ચૂક્યું છે તે આગામી સમન્વય વખતે પાછું આવશે.',
+      one:
+          'આ આ ફોનની કડીઓ ભૂંસી નાખશે. હજુ સમન્વયિત ન થયેલો 1 ફેરફાર ખોવાઈ જશે. જે સમન્વયિત થઈ ચૂક્યું છે તે આગામી સમન્વય વખતે પાછું આવશે.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get accountDeleteConfirmGuest =>
+      'આ આ ફોનની બધી કડીઓ ભૂંસી નાખશે. કંઈ પણ ખાતામાં સાચવેલું નથી, તેથી આને પાછું લઈ શકાશે નહીં.';
 
   @override
   String get accountCancel => 'રદ કરો';
@@ -405,6 +422,40 @@ class AppLocalizationsGu extends AppLocalizations {
 
   @override
   String get accountDeleteFail => 'સ્થાનિક ડેટા સાફ કરવામાં નિષ્ફળ.';
+
+  @override
+  String get accountDeleteCloudData => 'ક્લાઉડ ડેટા કાઢી નાખો';
+
+  @override
+  String get accountDeleteCloudTitle => 'ક્લાઉડ ડેટા કાઢી નાખવો?';
+
+  @override
+  String accountDeleteCloudConfirm(num count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          'આ તમારા ખાતામાં સાચવેલી $count કડીઓને કાયમ માટે કાઢી નાખશે અને આ ફોન ખાલી કરશે. આને પાછું લઈ શકાશે નહીં.',
+      one:
+          'આ તમારા ખાતામાં સાચવેલી 1 કડીને કાયમ માટે કાઢી નાખશે અને આ ફોન ખાલી કરશે. આને પાછું લઈ શકાશે નહીં.',
+      zero: 'તમારા ખાતામાં કોઈ કડી સાચવેલી નથી. આથી ફક્ત આ ફોન ખાલી થશે.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get accountDeleteCloudAction => 'કાયમ માટે કાઢી નાખો';
+
+  @override
+  String get accountDeleteCloudSuccess => 'ક્લાઉડ ડેટા કાઢી નાખ્યો';
+
+  @override
+  String get accountDeleteCloudFail =>
+      'ક્લાઉડ ડેટા કાઢી શકાયો નહીં. ફરી પ્રયાસ કરો.';
+
+  @override
+  String get accountActionReconfirm =>
+      'ખાતરી કરતી વખતે કંઈક બદલાયું. કૃપા કરીને ફરી પ્રયાસ કરો.';
 
   @override
   String get langEnglish => 'અંગ્રેજી';

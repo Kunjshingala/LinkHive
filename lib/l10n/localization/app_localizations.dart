@@ -855,8 +855,20 @@ abstract class AppLocalizations {
   /// No description provided for @accountDeleteConfirm.
   ///
   /// In en, this message translates to:
-  /// **'This will clear all links saved locally. Links synced continuously with the cloud will be restored on next sync.'**
+  /// **'This clears the links on this phone. Everything synced comes back on the next sync.'**
   String get accountDeleteConfirm;
+
+  /// No description provided for @accountDeleteConfirmUnsynced.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{This clears the links on this phone. 1 change that is not synced yet will be lost. Everything synced comes back on the next sync.} other{This clears the links on this phone. {count} changes that are not synced yet will be lost. Everything synced comes back on the next sync.}}'**
+  String accountDeleteConfirmUnsynced(num count);
+
+  /// No description provided for @accountDeleteConfirmGuest.
+  ///
+  /// In en, this message translates to:
+  /// **'This clears every link on this phone. Nothing is saved in an account, so this cannot be undone.'**
+  String get accountDeleteConfirmGuest;
 
   /// No description provided for @accountCancel.
   ///
@@ -881,6 +893,48 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Failed to clear local data.'**
   String get accountDeleteFail;
+
+  /// No description provided for @accountDeleteCloudData.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete Cloud Data'**
+  String get accountDeleteCloudData;
+
+  /// No description provided for @accountDeleteCloudTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete cloud data?'**
+  String get accountDeleteCloudTitle;
+
+  /// No description provided for @accountDeleteCloudConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{No links are saved in your account. This only clears this phone.} =1{This permanently deletes the 1 link saved in your account and clears this phone. This cannot be undone.} other{This permanently deletes the {count} links saved in your account and clears this phone. This cannot be undone.}}'**
+  String accountDeleteCloudConfirm(num count);
+
+  /// No description provided for @accountDeleteCloudAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete for good'**
+  String get accountDeleteCloudAction;
+
+  /// No description provided for @accountDeleteCloudSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Cloud data deleted'**
+  String get accountDeleteCloudSuccess;
+
+  /// No description provided for @accountDeleteCloudFail.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not delete cloud data. Try again.'**
+  String get accountDeleteCloudFail;
+
+  /// No description provided for @accountActionReconfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Something changed while you were confirming. Please try again.'**
+  String get accountActionReconfirm;
 
   /// No description provided for @langEnglish.
   ///

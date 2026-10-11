@@ -183,6 +183,50 @@ void main() {
     });
   });
 
+  group('deleteCloudData', () {
+    test(
+      'deletes the cloud data and the phone\'s copy, and stays signed in',
+      () async {
+        final result = await session.deleteCloudData(confirmed: current);
+
+        expect(result, SessionActionResult.completed);
+        verifyInOrder([
+          () => sync.pause(),
+          () => store.setWipePending(true),
+          () => store.clearRemoteData(),
+          () => store.clearLocalData(),
+          () => store.setWipePending(false),
+          () => sync.resume(),
+        ]);
+        verifyNever(() => auth.signOut());
+      },
+    );
+
+    test('changes nothing when more unsynced work appeared', () async {
+      current = const UnsyncedSummary(changes: 1);
+
+      final result = await session.deleteCloudData(
+        confirmed: const UnsyncedSummary(),
+      );
+
+      expect(result, SessionActionResult.needsReconfirmation);
+      verifyNever(() => store.clearRemoteData());
+      verifyNever(() => store.clearLocalData());
+    });
+
+    test('does not touch the phone when the cloud delete fails', () async {
+      when(() => store.clearRemoteData()).thenThrow(StateError('offline'));
+
+      await expectLater(
+        session.deleteCloudData(confirmed: current),
+        throwsA(isA<StateError>()),
+      );
+
+      verifyNever(() => store.clearLocalData());
+      verify(() => sync.resume()).called(1);
+    });
+  });
+
   group('recoverInterruptedWipe', () {
     test('finishes a wipe that was interrupted', () async {
       when(() => store.isWipePending).thenReturn(true);

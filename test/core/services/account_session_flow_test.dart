@@ -258,6 +258,27 @@ void main() {
   );
 
   test(
+    'deleting the cloud data empties the account and the phone, and stays signed in',
+    () async {
+      cloud.seedLink(accountA, link('a-1'), syncedAt: 1000);
+      cloud.seedLink(accountB, link('b-1'), syncedAt: 1000);
+      await signIn(accountA);
+
+      final result = await session.deleteCloudData(
+        confirmed: repository.unsyncedSummary(),
+      );
+
+      expect(result, SessionActionResult.completed);
+      expect(currentUid, accountA);
+      expect(localIds(), isEmpty);
+      expect(cloudIds(accountA), isEmpty);
+      expect(cloudIds(accountB), ['b-1']); // another account is untouched
+      await engine.requestSync(pull: true);
+      expect(localIds(), isEmpty); // nothing comes back: it is gone for good
+    },
+  );
+
+  test(
     '"Delete local data" stays signed in and the next sync refills the phone',
     () async {
       cloud.seedLink(accountA, link('a-1'), syncedAt: 1000);

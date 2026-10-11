@@ -85,6 +85,17 @@ class AccountSessionService {
     return _wipe(confirmed: confirmed, clearRemote: false, signOut: false);
   }
 
+  /// Deletes the account's data in the cloud and this phone's copy, and stays
+  /// signed in. The cloud data cannot be brought back.
+  ///
+  /// The phone's copy goes too: kept alone, it would no longer match the
+  /// cloud, and edits to it would fail to sync.
+  Future<SessionActionResult> deleteCloudData({
+    required UnsyncedSummary confirmed,
+  }) {
+    return _wipe(confirmed: confirmed, clearRemote: true, signOut: false);
+  }
+
   /// Finishes a wipe that was interrupted, for example by the app being
   /// killed. Call it at launch, before the first sync.
   Future<void> recoverInterruptedWipe() async {

@@ -390,7 +390,30 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get accountDeleteConfirm =>
-      'سيؤدي هذا إلى مسح جميع الروابط المحفوظة محليًا. سيتم استعادة الروابط المتزامنة مع السحابة في المزامنة التالية.';
+      'سيؤدي هذا إلى مسح الروابط من هذا الهاتف. كل ما تمت مزامنته سيعود عند المزامنة التالية.';
+
+  @override
+  String accountDeleteConfirmUnsynced(num count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          'سيؤدي هذا إلى مسح الروابط من هذا الهاتف. سيُفقد $count تغيير لم تتم مزامنته بعد. كل ما تمت مزامنته سيعود عند المزامنة التالية.',
+      many:
+          'سيؤدي هذا إلى مسح الروابط من هذا الهاتف. سيُفقد $count تغييرًا لم تتم مزامنته بعد. كل ما تمت مزامنته سيعود عند المزامنة التالية.',
+      few:
+          'سيؤدي هذا إلى مسح الروابط من هذا الهاتف. ستُفقد $count تغييرات لم تتم مزامنتها بعد. كل ما تمت مزامنته سيعود عند المزامنة التالية.',
+      two:
+          'سيؤدي هذا إلى مسح الروابط من هذا الهاتف. سيُفقد تغييران لم تتم مزامنتهما بعد. كل ما تمت مزامنته سيعود عند المزامنة التالية.',
+      one:
+          'سيؤدي هذا إلى مسح الروابط من هذا الهاتف. سيُفقد تغيير واحد لم تتم مزامنته بعد. كل ما تمت مزامنته سيعود عند المزامنة التالية.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get accountDeleteConfirmGuest =>
+      'سيؤدي هذا إلى مسح كل رابط على هذا الهاتف. لا شيء محفوظ في حساب، لذلك لا يمكن التراجع عن ذلك.';
 
   @override
   String get accountCancel => 'إلغاء';
@@ -404,6 +427,47 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get accountDeleteFail => 'فشل في مسح البيانات المحلية.';
+
+  @override
+  String get accountDeleteCloudData => 'حذف بيانات السحابة';
+
+  @override
+  String get accountDeleteCloudTitle => 'حذف بيانات السحابة؟';
+
+  @override
+  String accountDeleteCloudConfirm(num count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          'سيؤدي هذا إلى حذف $count رابط محفوظ في حسابك نهائيًا وإفراغ هذا الهاتف. لا يمكن التراجع عن ذلك.',
+      many:
+          'سيؤدي هذا إلى حذف $count رابطًا محفوظًا في حسابك نهائيًا وإفراغ هذا الهاتف. لا يمكن التراجع عن ذلك.',
+      few:
+          'سيؤدي هذا إلى حذف $count روابط محفوظة في حسابك نهائيًا وإفراغ هذا الهاتف. لا يمكن التراجع عن ذلك.',
+      two:
+          'سيؤدي هذا إلى حذف الرابطين المحفوظين في حسابك نهائيًا وإفراغ هذا الهاتف. لا يمكن التراجع عن ذلك.',
+      one:
+          'سيؤدي هذا إلى حذف الرابط المحفوظ في حسابك نهائيًا وإفراغ هذا الهاتف. لا يمكن التراجع عن ذلك.',
+      zero:
+          'لا توجد روابط محفوظة في حسابك. سيؤدي هذا إلى إفراغ هذا الهاتف فقط.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get accountDeleteCloudAction => 'حذف نهائي';
+
+  @override
+  String get accountDeleteCloudSuccess => 'تم حذف بيانات السحابة';
+
+  @override
+  String get accountDeleteCloudFail =>
+      'تعذر حذف بيانات السحابة. حاول مرة أخرى.';
+
+  @override
+  String get accountActionReconfirm =>
+      'تغيّر شيء أثناء التأكيد. حاول مرة أخرى.';
 
   @override
   String get langEnglish => 'الإنجليزية';

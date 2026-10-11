@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../core/services/account_session_service.dart';
 import '../../../core/services/auth_service.dart';
 import '../../../core/utils/utils.dart';
 import '../../links/repository/link_repository.dart';
@@ -11,19 +12,71 @@ import 'account_state.dart';
 class AccountBloc extends Bloc<AccountEvent, AccountState> {
   final AuthService _authService;
   final LinkRepository _linkRepository;
+  final AccountSessionService _sessionService;
 
   AccountBloc({
     required AuthService authService,
     required LinkRepository linkRepository,
+    required AccountSessionService sessionService,
   }) : _authService = authService,
        _linkRepository = linkRepository,
+       _sessionService = sessionService,
        super(const AccountInitial()) {
     on<AccountLoadRequested>(_onLoad);
     on<AccountSignOutRequested>(_onSignOutRequested);
     on<AccountGoogleSignInRequested>(_onGoogleSignIn);
+    on<AccountWipeLocalRequested>(_onWipeLocalRequested);
+    on<AccountDeleteCloudDataRequested>(_onDeleteCloudDataRequested);
 
     // Kick off by dispatching a load event so state is emitted via the handler
     add(const AccountLoadRequested());
+  }
+
+  Future<void> _onWipeLocalRequested(
+    AccountWipeLocalRequested event,
+    Emitter<AccountState> emit,
+  ) {
+    return _runWipe(
+      emit,
+      action: AccountAction.wipeLocal,
+      run: () => _sessionService.wipeLocalData(confirmed: event.confirmed),
+      done: const AccountLocalWiped(),
+    );
+  }
+
+  Future<void> _onDeleteCloudDataRequested(
+    AccountDeleteCloudDataRequested event,
+    Emitter<AccountState> emit,
+  ) {
+    return _runWipe(
+      emit,
+      action: AccountAction.deleteCloud,
+      run: () => _sessionService.deleteCloudData(confirmed: event.confirmed),
+      done: const AccountCloudDeleted(),
+    );
+  }
+
+  /// Runs a wipe through the session service, reports how it ended, then shows
+  /// the account again with fresh counts.
+  Future<void> _runWipe(
+    Emitter<AccountState> emit, {
+    required AccountAction action,
+    required Future<SessionActionResult> Function() run,
+    required AccountState done,
+  }) async {
+    emit(const AccountLoading());
+    try {
+      final result = await run();
+      emit(
+        result == SessionActionResult.completed
+            ? done
+            : const AccountNeedsReconfirmation(),
+      );
+    } catch (error) {
+      printLog(tag: 'AccountBloc', msg: '$action failed: $error');
+      emit(AccountActionFailed(action));
+    }
+    _onLoad(const AccountLoadRequested(), emit);
   }
 
   void _onLoad(AccountLoadRequested event, Emitter<AccountState> emit) {
