@@ -49,6 +49,11 @@
   <symbol id="i-delete" viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></symbol>
   <symbol id="i-play" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></symbol>
   <symbol id="i-loop" viewBox="0 0 24 24"><path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46A7.93 7.93 0 0 0 20 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74A7.93 7.93 0 0 0 4 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z"/></symbol>
+  <symbol id="i-more" viewBox="0 0 24 24"><path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/></symbol>
+  <symbol id="i-tune" viewBox="0 0 24 24"><path d="M3 17v2h6v-2H3zM3 5v2h10V5H3zm10 16v-2h8v-2h-8v-2h-2v6h2zM7 9v2H3v2h4v2h2V9H7zm14 4v-2H11v2h10zm-6-4h2V7h4V5h-4V3h-2v6z"/></symbol>
+  <symbol id="i-delete-o" viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM8 9h8v10H8V9zm7.5-5l-1-1h-5l-1 1H5v2h14V4h-3.5z"/></symbol>
+  <symbol id="i-history" viewBox="0 0 24 24"><path d="M13 3a9 9 0 0 0-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42A8.95 8.95 0 0 0 13 21a9 9 0 0 0 0-18zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"/></symbol>
+  <symbol id="i-undo" viewBox="0 0 24 24"><path d="M12.5 8c-2.65 0-5.05.99-6.9 2.6L2 7v9h9l-3.62-3.62c1.39-1.16 3.16-1.88 5.12-1.88 3.54 0 6.55 2.31 7.6 5.5l2.37-.78C21.08 11.03 17.15 8 12.5 8z"/></symbol>
   <symbol id="i-bell" viewBox="0 0 24 24"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.89 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/></symbol>
   <symbol id="i-bolt" viewBox="0 0 24 24"><path d="M11 21h-1l1-7H7.5c-.88 0-.33-.75-.31-.78C8.48 10.94 10.42 7.54 13.01 3h1l-1 7h3.51c.4 0 .62.19.4.66C12.97 17.55 11 21 11 21z"/></symbol>
   <symbol id="i-filter" viewBox="0 0 24 24"><path d="M4.25 5.61C6.27 8.2 10 13 10 13v6c0 .55.45 1 1 1h2c.55 0 1-.45 1-1v-6s3.72-4.8 5.74-7.39A.998.998 0 0 0 18.95 4H5.04c-.83 0-1.3.95-.79 1.61z"/></symbol>
@@ -62,81 +67,82 @@
 </svg>
 
 <!-- Phone mockups, defined once and cloned into each data-screen slot by main.js.
+     They are drawn in the app's own dp (see the .phone note in style.css), copied from lib/:
+     link_card.dart, link_list_screen.dart, today_screen.dart, inbox_screen.dart,
+     app_bottom_nav.dart, custom_button.dart, saved_link_snackbar.dart and the Android widget.
      To use a real screenshot instead, drop the file in assets/screens/ and list it in SHOTS in assets/js/main.js. -->
-<template id="nav-links"><div class="pnav"><div class="it on"><svg class="i sm"><use href="#i-library"/></svg>Links</div><div class="it"><svg class="i sm"><use href="#i-today"/></svg></div><div class="it"><svg class="i sm"><use href="#i-inbox"/></svg><span class="bdg">4</span></div></div></template>
-<template id="nav-today"><div class="pnav"><div class="it"><svg class="i sm"><use href="#i-library"/></svg></div><div class="it on"><svg class="i sm"><use href="#i-today"/></svg>Today</div><div class="it"><svg class="i sm"><use href="#i-inbox"/></svg><span class="bdg">4</span></div></div></template>
-<template id="nav-inbox"><div class="pnav"><div class="it"><svg class="i sm"><use href="#i-library"/></svg></div><div class="it"><svg class="i sm"><use href="#i-today"/></svg></div><div class="it on"><svg class="i sm"><use href="#i-inbox"/></svg>Inbox</div></div></template>
+<template id="nav-links"><div class="pnav"><div class="it on"><svg class="i"><use href="#i-library"/></svg>Links</div><div class="it"><svg class="i"><use href="#i-today"/></svg></div><div class="it"><svg class="i"><use href="#i-inbox"/></svg><span class="bdg">4</span></div></div></template>
+<template id="nav-today"><div class="pnav"><div class="it"><svg class="i"><use href="#i-library"/></svg></div><div class="it on"><svg class="i"><use href="#i-today"/></svg>Today</div><div class="it"><svg class="i"><use href="#i-inbox"/></svg><span class="bdg">4</span></div></div></template>
+<template id="nav-inbox"><div class="pnav"><div class="it"><svg class="i"><use href="#i-library"/></svg></div><div class="it"><svg class="i"><use href="#i-today"/></svg></div><div class="it on"><svg class="i"><use href="#i-inbox"/></svg>Inbox</div></div></template>
 
 <template id="scr-links">
   <div class="status"><span>9:41</span><span>●●●</span></div>
-  <div class="ahdr"><span class="cb"><svg class="i sm"><use href="#i-person"/></svg></span><b>Links</b><span class="cb"><svg class="i sm"><use href="#i-select"/></svg></span></div>
+  <div class="ahdr"><span class="nb circ"><svg class="i"><use href="#i-person"/></svg></span><b>Links</b><span class="nb circ"><svg class="i"><use href="#i-select"/></svg></span></div>
   <div class="pb">
-    <div class="field"><svg class="i sm"><use href="#i-search"/></svg>Search 512 links...</div>
-    <div class="quick"><span class="qc on">All <em>512</em></span><span class="qc">Unread <em>202</em></span><span class="qc">High <em>12</em></span><span class="qc ret">Saved 2×+ <em>9</em></span></div>
-    <div class="drops"><span class="drop">Source<svg class="i xs"><use href="#i-chev"/></svg></span><span class="drop">Category<svg class="i xs"><use href="#i-chev"/></svg></span><span class="drop">Newest<svg class="i xs"><use href="#i-sort"/></svg></span></div>
+    <div class="field"><svg class="i"><use href="#i-search"/></svg>Search 512 links...</div>
+    <div class="quick"><span class="qc on">All <em>512</em></span><span class="qc">Unread <em>202</em></span><span class="qc">High <em>12</em></span><span class="qc ret">Saved 2×+ <em>9</em></span><span class="qc">Read <em>310</em></span></div>
+    <div class="drops"><span class="drop">Source<svg class="i s18 dn"><use href="#i-chev"/></svg></span><span class="drop">Category<svg class="i s18 dn"><use href="#i-chev"/></svg></span><span class="drop">Newest first<svg class="i s18"><use href="#i-sort"/></svg></span></div>
     <div class="month">Today</div>
     <div class="cards">
-      <div class="card"><span class="dot"></span><span class="av f-rose">H</span><div class="ct"><div class="t">How to make perfect Neapolitan pizza at home</div><div class="hst">youtube.com</div><div class="meta"><span class="pill">Recipes</span><span class="pill ret">Saved 2×</span><span class="time">2h ago</span></div></div></div>
-      <div class="card"><span class="dot"></span><span class="av f-orange">D</span><div class="ct"><div class="t">5 desk setups under ₹20k</div><div class="hst">instagram.com</div><div class="meta"><span class="pill">Shop</span><span class="time">5h ago</span></div></div></div>
+      <div class="card sw"><span class="dot"></span><span class="av f-orange">H</span><div class="ct"><div class="t">How to make perfect Neapolitan pizza at home</div><div class="hrow"><span class="hst">youtube.com</span><span class="pri">Normal</span></div><div class="tags"><span class="chip">Recipes</span><span class="time">2h ago</span></div></div><svg class="i s20 more"><use href="#i-more"/></svg></div>
+      <div class="card sw"><span class="dot"></span><span class="av f-purple">5</span><div class="ct"><div class="t">5 desk setups under ₹20k</div><div class="hrow"><span class="hst">instagram.com</span><span class="pri">Normal</span></div><div class="tags"><span class="chip">Shop</span><span class="time">5h ago</span></div></div><svg class="i s20 more"><use href="#i-more"/></svg></div>
     </div>
     <div class="month">This week</div>
     <div class="cards">
-      <div class="card"><span class="av f-blue">F</span><div class="ct"><div class="t">Flutter state management in 12 minutes</div><div class="hst">youtube.com</div><div class="meta"><span class="pill hi">High</span><span class="pill">Learn</span><span class="time">3d ago</span></div></div></div>
+      <div class="card sw"><span class="dot"></span><span class="av f-blue">F</span><div class="ct"><div class="t">Flutter state management in 12 minutes</div><div class="hrow"><span class="hst">youtube.com</span><span class="pri hi">High</span></div><div class="tags"><span class="chip">Learn</span><span class="time">3d ago</span></div></div><svg class="i s20 more"><use href="#i-more"/></svg></div>
     </div>
   </div>
-  <div class="fab"><svg class="i"><use href="#i-add"/></svg></div>
+  <div class="fab nb circ ink"><svg class="i"><use href="#i-add"/></svg></div>
   <slot data-nav="nav-links"></slot>
 </template>
 
 <template id="scr-today">
   <div class="status"><span>9:00</span><span>●●●</span></div>
-  <div class="ahdr"><span class="cb hide"></span><b>Today</b><span class="cb hide"></span></div>
-  <div class="pb">
+  <div class="ahdr"><b>Today</b></div>
+  <div class="pb tdy">
     <div class="tcard">
       <div class="img"><div class="play"><svg class="i"><use href="#i-play"/></svg></div></div>
       <h4>Kyoto in 3 days: the complete first-timer guide</h4>
-      <div class="hst">youtube.com <span class="pill ret">Saved 2×</span></div>
+      <div class="hline"><span class="hst">youtube.com</span><span class="chip pur">Saved 2×</span></div>
       <p>Temples, food streets and the day trips worth taking.</p>
     </div>
-    <div class="prow"><span class="pbtn"><svg class="i xs"><use href="#i-snooze"/></svg>Snooze</span><span class="pbtn"><svg class="i xs"><use href="#i-archive"/></svg>Archive</span></div>
-    <div class="prow"><span class="pbtn ink"><svg class="i xs"><use href="#i-open"/></svg>Open</span></div>
+    <div class="prow"><span class="nb out"><svg class="i s20"><use href="#i-snooze"/></svg>Snooze</span><span class="nb out"><svg class="i s20"><use href="#i-archive"/></svg>Archive</span></div>
+    <span class="nb ink open"><svg class="i s20"><use href="#i-open"/></svg>Open</span>
   </div>
   <slot data-nav="nav-today"></slot>
 </template>
 
 <template id="scr-today-hi">
   <div class="status"><span>9:00</span><span>●●●</span></div>
-  <div class="ahdr" lang="hi"><span class="cb hide"></span><b>आज</b><span class="cb hide"></span></div>
-  <div class="pb" lang="hi">
+  <div class="ahdr" lang="hi"><b>आज</b></div>
+  <div class="pb tdy" lang="hi">
     <div class="tcard">
       <div class="img g"><div class="play"><svg class="i"><use href="#i-play"/></svg></div></div>
       <h4>घर पर पनीर टिक्का बनाने का आसान तरीका</h4>
-      <div class="hst">youtube.com <span class="pill ret">2× सहेजा गया</span></div>
+      <div class="hline"><span class="hst">youtube.com</span><span class="chip pur">2× सहेजा गया</span></div>
     </div>
-    <div class="prow"><span class="pbtn">स्नूज़ करें</span><span class="pbtn">संग्रहित करें</span></div>
-    <div class="prow"><span class="pbtn ink">खोलें</span></div>
+    <div class="prow"><span class="nb out"><svg class="i s20"><use href="#i-snooze"/></svg>स्नूज़ करें</span><span class="nb out"><svg class="i s20"><use href="#i-archive"/></svg>संग्रहित करें</span></div>
+    <span class="nb ink open"><svg class="i s20"><use href="#i-open"/></svg>खोलें</span>
   </div>
-  <div class="pnav" lang="hi"><div class="it"><svg class="i sm"><use href="#i-library"/></svg></div><div class="it on"><svg class="i sm"><use href="#i-today"/></svg>आज</div><div class="it"><svg class="i sm"><use href="#i-inbox"/></svg></div></div>
+  <div class="pnav" lang="hi"><div class="it"><svg class="i"><use href="#i-library"/></svg></div><div class="it on"><svg class="i"><use href="#i-today"/></svg>आज</div><div class="it"><svg class="i"><use href="#i-inbox"/></svg><span class="bdg">4</span></div></div>
 </template>
 
 <template id="scr-inbox">
   <div class="status"><span>9:41</span><span>●●●</span></div>
-  <div class="ahdr"><span class="cb hide"></span><b>Inbox</b><span class="cb hide"></span></div>
-  <div class="pb">
-    <div class="cards">
-      <div class="ibox"><div class="tp"><span class="av f-orange">R</span><div class="ct"><div class="t">One-pan creamy garlic pasta (reel)</div><div class="hst">instagram.com · just now</div></div></div><div class="acts"><span class="pbtn">Add details</span><span class="x"><svg class="i xs"><use href="#i-delete"/></svg></span></div></div>
-      <div class="ibox"><div class="tp"><span class="av f-blue">S</span><div class="ct"><div class="t">Senior Flutter Developer, remote</div><div class="hst">linkedin.com · 1h ago</div></div></div><div class="acts"><span class="pbtn">Add details</span><span class="x"><svg class="i xs"><use href="#i-delete"/></svg></span></div></div>
-      <div class="ibox"><div class="tp"><span class="av f-lemon">M</span><div class="ct"><div class="t">Mechanical keyboard, hot-swap, 75%</div><div class="hst">amazon.in · yesterday</div></div></div><div class="acts"><span class="pbtn">Add details</span><span class="x"><svg class="i xs"><use href="#i-delete"/></svg></span></div></div>
-    </div>
+  <div class="ahdr"><b>Inbox</b></div>
+  <div class="pb inb">
+    <div class="ibx"><div class="card"><span class="dot"></span><span class="av f-neutral">O</span><div class="ct"><div class="t">One-pan creamy garlic pasta (reel)</div><div class="hrow"><span class="hst">instagram.com</span><span class="pri">Normal</span></div><div class="tags"><span class="time">just now</span></div></div><svg class="i s20 more"><use href="#i-more"/></svg></div><div class="acts"><span class="nb ok"><svg class="i s20"><use href="#i-tune"/></svg>Add details</span><span class="nb out sq"><svg class="i s20"><use href="#i-delete-o"/></svg></span></div></div>
+    <div class="ibx"><div class="card"><span class="dot"></span><span class="av f-purple">S</span><div class="ct"><div class="t">Senior Flutter Developer, remote</div><div class="hrow"><span class="hst">linkedin.com</span><span class="pri">Normal</span></div><div class="tags"><span class="time">1h ago</span></div></div><svg class="i s20 more"><use href="#i-more"/></svg></div><div class="acts"><span class="nb ok"><svg class="i s20"><use href="#i-tune"/></svg>Add details</span><span class="nb out sq"><svg class="i s20"><use href="#i-delete-o"/></svg></span></div></div>
+    <div class="ibx"><div class="card"><span class="dot"></span><span class="av f-orange">M</span><div class="ct"><div class="t">Mechanical keyboard, hot-swap, 75%</div><div class="hrow"><span class="hst">amazon.in</span><span class="pri">Normal</span></div><div class="tags"><span class="time">1d ago</span></div></div><svg class="i s20 more"><use href="#i-more"/></svg></div><div class="acts"><span class="nb ok"><svg class="i s20"><use href="#i-tune"/></svg>Add details</span><span class="nb out sq"><svg class="i s20"><use href="#i-delete-o"/></svg></span></div></div>
   </div>
   <slot data-nav="nav-inbox"></slot>
 </template>
 
 <template id="scr-share">
   <div class="status"><span>9:41</span><span>●●●</span></div>
-  <div class="pb" style="padding-top:12px">
+  <div class="pb" style="padding-top:16px">
     <div class="vid"><svg class="i lg"><use href="#i-play"/></svg></div>
-    <div class="ln" style="width:90%;height:14px;margin-top:14px"></div>
+    <div class="ln" style="width:90%;height:16px;margin-top:18px"></div>
     <div class="ln" style="width:60%"></div>
     <div class="ln" style="width:75%"></div>
   </div>
@@ -155,16 +161,21 @@
 
 <template id="scr-merge">
   <div class="status"><span>9:41</span><span>●●●</span></div>
-  <div class="ahdr"><span class="cb"><svg class="i sm"><use href="#i-person"/></svg></span><b>Links</b><span class="cb"><svg class="i sm"><use href="#i-select"/></svg></span></div>
+  <div class="ahdr"><span class="nb circ"><svg class="i"><use href="#i-person"/></svg></span><b>Links</b><span class="nb circ"><svg class="i"><use href="#i-select"/></svg></span></div>
   <div class="pb">
-    <div class="field"><svg class="i sm"><use href="#i-search"/></svg>Search 512 links...</div>
+    <div class="field"><svg class="i"><use href="#i-search"/></svg>Search 512 links...</div>
+    <div class="quick"><span class="qc on">All <em>512</em></span><span class="qc">Unread <em>202</em></span><span class="qc">High <em>12</em></span><span class="qc ret">Saved 2×+ <em>10</em></span><span class="qc">Read <em>310</em></span></div>
     <div class="month">Today</div>
     <div class="cards">
-      <div class="card ret"><span class="av f-blue">K</span><div class="ct"><div class="t">Kyoto in 3 days: the complete first-timer guide</div><div class="hst">youtube.com</div><div class="meta"><span class="pill ret">Saved 2×</span><span class="pill lt">Travel</span></div></div></div>
-      <div class="card"><span class="av f-rose">H</span><div class="ct"><div class="t">How to make perfect Neapolitan pizza at home</div><div class="hst">youtube.com</div><div class="meta"><span class="pill">Recipes</span><span class="time">2h ago</span></div></div></div>
+      <div class="card sw"><span class="dot"></span><span class="av f-blue">K</span><div class="ct"><div class="t">Kyoto in 3 days: the complete first-timer guide</div><div class="hrow"><span class="hst">youtube.com</span><span class="pri">Normal</span></div><div class="tags"><span class="chip">Travel</span><span class="time">just now</span></div></div><svg class="i s20 more"><use href="#i-more"/></svg></div>
+      <div class="card sw"><span class="dot"></span><span class="av f-orange">H</span><div class="ct"><div class="t">How to make perfect Neapolitan pizza at home</div><div class="hrow"><span class="hst">youtube.com</span><span class="pri">Normal</span></div><div class="tags"><span class="chip">Recipes</span><span class="time">2h ago</span></div></div><svg class="i s20 more"><use href="#i-more"/></svg></div>
     </div>
   </div>
-  <div class="merge"><span class="bd"><svg class="i xs"><use href="#i-loop"/></svg></span><span>Already saved 3 weeks ago, it'll come back in Today</span></div>
+  <div class="snack">
+    <div class="sr"><span class="mb"><svg class="i s18"><use href="#i-history"/></svg></span><span class="sx">Already saved Sep 28, it'll come back in Today</span></div>
+    <div class="sa"><span class="nb fl s44">Add details</span><span class="nb out sq"><svg class="i s20"><use href="#i-undo"/></svg></span></div>
+  </div>
+  <div class="fab nb circ ink"><svg class="i"><use href="#i-add"/></svg></div>
   <slot data-nav="nav-links"></slot>
 </template>
 
@@ -172,9 +183,11 @@
   <div class="status"><span>9:41</span><span>●●●</span></div>
   <div class="pb home">
     <div class="widget">
-      <small><span>Today's pick</span><span>LinkHive</span></small>
-      <b>Kyoto in 3 days: the complete first-timer guide</b>
-      <div class="wc"><span><b>4</b>Inbox</span><span><b>202</b>Unread</span></div>
+      <div class="wb"><span class="ico"><svg class="i s18"><use href="#logo"/></svg></span>LinkHive</div>
+      <div class="wk">Today's pick</div>
+      <div class="wt">Kyoto in 3 days: the complete first-timer guide</div>
+      <div class="wh">youtube.com</div>
+      <div class="wp"><span class="o">Inbox 4</span><span class="b">Unread 202</span></div>
     </div>
     <div class="icons"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
   </div>
@@ -283,9 +296,9 @@
       <p class="eyebrow">Use cases</p>
       <h2 class="h" id="uses-h">What people keep in it.</h2>
       <div class="uses">
-        <div class="use sh-rose"><h3>Recipes from Reels</h3><p>The pasta you saw at midnight comes back on Saturday morning.</p><div class="ex"><span class="av f-rose" aria-hidden="true">R</span><div><b>One-pan creamy garlic pasta</b><small>instagram.com · Recipes</small></div></div></div>
+        <div class="use sh-rose"><h3>Recipes from Reels</h3><p>The pasta you saw at midnight comes back on Saturday morning.</p><div class="ex"><span class="av f-orange" aria-hidden="true">R</span><div><b>One-pan creamy garlic pasta</b><small>instagram.com · Recipes</small></div></div></div>
         <div class="use sh-sky"><h3>A trip you're planning</h3><p>Every video and guide in one place, filtered by Travel.</p><div class="ex"><span class="av f-blue" aria-hidden="true">K</span><div><b>Kyoto in 3 days: first-timer guide</b><small>youtube.com · Travel</small></div></div></div>
-        <div class="use sh-lemon"><h3>Things to buy later</h3><p>A wishlist from every shop, with no account on any of them.</p><div class="ex"><span class="av f-lemon" aria-hidden="true">M</span><div><b>Mechanical keyboard, hot-swap, 75%</b><small>amazon.in · Shop</small></div></div></div>
+        <div class="use sh-lemon"><h3>Things to buy later</h3><p>A wishlist from every shop, with no account on any of them.</p><div class="ex"><span class="av f-orange" aria-hidden="true">M</span><div><b>Mechanical keyboard, hot-swap, 75%</b><small>amazon.in · Shop</small></div></div></div>
         <div class="use sh-mint"><h3>Talks and courses</h3><p>Mark the important ones High, and they stay at the top.</p><div class="ex"><span class="av f-green" aria-hidden="true">F</span><div><b>Flutter state management in 12 minutes</b><small>youtube.com · Learn · High</small></div></div></div>
         <div class="use sh-peach"><h3>Job posts</h3><p>Save from LinkedIn now, apply when you're at a laptop.</p><div class="ex"><span class="av f-orange" aria-hidden="true">S</span><div><b>Senior Flutter Developer, remote</b><small>linkedin.com · Work</small></div></div></div>
         <div class="use sh-rose"><h3>Long reads</h3><p>Articles that deserve 10 quiet minutes, one per morning.</p><div class="ex"><span class="av f-purple" aria-hidden="true">W</span><div><b>Why we forget what we save</b><small>medium.com · Read</small></div></div></div>
