@@ -47,6 +47,15 @@ class LinkRepository {
 
   static const _uuid = Uuid();
 
+  /// Counts the wipes done by [clearLocalData].
+  ///
+  /// A sync run remembers the value when it starts and stops writing locally as
+  /// soon as it changes, so a push or pull that was still waiting on the cloud
+  /// when the phone was wiped cannot write the old account's data back.
+  int _wipeGeneration = 0;
+
+  bool _isCurrentRun(int generation) => generation == _wipeGeneration;
+
   String? get _uid => _uidProvider();
 
   // ─── Link CRUD ─────────────────────────────────────────────────────────────
@@ -591,6 +600,7 @@ class LinkRepository {
     final uid = _uid;
     if (uid == null) return;
     await claimOrResetFor(uid);
+    final generation = _wipeGeneration;
 
     final now = DateTime.now().toUtc().millisecondsSinceEpoch;
     final operations =
@@ -606,14 +616,17 @@ class LinkRepository {
           ..sort((a, b) => a.createdAt.compareTo(b.createdAt));
 
     for (final operation in operations) {
+      if (!_isCurrentRun(generation)) return;
       final processingOperation = operation.copyWith(
         state: SyncOperation.processing,
       );
       await _syncOperationsBox.put(operation.operationId, processingOperation);
       try {
-        await _syncOperation(uid, processingOperation);
+        await _syncOperation(uid, processingOperation, generation);
+        if (!_isCurrentRun(generation)) return;
         await _syncOperationsBox.delete(processingOperation.operationId);
       } catch (e) {
+        if (!_isCurrentRun(generation)) return;
         final attemptCount = processingOperation.attemptCount + 1;
         final retryAt =
             now + SyncBackoff.delayForAttempt(attemptCount).inMilliseconds;
@@ -636,7 +649,11 @@ class LinkRepository {
       _syncOperationsBox.values.toList()
         ..sort((a, b) => a.createdAt.compareTo(b.createdAt));
 
-  Future<void> _syncOperation(String uid, SyncOperation operation) async {
+  Future<void> _syncOperation(
+    String uid,
+    SyncOperation operation,
+    int generation,
+  ) async {
     if (operation.entityType == SyncOperation.linkEntity) {
       if (operation.operationType == SyncOperation.delete) {
         await _firebaseService.deleteLink(uid, operation.entityId);
@@ -652,6 +669,7 @@ class LinkRepository {
       } else {
         await _firebaseService.updateLink(uid, link);
       }
+      if (!_isCurrentRun(generation)) return;
       final syncedLink = link.copyWith(isSynced: true);
       await _linksBox.put(syncedLink.id, syncedLink);
       await _baseLinksBox.put(syncedLink.id, syncedLink);
@@ -733,6 +751,7 @@ class LinkRepository {
     final uid = _uid;
     if (uid == null) return;
     await claimOrResetFor(uid);
+    final generation = _wipeGeneration;
 
     // Snapshot the current time before querying so any record written to
     // Firestore during this pull is caught by the next pull's overlap window.
@@ -760,6 +779,7 @@ class LinkRepository {
     }
 
     for (final delId in deletedIds) {
+      if (!_isCurrentRun(generation)) return;
       if (_hasLocalTombstone(SyncOperation.linkEntity, delId)) continue;
 
       final localLink = _linksBox.get(delId);
@@ -787,6 +807,7 @@ class LinkRepository {
     }
 
     for (final cloudLink in cloudLinks) {
+      if (!_isCurrentRun(generation)) return;
       if (_hasLocalTombstone(SyncOperation.linkEntity, cloudLink.id)) {
         continue;
       }
@@ -854,6 +875,7 @@ class LinkRepository {
 
     final cloudCategories = await _firebaseService.fetchCategories(uid);
     for (final category in cloudCategories) {
+      if (!_isCurrentRun(generation)) return;
       if (_hasLocalTombstone(SyncOperation.categoryEntity, category.id) ||
           _hasPendingOperation(SyncOperation.categoryEntity, category.id)) {
         continue;
@@ -871,6 +893,7 @@ class LinkRepository {
       );
     }
     for (final categoryId in deletedCategoryIds) {
+      if (!_isCurrentRun(generation)) return;
       if (_hasLocalTombstone(SyncOperation.categoryEntity, categoryId) ||
           _hasPendingOperation(SyncOperation.categoryEntity, categoryId)) {
         continue;
@@ -878,7 +901,10 @@ class LinkRepository {
       await _categoriesBox.delete(categoryId);
     }
 
-    // Advance the pull cursor only after all reconciliation succeeds.
+    // Advance the pull cursor only after all reconciliation succeeds, and not
+    // at all if the phone was wiped meanwhile: that cursor would belong to
+    // data that is gone.
+    if (!_isCurrentRun(generation)) return;
     await _writeCursor(newCursor);
   }
 
@@ -991,6 +1017,9 @@ class LinkRepository {
   }
 
   Future<void> clearLocalData() async {
+    // First, before any await: a sync run that is still waiting on the cloud
+    // sees the change and stops writing (see [_wipeGeneration]).
+    _wipeGeneration++;
     await _linksBox.clear();
     await _baseLinksBox.clear();
     await _conflictLinksBox.clear();

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
@@ -128,6 +129,68 @@ void main() {
       expect(cloud.linksOf(accountA).map((l) => l.id), ['a-1']);
     },
   );
+
+  group('a wipe while a sync is waiting on the cloud', () {
+    /// Holds the first call to [method] open until `release` is called.
+    ({Future<void> reached, void Function() release}) holdCall(String method) {
+      final reached = Completer<void>();
+      final gate = Completer<void>();
+      cloud.onCall = (called, uid) async {
+        if (called != method) return;
+        if (!reached.isCompleted) reached.complete();
+        await gate.future;
+      };
+      return (reached: reached.future, release: gate.complete);
+    }
+
+    Object? setting(String key) => Hive.box(HiveConstants.settingsBox).get(key);
+
+    test('a late push does not write the wiped link back', () async {
+      currentUid = accountA;
+      await repository.addLink(link('a-1'));
+      final hold = holdCall('saveLink');
+
+      final push = repository.syncPendingLinks();
+      await hold.reached;
+      await repository.clearLocalData();
+      hold.release();
+      await push;
+
+      expect(localIds(), isEmpty);
+      expect(repository.pendingSyncOperations, isEmpty);
+    });
+
+    test('a late pull does not write the wiped links or owner back', () async {
+      cloud.seedLink(accountA, link('a-1'), syncedAt: 1000);
+      currentUid = accountA;
+      final hold = holdCall('fetchLinks');
+
+      final pull = repository.pullFromCloud();
+      await hold.reached;
+      await repository.clearLocalData();
+      hold.release();
+      await pull;
+
+      expect(localIds(), isEmpty);
+      expect(setting(HiveConstants.lastPulledAtKey), isNull);
+      expect(setting(HiveConstants.ownerUidKey), isNull);
+    });
+
+    test('a late pull does not rewrite the cursor after the wipe', () async {
+      cloud.seedLink(accountA, link('a-1'), syncedAt: 1000);
+      currentUid = accountA;
+      final hold = holdCall('fetchCategories');
+
+      final pull = repository.pullFromCloud(); // links are already written here
+      await hold.reached;
+      await repository.clearLocalData();
+      hold.release();
+      await pull;
+
+      expect(localIds(), isEmpty);
+      expect(setting(HiveConstants.lastPulledAtKey), isNull);
+    });
+  });
 
   group('owner check', () {
     Object? setting(String key) => Hive.box(HiveConstants.settingsBox).get(key);
