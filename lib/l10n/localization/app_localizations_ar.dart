@@ -215,9 +215,6 @@ class AppLocalizationsAr extends AppLocalizations {
       'حافظ على أمان مجموعتك ومزامنتها عبر الأجهزة.';
 
   @override
-  String get accountStatSynced => 'متزامن مع السحابة';
-
-  @override
   String get accountStatLocal => 'محلي فقط';
 
   @override
@@ -446,15 +443,77 @@ class AppLocalizationsAr extends AppLocalizations {
   String get accountSyncStatusWaiting => 'في انتظار الإنترنت';
 
   @override
-  String get accountRetry => 'إعادة المحاولة';
+  String get accountSyncStatusSynced => 'تمت مزامنة كل شيء';
 
   @override
-  String get accountSyncStatusLabel => 'حالة المزامنة';
+  String get accountSyncStatusPending => 'بانتظار المزامنة';
 
   @override
-  String accountPendingCount(Object count) {
-    return '$count معلّق';
+  String accountSyncLastSynced(String time) {
+    return 'آخر مزامنة: $time';
   }
+
+  @override
+  String get accountSyncNever => 'لم تتم المزامنة بعد';
+
+  @override
+  String accountSyncPendingDetail(num count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count تغيير لم تصل إلى السحابة بعد.',
+      many: '$count تغييرًا لم تصل إلى السحابة بعد.',
+      few: '$count تغييرات لم تصل إلى السحابة بعد.',
+      two: 'تغييران لم يصلا إلى السحابة بعد.',
+      one: 'تغيير واحد لم يصل إلى السحابة بعد.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String accountSyncWaitingDetail(num count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'ستتم مزامنة $count تغيير عند عودة الإنترنت.',
+      many: 'ستتم مزامنة $count تغييرًا عند عودة الإنترنت.',
+      few: 'ستتم مزامنة $count تغييرات عند عودة الإنترنت.',
+      two: 'ستتم مزامنة تغييرين عند عودة الإنترنت.',
+      one: 'ستتم مزامنة تغيير واحد عند عودة الإنترنت.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String accountSyncConflictDetail(num count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count تعديل تحتاج إلى قرارك.',
+      many: '$count تعديلًا تحتاج إلى قرارك.',
+      few: '$count تعديلات تحتاج إلى قرارك.',
+      two: 'تعديلان يحتاجان إلى قرارك.',
+      one: 'تعديل واحد يحتاج إلى قرارك.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get accountSyncFailureTimeout => 'لم تستجب السحابة في الوقت المناسب.';
+
+  @override
+  String get accountSyncFailurePermission =>
+      'هذا الحساب غير مسموح له بالمزامنة.';
+
+  @override
+  String get accountSyncFailureUnavailable =>
+      'لا يمكن الوصول إلى السحابة الآن.';
+
+  @override
+  String get accountSyncFailureUnknown => 'حدث خطأ أثناء المزامنة.';
+
+  @override
+  String get accountRetry => 'إعادة المحاولة';
 
   @override
   String get accountResolveConflicts => 'حل التعارضات';

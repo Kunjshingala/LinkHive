@@ -510,12 +510,6 @@ abstract class AppLocalizations {
   /// **'Keep your collection safe and synced across devices.'**
   String get accountSignInDesc;
 
-  /// No description provided for @accountStatSynced.
-  ///
-  /// In en, this message translates to:
-  /// **'Synced to Cloud'**
-  String get accountStatSynced;
-
   /// No description provided for @accountStatLocal.
   ///
   /// In en, this message translates to:
@@ -864,23 +858,77 @@ abstract class AppLocalizations {
   /// **'Waiting for internet'**
   String get accountSyncStatusWaiting;
 
+  /// No description provided for @accountSyncStatusSynced.
+  ///
+  /// In en, this message translates to:
+  /// **'All synced'**
+  String get accountSyncStatusSynced;
+
+  /// No description provided for @accountSyncStatusPending.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting to sync'**
+  String get accountSyncStatusPending;
+
+  /// No description provided for @accountSyncLastSynced.
+  ///
+  /// In en, this message translates to:
+  /// **'Last synced {time}'**
+  String accountSyncLastSynced(String time);
+
+  /// No description provided for @accountSyncNever.
+  ///
+  /// In en, this message translates to:
+  /// **'Not synced yet'**
+  String get accountSyncNever;
+
+  /// No description provided for @accountSyncPendingDetail.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 change has not reached the cloud yet.} other{{count} changes have not reached the cloud yet.}}'**
+  String accountSyncPendingDetail(num count);
+
+  /// No description provided for @accountSyncWaitingDetail.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 change will sync when you are back online.} other{{count} changes will sync when you are back online.}}'**
+  String accountSyncWaitingDetail(num count);
+
+  /// No description provided for @accountSyncConflictDetail.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 edit needs your decision.} other{{count} edits need your decision.}}'**
+  String accountSyncConflictDetail(num count);
+
+  /// No description provided for @accountSyncFailureTimeout.
+  ///
+  /// In en, this message translates to:
+  /// **'The cloud did not answer in time.'**
+  String get accountSyncFailureTimeout;
+
+  /// No description provided for @accountSyncFailurePermission.
+  ///
+  /// In en, this message translates to:
+  /// **'This account is not allowed to sync.'**
+  String get accountSyncFailurePermission;
+
+  /// No description provided for @accountSyncFailureUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'The cloud cannot be reached right now.'**
+  String get accountSyncFailureUnavailable;
+
+  /// No description provided for @accountSyncFailureUnknown.
+  ///
+  /// In en, this message translates to:
+  /// **'Something went wrong while syncing.'**
+  String get accountSyncFailureUnknown;
+
   /// No description provided for @accountRetry.
   ///
   /// In en, this message translates to:
   /// **'Retry'**
   String get accountRetry;
-
-  /// No description provided for @accountSyncStatusLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'Sync Status'**
-  String get accountSyncStatusLabel;
-
-  /// No description provided for @accountPendingCount.
-  ///
-  /// In en, this message translates to:
-  /// **'{count} Pending'**
-  String accountPendingCount(Object count);
 
   /// No description provided for @accountResolveConflicts.
   ///

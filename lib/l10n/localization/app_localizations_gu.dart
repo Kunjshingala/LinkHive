@@ -216,9 +216,6 @@ class AppLocalizationsGu extends AppLocalizations {
       'તમારા સંગ્રહને સુરક્ષિત અને ઉપકરણો પર સિંક કરેલું રાખો.';
 
   @override
-  String get accountStatSynced => 'ક્લાઉડ પર સિંક કરેલ';
-
-  @override
   String get accountStatLocal => 'ફક્ત સ્થાનિક';
 
   @override
@@ -437,15 +434,68 @@ class AppLocalizationsGu extends AppLocalizations {
   String get accountSyncStatusWaiting => 'ઇન્ટરનેટની રાહ જોઈ રહ્યું છે';
 
   @override
-  String get accountRetry => 'ફરી પ્રયાસ કરો';
+  String get accountSyncStatusSynced => 'બધું સમન્વયિત છે';
 
   @override
-  String get accountSyncStatusLabel => 'સમન્વયન સ્થિતિ';
+  String get accountSyncStatusPending => 'સમન્વયની રાહમાં';
 
   @override
-  String accountPendingCount(Object count) {
-    return '$count બાકી';
+  String accountSyncLastSynced(String time) {
+    return 'છેલ્લો સમન્વય: $time';
   }
+
+  @override
+  String get accountSyncNever => 'હજુ સમન્વય થયો નથી';
+
+  @override
+  String accountSyncPendingDetail(num count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count ફેરફારો હજુ ક્લાઉડ સુધી પહોંચ્યા નથી.',
+      one: '1 ફેરફાર હજુ ક્લાઉડ સુધી પહોંચ્યો નથી.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String accountSyncWaitingDetail(num count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'ઇન્ટરનેટ પાછું આવશે ત્યારે $count ફેરફારો સમન્વયિત થશે.',
+      one: 'ઇન્ટરનેટ પાછું આવશે ત્યારે 1 ફેરફાર સમન્વયિત થશે.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String accountSyncConflictDetail(num count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count ફેરફારો પર તમારા નિર્ણયની જરૂર છે.',
+      one: '1 ફેરફાર પર તમારા નિર્ણયની જરૂર છે.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get accountSyncFailureTimeout => 'ક્લાઉડે સમયસર જવાબ આપ્યો નહીં.';
+
+  @override
+  String get accountSyncFailurePermission =>
+      'આ એકાઉન્ટને સમન્વય કરવાની મંજૂરી નથી.';
+
+  @override
+  String get accountSyncFailureUnavailable =>
+      'હમણાં ક્લાઉડ સુધી પહોંચી શકાતું નથી.';
+
+  @override
+  String get accountSyncFailureUnknown => 'સમન્વય દરમિયાન કંઈક ખોટું થયું.';
+
+  @override
+  String get accountRetry => 'ફરી પ્રયાસ કરો';
 
   @override
   String get accountResolveConflicts => 'વિરોધ ઉકેલો';

@@ -216,9 +216,6 @@ class AppLocalizationsEn extends AppLocalizations {
       'Keep your collection safe and synced across devices.';
 
   @override
-  String get accountStatSynced => 'Synced to Cloud';
-
-  @override
   String get accountStatLocal => 'Local Only';
 
   @override
@@ -432,15 +429,68 @@ class AppLocalizationsEn extends AppLocalizations {
   String get accountSyncStatusWaiting => 'Waiting for internet';
 
   @override
-  String get accountRetry => 'Retry';
+  String get accountSyncStatusSynced => 'All synced';
 
   @override
-  String get accountSyncStatusLabel => 'Sync Status';
+  String get accountSyncStatusPending => 'Waiting to sync';
 
   @override
-  String accountPendingCount(Object count) {
-    return '$count Pending';
+  String accountSyncLastSynced(String time) {
+    return 'Last synced $time';
   }
+
+  @override
+  String get accountSyncNever => 'Not synced yet';
+
+  @override
+  String accountSyncPendingDetail(num count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count changes have not reached the cloud yet.',
+      one: '1 change has not reached the cloud yet.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String accountSyncWaitingDetail(num count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count changes will sync when you are back online.',
+      one: '1 change will sync when you are back online.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String accountSyncConflictDetail(num count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count edits need your decision.',
+      one: '1 edit needs your decision.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get accountSyncFailureTimeout => 'The cloud did not answer in time.';
+
+  @override
+  String get accountSyncFailurePermission =>
+      'This account is not allowed to sync.';
+
+  @override
+  String get accountSyncFailureUnavailable =>
+      'The cloud cannot be reached right now.';
+
+  @override
+  String get accountSyncFailureUnknown => 'Something went wrong while syncing.';
+
+  @override
+  String get accountRetry => 'Retry';
 
   @override
   String get accountResolveConflicts => 'Resolve conflicts';

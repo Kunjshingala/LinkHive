@@ -217,9 +217,6 @@ class AppLocalizationsHi extends AppLocalizations {
       'अपने संग्रह को सुरक्षित रखें और सभी उपकरणों पर सिंक करें।';
 
   @override
-  String get accountStatSynced => 'क्लाउड से सिंक किया गया';
-
-  @override
   String get accountStatLocal => 'केवल स्थानीय';
 
   @override
@@ -438,15 +435,68 @@ class AppLocalizationsHi extends AppLocalizations {
   String get accountSyncStatusWaiting => 'इंटरनेट का इंतज़ार';
 
   @override
-  String get accountRetry => 'पुनः प्रयास करें';
+  String get accountSyncStatusSynced => 'सब कुछ सिंक हो चुका है';
 
   @override
-  String get accountSyncStatusLabel => 'सिंक स्थिति';
+  String get accountSyncStatusPending => 'सिंक होने की प्रतीक्षा में';
 
   @override
-  String accountPendingCount(Object count) {
-    return '$count लंबित';
+  String accountSyncLastSynced(String time) {
+    return 'आख़िरी सिंक: $time';
   }
+
+  @override
+  String get accountSyncNever => 'अभी तक सिंक नहीं हुआ';
+
+  @override
+  String accountSyncPendingDetail(num count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count बदलाव अभी क्लाउड तक नहीं पहुँचे हैं।',
+      one: '1 बदलाव अभी क्लाउड तक नहीं पहुँचा है।',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String accountSyncWaitingDetail(num count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'इंटरनेट वापस आने पर $count बदलाव सिंक होंगे।',
+      one: 'इंटरनेट वापस आने पर 1 बदलाव सिंक होगा।',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String accountSyncConflictDetail(num count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count बदलावों पर आपका फ़ैसला चाहिए।',
+      one: '1 बदलाव पर आपका फ़ैसला चाहिए।',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get accountSyncFailureTimeout => 'क्लाउड ने समय पर जवाब नहीं दिया।';
+
+  @override
+  String get accountSyncFailurePermission =>
+      'इस खाते को सिंक करने की अनुमति नहीं है।';
+
+  @override
+  String get accountSyncFailureUnavailable =>
+      'अभी क्लाउड तक पहुँचा नहीं जा सकता।';
+
+  @override
+  String get accountSyncFailureUnknown => 'सिंक करते समय कुछ गड़बड़ हो गई।';
+
+  @override
+  String get accountRetry => 'पुनः प्रयास करें';
 
   @override
   String get accountResolveConflicts => 'विरोध हल करें';

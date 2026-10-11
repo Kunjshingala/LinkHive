@@ -16,9 +16,7 @@ import '../../core/utils/navigation/route.dart';
 import '../../core/utils/utils.dart';
 import '../../features/links/repository/link_repository.dart';
 import '../../features/sync/bloc/sync_status_bloc.dart';
-import '../../features/sync/bloc/sync_status_state.dart';
 import '../../core/services/sync_engine.dart';
-import '../../core/services/sync_status.dart';
 import '../../l10n/localization/app_localizations.dart';
 import '../../sharedWidgets/common_app_bar.dart';
 import '../../sharedWidgets/confirmation_bottom_sheet.dart';
@@ -28,6 +26,7 @@ import 'bloc/account_bloc.dart';
 import 'bloc/account_event.dart';
 import 'bloc/account_state.dart';
 import 'sign_out/sign_out_sheet.dart';
+import 'sync_status_card.dart';
 
 class AccountScreen extends StatelessWidget {
   const AccountScreen({super.key});
@@ -105,7 +104,10 @@ class _AccountScreenContent extends StatelessWidget {
                 // ─── Stats Row ────────────────────────────────────────
                 _StatsRow(state: state),
                 SizedBox(height: AppSpacing.xl),
-                const _SyncStatusCard(),
+                SyncStatusCard(
+                  isSignedIn: state is AccountAuthenticated,
+                  onRetry: () => locator<SyncService>().requestSyncInBackground(pull: true),
+                ),
                 SizedBox(height: AppSpacing.xl),
 
                 // ─── Settings Section ─────────────────────────────────
@@ -117,56 +119,6 @@ class _AccountScreenContent extends StatelessWidget {
                 _SettingsList(state: state),
               ],
             ),
-          ),
-        );
-      },
-    );
-  }
-}
-
-class _SyncStatusCard extends StatelessWidget {
-  const _SyncStatusCard();
-
-  @override
-  Widget build(BuildContext context) {
-    return BlocBuilder<SyncStatusBloc, SyncStatusState>(
-      builder: (context, state) {
-        final isFailed = state.status == SyncStatus.failed;
-        final (label, icon) = switch (state.status) {
-          SyncStatus.idle => (context.l10n.accountSyncStatusReady, Icons.cloud_done_rounded),
-          SyncStatus.syncing => (context.l10n.accountSyncStatusSyncing, Icons.sync_rounded),
-          SyncStatus.waitingForInternet => (context.l10n.accountSyncStatusWaiting, Icons.wifi_off_rounded),
-          SyncStatus.failed => (context.l10n.accountSyncStatusFailed, Icons.cloud_off_rounded),
-          SyncStatus.conflict => (context.l10n.accountSyncStatusConflict, Icons.warning_amber_rounded),
-        };
-        return Container(
-          width: double.infinity,
-          padding: EdgeInsets.all(AppSpacing.md),
-          decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.surface,
-            border: Border.all(
-              color: Theme.of(context).colorScheme.outline,
-              width: 2,
-            ),
-            borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-          ),
-          child: Row(
-            children: [
-              Icon(icon),
-              SizedBox(width: AppSpacing.sm),
-              Expanded(
-                child: Text(label, style: Theme.of(context).textTheme.titleSmall),
-              ),
-              if (isFailed)
-                NeoBrutalistButton(
-                  text: context.l10n.accountRetry,
-                  icon: Icons.refresh_rounded,
-                  height: 36,
-                  onPressed: () async {
-                    await locator<SyncService>().requestSync(pull: true);
-                  },
-                ),
-            ],
           ),
         );
       },
@@ -273,58 +225,17 @@ class _StatsRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    int total = 0;
-    int synced = 0;
-    int unsynced = 0;
+    // Sync state lives in the sync status card, so this shows only the count.
+    final total = switch (state) {
+      AccountAuthenticated(:final totalLinks) => totalLinks,
+      AccountGuest(:final totalLinks) => totalLinks,
+      _ => 0,
+    };
 
-    if (state is AccountAuthenticated) {
-      final authState = state as AccountAuthenticated;
-      total = authState.totalLinks;
-      synced = authState.syncedLinks;
-      unsynced = authState.unsyncedLinks;
-    } else if (state is AccountGuest) {
-      final guestState = state as AccountGuest;
-      total = guestState.totalLinks;
-      synced = guestState.syncedLinks;
-      unsynced = guestState.unsyncedLinks;
-    }
-
-    String syncStatus = '';
-    Color syncShadowColor = AppColors.shadowMint;
-
-    if (total == 0) {
-      syncStatus = '-';
-      syncShadowColor = AppColors.secondarySurface;
-    } else if (unsynced == 0) {
-      syncStatus = context.l10n.accountStatSynced; // Fully synced
-      syncShadowColor = AppColors.shadowMint;
-    } else if (synced == 0) {
-      syncStatus = context.l10n.accountStatLocal; // Fully local
-      syncShadowColor = AppColors.shadowPeach;
-    } else {
-      syncStatus = context.l10n.accountPendingCount(unsynced); // Mixed
-      syncShadowColor = AppColors.shadowLemon;
-    }
-
-    return Row(
-      children: [
-        Expanded(
-          child: _StatCard(
-            label: context.l10n.navLinks,
-            value: total.toString(),
-            shadowColor: AppColors.shadowMint,
-          ),
-        ),
-        SizedBox(width: AppSpacing.md),
-        Expanded(
-          child: _StatCard(
-            label: context.l10n.accountSyncStatusLabel,
-            value: syncStatus,
-            shadowColor: syncShadowColor,
-            isSmallValue: total > 0, // Make text smaller if it's a long status
-          ),
-        ),
-      ],
+    return _StatCard(
+      label: context.l10n.navLinks,
+      value: total.toString(),
+      shadowColor: AppColors.shadowMint,
     );
   }
 }
@@ -333,13 +244,11 @@ class _StatCard extends StatelessWidget {
   final String label;
   final String value;
   final Color shadowColor;
-  final bool isSmallValue;
 
   const _StatCard({
     required this.label,
     required this.value,
     required this.shadowColor,
-    this.isSmallValue = false,
   });
 
   @override
@@ -380,9 +289,7 @@ class _StatCard extends StatelessWidget {
                   fit: BoxFit.scaleDown,
                   child: Text(
                     value,
-                    style: isSmallValue
-                        ? Theme.of(context).textTheme.titleLarge!
-                        : Theme.of(context).textTheme.headlineMedium!,
+                    style: Theme.of(context).textTheme.headlineMedium!,
                     maxLines: 1,
                     textAlign: TextAlign.center,
                   ),
