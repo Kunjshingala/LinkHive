@@ -106,9 +106,7 @@ class SyncEngine implements SyncControl {
   /// right after that run.
   @override
   Future<void> requestSync({bool pull = false}) {
-    if (!_cloudWorkEnabled || _paused || !_isAuthenticated()) {
-      return Future<void>.value();
-    }
+    if (!_canSync) return Future<void>.value();
 
     final activeRun = _activeRun;
     if (activeRun == null) return _start(pull: pull);
@@ -116,9 +114,28 @@ class SyncEngine implements SyncControl {
     return _queuedPull ??= _pullAfter(activeRun);
   }
 
-  Future<void> _start({required bool pull}) {
+  /// Downloads everything from the cloud again, not just what changed since
+  /// the last sync, to make sure nothing is missing. Waits for a run that is
+  /// already going, then starts its own, so the cursor is never reset under a
+  /// pull that would write it back.
+  Future<void> requestFullResync() async {
+    if (!_canSync) return;
+    while (_activeRun != null) {
+      try {
+        await _activeRun;
+      } on Object {
+        // The callers of that run see its error.
+      }
+    }
+    if (!_canSync) return;
+    await _start(pull: true, fullPull: true);
+  }
+
+  bool get _canSync => _cloudWorkEnabled && !_paused && _isAuthenticated();
+
+  Future<void> _start({required bool pull, bool fullPull = false}) {
     _activeRunPulls = pull;
-    final run = _clearActiveRun(_run(pull: pull));
+    final run = _clearActiveRun(_run(pull: pull, fullPull: fullPull));
     _activeRun = run;
     return run;
   }
@@ -141,13 +158,16 @@ class SyncEngine implements SyncControl {
     }
   }
 
-  Future<void> _run({required bool pull}) async {
+  Future<void> _run({required bool pull, bool fullPull = false}) async {
     _running = true;
     _runFailure = null;
     _emit();
     try {
       await _repository.syncPendingLinks();
-      if (pull) await _repository.pullFromCloud();
+      if (pull) {
+        if (fullPull) await _repository.resetPullCursor();
+        await _repository.pullFromCloud();
+      }
     } catch (error) {
       _runFailure = SyncFailure.fromError(error);
       rethrow;

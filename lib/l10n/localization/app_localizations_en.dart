@@ -408,10 +408,17 @@ class AppLocalizationsEn extends AppLocalizations {
   String get accountSyncingMsg => 'Syncing data...';
 
   @override
-  String get accountSyncSuccess => 'Data synced successfully';
+  String get accountSyncCheckingMsg => 'Checking everything...';
 
   @override
-  String get accountSyncFail => 'Sync failed. Please try again.';
+  String get accountSyncCheckAgain => 'Check everything again';
+
+  @override
+  String get accountSyncCheckAgainDesc =>
+      'Downloads all your links from the cloud again, to be sure none are missing. Nothing on this phone is deleted.';
+
+  @override
+  String get accountSyncDone => 'Done';
 
   @override
   String get accountSyncStatusReady => 'Ready to sync';

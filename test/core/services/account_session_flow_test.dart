@@ -20,8 +20,9 @@ import '../../helpers/fake_firebase_firestore_service.dart';
 
 class MockAuthService extends Mock implements AuthService {}
 
-/// Whole stories of two accounts sharing one phone: the real repository, the
-/// real sync engine and the real session service, with a fake cloud.
+/// Whole stories of accounts sharing one phone, and of one account syncing: the
+/// real repository, the real sync engine and the real session service, with a
+/// fake cloud.
 void main() {
   const accountA = 'account-a';
   const accountB = 'account-b';
@@ -277,6 +278,33 @@ void main() {
       expect(localIds(), isEmpty); // nothing comes back: it is gone for good
     },
   );
+
+  test(
+    'a full resync brings back a cloud link the normal sync skipped',
+    () async {
+      cloud.seedLink(accountA, link('a-1'), syncedAt: 5000);
+      await signIn(accountA); // the cursor is now at 5000
+      // A link whose server time is behind the cursor, for example one that
+      // was written late by another device.
+      cloud.seedLink(accountA, link('a-late'), syncedAt: 1000);
+
+      await engine.requestSync(pull: true);
+      expect(localIds(), ['a-1']);
+
+      await engine.requestFullResync();
+      expect(localIds(), ['a-1', 'a-late']);
+    },
+  );
+
+  test('a full resync keeps what is only on this phone', () async {
+    await signIn(accountA);
+    await repository.addLink(link('a-unsynced'));
+
+    await engine.requestFullResync();
+
+    expect(localIds(), ['a-unsynced']);
+    expect(cloudIds(accountA), ['a-unsynced']); // pushed first, then pulled
+  });
 
   test(
     '"Delete local data" stays signed in and the next sync refills the phone',

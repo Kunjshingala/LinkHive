@@ -26,6 +26,7 @@ import 'bloc/account_bloc.dart';
 import 'bloc/account_event.dart';
 import 'bloc/account_state.dart';
 import 'sign_out/sign_out_sheet.dart';
+import 'sync_data_flow.dart';
 import 'sync_status_card.dart';
 
 class AccountScreen extends StatelessWidget {
@@ -550,19 +551,7 @@ class _SettingsList extends StatelessWidget {
           showSnackBar(context.l10n.accountSyncSignInMsg);
           return;
         }
-        final l10n = context.l10n;
-        showSnackBar(l10n.accountSyncingMsg);
-        try {
-          await locator<SyncService>().requestSync(pull: true);
-          if (context.mounted) {
-            context.read<AccountBloc>().add(const AccountLoadRequested());
-            showSnackBar(l10n.accountSyncSuccess);
-          }
-        } catch (e) {
-          if (context.mounted) {
-            showSnackBar(l10n.accountSyncFail);
-          }
-        }
+        await runSyncDataFlow(context);
         break;
 
       case AccountItem.conflicts:

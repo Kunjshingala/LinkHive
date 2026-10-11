@@ -677,6 +677,12 @@ class LinkRepository implements LocalDataStore {
   /// When the last successful pull finished, in milliseconds since the epoch.
   int? get lastPulledAt => _readCursor();
 
+  /// Forgets when the last pull finished, so the next pull fetches everything
+  /// again. Nothing on this phone is deleted: pulled links are merged in the
+  /// same way as on a first sync.
+  Future<void> resetPullCursor() =>
+      _hiveHelper.settingsBox.delete(HiveConstants.lastPulledAtKey);
+
   /// Why the last push attempt failed, or null if none did since it started.
   SyncFailure? get lastFailure => _lastFailure;
 

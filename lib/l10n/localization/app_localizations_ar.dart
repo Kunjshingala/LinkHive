@@ -422,10 +422,17 @@ class AppLocalizationsAr extends AppLocalizations {
   String get accountSyncingMsg => 'جاري مزامنة البيانات...';
 
   @override
-  String get accountSyncSuccess => 'تمت مزامنة البيانات بنجاح';
+  String get accountSyncCheckingMsg => 'جارٍ فحص كل شيء...';
 
   @override
-  String get accountSyncFail => 'فشلت المزامنة. حاول مرة أخرى.';
+  String get accountSyncCheckAgain => 'افحص كل شيء مرة أخرى';
+
+  @override
+  String get accountSyncCheckAgainDesc =>
+      'يُنزّل جميع روابطك من السحابة مرة أخرى للتأكد من عدم فقدان أي رابط. لا يُحذف أي شيء على هذا الهاتف.';
+
+  @override
+  String get accountSyncDone => 'تم';
 
   @override
   String get accountSyncStatusReady => 'جاهز للمزامنة';

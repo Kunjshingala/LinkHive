@@ -192,6 +192,79 @@ void main() {
     });
   });
 
+  group('full resync', () {
+    setUp(() {
+      when(() => repository.syncPendingLinks()).thenAnswer((_) async {});
+      when(() => repository.pullFromCloud()).thenAnswer((_) async {});
+      when(() => repository.resetPullCursor()).thenAnswer((_) async {});
+    });
+
+    test('forgets the cursor right before pulling, after the push', () async {
+      final engine = buildEngine();
+
+      await engine.requestFullResync();
+
+      verifyInOrder([
+        () => repository.syncPendingLinks(),
+        () => repository.resetPullCursor(),
+        () => repository.pullFromCloud(),
+      ]);
+    });
+
+    test('a normal pull leaves the cursor alone', () async {
+      final engine = buildEngine();
+
+      await engine.requestSync(pull: true);
+
+      verifyNever(() => repository.resetPullCursor());
+    });
+
+    test('waits for a run that is going, so its cursor is not written back '
+        'over the reset', () async {
+      final push = Completer<void>();
+      var pushes = 0;
+      when(
+        () => repository.syncPendingLinks(),
+      ).thenAnswer((_) => ++pushes == 1 ? push.future : Future<void>.value());
+      final engine = buildEngine();
+
+      final running = engine.requestSync();
+      final full = engine.requestFullResync();
+      await Future<void>.delayed(Duration.zero);
+      verifyNever(() => repository.resetPullCursor());
+
+      push.complete();
+      await Future.wait([running, full]);
+
+      verify(() => repository.resetPullCursor()).called(1);
+      verify(() => repository.pullFromCloud()).called(1);
+    });
+
+    test('still runs when the run it waited for failed', () async {
+      var pushes = 0;
+      when(() => repository.syncPendingLinks()).thenAnswer(
+        (_) async => ++pushes == 1 ? throw Exception('offline') : null,
+      );
+      final engine = buildEngine();
+
+      final running = engine.requestSync();
+      final full = engine.requestFullResync();
+      await expectLater(running, throwsException);
+      await full;
+
+      verify(() => repository.pullFromCloud()).called(1);
+    });
+
+    test('does nothing when paused or signed out', () async {
+      final paused = buildEngine()..pause();
+      await paused.requestFullResync();
+      await buildEngine(authenticated: false).requestFullResync();
+
+      verifyNever(() => repository.resetPullCursor());
+      verifyNever(() => repository.pullFromCloud());
+    });
+  });
+
   group('status, as the user sees it', () {
     late Completer<void> push;
     late SyncEngine engine;

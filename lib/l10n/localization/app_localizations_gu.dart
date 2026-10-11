@@ -413,10 +413,17 @@ class AppLocalizationsGu extends AppLocalizations {
   String get accountSyncingMsg => 'ડેટા સમન્વયિત થઈ રહ્યો છે...';
 
   @override
-  String get accountSyncSuccess => 'ડેટા સફળતાપૂર્વક સમન્વયિત થયો';
+  String get accountSyncCheckingMsg => 'બધું તપાસી રહ્યા છીએ...';
 
   @override
-  String get accountSyncFail => 'સમન્વયન નિષ્ફળ થયું. કૃપા કરી ફરી પ્રયાસ કરો.';
+  String get accountSyncCheckAgain => 'બધું ફરીથી તપાસો';
+
+  @override
+  String get accountSyncCheckAgainDesc =>
+      'આ તમારી બધી કડીઓ ક્લાઉડમાંથી ફરીથી ડાઉનલોડ કરે છે, જેથી કંઈ બાકી ન રહે. આ ફોન પરથી કશું કાઢી નાખવામાં આવતું નથી.';
+
+  @override
+  String get accountSyncDone => 'થઈ ગયું';
 
   @override
   String get accountSyncStatusReady => 'સમન્વયન માટે તૈયાર';

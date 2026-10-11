@@ -413,10 +413,17 @@ class AppLocalizationsHi extends AppLocalizations {
   String get accountSyncingMsg => 'डेटा सिंक हो रहा है...';
 
   @override
-  String get accountSyncSuccess => 'डेटा सफलतापूर्वक सिंक हो गया';
+  String get accountSyncCheckingMsg => 'सब कुछ जाँचा जा रहा है...';
 
   @override
-  String get accountSyncFail => 'सिंक विफल हुआ। कृपया पुनः प्रयास करें।';
+  String get accountSyncCheckAgain => 'सब कुछ फिर से जाँचें';
+
+  @override
+  String get accountSyncCheckAgainDesc =>
+      'यह आपके सभी लिंक क्लाउड से दोबारा डाउनलोड करता है, ताकि कोई छूटा न हो। इस फ़ोन पर कुछ भी नहीं हटाया जाता।';
+
+  @override
+  String get accountSyncDone => 'हो गया';
 
   @override
   String get accountSyncStatusReady => 'सिंक के लिए तैयार';

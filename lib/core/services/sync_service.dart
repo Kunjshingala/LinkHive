@@ -97,6 +97,10 @@ class SyncService {
   Future<void> requestSync({bool pull = false}) =>
       _syncEngine.requestSync(pull: pull);
 
+  /// Downloads everything from the cloud again. See
+  /// [SyncEngine.requestFullResync].
+  Future<void> requestFullResync() => _syncEngine.requestFullResync();
+
   /// Starts a sync that nobody waits for. A failure is logged here and shown
   /// through the sync status, so it never becomes an unhandled error.
   void requestSyncInBackground({bool pull = false}) {

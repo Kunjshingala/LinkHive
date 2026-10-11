@@ -816,17 +816,29 @@ abstract class AppLocalizations {
   /// **'Syncing data...'**
   String get accountSyncingMsg;
 
-  /// No description provided for @accountSyncSuccess.
+  /// No description provided for @accountSyncCheckingMsg.
   ///
   /// In en, this message translates to:
-  /// **'Data synced successfully'**
-  String get accountSyncSuccess;
+  /// **'Checking everything...'**
+  String get accountSyncCheckingMsg;
 
-  /// No description provided for @accountSyncFail.
+  /// No description provided for @accountSyncCheckAgain.
   ///
   /// In en, this message translates to:
-  /// **'Sync failed. Please try again.'**
-  String get accountSyncFail;
+  /// **'Check everything again'**
+  String get accountSyncCheckAgain;
+
+  /// No description provided for @accountSyncCheckAgainDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Downloads all your links from the cloud again, to be sure none are missing. Nothing on this phone is deleted.'**
+  String get accountSyncCheckAgainDesc;
+
+  /// No description provided for @accountSyncDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get accountSyncDone;
 
   /// No description provided for @accountSyncStatusReady.
   ///
