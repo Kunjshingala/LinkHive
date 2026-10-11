@@ -38,6 +38,20 @@ Fix only the causes the diagnosis actually finds.
 **Priority:** P3
 **Depends on:** None
 
+## Sync
+
+### Extract push, pull and merge out of `LinkRepository`
+
+**What:** Move `syncPendingLinks`, `pullFromCloud`, the merge and conflict logic into their own sync class, and leave `LinkRepository` as the local store plus the outbox.
+
+**Why:** `link_repository.dart` is about 1000 lines and mixes local persistence, queries, the outbox, tombstones, conflicts, the pull cursor and the cloud sync. The account-lifecycle fix (#7, #8) had to add owner and generation logic to it.
+
+**Context:** Deferred from the account-lifecycle plan so the fix could land first. Do it after the new fake-cloud scenario tests exist; they make a behavior-preserving move safe. The contract is in `.ai/context/sync-contract.md`. The session service already talks to the repository and engine through `SyncControl` and `LocalDataStore`, so the move should not change them.
+
+**Effort:** L
+**Priority:** P3
+**Depends on:** The account-lifecycle fix (#7, #8) and its tests
+
 ## Design
 
 ### Condensed Anek for titles and numbers
