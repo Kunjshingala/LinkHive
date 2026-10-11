@@ -73,6 +73,11 @@ class UnsyncedSummary extends Equatable {
 
   bool get isEmpty => changes == 0 && conflicts == 0;
 
+  /// True if there is more unsynced work here than in [other], for example a
+  /// link saved after the user was shown [other].
+  bool hasMoreThan(UnsyncedSummary other) =>
+      changes > other.changes || conflicts > other.conflicts;
+
   @override
   List<Object?> get props => [changes, failedChanges, conflicts];
 }

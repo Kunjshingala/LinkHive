@@ -18,13 +18,14 @@ import '../models/category_model.dart';
 import '../models/link_exceptions.dart';
 import '../models/link_model.dart';
 import '../models/link_query.dart';
+import 'local_data_store.dart';
 
 /// Repository that manages all [LinkModel] and [CategoryModel] persistence.
 ///
 /// ## Offline-first Architecture
 /// Every read and write goes to the **local Hive boxes first**.
 /// Firestore is treated as an optional, best-effort sync layer.
-class LinkRepository {
+class LinkRepository implements LocalDataStore {
   final FirebaseFirestoreService _firebaseService;
   final HiveHelper _hiveHelper;
   final String? Function() _uidProvider;
@@ -658,6 +659,7 @@ class LinkRepository {
 
   /// What has not reached the cloud yet: queued writes (links and categories),
   /// how many of them failed their last attempt, and unresolved conflicts.
+  @override
   UnsyncedSummary unsyncedSummary() {
     final operations = _syncOperationsBox.values;
     return UnsyncedSummary(
@@ -1045,6 +1047,7 @@ class LinkRepository {
     await _conflictLinksBox.put(linkId, local);
   }
 
+  @override
   Future<void> clearLocalData() async {
     // First, before any await: a sync run that is still waiting on the cloud
     // sees the change and stops writing (see [_wipeGeneration]).
@@ -1063,11 +1066,21 @@ class LinkRepository {
     printLog(tag: 'LinkRepository', msg: 'Cleared local data');
   }
 
+  @override
   Future<void> clearRemoteData() async {
     if (_uid == null) return;
     await _firebaseService.clearUserData(_uid!);
     printLog(tag: 'LinkRepository', msg: 'Cleared remote data for uid=$_uid');
   }
+
+  @override
+  bool get isWipePending =>
+      _hiveHelper.settingsBox.get(HiveConstants.wipePendingKey) == true;
+
+  @override
+  Future<void> setWipePending(bool pending) => pending
+      ? _hiveHelper.settingsBox.put(HiveConstants.wipePendingKey, true)
+      : _hiveHelper.settingsBox.delete(HiveConstants.wipePendingKey);
 
   (int total, int synced, int unsynced) getLinkStats() {
     final all = _linksBox.values;

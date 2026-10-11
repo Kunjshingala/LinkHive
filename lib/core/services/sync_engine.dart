@@ -4,11 +4,12 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:rxdart/rxdart.dart';
 
 import '../../features/links/repository/link_repository.dart';
+import 'sync_control.dart';
 import 'sync_status.dart';
 
 /// Serializes cloud sync requests so only one push/pull run is active at once,
 /// and reports what is really happening as a [SyncSnapshot].
-class SyncEngine {
+class SyncEngine implements SyncControl {
   final LinkRepository _repository;
   final bool Function() _isAuthenticated;
 
@@ -48,10 +49,12 @@ class SyncEngine {
   /// Refuses new sync runs until [resume], for example while the phone is
   /// being wiped. A run that is already going keeps going; the repository's
   /// wipe guard stops its local writes.
+  @override
   void pause() {
     _paused = true;
   }
 
+  @override
   void resume() {
     _paused = false;
   }
@@ -59,6 +62,7 @@ class SyncEngine {
   SyncStatus get status => snapshot.status;
 
   /// What the UI shows about sync right now.
+  @override
   SyncSnapshot get snapshot {
     final summary = _repository.unsyncedSummary();
     final failure = _runFailure ?? _repository.lastFailure;
@@ -76,6 +80,7 @@ class SyncEngine {
 
   /// A new snapshot whenever something it shows changes: the engine's own state
   /// or the queue of unsynced writes. Read [snapshot] for the current one.
+  @override
   Stream<SyncSnapshot> watch() => Rx.merge<Object?>([
     _changes.stream,
     _repository.watchSyncOperations(),
@@ -98,6 +103,7 @@ class SyncEngine {
   ///
   /// A pull requested while a push-only run is going is not dropped: it runs
   /// right after that run.
+  @override
   Future<void> requestSync({bool pull = false}) {
     if (!_cloudWorkEnabled || _paused || !_isAuthenticated()) {
       return Future<void>.value();

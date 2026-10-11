@@ -18,4 +18,8 @@ class HiveConstants {
 
   /// The uid whose data the sync boxes hold. Absent for a guest.
   static const String ownerUidKey = 'owner_uid';
+
+  /// Set while the phone is being wiped, so an interrupted wipe is finished at
+  /// the next launch.
+  static const String wipePendingKey = 'wipe_pending';
 }

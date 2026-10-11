@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import 'core/services/account_session_service.dart';
 import 'core/services/sync_service.dart';
 import 'core/utils/bloc_observer.dart';
 import 'core/utils/hive_helper.dart';
@@ -25,6 +26,10 @@ Future<void> main() async {
 
   // ─── Hive (local-first storage) ──────────────────────────────────
   await locator<HiveHelper>().init();
+
+  // ─── Finish a wipe the last run did not complete ─────────────────
+  // Must run before background sync starts, so no sync sees half-wiped data.
+  await locator<AccountSessionService>().recoverInterruptedWipe();
 
   // ─── Start background sync listener ──────────────────────────────
   locator<SyncService>().startListening();
