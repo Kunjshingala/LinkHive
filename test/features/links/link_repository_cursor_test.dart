@@ -85,6 +85,12 @@ void main() {
       Hive.box<SyncTombstone>(HiveConstants.syncTombstonesBox).clear(),
       Hive.box<ConflictRecord>(HiveConstants.conflictRecordsBox).clear(),
     ]);
+    // The phone already belongs to this user, as it does after the first sync.
+    // Without a recorded owner the first run resets the cursor on purpose.
+    await Hive.box(HiveConstants.settingsBox).put(
+      HiveConstants.ownerUidKey,
+      'user-1',
+    );
     firebaseService = MockFirebaseFirestoreService();
     repository = LinkRepository(
       firebaseService: firebaseService,

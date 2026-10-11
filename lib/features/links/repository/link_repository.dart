@@ -560,9 +560,37 @@ class LinkRepository {
 
   // ─── Cloud Sync ────────────────────────────────────────────────────────────
 
+  /// Makes sure the local sync state belongs to [uid] before a sync run uses it.
+  ///
+  /// The device holds one account's data at a time, so each sync run starts
+  /// here (see `.ai/context/sync-contract.md`):
+  /// * same owner: nothing to do;
+  /// * no owner (a guest, or an install from before owners were recorded): keep
+  ///   the data, reset the pull cursor once so the first pull is a full fetch,
+  ///   and record [uid] as the owner;
+  /// * a different owner: the data and the queued operations are not [uid]'s,
+  ///   so wipe all sync state and record [uid] as the owner.
+  Future<void> claimOrResetFor(String uid) async {
+    final settings = _hiveHelper.settingsBox;
+    final owner = settings.get(HiveConstants.ownerUidKey) as String?;
+    if (owner == uid) return;
+
+    if (owner == null) {
+      await settings.delete(HiveConstants.lastPulledAtKey);
+    } else {
+      printLog(
+        tag: 'LinkRepository',
+        msg: 'Local data belongs to another account; wiping before sync',
+      );
+      await clearLocalData();
+    }
+    await settings.put(HiveConstants.ownerUidKey, uid);
+  }
+
   Future<void> syncPendingLinks() async {
     final uid = _uid;
     if (uid == null) return;
+    await claimOrResetFor(uid);
 
     final now = DateTime.now().toUtc().millisecondsSinceEpoch;
     final operations =
@@ -704,6 +732,7 @@ class LinkRepository {
   Future<void> pullFromCloud() async {
     final uid = _uid;
     if (uid == null) return;
+    await claimOrResetFor(uid);
 
     // Snapshot the current time before querying so any record written to
     // Firestore during this pull is caught by the next pull's overlap window.
@@ -969,8 +998,10 @@ class LinkRepository {
     await _syncOperationsBox.clear();
     await _syncTombstonesBox.clear();
     await _conflictRecordsBox.clear();
-    // Reset the pull cursor so the next sign-in performs a full bootstrap fetch.
+    // Reset the pull cursor so the next sign-in performs a full bootstrap fetch,
+    // and forget the owner: nothing local belongs to any account any more.
     await _hiveHelper.settingsBox.delete(HiveConstants.lastPulledAtKey);
+    await _hiveHelper.settingsBox.delete(HiveConstants.ownerUidKey);
     printLog(tag: 'LinkRepository', msg: 'Cleared local data');
   }
 

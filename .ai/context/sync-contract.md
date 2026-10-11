@@ -40,7 +40,7 @@ that merged into it on first sign-in.
 |---|---|
 | `AccountSessionService` | Sequences sign-out and every other wipe, owns wipe-pending recovery at start, counts unsynced work for the sheet. |
 | `SyncControl` (implemented by `SyncEngine`) | Serializes runs, refuses new runs while a wipe is in progress, derives the shown status from run state, connectivity and pending count. |
-| `LocalDataStore` (implemented by `LinkRepository`) | Local data, the outbox, `claimOrResetFor(uid)`, the generation guard, `clearAll()`, `unsyncedSummary()`. |
+| `LocalDataStore` (implemented by `LinkRepository`) | Local data, the outbox, `claimOrResetFor(uid)`, the generation guard, `clearLocalData()`, `unsyncedSummary()`. |
 | `FirebaseFirestoreService` | Talks to Firestore. Every call has a 30 s timeout. |
 | `SyncService` | Connectivity, the 5-minute timer and app lifecycle. Tells the engine when the connection changes. |
 

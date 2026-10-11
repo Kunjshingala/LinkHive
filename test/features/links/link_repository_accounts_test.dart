@@ -110,7 +110,6 @@ void main() {
 
       expect(localIds(), ['b-1', 'b-2']);
     },
-    skip: 'Fails until the owner check lands (#7); enabled in that commit.',
   );
 
   test(
@@ -128,6 +127,56 @@ void main() {
       expect(cloud.deletedLinkIdsOf(accountB), isEmpty);
       expect(cloud.linksOf(accountA).map((l) => l.id), ['a-1']);
     },
-    skip: 'Fails until the owner check lands (#8); enabled in that commit.',
   );
+
+  group('owner check', () {
+    Object? setting(String key) => Hive.box(HiveConstants.settingsBox).get(key);
+
+    test(
+      'an install from before owners were recorded resets a stale cursor once',
+      () async {
+        cloud.seedLink(accountA, link('a-1'), syncedAt: 1000);
+        await Hive.box(HiveConstants.settingsBox).put(
+          HiveConstants.lastPulledAtKey,
+          DateTime.now().toUtc().millisecondsSinceEpoch,
+        );
+
+        currentUid = accountA;
+        await repository.pullFromCloud();
+
+        expect(localIds(), ['a-1']);
+        expect(setting(HiveConstants.ownerUidKey), accountA);
+      },
+    );
+
+    test('the same account keeps using the incremental pull', () async {
+      final calls = <String>[];
+      cloud.onCall = (method, uid) async => calls.add(method);
+
+      currentUid = accountA;
+      await repository.pullFromCloud();
+      calls.clear();
+      await repository.pullFromCloud();
+
+      expect(calls, contains('fetchLinksSince'));
+      expect(calls, isNot(contains('fetchLinks')));
+    });
+
+    test(
+      'a different owner is wiped: links, queue and cursor go, the new uid owns the phone',
+      () async {
+        currentUid = accountA;
+        await repository.addLink(link('a-local'));
+        await repository.pullFromCloud();
+        expect(repository.pendingSyncOperations, isNotEmpty);
+
+        currentUid = accountB;
+        await repository.pullFromCloud();
+
+        expect(localIds(), isEmpty);
+        expect(repository.pendingSyncOperations, isEmpty);
+        expect(setting(HiveConstants.ownerUidKey), accountB);
+      },
+    );
+  });
 }

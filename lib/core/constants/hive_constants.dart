@@ -15,4 +15,7 @@ class HiveConstants {
   static const String themeKey = 'theme_mode';
   static const String localeKey = 'locale_language';
   static const String lastPulledAtKey = 'last_pulled_at';
+
+  /// The uid whose data the sync boxes hold. Absent for a guest.
+  static const String ownerUidKey = 'owner_uid';
 }
