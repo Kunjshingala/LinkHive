@@ -252,14 +252,78 @@ class AppLocalizationsGu extends AppLocalizations {
   String get accountSignOut => 'સાઇન આઉટ કરો';
 
   @override
-  String get accountSignOutDesc => 'સાઇન આઉટ પછી શું સાફ કરવું તે પસંદ કરો.';
+  String get accountSignOutDesc =>
+      'બધું તમારા એકાઉન્ટમાં સાચવેલું છે. સાઇન આઉટ કરવાથી આ ફોન સાફ થશે, અને સાઇન ઇન કરતાં તમારી કડીઓ પાછી આવશે.';
 
   @override
-  String get accountDeleteRemoteData =>
-      'ક્લાઉડ ડેટા સાફ કરો (સિંક થયેલા લિંક્સ કાઢો)';
+  String accountSignOutPending(num count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          '$count ફેરફારો હજુ સમન્વયિત થયા નથી. હમણાં સાઇન આઉટ કરશો તો તે ખોવાઈ જશે.',
+      one:
+          '1 ફેરફાર હજુ સમન્વયિત થયો નથી. હમણાં સાઇન આઉટ કરશો તો તે ખોવાઈ જશે.',
+    );
+    return '$_temp0';
+  }
 
   @override
-  String get accountSignedOutSuccess => 'સફળતાપૂર્વક સાઇન આઉટ થયું';
+  String accountSignOutSyncing(num count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          '$count ફેરફારો સમન્વયિત થઈ રહ્યા છે. તે પૂરા થાય ત્યાં સુધી રાહ જુઓ, અથવા સાઇન આઉટ કરીને તેમને ગુમાવો.',
+      one:
+          '1 ફેરફાર સમન્વયિત થઈ રહ્યો છે. તે પૂરો થાય ત્યાં સુધી રાહ જુઓ, અથવા સાઇન આઉટ કરીને તેને ગુમાવો.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String accountSignOutWaiting(num count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          '$count ફેરફારો ઇન્ટરનેટની રાહ જોઈ રહ્યા છે. હમણાં સાઇન આઉટ કરશો તો તે ખોવાઈ જશે.',
+      one:
+          '1 ફેરફાર ઇન્ટરનેટની રાહ જોઈ રહ્યો છે. હમણાં સાઇન આઉટ કરશો તો તે ખોવાઈ જશે.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String accountSignOutFailed(num count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          '$count ફેરફારો સમન્વયિત થઈ શક્યા નથી. ફરી પ્રયાસ કરો, અથવા સાઇન આઉટ કરીને તેમને ગુમાવો.',
+      one:
+          '1 ફેરફાર સમન્વયિત થઈ શક્યો નથી. ફરી પ્રયાસ કરો, અથવા સાઇન આઉટ કરીને તેને ગુમાવો.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get accountSignOutConflicts =>
+      'કેટલાક ફેરફારો સમન્વયિત થાય તે પહેલાં તમારા નિર્ણયની જરૂર છે. હમણાં સાઇન આઉટ કરશો તો તે ખોવાઈ જશે.';
+
+  @override
+  String get accountSignOutSyncNow => 'હમણાં સમન્વય કરો';
+
+  @override
+  String get accountSignOutAnyway => 'તો પણ સાઇન આઉટ કરો';
+
+  @override
+  String get accountSignedOutSuccess =>
+      'સાઇન આઉટ થયું. આ ફોનની નકલ સાફ કરી દેવામાં આવી.';
+
+  @override
+  String get accountSignOutError =>
+      'સાઇન આઉટ થઈ શક્યું નથી. કૃપા કરીને ફરી પ્રયાસ કરો.';
 
   @override
   String get authWelcome => 'પાછા સ્વાગત છે!';

@@ -252,14 +252,73 @@ class AppLocalizationsEn extends AppLocalizations {
   String get accountSignOut => 'Sign Out';
 
   @override
-  String get accountSignOutDesc => 'Choose what to clear after signing out.';
+  String get accountSignOutDesc =>
+      'Everything is saved in your account. Signing out clears this phone, and your links come back when you sign in.';
 
   @override
-  String get accountDeleteRemoteData =>
-      'Clear cloud data (delete synced links)';
+  String accountSignOutPending(num count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          '$count changes are not synced yet. If you sign out now, they are lost.',
+      one: '1 change is not synced yet. If you sign out now, it is lost.',
+    );
+    return '$_temp0';
+  }
 
   @override
-  String get accountSignedOutSuccess => 'Signed out successfully';
+  String accountSignOutSyncing(num count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          'Syncing $count changes. Wait for them to finish, or sign out and lose them.',
+      one: 'Syncing 1 change. Wait for it to finish, or sign out and lose it.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String accountSignOutWaiting(num count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          '$count changes are waiting for internet. If you sign out now, they are lost.',
+      one: '1 change is waiting for internet. If you sign out now, it is lost.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String accountSignOutFailed(num count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          '$count changes could not sync. Try again, or sign out and lose them.',
+      one: '1 change could not sync. Try again, or sign out and lose it.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get accountSignOutConflicts =>
+      'Some edits need your decision before they can sync. If you sign out now, they are lost.';
+
+  @override
+  String get accountSignOutSyncNow => 'Sync now';
+
+  @override
+  String get accountSignOutAnyway => 'Sign out anyway';
+
+  @override
+  String get accountSignedOutSuccess =>
+      'Signed out. This phone\'s copy was cleared.';
+
+  @override
+  String get accountSignOutError => 'Couldn\'t sign out. Please try again.';
 
   @override
   String get authWelcome => 'Welcome Back!';

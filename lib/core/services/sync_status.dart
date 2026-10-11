@@ -87,6 +87,7 @@ class SyncSnapshot extends Equatable {
   const SyncSnapshot({
     this.status = SyncStatus.idle,
     this.pendingChanges = 0,
+    this.conflicts = 0,
     this.lastSyncedAt,
     this.failure,
   });
@@ -96,12 +97,25 @@ class SyncSnapshot extends Equatable {
   /// Queued writes that have not reached the cloud yet.
   final int pendingChanges;
 
+  /// Edits that collided with the cloud and wait for the user.
+  final int conflicts;
+
   /// When the last successful pull finished, in milliseconds since the epoch.
   final int? lastSyncedAt;
 
   /// Set only while [status] is [SyncStatus.failed].
   final SyncFailure? failure;
 
+  /// What would be lost if the phone were wiped now, as the user saw it.
+  UnsyncedSummary get unsynced =>
+      UnsyncedSummary(changes: pendingChanges, conflicts: conflicts);
+
   @override
-  List<Object?> get props => [status, pendingChanges, lastSyncedAt, failure];
+  List<Object?> get props => [
+    status,
+    pendingChanges,
+    conflicts,
+    lastSyncedAt,
+    failure,
+  ];
 }

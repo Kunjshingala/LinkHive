@@ -585,20 +585,62 @@ abstract class AppLocalizations {
   /// No description provided for @accountSignOutDesc.
   ///
   /// In en, this message translates to:
-  /// **'Choose what to clear after signing out.'**
+  /// **'Everything is saved in your account. Signing out clears this phone, and your links come back when you sign in.'**
   String get accountSignOutDesc;
 
-  /// No description provided for @accountDeleteRemoteData.
+  /// No description provided for @accountSignOutPending.
   ///
   /// In en, this message translates to:
-  /// **'Clear cloud data (delete synced links)'**
-  String get accountDeleteRemoteData;
+  /// **'{count, plural, =1{1 change is not synced yet. If you sign out now, it is lost.} other{{count} changes are not synced yet. If you sign out now, they are lost.}}'**
+  String accountSignOutPending(num count);
+
+  /// No description provided for @accountSignOutSyncing.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Syncing 1 change. Wait for it to finish, or sign out and lose it.} other{Syncing {count} changes. Wait for them to finish, or sign out and lose them.}}'**
+  String accountSignOutSyncing(num count);
+
+  /// No description provided for @accountSignOutWaiting.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 change is waiting for internet. If you sign out now, it is lost.} other{{count} changes are waiting for internet. If you sign out now, they are lost.}}'**
+  String accountSignOutWaiting(num count);
+
+  /// No description provided for @accountSignOutFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 change could not sync. Try again, or sign out and lose it.} other{{count} changes could not sync. Try again, or sign out and lose them.}}'**
+  String accountSignOutFailed(num count);
+
+  /// No description provided for @accountSignOutConflicts.
+  ///
+  /// In en, this message translates to:
+  /// **'Some edits need your decision before they can sync. If you sign out now, they are lost.'**
+  String get accountSignOutConflicts;
+
+  /// No description provided for @accountSignOutSyncNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Sync now'**
+  String get accountSignOutSyncNow;
+
+  /// No description provided for @accountSignOutAnyway.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign out anyway'**
+  String get accountSignOutAnyway;
 
   /// No description provided for @accountSignedOutSuccess.
   ///
   /// In en, this message translates to:
-  /// **'Signed out successfully'**
+  /// **'Signed out. This phone\'s copy was cleared.'**
   String get accountSignedOutSuccess;
+
+  /// No description provided for @accountSignOutError.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t sign out. Please try again.'**
+  String get accountSignOutError;
 
   /// No description provided for @authWelcome.
   ///

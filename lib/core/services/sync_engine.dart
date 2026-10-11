@@ -71,6 +71,7 @@ class SyncEngine implements SyncControl {
     return SyncSnapshot(
       status: status,
       pendingChanges: summary.changes,
+      conflicts: summary.conflicts,
       lastSyncedAt: _repository.lastPulledAt,
       failure: status == SyncStatus.failed
           ? (failure ?? SyncFailure.unknown)

@@ -253,14 +253,77 @@ class AppLocalizationsHi extends AppLocalizations {
   String get accountSignOut => 'साइन आउट करें';
 
   @override
-  String get accountSignOutDesc => 'साइन आउट के बाद क्या साफ करना है, चुनें।';
+  String get accountSignOutDesc =>
+      'सब कुछ आपके खाते में सेव है। साइन आउट करने पर यह फ़ोन साफ़ हो जाएगा, और साइन इन करने पर आपके लिंक वापस आ जाएँगे।';
 
   @override
-  String get accountDeleteRemoteData =>
-      'क्लाउड डेटा साफ करें (सिंक किए गए लिंक हटाएं)';
+  String accountSignOutPending(num count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          '$count बदलाव अभी सिंक नहीं हुए हैं। अभी साइन आउट करने पर वे खो जाएँगे।',
+      one: '1 बदलाव अभी सिंक नहीं हुआ है। अभी साइन आउट करने पर वह खो जाएगा।',
+    );
+    return '$_temp0';
+  }
 
   @override
-  String get accountSignedOutSuccess => 'सफलतापूर्वक साइन आउट हो गया';
+  String accountSignOutSyncing(num count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          '$count बदलाव सिंक हो रहे हैं। उनके पूरा होने तक रुकें, या साइन आउट करके उन्हें खो दें।',
+      one:
+          '1 बदलाव सिंक हो रहा है। उसके पूरा होने तक रुकें, या साइन आउट करके उसे खो दें।',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String accountSignOutWaiting(num count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          '$count बदलाव इंटरनेट का इंतज़ार कर रहे हैं। अभी साइन आउट करने पर वे खो जाएँगे।',
+      one:
+          '1 बदलाव इंटरनेट का इंतज़ार कर रहा है। अभी साइन आउट करने पर वह खो जाएगा।',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String accountSignOutFailed(num count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          '$count बदलाव सिंक नहीं हो सके। फिर कोशिश करें, या साइन आउट करके उन्हें खो दें।',
+      one:
+          '1 बदलाव सिंक नहीं हो सका। फिर कोशिश करें, या साइन आउट करके उसे खो दें।',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get accountSignOutConflicts =>
+      'कुछ बदलावों पर सिंक होने से पहले आपका फ़ैसला चाहिए। अभी साइन आउट करने पर वे खो जाएँगे।';
+
+  @override
+  String get accountSignOutSyncNow => 'अभी सिंक करें';
+
+  @override
+  String get accountSignOutAnyway => 'फिर भी साइन आउट करें';
+
+  @override
+  String get accountSignedOutSuccess =>
+      'साइन आउट हो गया। इस फ़ोन की कॉपी साफ़ कर दी गई।';
+
+  @override
+  String get accountSignOutError =>
+      'साइन आउट नहीं हो सका। कृपया फिर कोशिश करें।';
 
   @override
   String get authWelcome => 'वापसी पर स्वागत है!';

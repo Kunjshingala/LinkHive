@@ -68,7 +68,7 @@ class AccountNeedsReconfirmation extends AccountState {
 }
 
 /// What the user asked for when an [AccountActionFailed] happened.
-enum AccountAction { wipeLocal, deleteCloud }
+enum AccountAction { signOut, wipeLocal, deleteCloud }
 
 /// A wipe failed part-way. Sync is allowed again; the wipe can be retried.
 class AccountActionFailed extends AccountState {

@@ -32,6 +32,18 @@ class AccountBloc extends Bloc<AccountEvent, AccountState> {
     add(const AccountLoadRequested());
   }
 
+  Future<void> _onSignOutRequested(
+    AccountSignOutRequested event,
+    Emitter<AccountState> emit,
+  ) {
+    return _runWipe(
+      emit,
+      action: AccountAction.signOut,
+      run: () => _sessionService.signOut(confirmed: event.confirmed),
+      done: const AccountSignedOut(),
+    );
+  }
+
   Future<void> _onWipeLocalRequested(
     AccountWipeLocalRequested event,
     Emitter<AccountState> emit,
@@ -97,25 +109,6 @@ class AccountBloc extends Bloc<AccountEvent, AccountState> {
       emit(
         AccountGuest(totalLinks: total, syncedLinks: 0, unsyncedLinks: total),
       );
-    }
-  }
-
-  Future<void> _onSignOutRequested(
-    AccountSignOutRequested event,
-    Emitter<AccountState> emit,
-  ) async {
-    emit(const AccountLoading());
-    try {
-      if (event.clearRemote) {
-        await _linkRepository.clearRemoteData();
-      }
-      if (event.clearLocal) {
-        await _linkRepository.clearLocalData();
-      }
-      await _authService.signOut();
-      emit(const AccountSignedOut());
-    } catch (e) {
-      emit(AccountError('Sign out failed: $e'));
     }
   }
 

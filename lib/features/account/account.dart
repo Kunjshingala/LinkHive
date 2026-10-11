@@ -23,11 +23,11 @@ import '../../l10n/localization/app_localizations.dart';
 import '../../sharedWidgets/common_app_bar.dart';
 import '../../sharedWidgets/confirmation_bottom_sheet.dart';
 import '../../sharedWidgets/custom_button.dart';
-import '../../sharedWidgets/logout_bottom_sheet.dart';
 import '../../sharedWidgets/options_bottom_sheet.dart';
 import 'bloc/account_bloc.dart';
 import 'bloc/account_event.dart';
 import 'bloc/account_state.dart';
+import 'sign_out/sign_out_sheet.dart';
 
 class AccountScreen extends StatelessWidget {
   const AccountScreen({super.key});
@@ -72,6 +72,7 @@ class _AccountScreenContent extends StatelessWidget {
           showSnackBar(context.l10n.accountActionReconfirm);
         } else if (state is AccountActionFailed) {
           showSnackBar(switch (state.action) {
+            AccountAction.signOut => context.l10n.accountSignOutError,
             AccountAction.wipeLocal => context.l10n.accountDeleteFail,
             AccountAction.deleteCloud => context.l10n.accountDeleteCloudFail,
           });
@@ -708,21 +709,10 @@ class _SettingsList extends StatelessWidget {
 
       case AccountItem.auth:
         if (isAuthenticated) {
-          final result = await showLogoutBottomSheet(
-            context: context,
-            title: context.l10n.accountSignOut,
-            message: context.l10n.accountSignOutDesc,
-            confirmLabel: context.l10n.accountSignOut,
-            clearLocalLabel: context.l10n.accountDeleteLocalData,
-            clearRemoteLabel: context.l10n.accountDeleteRemoteData,
-            titleIcon: Icons.logout_rounded,
-          );
-          if (result != null && result.$1 && context.mounted) {
+          final confirmed = await showSignOutSheet(context);
+          if (confirmed != null && context.mounted) {
             context.read<AccountBloc>().add(
-              AccountSignOutRequested(
-                clearLocal: result.$2,
-                clearRemote: result.$3,
-              ),
+              AccountSignOutRequested(confirmed: confirmed),
             );
           }
         } else {

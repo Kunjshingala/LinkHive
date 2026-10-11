@@ -59,69 +59,67 @@ void main() {
     });
 
     group('AccountSignOutRequested', () {
+      const shown = UnsyncedSummary(changes: 2);
+
       blocTest<AccountBloc, AccountState>(
-        'emits [AccountLoading, AccountSignedOut] on successful sign out',
+        'signs out through the session service, then shows the account again',
         build: () {
-          when(() => mockAuthService.signOut()).thenAnswer((_) async {});
+          when(
+            () => mockSession.signOut(confirmed: shown),
+          ).thenAnswer((_) async => SessionActionResult.completed);
           return buildBloc();
         },
         skip: 1, // Skip auto-load AccountGuest
-        act: (bloc) => bloc.add(const AccountSignOutRequested()),
-        expect: () => [const AccountLoading(), const AccountSignedOut()],
-        verify: (_) {
-          verify(() => mockAuthService.signOut()).called(1);
-          verifyNever(() => mockRepository.clearLocalData());
-          verifyNever(() => mockRepository.clearRemoteData());
-        },
-      );
-
-      blocTest<AccountBloc, AccountState>(
-        'clears local data when clearLocal is true',
-        build: () {
-          when(() => mockAuthService.signOut()).thenAnswer((_) async {});
-          when(() => mockRepository.clearLocalData()).thenAnswer((_) async {});
-          return buildBloc();
-        },
-        skip: 1,
         act: (bloc) =>
-            bloc.add(const AccountSignOutRequested(clearLocal: true)),
-        expect: () => [const AccountLoading(), const AccountSignedOut()],
+            bloc.add(const AccountSignOutRequested(confirmed: shown)),
+        expect: () => [
+          const AccountLoading(),
+          const AccountSignedOut(),
+          guest,
+        ],
         verify: (_) {
-          verify(() => mockRepository.clearLocalData()).called(1);
-          verifyNever(() => mockRepository.clearRemoteData());
+          verify(() => mockSession.signOut(confirmed: shown)).called(1);
+          verifyNever(() => mockAuthService.signOut());
         },
       );
 
       blocTest<AccountBloc, AccountState>(
-        'clears remote data when clearRemote is true',
-        build: () {
-          when(() => mockAuthService.signOut()).thenAnswer((_) async {});
-          when(() => mockRepository.clearRemoteData()).thenAnswer((_) async {});
-          return buildBloc();
-        },
-        skip: 1,
-        act: (bloc) =>
-            bloc.add(const AccountSignOutRequested(clearRemote: true)),
-        expect: () => [const AccountLoading(), const AccountSignedOut()],
-        verify: (_) {
-          verify(() => mockRepository.clearRemoteData()).called(1);
-          verifyNever(() => mockRepository.clearLocalData());
-        },
-      );
-
-      blocTest<AccountBloc, AccountState>(
-        'emits [AccountLoading, AccountError] when sign out fails',
+        'asks the user to confirm again when more unsynced work appeared',
         build: () {
           when(
-            () => mockAuthService.signOut(),
+            () => mockSession.signOut(confirmed: shown),
+          ).thenAnswer((_) async => SessionActionResult.needsReconfirmation);
+          return buildBloc();
+        },
+        skip: 1,
+        act: (bloc) =>
+            bloc.add(const AccountSignOutRequested(confirmed: shown)),
+        expect: () => [
+          const AccountLoading(),
+          const AccountNeedsReconfirmation(),
+          guest,
+        ],
+      );
+
+      blocTest<AccountBloc, AccountState>(
+        'reports a failed sign-out instead of saying it worked',
+        build: () {
+          when(
+            () => mockSession.signOut(confirmed: shown),
           ).thenThrow(Exception('Sign out failed'));
           return buildBloc();
         },
         skip: 1,
-        act: (bloc) => bloc.add(const AccountSignOutRequested()),
-        expect: () => [const AccountLoading(), isA<AccountError>()],
+        act: (bloc) =>
+            bloc.add(const AccountSignOutRequested(confirmed: shown)),
+        expect: () => [
+          const AccountLoading(),
+          const AccountActionFailed(AccountAction.signOut),
+          guest,
+        ],
       );
     });
+
 
     group('AccountWipeLocalRequested', () {
       const shown = UnsyncedSummary(changes: 2);

@@ -13,14 +13,16 @@ class AccountLoadRequested extends AccountEvent {
   const AccountLoadRequested();
 }
 
+/// Signs out and removes this phone's copy of the data.
 class AccountSignOutRequested extends AccountEvent {
-  final bool clearLocal;
-  final bool clearRemote;
+  /// What the user was shown when they confirmed. A sign-out that would lose
+  /// more than this is not carried out.
+  final UnsyncedSummary confirmed;
 
-  const AccountSignOutRequested({this.clearLocal = false, this.clearRemote = false});
+  const AccountSignOutRequested({required this.confirmed});
 
   @override
-  List<Object?> get props => [clearLocal, clearRemote];
+  List<Object?> get props => [confirmed];
 }
 
 class AccountGoogleSignInRequested extends AccountEvent {

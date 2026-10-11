@@ -251,14 +251,88 @@ class AppLocalizationsAr extends AppLocalizations {
   String get accountSignOut => 'تسجيل الخروج';
 
   @override
-  String get accountSignOutDesc => 'اختر ما تريد مسحه بعد تسجيل الخروج.';
+  String get accountSignOutDesc =>
+      'كل شيء محفوظ في حسابك. تسجيل الخروج يمسح هذا الهاتف، وستعود روابطك عند تسجيل الدخول.';
 
   @override
-  String get accountDeleteRemoteData =>
-      'مسح بيانات السحابة (حذف الروابط المُزامنة)';
+  String accountSignOutPending(num count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'لم تتم مزامنة $count تغيير بعد. ستُفقد إذا سجّلت الخروج الآن.',
+      many: 'لم تتم مزامنة $count تغييرًا بعد. ستُفقد إذا سجّلت الخروج الآن.',
+      few: 'لم تتم مزامنة $count تغييرات بعد. ستُفقد إذا سجّلت الخروج الآن.',
+      two: 'لم تتم مزامنة تغييرين بعد. سيُفقدان إذا سجّلت الخروج الآن.',
+      one: 'لم تتم مزامنة تغيير واحد بعد. سيُفقد إذا سجّلت الخروج الآن.',
+    );
+    return '$_temp0';
+  }
 
   @override
-  String get accountSignedOutSuccess => 'تم تسجيل الخروج بنجاح';
+  String accountSignOutSyncing(num count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          'جارٍ مزامنة $count تغيير. انتظر حتى تنتهي، أو سجّل الخروج وافقدها.',
+      many:
+          'جارٍ مزامنة $count تغييرًا. انتظر حتى تنتهي، أو سجّل الخروج وافقدها.',
+      few:
+          'جارٍ مزامنة $count تغييرات. انتظر حتى تنتهي، أو سجّل الخروج وافقدها.',
+      two: 'جارٍ مزامنة تغييرين. انتظر حتى ينتهيا، أو سجّل الخروج وافقدهما.',
+      one: 'جارٍ مزامنة تغيير واحد. انتظر حتى ينتهي، أو سجّل الخروج وافقده.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String accountSignOutWaiting(num count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count تغيير تنتظر الإنترنت. ستُفقد إذا سجّلت الخروج الآن.',
+      many: '$count تغييرًا تنتظر الإنترنت. ستُفقد إذا سجّلت الخروج الآن.',
+      few: '$count تغييرات تنتظر الإنترنت. ستُفقد إذا سجّلت الخروج الآن.',
+      two: 'تغييران ينتظران الإنترنت. سيُفقدان إذا سجّلت الخروج الآن.',
+      one: 'تغيير واحد ينتظر الإنترنت. سيُفقد إذا سجّلت الخروج الآن.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String accountSignOutFailed(num count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          'تعذّرت مزامنة $count تغيير. حاول مرة أخرى، أو سجّل الخروج وافقدها.',
+      many:
+          'تعذّرت مزامنة $count تغييرًا. حاول مرة أخرى، أو سجّل الخروج وافقدها.',
+      few:
+          'تعذّرت مزامنة $count تغييرات. حاول مرة أخرى، أو سجّل الخروج وافقدها.',
+      two: 'تعذّرت مزامنة تغييرين. حاول مرة أخرى، أو سجّل الخروج وافقدهما.',
+      one: 'تعذّرت مزامنة تغيير واحد. حاول مرة أخرى، أو سجّل الخروج وافقده.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get accountSignOutConflicts =>
+      'بعض التعديلات تحتاج إلى قرارك قبل أن تتم مزامنتها. ستُفقد إذا سجّلت الخروج الآن.';
+
+  @override
+  String get accountSignOutSyncNow => 'زامن الآن';
+
+  @override
+  String get accountSignOutAnyway => 'سجّل الخروج على أي حال';
+
+  @override
+  String get accountSignedOutSuccess =>
+      'تم تسجيل الخروج. تم مسح نسخة هذا الهاتف.';
+
+  @override
+  String get accountSignOutError =>
+      'تعذّر تسجيل الخروج. يرجى المحاولة مرة أخرى.';
 
   @override
   String get authWelcome => 'مرحباً بعودتك!';
