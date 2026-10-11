@@ -1,6 +1,24 @@
 (function () {
+  // Real screenshots. Once a file is in assets/screens/, list it here and that phone shows
+  // the file instead of the HTML mockup. The key is the data-screen name without "scr-"
+  // (plus "-dark" for a phone with class "dk"); the value is the file name.
+  // Example: links: 'links.webp'
+  var SHOTS = {};
+
   // Phone mockups: each [data-screen] slot is filled from its <template>, then its nav bar.
   document.querySelectorAll('[data-screen]').forEach(function (el) {
+    var key = el.getAttribute('data-screen').replace(/^scr-/, '') + (el.classList.contains('dk') ? '-dark' : '');
+    if (SHOTS[key]) {
+      var img = new Image();
+      img.alt = el.getAttribute('aria-label') || '';
+      img.decoding = 'async';
+      img.src = 'assets/screens/' + SHOTS[key];
+      el.classList.add('shot');
+      el.removeAttribute('role');
+      el.removeAttribute('aria-label');
+      el.appendChild(img);
+      return;
+    }
     var t = document.getElementById(el.getAttribute('data-screen'));
     if (!t) return;
     el.appendChild(t.content.cloneNode(true));

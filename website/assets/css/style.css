@@ -223,6 +223,9 @@ footer nav { display: flex; gap: 18px; flex-wrap: wrap; }
   color: var(--text); text-align: left; flex: none;
 }
 .phone > img { width: 100%; height: 100%; object-fit: cover; object-position: top; display: block; }
+/* A real screenshot sets the frame height itself, so any phone aspect ratio fits. */
+.phone.shot { height: auto; }
+.phone.shot > img { height: auto; }
 .status { height: 28px; padding: 0 22px; display: flex; justify-content: space-between; align-items: center; font-size: 12px; font-weight: 700; flex: none; }
 .ahdr { height: 56px; flex: none; display: flex; align-items: center; gap: 10px; padding: 0 16px; }
 .ahdr .cb { width: 40px; height: 40px; border-radius: 100px; border: 2px solid var(--border); background: var(--surface); display: grid; place-items: center; box-shadow: 3px 3px 0 var(--mint); flex: none; }
