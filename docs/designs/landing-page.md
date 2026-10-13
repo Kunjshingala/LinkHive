@@ -157,9 +157,9 @@ Re-export the Product Hunt images and `og.png` after changing the preview: `bash
 ## Deploy on Vercel (one-time setup, done by Kunj)
 
 1. Sign in at vercel.com with GitHub. **Add New → Project →** import `Kunjshingala/LinkHive`.
-2. Project name `linkhive` (gives `linkhive.vercel.app`). **Root Directory:** `website`. **Framework Preset:** Other. Leave Build Command and Output Directory empty.
+2. Project name `linkhive`; `linkhive.vercel.app` was taken, so the live domain is `get-linkhive.vercel.app`. **Root Directory:** `website`. **Framework Preset:** Other. Leave Build Command and Output Directory empty.
 3. Deploy. Production follows `main`; every other branch gets its own preview URL.
-4. If the domain isn't `linkhive.vercel.app`, update the canonical, `og:url`, `og:image` and `twitter:image` lines at the top of `website/index.html`.
+4. Done for `get-linkhive.vercel.app`: the canonical, `og:url`, `og:image` and `twitter:image` lines at the top of `website/index.html`.
 5. Check the link preview with any card validator, then add the URL to the GitHub repo's "Website" field and to the README.
 
 ## Still to do before Product Hunt
