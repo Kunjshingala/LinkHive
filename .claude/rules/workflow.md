@@ -51,9 +51,19 @@ fvm dart run build_runner build --delete-conflicting-outputs
 
 - **Never push** without explicit user approval.
 - **Never force-push** under any circumstances.
-- **Never commit** to `main` without user approval.
+- **Never commit** to `main` or `dev` directly. Work on its own branch, merged only after analyze and tests pass and the user approves.
 - Stage specific files — avoid `git add .` which can include sensitive files.
 - Check `git status` before staging.
+
+### Branch model
+
+Two long-lived branches, `main` and `dev`, kept in sync with each other.
+
+- Every piece of work (feature, fix, docs, chore) gets its own branch, **cut from `dev`** and **merged back into `dev`**.
+- Only `dev` merges into `main`. Never cut a work branch from `main` or merge one into it.
+- A batch of bug fixes may share one branch (for example `fix/issues`), with one commit per fix.
+- Check `git branch --show-current` before the first edit. If it is `main` or `dev`, create a work branch first.
+- `release` (the landing page, in its own worktree) is separate from this model. Leave it alone unless asked.
 
 ## 5. Scope Control
 

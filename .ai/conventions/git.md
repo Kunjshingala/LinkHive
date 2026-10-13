@@ -2,8 +2,8 @@
 
 ## Branch Strategy
 
-- `main` — production-ready code
-- `develop` — integration branch (merge features here first)
+- `main` — production-ready code. Only `dev` merges into it.
+- `dev` — integration branch, kept in sync with `main`. Every work branch is cut from `dev` and merged back into `dev`.
 - `feature/<short-description>` — new features (`feature/link-storage`, `feature/home-ui`)
 - `fix/<issue>` — bug fixes (`fix/auth-google-crash`)
 - `chore/<task>` — non-user-facing changes (`chore/update-deps`, `chore/add-ai-context`)
@@ -43,7 +43,7 @@ docs(ai): add .ai context directory
 
 ## PR Rules
 
-- PRs must target `develop` (never directly to `main`)
+- PRs must target `dev` (never directly to `main`); only `dev` is merged into `main`
 - PR title must follow commit format
 - Include a summary of what changed and why
 - Run `fvm flutter analyze` and ensure zero issues before opening PR
