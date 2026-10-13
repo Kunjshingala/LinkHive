@@ -36,6 +36,12 @@ class HiveHelper {
       await Hive.openBox<LinkModel>(HiveConstants.linksBox);
       await Hive.openBox<LinkModel>(HiveConstants.baseLinksBox);
       await Hive.openBox<LinkModel>(HiveConstants.conflictLinksBox);
+      // The pull cursor lives in the settings box and outlives the link boxes.
+      // Kept, it would make the next pull incremental and the links deleted
+      // above would never come back; without it the pull is a full fetch.
+      await Hive.box(HiveConstants.settingsBox).delete(
+        HiveConstants.lastPulledAtKey,
+      );
     }
     await Hive.openBox<CategoryModel>(HiveConstants.categoriesBox);
     await Hive.openBox<SyncOperation>(HiveConstants.syncOperationsBox);

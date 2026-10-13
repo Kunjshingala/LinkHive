@@ -15,7 +15,6 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<AuthSignInRequested>(_onSignInRequested);
     on<AuthSignUpRequested>(_onSignUpRequested);
     on<AuthGoogleSignInRequested>(_onGoogleSignInRequested);
-    on<AuthSignOutRequested>(_onSignOutRequested);
   }
 
   /// Handle email/password sign in
@@ -64,22 +63,6 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         return;
       }
       emit(const AuthSuccess());
-    } on Exception catch (e) {
-      emit(AuthError(message: e.toString(), exception: e));
-    } catch (e) {
-      emit(AuthError(message: e.toString()));
-    }
-  }
-
-  /// Handle sign out
-  Future<void> _onSignOutRequested(
-    AuthSignOutRequested event,
-    Emitter<AuthState> emit,
-  ) async {
-    emit(const AuthLoading());
-    try {
-      await _authService.signOut();
-      emit(const AuthInitial());
     } on Exception catch (e) {
       emit(AuthError(message: e.toString(), exception: e));
     } catch (e) {

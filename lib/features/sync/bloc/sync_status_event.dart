@@ -10,10 +10,10 @@ sealed class SyncStatusEvent extends Equatable {
 }
 
 class SyncStatusChanged extends SyncStatusEvent {
-  final SyncStatus status;
+  final SyncSnapshot snapshot;
 
-  const SyncStatusChanged(this.status);
+  const SyncStatusChanged(this.snapshot);
 
   @override
-  List<Object?> get props => [status];
+  List<Object?> get props => [snapshot];
 }

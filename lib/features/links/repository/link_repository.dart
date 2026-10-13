@@ -7,6 +7,7 @@ import '../../../core/models/conflict_record.dart';
 import '../../../core/models/sync_operation.dart';
 import '../../../core/models/sync_tombstone.dart';
 import '../../../core/services/firebase_firestore_service.dart';
+import '../../../core/services/sync_status.dart';
 import '../../../core/utils/hive_helper.dart';
 import '../../../core/utils/sync_backoff.dart';
 import '../../../core/utils/sync_merge_helper.dart';
@@ -17,13 +18,14 @@ import '../models/category_model.dart';
 import '../models/link_exceptions.dart';
 import '../models/link_model.dart';
 import '../models/link_query.dart';
+import 'local_data_store.dart';
 
 /// Repository that manages all [LinkModel] and [CategoryModel] persistence.
 ///
 /// ## Offline-first Architecture
 /// Every read and write goes to the **local Hive boxes first**.
 /// Firestore is treated as an optional, best-effort sync layer.
-class LinkRepository {
+class LinkRepository implements LocalDataStore {
   final FirebaseFirestoreService _firebaseService;
   final HiveHelper _hiveHelper;
   final String? Function() _uidProvider;
@@ -46,6 +48,19 @@ class LinkRepository {
   Box<ConflictRecord> get _conflictRecordsBox => _hiveHelper.conflictRecordsBox;
 
   static const _uuid = Uuid();
+
+  /// Counts the wipes done by [clearLocalData].
+  ///
+  /// A sync run remembers the value when it starts and stops writing locally as
+  /// soon as it changes, so a push or pull that was still waiting on the cloud
+  /// when the phone was wiped cannot write the old account's data back.
+  int _wipeGeneration = 0;
+
+  bool _isCurrentRun(int generation) => generation == _wipeGeneration;
+
+  /// Why the last attempt to push a queued write failed, or null if none did.
+  /// Reset when a push starts; lives in memory only.
+  SyncFailure? _lastFailure;
 
   String? get _uid => _uidProvider();
 
@@ -560,9 +575,39 @@ class LinkRepository {
 
   // ─── Cloud Sync ────────────────────────────────────────────────────────────
 
+  /// Makes sure the local sync state belongs to [uid] before a sync run uses it.
+  ///
+  /// The device holds one account's data at a time, so each sync run starts
+  /// here (see `.ai/context/sync-contract.md`):
+  /// * same owner: nothing to do;
+  /// * no owner (a guest, or an install from before owners were recorded): keep
+  ///   the data, reset the pull cursor once so the first pull is a full fetch,
+  ///   and record [uid] as the owner;
+  /// * a different owner: the data and the queued operations are not [uid]'s,
+  ///   so wipe all sync state and record [uid] as the owner.
+  Future<void> claimOrResetFor(String uid) async {
+    final settings = _hiveHelper.settingsBox;
+    final owner = settings.get(HiveConstants.ownerUidKey) as String?;
+    if (owner == uid) return;
+
+    if (owner == null) {
+      await settings.delete(HiveConstants.lastPulledAtKey);
+    } else {
+      printLog(
+        tag: 'LinkRepository',
+        msg: 'Local data belongs to another account; wiping before sync',
+      );
+      await clearLocalData();
+    }
+    await settings.put(HiveConstants.ownerUidKey, uid);
+  }
+
   Future<void> syncPendingLinks() async {
     final uid = _uid;
     if (uid == null) return;
+    await claimOrResetFor(uid);
+    final generation = _wipeGeneration;
+    _lastFailure = null;
 
     final now = DateTime.now().toUtc().millisecondsSinceEpoch;
     final operations =
@@ -578,14 +623,18 @@ class LinkRepository {
           ..sort((a, b) => a.createdAt.compareTo(b.createdAt));
 
     for (final operation in operations) {
+      if (!_isCurrentRun(generation)) return;
       final processingOperation = operation.copyWith(
         state: SyncOperation.processing,
       );
       await _syncOperationsBox.put(operation.operationId, processingOperation);
       try {
-        await _syncOperation(uid, processingOperation);
+        await _syncOperation(uid, processingOperation, generation);
+        if (!_isCurrentRun(generation)) return;
         await _syncOperationsBox.delete(processingOperation.operationId);
       } catch (e) {
+        if (!_isCurrentRun(generation)) return;
+        _lastFailure = SyncFailure.fromError(e);
         final attemptCount = processingOperation.attemptCount + 1;
         final retryAt =
             now + SyncBackoff.delayForAttempt(attemptCount).inMilliseconds;
@@ -608,7 +657,40 @@ class LinkRepository {
       _syncOperationsBox.values.toList()
         ..sort((a, b) => a.createdAt.compareTo(b.createdAt));
 
-  Future<void> _syncOperation(String uid, SyncOperation operation) async {
+  /// What has not reached the cloud yet: queued writes (links and categories),
+  /// how many of them failed their last attempt, and unresolved conflicts.
+  @override
+  UnsyncedSummary unsyncedSummary() {
+    final operations = _syncOperationsBox.values;
+    return UnsyncedSummary(
+      changes: operations.length,
+      failedChanges: operations
+          .where((operation) => operation.state == SyncOperation.failed)
+          .length,
+      conflicts: conflicts.length,
+    );
+  }
+
+  /// Emits whenever the queue of unsynced writes changes.
+  Stream<BoxEvent> watchSyncOperations() => _syncOperationsBox.watch();
+
+  /// When the last successful pull finished, in milliseconds since the epoch.
+  int? get lastPulledAt => _readCursor();
+
+  /// Forgets when the last pull finished, so the next pull fetches everything
+  /// again. Nothing on this phone is deleted: pulled links are merged in the
+  /// same way as on a first sync.
+  Future<void> resetPullCursor() =>
+      _hiveHelper.settingsBox.delete(HiveConstants.lastPulledAtKey);
+
+  /// Why the last push attempt failed, or null if none did since it started.
+  SyncFailure? get lastFailure => _lastFailure;
+
+  Future<void> _syncOperation(
+    String uid,
+    SyncOperation operation,
+    int generation,
+  ) async {
     if (operation.entityType == SyncOperation.linkEntity) {
       if (operation.operationType == SyncOperation.delete) {
         await _firebaseService.deleteLink(uid, operation.entityId);
@@ -624,6 +706,7 @@ class LinkRepository {
       } else {
         await _firebaseService.updateLink(uid, link);
       }
+      if (!_isCurrentRun(generation)) return;
       final syncedLink = link.copyWith(isSynced: true);
       await _linksBox.put(syncedLink.id, syncedLink);
       await _baseLinksBox.put(syncedLink.id, syncedLink);
@@ -704,6 +787,8 @@ class LinkRepository {
   Future<void> pullFromCloud() async {
     final uid = _uid;
     if (uid == null) return;
+    await claimOrResetFor(uid);
+    final generation = _wipeGeneration;
 
     // Snapshot the current time before querying so any record written to
     // Firestore during this pull is caught by the next pull's overlap window.
@@ -731,6 +816,7 @@ class LinkRepository {
     }
 
     for (final delId in deletedIds) {
+      if (!_isCurrentRun(generation)) return;
       if (_hasLocalTombstone(SyncOperation.linkEntity, delId)) continue;
 
       final localLink = _linksBox.get(delId);
@@ -758,6 +844,7 @@ class LinkRepository {
     }
 
     for (final cloudLink in cloudLinks) {
+      if (!_isCurrentRun(generation)) return;
       if (_hasLocalTombstone(SyncOperation.linkEntity, cloudLink.id)) {
         continue;
       }
@@ -825,6 +912,7 @@ class LinkRepository {
 
     final cloudCategories = await _firebaseService.fetchCategories(uid);
     for (final category in cloudCategories) {
+      if (!_isCurrentRun(generation)) return;
       if (_hasLocalTombstone(SyncOperation.categoryEntity, category.id) ||
           _hasPendingOperation(SyncOperation.categoryEntity, category.id)) {
         continue;
@@ -842,6 +930,7 @@ class LinkRepository {
       );
     }
     for (final categoryId in deletedCategoryIds) {
+      if (!_isCurrentRun(generation)) return;
       if (_hasLocalTombstone(SyncOperation.categoryEntity, categoryId) ||
           _hasPendingOperation(SyncOperation.categoryEntity, categoryId)) {
         continue;
@@ -849,7 +938,10 @@ class LinkRepository {
       await _categoriesBox.delete(categoryId);
     }
 
-    // Advance the pull cursor only after all reconciliation succeeds.
+    // Advance the pull cursor only after all reconciliation succeeds, and not
+    // at all if the phone was wiped meanwhile: that cursor would belong to
+    // data that is gone.
+    if (!_isCurrentRun(generation)) return;
     await _writeCursor(newCursor);
   }
 
@@ -961,7 +1053,11 @@ class LinkRepository {
     await _conflictLinksBox.put(linkId, local);
   }
 
+  @override
   Future<void> clearLocalData() async {
+    // First, before any await: a sync run that is still waiting on the cloud
+    // sees the change and stops writing (see [_wipeGeneration]).
+    _wipeGeneration++;
     await _linksBox.clear();
     await _baseLinksBox.clear();
     await _conflictLinksBox.clear();
@@ -969,16 +1065,28 @@ class LinkRepository {
     await _syncOperationsBox.clear();
     await _syncTombstonesBox.clear();
     await _conflictRecordsBox.clear();
-    // Reset the pull cursor so the next sign-in performs a full bootstrap fetch.
+    // Reset the pull cursor so the next sign-in performs a full bootstrap fetch,
+    // and forget the owner: nothing local belongs to any account any more.
     await _hiveHelper.settingsBox.delete(HiveConstants.lastPulledAtKey);
+    await _hiveHelper.settingsBox.delete(HiveConstants.ownerUidKey);
     printLog(tag: 'LinkRepository', msg: 'Cleared local data');
   }
 
+  @override
   Future<void> clearRemoteData() async {
     if (_uid == null) return;
     await _firebaseService.clearUserData(_uid!);
     printLog(tag: 'LinkRepository', msg: 'Cleared remote data for uid=$_uid');
   }
+
+  @override
+  bool get isWipePending =>
+      _hiveHelper.settingsBox.get(HiveConstants.wipePendingKey) == true;
+
+  @override
+  Future<void> setWipePending(bool pending) => pending
+      ? _hiveHelper.settingsBox.put(HiveConstants.wipePendingKey, true)
+      : _hiveHelper.settingsBox.delete(HiveConstants.wipePendingKey);
 
   (int total, int synced, int unsynced) getLinkStats() {
     final all = _linksBox.values;

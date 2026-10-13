@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../core/constants/app_enums.dart';
 import '../../core/extensions/context_extension.dart';
 import '../../core/localization/locale_cubit.dart';
+import '../../core/services/account_session_service.dart';
 import '../../core/services/auth_service.dart';
 import '../../core/services/sync_service.dart';
 import '../../core/theme/app_colors.dart';
@@ -15,18 +16,18 @@ import '../../core/utils/navigation/route.dart';
 import '../../core/utils/utils.dart';
 import '../../features/links/repository/link_repository.dart';
 import '../../features/sync/bloc/sync_status_bloc.dart';
-import '../../features/sync/bloc/sync_status_state.dart';
 import '../../core/services/sync_engine.dart';
-import '../../core/services/sync_status.dart';
 import '../../l10n/localization/app_localizations.dart';
 import '../../sharedWidgets/common_app_bar.dart';
 import '../../sharedWidgets/confirmation_bottom_sheet.dart';
 import '../../sharedWidgets/custom_button.dart';
-import '../../sharedWidgets/logout_bottom_sheet.dart';
 import '../../sharedWidgets/options_bottom_sheet.dart';
 import 'bloc/account_bloc.dart';
 import 'bloc/account_event.dart';
 import 'bloc/account_state.dart';
+import 'sign_out/sign_out_sheet.dart';
+import 'sync_data_flow.dart';
+import 'sync_status_card.dart';
 
 class AccountScreen extends StatelessWidget {
   const AccountScreen({super.key});
@@ -39,6 +40,7 @@ class AccountScreen extends StatelessWidget {
           create: (context) => AccountBloc(
             authService: locator<AuthService>(),
             linkRepository: locator<LinkRepository>(),
+            sessionService: locator<AccountSessionService>(),
           ),
         ),
         BlocProvider(
@@ -62,6 +64,18 @@ class _AccountScreenContent extends StatelessWidget {
         } else if (state is AccountSignedOut) {
           showSnackBar(context.l10n.accountSignedOutSuccess);
           context.goNamed(MyRouteName.homeScreen);
+        } else if (state is AccountLocalWiped) {
+          showSnackBar(context.l10n.accountDeleteSuccess);
+        } else if (state is AccountCloudDeleted) {
+          showSnackBar(context.l10n.accountDeleteCloudSuccess);
+        } else if (state is AccountNeedsReconfirmation) {
+          showSnackBar(context.l10n.accountActionReconfirm);
+        } else if (state is AccountActionFailed) {
+          showSnackBar(switch (state.action) {
+            AccountAction.signOut => context.l10n.accountSignOutError,
+            AccountAction.wipeLocal => context.l10n.accountDeleteFail,
+            AccountAction.deleteCloud => context.l10n.accountDeleteCloudFail,
+          });
         }
       },
       builder: (context, state) {
@@ -91,7 +105,10 @@ class _AccountScreenContent extends StatelessWidget {
                 // ─── Stats Row ────────────────────────────────────────
                 _StatsRow(state: state),
                 SizedBox(height: AppSpacing.xl),
-                const _SyncStatusCard(),
+                SyncStatusCard(
+                  isSignedIn: state is AccountAuthenticated,
+                  onRetry: () => locator<SyncService>().requestSyncInBackground(pull: true),
+                ),
                 SizedBox(height: AppSpacing.xl),
 
                 // ─── Settings Section ─────────────────────────────────
@@ -103,55 +120,6 @@ class _AccountScreenContent extends StatelessWidget {
                 _SettingsList(state: state),
               ],
             ),
-          ),
-        );
-      },
-    );
-  }
-}
-
-class _SyncStatusCard extends StatelessWidget {
-  const _SyncStatusCard();
-
-  @override
-  Widget build(BuildContext context) {
-    return BlocBuilder<SyncStatusBloc, SyncStatusState>(
-      builder: (context, state) {
-        final isFailed = state.status == SyncStatus.failed;
-        final (label, icon) = switch (state.status) {
-          SyncStatus.idle => (context.l10n.accountSyncStatusReady, Icons.cloud_done_rounded),
-          SyncStatus.syncing => (context.l10n.accountSyncStatusSyncing, Icons.sync_rounded),
-          SyncStatus.failed => (context.l10n.accountSyncStatusFailed, Icons.cloud_off_rounded),
-          SyncStatus.conflict => (context.l10n.accountSyncStatusConflict, Icons.warning_amber_rounded),
-        };
-        return Container(
-          width: double.infinity,
-          padding: EdgeInsets.all(AppSpacing.md),
-          decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.surface,
-            border: Border.all(
-              color: Theme.of(context).colorScheme.outline,
-              width: 2,
-            ),
-            borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-          ),
-          child: Row(
-            children: [
-              Icon(icon),
-              SizedBox(width: AppSpacing.sm),
-              Expanded(
-                child: Text(label, style: Theme.of(context).textTheme.titleSmall),
-              ),
-              if (isFailed)
-                NeoBrutalistButton(
-                  text: context.l10n.accountRetry,
-                  icon: Icons.refresh_rounded,
-                  height: 36,
-                  onPressed: () async {
-                    await locator<SyncService>().requestSync(pull: true);
-                  },
-                ),
-            ],
           ),
         );
       },
@@ -258,58 +226,17 @@ class _StatsRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    int total = 0;
-    int synced = 0;
-    int unsynced = 0;
+    // Sync state lives in the sync status card, so this shows only the count.
+    final total = switch (state) {
+      AccountAuthenticated(:final totalLinks) => totalLinks,
+      AccountGuest(:final totalLinks) => totalLinks,
+      _ => 0,
+    };
 
-    if (state is AccountAuthenticated) {
-      final authState = state as AccountAuthenticated;
-      total = authState.totalLinks;
-      synced = authState.syncedLinks;
-      unsynced = authState.unsyncedLinks;
-    } else if (state is AccountGuest) {
-      final guestState = state as AccountGuest;
-      total = guestState.totalLinks;
-      synced = guestState.syncedLinks;
-      unsynced = guestState.unsyncedLinks;
-    }
-
-    String syncStatus = '';
-    Color syncShadowColor = AppColors.shadowMint;
-
-    if (total == 0) {
-      syncStatus = '-';
-      syncShadowColor = AppColors.secondarySurface;
-    } else if (unsynced == 0) {
-      syncStatus = context.l10n.accountStatSynced; // Fully synced
-      syncShadowColor = AppColors.shadowMint;
-    } else if (synced == 0) {
-      syncStatus = context.l10n.accountStatLocal; // Fully local
-      syncShadowColor = AppColors.shadowPeach;
-    } else {
-      syncStatus = context.l10n.accountPendingCount(unsynced); // Mixed
-      syncShadowColor = AppColors.shadowLemon;
-    }
-
-    return Row(
-      children: [
-        Expanded(
-          child: _StatCard(
-            label: context.l10n.navLinks,
-            value: total.toString(),
-            shadowColor: AppColors.shadowMint,
-          ),
-        ),
-        SizedBox(width: AppSpacing.md),
-        Expanded(
-          child: _StatCard(
-            label: context.l10n.accountSyncStatusLabel,
-            value: syncStatus,
-            shadowColor: syncShadowColor,
-            isSmallValue: total > 0, // Make text smaller if it's a long status
-          ),
-        ),
-      ],
+    return _StatCard(
+      label: context.l10n.navLinks,
+      value: total.toString(),
+      shadowColor: AppColors.shadowMint,
     );
   }
 }
@@ -318,13 +245,11 @@ class _StatCard extends StatelessWidget {
   final String label;
   final String value;
   final Color shadowColor;
-  final bool isSmallValue;
 
   const _StatCard({
     required this.label,
     required this.value,
     required this.shadowColor,
-    this.isSmallValue = false,
   });
 
   @override
@@ -365,9 +290,7 @@ class _StatCard extends StatelessWidget {
                   fit: BoxFit.scaleDown,
                   child: Text(
                     value,
-                    style: isSmallValue
-                        ? Theme.of(context).textTheme.titleLarge!
-                        : Theme.of(context).textTheme.headlineMedium!,
+                    style: Theme.of(context).textTheme.headlineMedium!,
                     maxLines: 1,
                     textAlign: TextAlign.center,
                   ),
@@ -440,6 +363,13 @@ class _SettingsList extends StatelessWidget {
         '',
         AccountItem.deleteLocalData,
       ),
+      if (isAuthenticated)
+        (
+          Icons.cloud_off_rounded,
+          context.l10n.accountDeleteCloudData,
+          '',
+          AccountItem.deleteCloudData,
+        ),
       // (Icons.help_outline_rounded, context.l10n.accountHelpFeedback, '', AccountItem.helpFeedback),
       if (isAuthenticated)
         (
@@ -621,19 +551,7 @@ class _SettingsList extends StatelessWidget {
           showSnackBar(context.l10n.accountSyncSignInMsg);
           return;
         }
-        final l10n = context.l10n;
-        showSnackBar(l10n.accountSyncingMsg);
-        try {
-          await locator<SyncService>().requestSync(pull: true);
-          if (context.mounted) {
-            context.read<AccountBloc>().add(const AccountLoadRequested());
-            showSnackBar(l10n.accountSyncSuccess);
-          }
-        } catch (e) {
-          if (context.mounted) {
-            showSnackBar(l10n.accountSyncFail);
-          }
-        }
+        await runSyncDataFlow(context);
         break;
 
       case AccountItem.conflicts:
@@ -641,50 +559,56 @@ class _SettingsList extends StatelessWidget {
         break;
 
       case AccountItem.deleteLocalData:
+        // What is unsynced right now is what this wipe would lose; it is what
+        // the user is told, and the wipe refuses to lose more than that.
+        final shown = locator<AccountSessionService>().unsyncedSummary();
+        final l10n = context.l10n;
         final confirm = await showConfirmationBottomSheet(
           context: context,
-          title: context.l10n.accountDeleteTitle,
-          message: context.l10n.accountDeleteConfirm,
-          confirmLabel: context.l10n.accountDelete,
-          cancelLabel: context.l10n.accountCancel,
+          title: l10n.accountDeleteTitle,
+          message: !isAuthenticated
+              ? l10n.accountDeleteConfirmGuest
+              : shown.changes > 0
+              ? l10n.accountDeleteConfirmUnsynced(shown.changes)
+              : l10n.accountDeleteConfirm,
+          confirmLabel: l10n.accountDelete,
+          cancelLabel: l10n.accountCancel,
           titleIcon: Icons.warning_amber_rounded,
           isDestructive: true,
         );
-        if (confirm == true) {
-          if (!context.mounted) return;
-          final l10n = context.l10n;
-          final repo = locator<LinkRepository>();
-          try {
-            await repo.clearLocalData();
-            if (context.mounted) {
-              context.read<AccountBloc>().add(const AccountLoadRequested());
-              showSnackBar(l10n.accountDeleteSuccess);
-            }
-          } catch (e) {
-            if (context.mounted) {
-              showSnackBar(l10n.accountDeleteFail);
-            }
-          }
+        if (confirm == true && context.mounted) {
+          context.read<AccountBloc>().add(
+            AccountWipeLocalRequested(confirmed: shown),
+          );
+        }
+        break;
+
+      case AccountItem.deleteCloudData:
+        final shown = locator<AccountSessionService>().unsyncedSummary();
+        final linkCount = locator<LinkRepository>().getLinkStats().$1;
+        final l10n = context.l10n;
+        final confirm = await showConfirmationBottomSheet(
+          context: context,
+          title: l10n.accountDeleteCloudTitle,
+          message: l10n.accountDeleteCloudConfirm(linkCount),
+          confirmLabel: l10n.accountDeleteCloudAction,
+          cancelLabel: l10n.accountCancel,
+          titleIcon: Icons.warning_amber_rounded,
+          isDestructive: true,
+        );
+        if (confirm == true && context.mounted) {
+          context.read<AccountBloc>().add(
+            AccountDeleteCloudDataRequested(confirmed: shown),
+          );
         }
         break;
 
       case AccountItem.auth:
         if (isAuthenticated) {
-          final result = await showLogoutBottomSheet(
-            context: context,
-            title: context.l10n.accountSignOut,
-            message: context.l10n.accountSignOutDesc,
-            confirmLabel: context.l10n.accountSignOut,
-            clearLocalLabel: context.l10n.accountDeleteLocalData,
-            clearRemoteLabel: context.l10n.accountDeleteRemoteData,
-            titleIcon: Icons.logout_rounded,
-          );
-          if (result != null && result.$1 && context.mounted) {
+          final confirmed = await showSignOutSheet(context);
+          if (confirmed != null && context.mounted) {
             context.read<AccountBloc>().add(
-              AccountSignOutRequested(
-                clearLocal: result.$2,
-                clearRemote: result.$3,
-              ),
+              AccountSignOutRequested(confirmed: confirmed),
             );
           }
         } else {

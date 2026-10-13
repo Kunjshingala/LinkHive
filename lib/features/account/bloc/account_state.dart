@@ -51,3 +51,30 @@ class AccountError extends AccountState {
   @override
   List<Object?> get props => [message];
 }
+
+/// This phone's copy of the data was removed. The account stays signed in.
+class AccountLocalWiped extends AccountState {
+  const AccountLocalWiped();
+}
+
+/// The account's cloud data and this phone's copy were deleted.
+class AccountCloudDeleted extends AccountState {
+  const AccountCloudDeleted();
+}
+
+/// There is more unsynced work than the user was shown, so nothing was changed.
+class AccountNeedsReconfirmation extends AccountState {
+  const AccountNeedsReconfirmation();
+}
+
+/// What the user asked for when an [AccountActionFailed] happened.
+enum AccountAction { signOut, wipeLocal, deleteCloud }
+
+/// A wipe failed part-way. Sync is allowed again; the wipe can be retried.
+class AccountActionFailed extends AccountState {
+  final AccountAction action;
+  const AccountActionFailed(this.action);
+
+  @override
+  List<Object?> get props => [action];
+}

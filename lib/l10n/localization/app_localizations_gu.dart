@@ -216,9 +216,6 @@ class AppLocalizationsGu extends AppLocalizations {
       'તમારા સંગ્રહને સુરક્ષિત અને ઉપકરણો પર સિંક કરેલું રાખો.';
 
   @override
-  String get accountStatSynced => 'ક્લાઉડ પર સિંક કરેલ';
-
-  @override
   String get accountStatLocal => 'ફક્ત સ્થાનિક';
 
   @override
@@ -252,14 +249,78 @@ class AppLocalizationsGu extends AppLocalizations {
   String get accountSignOut => 'સાઇન આઉટ કરો';
 
   @override
-  String get accountSignOutDesc => 'સાઇન આઉટ પછી શું સાફ કરવું તે પસંદ કરો.';
+  String get accountSignOutDesc =>
+      'બધું તમારા એકાઉન્ટમાં સાચવેલું છે. સાઇન આઉટ કરવાથી આ ફોન સાફ થશે, અને સાઇન ઇન કરતાં તમારી કડીઓ પાછી આવશે.';
 
   @override
-  String get accountDeleteRemoteData =>
-      'ક્લાઉડ ડેટા સાફ કરો (સિંક થયેલા લિંક્સ કાઢો)';
+  String accountSignOutPending(num count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          '$count ફેરફારો હજુ સમન્વયિત થયા નથી. હમણાં સાઇન આઉટ કરશો તો તે ખોવાઈ જશે.',
+      one:
+          '1 ફેરફાર હજુ સમન્વયિત થયો નથી. હમણાં સાઇન આઉટ કરશો તો તે ખોવાઈ જશે.',
+    );
+    return '$_temp0';
+  }
 
   @override
-  String get accountSignedOutSuccess => 'સફળતાપૂર્વક સાઇન આઉટ થયું';
+  String accountSignOutSyncing(num count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          '$count ફેરફારો સમન્વયિત થઈ રહ્યા છે. તે પૂરા થાય ત્યાં સુધી રાહ જુઓ, અથવા સાઇન આઉટ કરીને તેમને ગુમાવો.',
+      one:
+          '1 ફેરફાર સમન્વયિત થઈ રહ્યો છે. તે પૂરો થાય ત્યાં સુધી રાહ જુઓ, અથવા સાઇન આઉટ કરીને તેને ગુમાવો.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String accountSignOutWaiting(num count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          '$count ફેરફારો ઇન્ટરનેટની રાહ જોઈ રહ્યા છે. હમણાં સાઇન આઉટ કરશો તો તે ખોવાઈ જશે.',
+      one:
+          '1 ફેરફાર ઇન્ટરનેટની રાહ જોઈ રહ્યો છે. હમણાં સાઇન આઉટ કરશો તો તે ખોવાઈ જશે.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String accountSignOutFailed(num count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          '$count ફેરફારો સમન્વયિત થઈ શક્યા નથી. ફરી પ્રયાસ કરો, અથવા સાઇન આઉટ કરીને તેમને ગુમાવો.',
+      one:
+          '1 ફેરફાર સમન્વયિત થઈ શક્યો નથી. ફરી પ્રયાસ કરો, અથવા સાઇન આઉટ કરીને તેને ગુમાવો.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get accountSignOutConflicts =>
+      'કેટલાક ફેરફારો સમન્વયિત થાય તે પહેલાં તમારા નિર્ણયની જરૂર છે. હમણાં સાઇન આઉટ કરશો તો તે ખોવાઈ જશે.';
+
+  @override
+  String get accountSignOutSyncNow => 'હમણાં સમન્વય કરો';
+
+  @override
+  String get accountSignOutAnyway => 'તો પણ સાઇન આઉટ કરો';
+
+  @override
+  String get accountSignedOutSuccess =>
+      'સાઇન આઉટ થયું. આ ફોનની નકલ સાફ કરી દેવામાં આવી.';
+
+  @override
+  String get accountSignOutError =>
+      'સાઇન આઉટ થઈ શક્યું નથી. કૃપા કરીને ફરી પ્રયાસ કરો.';
 
   @override
   String get authWelcome => 'પાછા સ્વાગત છે!';
@@ -352,10 +413,17 @@ class AppLocalizationsGu extends AppLocalizations {
   String get accountSyncingMsg => 'ડેટા સમન્વયિત થઈ રહ્યો છે...';
 
   @override
-  String get accountSyncSuccess => 'ડેટા સફળતાપૂર્વક સમન્વયિત થયો';
+  String get accountSyncCheckingMsg => 'બધું તપાસી રહ્યા છીએ...';
 
   @override
-  String get accountSyncFail => 'સમન્વયન નિષ્ફળ થયું. કૃપા કરી ફરી પ્રયાસ કરો.';
+  String get accountSyncCheckAgain => 'બધું ફરીથી તપાસો';
+
+  @override
+  String get accountSyncCheckAgainDesc =>
+      'આ તમારી બધી કડીઓ ક્લાઉડમાંથી ફરીથી ડાઉનલોડ કરે છે, જેથી કંઈ બાકી ન રહે. આ ફોન પરથી કશું કાઢી નાખવામાં આવતું નથી.';
+
+  @override
+  String get accountSyncDone => 'થઈ ગયું';
 
   @override
   String get accountSyncStatusReady => 'સમન્વયન માટે તૈયાર';
@@ -370,15 +438,71 @@ class AppLocalizationsGu extends AppLocalizations {
   String get accountSyncStatusConflict => 'વિરોધો પર ધ્યાન આપવાની જરૂર છે';
 
   @override
-  String get accountRetry => 'ફરી પ્રયાસ કરો';
+  String get accountSyncStatusWaiting => 'ઇન્ટરનેટની રાહ જોઈ રહ્યું છે';
 
   @override
-  String get accountSyncStatusLabel => 'સમન્વયન સ્થિતિ';
+  String get accountSyncStatusSynced => 'બધું સમન્વયિત છે';
 
   @override
-  String accountPendingCount(Object count) {
-    return '$count બાકી';
+  String get accountSyncStatusPending => 'સમન્વયની રાહમાં';
+
+  @override
+  String accountSyncLastSynced(String time) {
+    return 'છેલ્લો સમન્વય: $time';
   }
+
+  @override
+  String get accountSyncNever => 'હજુ સમન્વય થયો નથી';
+
+  @override
+  String accountSyncPendingDetail(num count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count ફેરફારો હજુ ક્લાઉડ સુધી પહોંચ્યા નથી.',
+      one: '1 ફેરફાર હજુ ક્લાઉડ સુધી પહોંચ્યો નથી.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String accountSyncWaitingDetail(num count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'ઇન્ટરનેટ પાછું આવશે ત્યારે $count ફેરફારો સમન્વયિત થશે.',
+      one: 'ઇન્ટરનેટ પાછું આવશે ત્યારે 1 ફેરફાર સમન્વયિત થશે.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String accountSyncConflictDetail(num count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count ફેરફારો પર તમારા નિર્ણયની જરૂર છે.',
+      one: '1 ફેરફાર પર તમારા નિર્ણયની જરૂર છે.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get accountSyncFailureTimeout => 'ક્લાઉડે સમયસર જવાબ આપ્યો નહીં.';
+
+  @override
+  String get accountSyncFailurePermission =>
+      'આ એકાઉન્ટને સમન્વય કરવાની મંજૂરી નથી.';
+
+  @override
+  String get accountSyncFailureUnavailable =>
+      'હમણાં ક્લાઉડ સુધી પહોંચી શકાતું નથી.';
+
+  @override
+  String get accountSyncFailureUnknown => 'સમન્વય દરમિયાન કંઈક ખોટું થયું.';
+
+  @override
+  String get accountRetry => 'ફરી પ્રયાસ કરો';
 
   @override
   String get accountResolveConflicts => 'વિરોધ ઉકેલો';
@@ -388,7 +512,24 @@ class AppLocalizationsGu extends AppLocalizations {
 
   @override
   String get accountDeleteConfirm =>
-      'આ સ્થાનિક રીતે સાચવેલી બધી કડીઓ ભૂંસી નાખશે. ક્લાઉડ સાથે સમન્વયિત કડીઓ આગામી સમન્વય વખતે પુનઃસ્થાપિત થશે.';
+      'આ આ ફોનની કડીઓ ભૂંસી નાખશે. જે સમન્વયિત થઈ ચૂક્યું છે તે આગામી સમન્વય વખતે પાછું આવશે.';
+
+  @override
+  String accountDeleteConfirmUnsynced(num count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          'આ આ ફોનની કડીઓ ભૂંસી નાખશે. હજુ સમન્વયિત ન થયેલા $count ફેરફારો ખોવાઈ જશે. જે સમન્વયિત થઈ ચૂક્યું છે તે આગામી સમન્વય વખતે પાછું આવશે.',
+      one:
+          'આ આ ફોનની કડીઓ ભૂંસી નાખશે. હજુ સમન્વયિત ન થયેલો 1 ફેરફાર ખોવાઈ જશે. જે સમન્વયિત થઈ ચૂક્યું છે તે આગામી સમન્વય વખતે પાછું આવશે.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get accountDeleteConfirmGuest =>
+      'આ આ ફોનની બધી કડીઓ ભૂંસી નાખશે. કંઈ પણ ખાતામાં સાચવેલું નથી, તેથી આને પાછું લઈ શકાશે નહીં.';
 
   @override
   String get accountCancel => 'રદ કરો';
@@ -402,6 +543,40 @@ class AppLocalizationsGu extends AppLocalizations {
 
   @override
   String get accountDeleteFail => 'સ્થાનિક ડેટા સાફ કરવામાં નિષ્ફળ.';
+
+  @override
+  String get accountDeleteCloudData => 'ક્લાઉડ ડેટા કાઢી નાખો';
+
+  @override
+  String get accountDeleteCloudTitle => 'ક્લાઉડ ડેટા કાઢી નાખવો?';
+
+  @override
+  String accountDeleteCloudConfirm(num count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          'આ તમારા ખાતામાં સાચવેલી $count કડીઓને કાયમ માટે કાઢી નાખશે અને આ ફોન ખાલી કરશે. આને પાછું લઈ શકાશે નહીં.',
+      one:
+          'આ તમારા ખાતામાં સાચવેલી 1 કડીને કાયમ માટે કાઢી નાખશે અને આ ફોન ખાલી કરશે. આને પાછું લઈ શકાશે નહીં.',
+      zero: 'તમારા ખાતામાં કોઈ કડી સાચવેલી નથી. આથી ફક્ત આ ફોન ખાલી થશે.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get accountDeleteCloudAction => 'કાયમ માટે કાઢી નાખો';
+
+  @override
+  String get accountDeleteCloudSuccess => 'ક્લાઉડ ડેટા કાઢી નાખ્યો';
+
+  @override
+  String get accountDeleteCloudFail =>
+      'ક્લાઉડ ડેટા કાઢી શકાયો નહીં. ફરી પ્રયાસ કરો.';
+
+  @override
+  String get accountActionReconfirm =>
+      'ખાતરી કરતી વખતે કંઈક બદલાયું. કૃપા કરીને ફરી પ્રયાસ કરો.';
 
   @override
   String get langEnglish => 'અંગ્રેજી';

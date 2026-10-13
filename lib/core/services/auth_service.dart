@@ -5,8 +5,13 @@ import '../../firebase_options.dart';
 import '../utils/utils.dart';
 
 class AuthService {
-  final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
-  final GoogleSignIn _googleSignIn = GoogleSignIn.instance;
+  /// The parameters replace the real Firebase and Google sources in tests.
+  AuthService({FirebaseAuth? firebaseAuth, GoogleSignIn? googleSignIn})
+    : _firebaseAuth = firebaseAuth ?? FirebaseAuth.instance,
+      _googleSignIn = googleSignIn ?? GoogleSignIn.instance;
+
+  final FirebaseAuth _firebaseAuth;
+  final GoogleSignIn _googleSignIn;
   bool _isInitialized = false;
 
   // Stream of auth changes
@@ -83,8 +88,11 @@ class AuthService {
   Future<void> signOut() async {
     try {
       await _googleSignIn.signOut();
-    } catch (_) {
-      // Ignore signOut errors if not signed in with Google
+    } catch (error) {
+      // Expected when the user did not sign in with Google. Not fatal: the
+      // Firebase sign-out below ends the session either way. Logged so a real
+      // Google failure leaves a trace.
+      printLog(tag: 'AuthService', msg: 'Google sign-out failed: $error');
     }
     await _firebaseAuth.signOut();
   }

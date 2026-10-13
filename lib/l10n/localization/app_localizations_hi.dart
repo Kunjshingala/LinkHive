@@ -217,9 +217,6 @@ class AppLocalizationsHi extends AppLocalizations {
       'अपने संग्रह को सुरक्षित रखें और सभी उपकरणों पर सिंक करें।';
 
   @override
-  String get accountStatSynced => 'क्लाउड से सिंक किया गया';
-
-  @override
   String get accountStatLocal => 'केवल स्थानीय';
 
   @override
@@ -253,14 +250,77 @@ class AppLocalizationsHi extends AppLocalizations {
   String get accountSignOut => 'साइन आउट करें';
 
   @override
-  String get accountSignOutDesc => 'साइन आउट के बाद क्या साफ करना है, चुनें।';
+  String get accountSignOutDesc =>
+      'सब कुछ आपके खाते में सेव है। साइन आउट करने पर यह फ़ोन साफ़ हो जाएगा, और साइन इन करने पर आपके लिंक वापस आ जाएँगे।';
 
   @override
-  String get accountDeleteRemoteData =>
-      'क्लाउड डेटा साफ करें (सिंक किए गए लिंक हटाएं)';
+  String accountSignOutPending(num count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          '$count बदलाव अभी सिंक नहीं हुए हैं। अभी साइन आउट करने पर वे खो जाएँगे।',
+      one: '1 बदलाव अभी सिंक नहीं हुआ है। अभी साइन आउट करने पर वह खो जाएगा।',
+    );
+    return '$_temp0';
+  }
 
   @override
-  String get accountSignedOutSuccess => 'सफलतापूर्वक साइन आउट हो गया';
+  String accountSignOutSyncing(num count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          '$count बदलाव सिंक हो रहे हैं। उनके पूरा होने तक रुकें, या साइन आउट करके उन्हें खो दें।',
+      one:
+          '1 बदलाव सिंक हो रहा है। उसके पूरा होने तक रुकें, या साइन आउट करके उसे खो दें।',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String accountSignOutWaiting(num count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          '$count बदलाव इंटरनेट का इंतज़ार कर रहे हैं। अभी साइन आउट करने पर वे खो जाएँगे।',
+      one:
+          '1 बदलाव इंटरनेट का इंतज़ार कर रहा है। अभी साइन आउट करने पर वह खो जाएगा।',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String accountSignOutFailed(num count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          '$count बदलाव सिंक नहीं हो सके। फिर कोशिश करें, या साइन आउट करके उन्हें खो दें।',
+      one:
+          '1 बदलाव सिंक नहीं हो सका। फिर कोशिश करें, या साइन आउट करके उसे खो दें।',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get accountSignOutConflicts =>
+      'कुछ बदलावों पर सिंक होने से पहले आपका फ़ैसला चाहिए। अभी साइन आउट करने पर वे खो जाएँगे।';
+
+  @override
+  String get accountSignOutSyncNow => 'अभी सिंक करें';
+
+  @override
+  String get accountSignOutAnyway => 'फिर भी साइन आउट करें';
+
+  @override
+  String get accountSignedOutSuccess =>
+      'साइन आउट हो गया। इस फ़ोन की कॉपी साफ़ कर दी गई।';
+
+  @override
+  String get accountSignOutError =>
+      'साइन आउट नहीं हो सका। कृपया फिर कोशिश करें।';
 
   @override
   String get authWelcome => 'वापसी पर स्वागत है!';
@@ -353,10 +413,17 @@ class AppLocalizationsHi extends AppLocalizations {
   String get accountSyncingMsg => 'डेटा सिंक हो रहा है...';
 
   @override
-  String get accountSyncSuccess => 'डेटा सफलतापूर्वक सिंक हो गया';
+  String get accountSyncCheckingMsg => 'सब कुछ जाँचा जा रहा है...';
 
   @override
-  String get accountSyncFail => 'सिंक विफल हुआ। कृपया पुनः प्रयास करें।';
+  String get accountSyncCheckAgain => 'सब कुछ फिर से जाँचें';
+
+  @override
+  String get accountSyncCheckAgainDesc =>
+      'यह आपके सभी लिंक क्लाउड से दोबारा डाउनलोड करता है, ताकि कोई छूटा न हो। इस फ़ोन पर कुछ भी नहीं हटाया जाता।';
+
+  @override
+  String get accountSyncDone => 'हो गया';
 
   @override
   String get accountSyncStatusReady => 'सिंक के लिए तैयार';
@@ -372,15 +439,71 @@ class AppLocalizationsHi extends AppLocalizations {
       'विरोधों पर ध्यान देने की आवश्यकता है';
 
   @override
-  String get accountRetry => 'पुनः प्रयास करें';
+  String get accountSyncStatusWaiting => 'इंटरनेट का इंतज़ार';
 
   @override
-  String get accountSyncStatusLabel => 'सिंक स्थिति';
+  String get accountSyncStatusSynced => 'सब कुछ सिंक हो चुका है';
 
   @override
-  String accountPendingCount(Object count) {
-    return '$count लंबित';
+  String get accountSyncStatusPending => 'सिंक होने की प्रतीक्षा में';
+
+  @override
+  String accountSyncLastSynced(String time) {
+    return 'आख़िरी सिंक: $time';
   }
+
+  @override
+  String get accountSyncNever => 'अभी तक सिंक नहीं हुआ';
+
+  @override
+  String accountSyncPendingDetail(num count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count बदलाव अभी क्लाउड तक नहीं पहुँचे हैं।',
+      one: '1 बदलाव अभी क्लाउड तक नहीं पहुँचा है।',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String accountSyncWaitingDetail(num count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'इंटरनेट वापस आने पर $count बदलाव सिंक होंगे।',
+      one: 'इंटरनेट वापस आने पर 1 बदलाव सिंक होगा।',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String accountSyncConflictDetail(num count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count बदलावों पर आपका फ़ैसला चाहिए।',
+      one: '1 बदलाव पर आपका फ़ैसला चाहिए।',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get accountSyncFailureTimeout => 'क्लाउड ने समय पर जवाब नहीं दिया।';
+
+  @override
+  String get accountSyncFailurePermission =>
+      'इस खाते को सिंक करने की अनुमति नहीं है।';
+
+  @override
+  String get accountSyncFailureUnavailable =>
+      'अभी क्लाउड तक पहुँचा नहीं जा सकता।';
+
+  @override
+  String get accountSyncFailureUnknown => 'सिंक करते समय कुछ गड़बड़ हो गई।';
+
+  @override
+  String get accountRetry => 'पुनः प्रयास करें';
 
   @override
   String get accountResolveConflicts => 'विरोध हल करें';
@@ -390,7 +513,24 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get accountDeleteConfirm =>
-      'यह स्थानीय रूप से सहेजे गए सभी लिंक हटा देगा। क्लाउड के साथ सिंक किए गए लिंक अगली सिंक पर पुनर्स्थापित हो जाएंगे।';
+      'यह इस फ़ोन के लिंक हटा देगा। जो कुछ सिंक हो चुका है वह अगले सिंक पर वापस आ जाएगा।';
+
+  @override
+  String accountDeleteConfirmUnsynced(num count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          'यह इस फ़ोन के लिंक हटा देगा। अभी तक सिंक न हुए $count बदलाव खो जाएँगे। जो कुछ सिंक हो चुका है वह अगले सिंक पर वापस आ जाएगा।',
+      one:
+          'यह इस फ़ोन के लिंक हटा देगा। अभी तक सिंक न हुआ 1 बदलाव खो जाएगा। जो कुछ सिंक हो चुका है वह अगले सिंक पर वापस आ जाएगा।',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get accountDeleteConfirmGuest =>
+      'यह इस फ़ोन के सभी लिंक हटा देगा। कुछ भी किसी खाते में सहेजा नहीं गया है, इसलिए इसे वापस नहीं किया जा सकता।';
 
   @override
   String get accountCancel => 'रद्द करें';
@@ -404,6 +544,41 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get accountDeleteFail => 'स्थानीय डेटा साफ़ करने में विफल।';
+
+  @override
+  String get accountDeleteCloudData => 'क्लाउड डेटा हटाएँ';
+
+  @override
+  String get accountDeleteCloudTitle => 'क्लाउड डेटा हटाएँ?';
+
+  @override
+  String accountDeleteCloudConfirm(num count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          'यह आपके खाते में सहेजे गए $count लिंक को हमेशा के लिए हटा देगा और इस फ़ोन को खाली कर देगा। इसे वापस नहीं किया जा सकता।',
+      one:
+          'यह आपके खाते में सहेजे गए 1 लिंक को हमेशा के लिए हटा देगा और इस फ़ोन को खाली कर देगा। इसे वापस नहीं किया जा सकता।',
+      zero:
+          'आपके खाते में कोई लिंक सहेजा नहीं गया है। इससे केवल यह फ़ोन खाली होगा।',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get accountDeleteCloudAction => 'हमेशा के लिए हटाएँ';
+
+  @override
+  String get accountDeleteCloudSuccess => 'क्लाउड डेटा हटा दिया गया';
+
+  @override
+  String get accountDeleteCloudFail =>
+      'क्लाउड डेटा नहीं हटाया जा सका। फिर से कोशिश करें।';
+
+  @override
+  String get accountActionReconfirm =>
+      'पुष्टि करते समय कुछ बदल गया। कृपया फिर से कोशिश करें।';
 
   @override
   String get langEnglish => 'अंग्रेज़ी';

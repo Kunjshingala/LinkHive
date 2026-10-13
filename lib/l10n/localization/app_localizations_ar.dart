@@ -215,9 +215,6 @@ class AppLocalizationsAr extends AppLocalizations {
       'حافظ على أمان مجموعتك ومزامنتها عبر الأجهزة.';
 
   @override
-  String get accountStatSynced => 'متزامن مع السحابة';
-
-  @override
   String get accountStatLocal => 'محلي فقط';
 
   @override
@@ -251,14 +248,88 @@ class AppLocalizationsAr extends AppLocalizations {
   String get accountSignOut => 'تسجيل الخروج';
 
   @override
-  String get accountSignOutDesc => 'اختر ما تريد مسحه بعد تسجيل الخروج.';
+  String get accountSignOutDesc =>
+      'كل شيء محفوظ في حسابك. تسجيل الخروج يمسح هذا الهاتف، وستعود روابطك عند تسجيل الدخول.';
 
   @override
-  String get accountDeleteRemoteData =>
-      'مسح بيانات السحابة (حذف الروابط المُزامنة)';
+  String accountSignOutPending(num count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'لم تتم مزامنة $count تغيير بعد. ستُفقد إذا سجّلت الخروج الآن.',
+      many: 'لم تتم مزامنة $count تغييرًا بعد. ستُفقد إذا سجّلت الخروج الآن.',
+      few: 'لم تتم مزامنة $count تغييرات بعد. ستُفقد إذا سجّلت الخروج الآن.',
+      two: 'لم تتم مزامنة تغييرين بعد. سيُفقدان إذا سجّلت الخروج الآن.',
+      one: 'لم تتم مزامنة تغيير واحد بعد. سيُفقد إذا سجّلت الخروج الآن.',
+    );
+    return '$_temp0';
+  }
 
   @override
-  String get accountSignedOutSuccess => 'تم تسجيل الخروج بنجاح';
+  String accountSignOutSyncing(num count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          'جارٍ مزامنة $count تغيير. انتظر حتى تنتهي، أو سجّل الخروج وافقدها.',
+      many:
+          'جارٍ مزامنة $count تغييرًا. انتظر حتى تنتهي، أو سجّل الخروج وافقدها.',
+      few:
+          'جارٍ مزامنة $count تغييرات. انتظر حتى تنتهي، أو سجّل الخروج وافقدها.',
+      two: 'جارٍ مزامنة تغييرين. انتظر حتى ينتهيا، أو سجّل الخروج وافقدهما.',
+      one: 'جارٍ مزامنة تغيير واحد. انتظر حتى ينتهي، أو سجّل الخروج وافقده.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String accountSignOutWaiting(num count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count تغيير تنتظر الإنترنت. ستُفقد إذا سجّلت الخروج الآن.',
+      many: '$count تغييرًا تنتظر الإنترنت. ستُفقد إذا سجّلت الخروج الآن.',
+      few: '$count تغييرات تنتظر الإنترنت. ستُفقد إذا سجّلت الخروج الآن.',
+      two: 'تغييران ينتظران الإنترنت. سيُفقدان إذا سجّلت الخروج الآن.',
+      one: 'تغيير واحد ينتظر الإنترنت. سيُفقد إذا سجّلت الخروج الآن.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String accountSignOutFailed(num count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          'تعذّرت مزامنة $count تغيير. حاول مرة أخرى، أو سجّل الخروج وافقدها.',
+      many:
+          'تعذّرت مزامنة $count تغييرًا. حاول مرة أخرى، أو سجّل الخروج وافقدها.',
+      few:
+          'تعذّرت مزامنة $count تغييرات. حاول مرة أخرى، أو سجّل الخروج وافقدها.',
+      two: 'تعذّرت مزامنة تغييرين. حاول مرة أخرى، أو سجّل الخروج وافقدهما.',
+      one: 'تعذّرت مزامنة تغيير واحد. حاول مرة أخرى، أو سجّل الخروج وافقده.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get accountSignOutConflicts =>
+      'بعض التعديلات تحتاج إلى قرارك قبل أن تتم مزامنتها. ستُفقد إذا سجّلت الخروج الآن.';
+
+  @override
+  String get accountSignOutSyncNow => 'زامن الآن';
+
+  @override
+  String get accountSignOutAnyway => 'سجّل الخروج على أي حال';
+
+  @override
+  String get accountSignedOutSuccess =>
+      'تم تسجيل الخروج. تم مسح نسخة هذا الهاتف.';
+
+  @override
+  String get accountSignOutError =>
+      'تعذّر تسجيل الخروج. يرجى المحاولة مرة أخرى.';
 
   @override
   String get authWelcome => 'مرحباً بعودتك!';
@@ -351,10 +422,17 @@ class AppLocalizationsAr extends AppLocalizations {
   String get accountSyncingMsg => 'جاري مزامنة البيانات...';
 
   @override
-  String get accountSyncSuccess => 'تمت مزامنة البيانات بنجاح';
+  String get accountSyncCheckingMsg => 'جارٍ فحص كل شيء...';
 
   @override
-  String get accountSyncFail => 'فشلت المزامنة. حاول مرة أخرى.';
+  String get accountSyncCheckAgain => 'افحص كل شيء مرة أخرى';
+
+  @override
+  String get accountSyncCheckAgainDesc =>
+      'يُنزّل جميع روابطك من السحابة مرة أخرى للتأكد من عدم فقدان أي رابط. لا يُحذف أي شيء على هذا الهاتف.';
+
+  @override
+  String get accountSyncDone => 'تم';
 
   @override
   String get accountSyncStatusReady => 'جاهز للمزامنة';
@@ -369,15 +447,80 @@ class AppLocalizationsAr extends AppLocalizations {
   String get accountSyncStatusConflict => 'تعارضات تحتاج إلى انتباه';
 
   @override
-  String get accountRetry => 'إعادة المحاولة';
+  String get accountSyncStatusWaiting => 'في انتظار الإنترنت';
 
   @override
-  String get accountSyncStatusLabel => 'حالة المزامنة';
+  String get accountSyncStatusSynced => 'تمت مزامنة كل شيء';
 
   @override
-  String accountPendingCount(Object count) {
-    return '$count معلّق';
+  String get accountSyncStatusPending => 'بانتظار المزامنة';
+
+  @override
+  String accountSyncLastSynced(String time) {
+    return 'آخر مزامنة: $time';
   }
+
+  @override
+  String get accountSyncNever => 'لم تتم المزامنة بعد';
+
+  @override
+  String accountSyncPendingDetail(num count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count تغيير لم تصل إلى السحابة بعد.',
+      many: '$count تغييرًا لم تصل إلى السحابة بعد.',
+      few: '$count تغييرات لم تصل إلى السحابة بعد.',
+      two: 'تغييران لم يصلا إلى السحابة بعد.',
+      one: 'تغيير واحد لم يصل إلى السحابة بعد.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String accountSyncWaitingDetail(num count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'ستتم مزامنة $count تغيير عند عودة الإنترنت.',
+      many: 'ستتم مزامنة $count تغييرًا عند عودة الإنترنت.',
+      few: 'ستتم مزامنة $count تغييرات عند عودة الإنترنت.',
+      two: 'ستتم مزامنة تغييرين عند عودة الإنترنت.',
+      one: 'ستتم مزامنة تغيير واحد عند عودة الإنترنت.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String accountSyncConflictDetail(num count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count تعديل تحتاج إلى قرارك.',
+      many: '$count تعديلًا تحتاج إلى قرارك.',
+      few: '$count تعديلات تحتاج إلى قرارك.',
+      two: 'تعديلان يحتاجان إلى قرارك.',
+      one: 'تعديل واحد يحتاج إلى قرارك.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get accountSyncFailureTimeout => 'لم تستجب السحابة في الوقت المناسب.';
+
+  @override
+  String get accountSyncFailurePermission =>
+      'هذا الحساب غير مسموح له بالمزامنة.';
+
+  @override
+  String get accountSyncFailureUnavailable =>
+      'لا يمكن الوصول إلى السحابة الآن.';
+
+  @override
+  String get accountSyncFailureUnknown => 'حدث خطأ أثناء المزامنة.';
+
+  @override
+  String get accountRetry => 'إعادة المحاولة';
 
   @override
   String get accountResolveConflicts => 'حل التعارضات';
@@ -387,7 +530,30 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get accountDeleteConfirm =>
-      'سيؤدي هذا إلى مسح جميع الروابط المحفوظة محليًا. سيتم استعادة الروابط المتزامنة مع السحابة في المزامنة التالية.';
+      'سيؤدي هذا إلى مسح الروابط من هذا الهاتف. كل ما تمت مزامنته سيعود عند المزامنة التالية.';
+
+  @override
+  String accountDeleteConfirmUnsynced(num count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          'سيؤدي هذا إلى مسح الروابط من هذا الهاتف. سيُفقد $count تغيير لم تتم مزامنته بعد. كل ما تمت مزامنته سيعود عند المزامنة التالية.',
+      many:
+          'سيؤدي هذا إلى مسح الروابط من هذا الهاتف. سيُفقد $count تغييرًا لم تتم مزامنته بعد. كل ما تمت مزامنته سيعود عند المزامنة التالية.',
+      few:
+          'سيؤدي هذا إلى مسح الروابط من هذا الهاتف. ستُفقد $count تغييرات لم تتم مزامنتها بعد. كل ما تمت مزامنته سيعود عند المزامنة التالية.',
+      two:
+          'سيؤدي هذا إلى مسح الروابط من هذا الهاتف. سيُفقد تغييران لم تتم مزامنتهما بعد. كل ما تمت مزامنته سيعود عند المزامنة التالية.',
+      one:
+          'سيؤدي هذا إلى مسح الروابط من هذا الهاتف. سيُفقد تغيير واحد لم تتم مزامنته بعد. كل ما تمت مزامنته سيعود عند المزامنة التالية.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get accountDeleteConfirmGuest =>
+      'سيؤدي هذا إلى مسح كل رابط على هذا الهاتف. لا شيء محفوظ في حساب، لذلك لا يمكن التراجع عن ذلك.';
 
   @override
   String get accountCancel => 'إلغاء';
@@ -401,6 +567,47 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get accountDeleteFail => 'فشل في مسح البيانات المحلية.';
+
+  @override
+  String get accountDeleteCloudData => 'حذف بيانات السحابة';
+
+  @override
+  String get accountDeleteCloudTitle => 'حذف بيانات السحابة؟';
+
+  @override
+  String accountDeleteCloudConfirm(num count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          'سيؤدي هذا إلى حذف $count رابط محفوظ في حسابك نهائيًا وإفراغ هذا الهاتف. لا يمكن التراجع عن ذلك.',
+      many:
+          'سيؤدي هذا إلى حذف $count رابطًا محفوظًا في حسابك نهائيًا وإفراغ هذا الهاتف. لا يمكن التراجع عن ذلك.',
+      few:
+          'سيؤدي هذا إلى حذف $count روابط محفوظة في حسابك نهائيًا وإفراغ هذا الهاتف. لا يمكن التراجع عن ذلك.',
+      two:
+          'سيؤدي هذا إلى حذف الرابطين المحفوظين في حسابك نهائيًا وإفراغ هذا الهاتف. لا يمكن التراجع عن ذلك.',
+      one:
+          'سيؤدي هذا إلى حذف الرابط المحفوظ في حسابك نهائيًا وإفراغ هذا الهاتف. لا يمكن التراجع عن ذلك.',
+      zero:
+          'لا توجد روابط محفوظة في حسابك. سيؤدي هذا إلى إفراغ هذا الهاتف فقط.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get accountDeleteCloudAction => 'حذف نهائي';
+
+  @override
+  String get accountDeleteCloudSuccess => 'تم حذف بيانات السحابة';
+
+  @override
+  String get accountDeleteCloudFail =>
+      'تعذر حذف بيانات السحابة. حاول مرة أخرى.';
+
+  @override
+  String get accountActionReconfirm =>
+      'تغيّر شيء أثناء التأكيد. حاول مرة أخرى.';
 
   @override
   String get langEnglish => 'الإنجليزية';

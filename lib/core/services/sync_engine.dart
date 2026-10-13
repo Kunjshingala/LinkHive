@@ -1,20 +1,31 @@
 import 'dart:async';
 
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:rxdart/rxdart.dart';
 
 import '../../features/links/repository/link_repository.dart';
+import 'sync_control.dart';
 import 'sync_status.dart';
 
-/// Serializes cloud sync requests so only one push/pull run is active at once.
-class SyncEngine {
+/// Serializes cloud sync requests so only one push/pull run is active at once,
+/// and reports what is really happening as a [SyncSnapshot].
+class SyncEngine implements SyncControl {
   final LinkRepository _repository;
   final bool Function() _isAuthenticated;
 
   Future<void>? _activeRun;
+  bool _activeRunPulls = false;
+  Future<void>? _queuedPull;
+  bool _running = false;
   bool _cloudWorkEnabled = true;
-  final StreamController<SyncStatus> _statusController =
-      StreamController<SyncStatus>.broadcast();
-  SyncStatus _status = SyncStatus.idle;
+  bool _paused = false;
+
+  /// Assumed online until [setOnline] says otherwise.
+  bool _online = true;
+  SyncFailure? _runFailure;
+
+  final StreamController<SyncSnapshot> _changes =
+      StreamController<SyncSnapshot>.broadcast();
 
   SyncEngine({
     required LinkRepository repository,
@@ -28,20 +39,115 @@ class SyncEngine {
     _cloudWorkEnabled = enabled;
   }
 
-  SyncStatus get status => _status;
+  /// Tells the engine whether the phone can reach the internet.
+  void setOnline(bool online) {
+    if (_online == online) return;
+    _online = online;
+    _emit();
+  }
 
-  Stream<SyncStatus> get statusStream => _statusController.stream;
+  /// Refuses new sync runs until [resume], for example while the phone is
+  /// being wiped. A run that is already going keeps going; the repository's
+  /// wipe guard stops its local writes.
+  @override
+  void pause() {
+    _paused = true;
+  }
+
+  @override
+  void resume() {
+    _paused = false;
+  }
+
+  SyncStatus get status => snapshot.status;
+
+  /// What the UI shows about sync right now.
+  @override
+  SyncSnapshot get snapshot {
+    final summary = _repository.unsyncedSummary();
+    final failure = _runFailure ?? _repository.lastFailure;
+    final hasFailure = failure != null || summary.failedChanges > 0;
+    final status = _statusFor(summary, hasFailure: hasFailure);
+    return SyncSnapshot(
+      status: status,
+      pendingChanges: summary.changes,
+      conflicts: summary.conflicts,
+      lastSyncedAt: _repository.lastPulledAt,
+      failure: status == SyncStatus.failed
+          ? (failure ?? SyncFailure.unknown)
+          : null,
+    );
+  }
+
+  /// A new snapshot whenever something it shows changes: the engine's own state
+  /// or the queue of unsynced writes. Read [snapshot] for the current one.
+  @override
+  Stream<SyncSnapshot> watch() => Rx.merge<Object?>([
+    _changes.stream,
+    _repository.watchSyncOperations(),
+  ]).map((_) => snapshot).distinct();
+
+  SyncStatus _statusFor(UnsyncedSummary summary, {required bool hasFailure}) {
+    if (summary.conflicts > 0) return SyncStatus.conflict;
+    // Offline is a state of its own, never a failure and never "syncing".
+    if (!_online) {
+      return summary.changes > 0
+          ? SyncStatus.waitingForInternet
+          : SyncStatus.idle;
+    }
+    if (_running) return SyncStatus.syncing;
+    if (hasFailure) return SyncStatus.failed;
+    return SyncStatus.idle;
+  }
 
   /// Requests a sync. Concurrent requests share the same in-flight future.
+  ///
+  /// A pull requested while a push-only run is going is not dropped: it runs
+  /// right after that run.
+  @override
   Future<void> requestSync({bool pull = false}) {
-    if (!_cloudWorkEnabled || !_isAuthenticated()) return Future<void>.value();
+    if (!_canSync) return Future<void>.value();
 
     final activeRun = _activeRun;
-    if (activeRun != null) return activeRun;
+    if (activeRun == null) return _start(pull: pull);
+    if (!pull || _activeRunPulls) return activeRun;
+    return _queuedPull ??= _pullAfter(activeRun);
+  }
 
-    final run = _run(pull: pull);
-    _activeRun = _clearActiveRun(run);
-    return _activeRun!;
+  /// Downloads everything from the cloud again, not just what changed since
+  /// the last sync, to make sure nothing is missing. Waits for a run that is
+  /// already going, then starts its own, so the cursor is never reset under a
+  /// pull that would write it back.
+  Future<void> requestFullResync() async {
+    if (!_canSync) return;
+    while (_activeRun != null) {
+      try {
+        await _activeRun;
+      } on Object {
+        // The callers of that run see its error.
+      }
+    }
+    if (!_canSync) return;
+    await _start(pull: true, fullPull: true);
+  }
+
+  bool get _canSync => _cloudWorkEnabled && !_paused && _isAuthenticated();
+
+  Future<void> _start({required bool pull, bool fullPull = false}) {
+    _activeRunPulls = pull;
+    final run = _clearActiveRun(_run(pull: pull, fullPull: fullPull));
+    _activeRun = run;
+    return run;
+  }
+
+  Future<void> _pullAfter(Future<void> activeRun) async {
+    try {
+      await activeRun;
+    } on Object {
+      // The callers of that run see its error; the pull still gets its turn.
+    }
+    _queuedPull = null;
+    await requestSync(pull: true);
   }
 
   Future<void> _clearActiveRun(Future<void> run) async {
@@ -52,26 +158,30 @@ class SyncEngine {
     }
   }
 
-  Future<void> _run({required bool pull}) async {
-    _setStatus(SyncStatus.syncing);
+  Future<void> _run({required bool pull, bool fullPull = false}) async {
+    _running = true;
+    _runFailure = null;
+    _emit();
     try {
       await _repository.syncPendingLinks();
-      if (pull) await _repository.pullFromCloud();
-      _setStatus(
-        _repository.conflicts.isEmpty ? SyncStatus.idle : SyncStatus.conflict,
-      );
-    } catch (_) {
-      _setStatus(SyncStatus.failed);
+      if (pull) {
+        if (fullPull) await _repository.resetPullCursor();
+        await _repository.pullFromCloud();
+      }
+    } catch (error) {
+      _runFailure = SyncFailure.fromError(error);
       rethrow;
+    } finally {
+      _running = false;
+      _emit();
     }
   }
 
-  void _setStatus(SyncStatus status) {
-    _status = status;
-    if (!_statusController.isClosed) _statusController.add(status);
+  void _emit() {
+    if (!_changes.isClosed) _changes.add(snapshot);
   }
 
   Future<void> dispose() async {
-    await _statusController.close();
+    await _changes.close();
   }
 }
