@@ -3,6 +3,7 @@ enum AccountItem {
   syncData,
   conflicts,
   deleteLocalData,
+  deleteCloudData,
   theme,
   helpFeedback,
   auth,

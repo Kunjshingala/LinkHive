@@ -2,6 +2,7 @@ import 'package:get_it/get_it.dart';
 
 import '../../features/links/manager/link_manager.dart';
 import '../../features/links/repository/link_repository.dart';
+import '../services/account_session_service.dart';
 import '../services/auth_service.dart';
 import '../services/firebase_firestore_service.dart';
 import '../services/link_metadata_service.dart';
@@ -63,6 +64,17 @@ void setupLocator() {
 
   locator.registerLazySingleton<SyncEngine>(
     () => SyncEngine(repository: locator<LinkRepository>()),
+  );
+
+  // ─── Account session (sign-out and wipes) ───────────────────────
+  // Sequences every change of whose data is on this phone. It reaches the
+  // engine and the repository only through their narrow interfaces.
+  locator.registerLazySingleton<AccountSessionService>(
+    () => AccountSessionService(
+      authService: locator<AuthService>(),
+      sync: locator<SyncEngine>(),
+      store: locator<LinkRepository>(),
+    ),
   );
 
   // ─── Sync service (depends on repository) ───────────────────────

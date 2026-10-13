@@ -34,8 +34,3 @@ class AuthSignUpRequested extends AuthEvent {
 class AuthGoogleSignInRequested extends AuthEvent {
   const AuthGoogleSignInRequested();
 }
-
-/// Event triggered when user requests sign out
-class AuthSignOutRequested extends AuthEvent {
-  const AuthSignOutRequested();
-}

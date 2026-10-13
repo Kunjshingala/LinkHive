@@ -216,9 +216,6 @@ class AppLocalizationsEn extends AppLocalizations {
       'Keep your collection safe and synced across devices.';
 
   @override
-  String get accountStatSynced => 'Synced to Cloud';
-
-  @override
   String get accountStatLocal => 'Local Only';
 
   @override
@@ -252,14 +249,73 @@ class AppLocalizationsEn extends AppLocalizations {
   String get accountSignOut => 'Sign Out';
 
   @override
-  String get accountSignOutDesc => 'Choose what to clear after signing out.';
+  String get accountSignOutDesc =>
+      'Everything is saved in your account. Signing out clears this phone, and your links come back when you sign in.';
 
   @override
-  String get accountDeleteRemoteData =>
-      'Clear cloud data (delete synced links)';
+  String accountSignOutPending(num count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          '$count changes are not synced yet. If you sign out now, they are lost.',
+      one: '1 change is not synced yet. If you sign out now, it is lost.',
+    );
+    return '$_temp0';
+  }
 
   @override
-  String get accountSignedOutSuccess => 'Signed out successfully';
+  String accountSignOutSyncing(num count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          'Syncing $count changes. Wait for them to finish, or sign out and lose them.',
+      one: 'Syncing 1 change. Wait for it to finish, or sign out and lose it.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String accountSignOutWaiting(num count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          '$count changes are waiting for internet. If you sign out now, they are lost.',
+      one: '1 change is waiting for internet. If you sign out now, it is lost.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String accountSignOutFailed(num count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          '$count changes could not sync. Try again, or sign out and lose them.',
+      one: '1 change could not sync. Try again, or sign out and lose it.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get accountSignOutConflicts =>
+      'Some edits need your decision before they can sync. If you sign out now, they are lost.';
+
+  @override
+  String get accountSignOutSyncNow => 'Sync now';
+
+  @override
+  String get accountSignOutAnyway => 'Sign out anyway';
+
+  @override
+  String get accountSignedOutSuccess =>
+      'Signed out. This phone\'s copy was cleared.';
+
+  @override
+  String get accountSignOutError => 'Couldn\'t sign out. Please try again.';
 
   @override
   String get authWelcome => 'Welcome Back!';
@@ -352,10 +408,17 @@ class AppLocalizationsEn extends AppLocalizations {
   String get accountSyncingMsg => 'Syncing data...';
 
   @override
-  String get accountSyncSuccess => 'Data synced successfully';
+  String get accountSyncCheckingMsg => 'Checking everything...';
 
   @override
-  String get accountSyncFail => 'Sync failed. Please try again.';
+  String get accountSyncCheckAgain => 'Check everything again';
+
+  @override
+  String get accountSyncCheckAgainDesc =>
+      'Downloads all your links from the cloud again, to be sure none are missing. Nothing on this phone is deleted.';
+
+  @override
+  String get accountSyncDone => 'Done';
 
   @override
   String get accountSyncStatusReady => 'Ready to sync';
@@ -370,15 +433,71 @@ class AppLocalizationsEn extends AppLocalizations {
   String get accountSyncStatusConflict => 'Conflicts need attention';
 
   @override
-  String get accountRetry => 'Retry';
+  String get accountSyncStatusWaiting => 'Waiting for internet';
 
   @override
-  String get accountSyncStatusLabel => 'Sync Status';
+  String get accountSyncStatusSynced => 'All synced';
 
   @override
-  String accountPendingCount(Object count) {
-    return '$count Pending';
+  String get accountSyncStatusPending => 'Waiting to sync';
+
+  @override
+  String accountSyncLastSynced(String time) {
+    return 'Last synced $time';
   }
+
+  @override
+  String get accountSyncNever => 'Not synced yet';
+
+  @override
+  String accountSyncPendingDetail(num count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count changes have not reached the cloud yet.',
+      one: '1 change has not reached the cloud yet.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String accountSyncWaitingDetail(num count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count changes will sync when you are back online.',
+      one: '1 change will sync when you are back online.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String accountSyncConflictDetail(num count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count edits need your decision.',
+      one: '1 edit needs your decision.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get accountSyncFailureTimeout => 'The cloud did not answer in time.';
+
+  @override
+  String get accountSyncFailurePermission =>
+      'This account is not allowed to sync.';
+
+  @override
+  String get accountSyncFailureUnavailable =>
+      'The cloud cannot be reached right now.';
+
+  @override
+  String get accountSyncFailureUnknown => 'Something went wrong while syncing.';
+
+  @override
+  String get accountRetry => 'Retry';
 
   @override
   String get accountResolveConflicts => 'Resolve conflicts';
@@ -388,7 +507,24 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get accountDeleteConfirm =>
-      'This will clear all links saved locally. Links synced continuously with the cloud will be restored on next sync.';
+      'This clears the links on this phone. Everything synced comes back on the next sync.';
+
+  @override
+  String accountDeleteConfirmUnsynced(num count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          'This clears the links on this phone. $count changes that are not synced yet will be lost. Everything synced comes back on the next sync.',
+      one:
+          'This clears the links on this phone. 1 change that is not synced yet will be lost. Everything synced comes back on the next sync.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get accountDeleteConfirmGuest =>
+      'This clears every link on this phone. Nothing is saved in an account, so this cannot be undone.';
 
   @override
   String get accountCancel => 'Cancel';
@@ -402,6 +538,40 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get accountDeleteFail => 'Failed to clear local data.';
+
+  @override
+  String get accountDeleteCloudData => 'Delete Cloud Data';
+
+  @override
+  String get accountDeleteCloudTitle => 'Delete cloud data?';
+
+  @override
+  String accountDeleteCloudConfirm(num count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other:
+          'This permanently deletes the $count links saved in your account and clears this phone. This cannot be undone.',
+      one:
+          'This permanently deletes the 1 link saved in your account and clears this phone. This cannot be undone.',
+      zero: 'No links are saved in your account. This only clears this phone.',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get accountDeleteCloudAction => 'Delete for good';
+
+  @override
+  String get accountDeleteCloudSuccess => 'Cloud data deleted';
+
+  @override
+  String get accountDeleteCloudFail =>
+      'Could not delete cloud data. Try again.';
+
+  @override
+  String get accountActionReconfirm =>
+      'Something changed while you were confirming. Please try again.';
 
   @override
   String get langEnglish => 'English';

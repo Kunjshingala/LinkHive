@@ -510,12 +510,6 @@ abstract class AppLocalizations {
   /// **'Keep your collection safe and synced across devices.'**
   String get accountSignInDesc;
 
-  /// No description provided for @accountStatSynced.
-  ///
-  /// In en, this message translates to:
-  /// **'Synced to Cloud'**
-  String get accountStatSynced;
-
   /// No description provided for @accountStatLocal.
   ///
   /// In en, this message translates to:
@@ -585,20 +579,62 @@ abstract class AppLocalizations {
   /// No description provided for @accountSignOutDesc.
   ///
   /// In en, this message translates to:
-  /// **'Choose what to clear after signing out.'**
+  /// **'Everything is saved in your account. Signing out clears this phone, and your links come back when you sign in.'**
   String get accountSignOutDesc;
 
-  /// No description provided for @accountDeleteRemoteData.
+  /// No description provided for @accountSignOutPending.
   ///
   /// In en, this message translates to:
-  /// **'Clear cloud data (delete synced links)'**
-  String get accountDeleteRemoteData;
+  /// **'{count, plural, =1{1 change is not synced yet. If you sign out now, it is lost.} other{{count} changes are not synced yet. If you sign out now, they are lost.}}'**
+  String accountSignOutPending(num count);
+
+  /// No description provided for @accountSignOutSyncing.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Syncing 1 change. Wait for it to finish, or sign out and lose it.} other{Syncing {count} changes. Wait for them to finish, or sign out and lose them.}}'**
+  String accountSignOutSyncing(num count);
+
+  /// No description provided for @accountSignOutWaiting.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 change is waiting for internet. If you sign out now, it is lost.} other{{count} changes are waiting for internet. If you sign out now, they are lost.}}'**
+  String accountSignOutWaiting(num count);
+
+  /// No description provided for @accountSignOutFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 change could not sync. Try again, or sign out and lose it.} other{{count} changes could not sync. Try again, or sign out and lose them.}}'**
+  String accountSignOutFailed(num count);
+
+  /// No description provided for @accountSignOutConflicts.
+  ///
+  /// In en, this message translates to:
+  /// **'Some edits need your decision before they can sync. If you sign out now, they are lost.'**
+  String get accountSignOutConflicts;
+
+  /// No description provided for @accountSignOutSyncNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Sync now'**
+  String get accountSignOutSyncNow;
+
+  /// No description provided for @accountSignOutAnyway.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign out anyway'**
+  String get accountSignOutAnyway;
 
   /// No description provided for @accountSignedOutSuccess.
   ///
   /// In en, this message translates to:
-  /// **'Signed out successfully'**
+  /// **'Signed out. This phone\'s copy was cleared.'**
   String get accountSignedOutSuccess;
+
+  /// No description provided for @accountSignOutError.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t sign out. Please try again.'**
+  String get accountSignOutError;
 
   /// No description provided for @authWelcome.
   ///
@@ -780,17 +816,29 @@ abstract class AppLocalizations {
   /// **'Syncing data...'**
   String get accountSyncingMsg;
 
-  /// No description provided for @accountSyncSuccess.
+  /// No description provided for @accountSyncCheckingMsg.
   ///
   /// In en, this message translates to:
-  /// **'Data synced successfully'**
-  String get accountSyncSuccess;
+  /// **'Checking everything...'**
+  String get accountSyncCheckingMsg;
 
-  /// No description provided for @accountSyncFail.
+  /// No description provided for @accountSyncCheckAgain.
   ///
   /// In en, this message translates to:
-  /// **'Sync failed. Please try again.'**
-  String get accountSyncFail;
+  /// **'Check everything again'**
+  String get accountSyncCheckAgain;
+
+  /// No description provided for @accountSyncCheckAgainDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Downloads all your links from the cloud again, to be sure none are missing. Nothing on this phone is deleted.'**
+  String get accountSyncCheckAgainDesc;
+
+  /// No description provided for @accountSyncDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get accountSyncDone;
 
   /// No description provided for @accountSyncStatusReady.
   ///
@@ -816,23 +864,83 @@ abstract class AppLocalizations {
   /// **'Conflicts need attention'**
   String get accountSyncStatusConflict;
 
+  /// No description provided for @accountSyncStatusWaiting.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting for internet'**
+  String get accountSyncStatusWaiting;
+
+  /// No description provided for @accountSyncStatusSynced.
+  ///
+  /// In en, this message translates to:
+  /// **'All synced'**
+  String get accountSyncStatusSynced;
+
+  /// No description provided for @accountSyncStatusPending.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting to sync'**
+  String get accountSyncStatusPending;
+
+  /// No description provided for @accountSyncLastSynced.
+  ///
+  /// In en, this message translates to:
+  /// **'Last synced {time}'**
+  String accountSyncLastSynced(String time);
+
+  /// No description provided for @accountSyncNever.
+  ///
+  /// In en, this message translates to:
+  /// **'Not synced yet'**
+  String get accountSyncNever;
+
+  /// No description provided for @accountSyncPendingDetail.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 change has not reached the cloud yet.} other{{count} changes have not reached the cloud yet.}}'**
+  String accountSyncPendingDetail(num count);
+
+  /// No description provided for @accountSyncWaitingDetail.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 change will sync when you are back online.} other{{count} changes will sync when you are back online.}}'**
+  String accountSyncWaitingDetail(num count);
+
+  /// No description provided for @accountSyncConflictDetail.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{1 edit needs your decision.} other{{count} edits need your decision.}}'**
+  String accountSyncConflictDetail(num count);
+
+  /// No description provided for @accountSyncFailureTimeout.
+  ///
+  /// In en, this message translates to:
+  /// **'The cloud did not answer in time.'**
+  String get accountSyncFailureTimeout;
+
+  /// No description provided for @accountSyncFailurePermission.
+  ///
+  /// In en, this message translates to:
+  /// **'This account is not allowed to sync.'**
+  String get accountSyncFailurePermission;
+
+  /// No description provided for @accountSyncFailureUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'The cloud cannot be reached right now.'**
+  String get accountSyncFailureUnavailable;
+
+  /// No description provided for @accountSyncFailureUnknown.
+  ///
+  /// In en, this message translates to:
+  /// **'Something went wrong while syncing.'**
+  String get accountSyncFailureUnknown;
+
   /// No description provided for @accountRetry.
   ///
   /// In en, this message translates to:
   /// **'Retry'**
   String get accountRetry;
-
-  /// No description provided for @accountSyncStatusLabel.
-  ///
-  /// In en, this message translates to:
-  /// **'Sync Status'**
-  String get accountSyncStatusLabel;
-
-  /// No description provided for @accountPendingCount.
-  ///
-  /// In en, this message translates to:
-  /// **'{count} Pending'**
-  String accountPendingCount(Object count);
 
   /// No description provided for @accountResolveConflicts.
   ///
@@ -849,8 +957,20 @@ abstract class AppLocalizations {
   /// No description provided for @accountDeleteConfirm.
   ///
   /// In en, this message translates to:
-  /// **'This will clear all links saved locally. Links synced continuously with the cloud will be restored on next sync.'**
+  /// **'This clears the links on this phone. Everything synced comes back on the next sync.'**
   String get accountDeleteConfirm;
+
+  /// No description provided for @accountDeleteConfirmUnsynced.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{This clears the links on this phone. 1 change that is not synced yet will be lost. Everything synced comes back on the next sync.} other{This clears the links on this phone. {count} changes that are not synced yet will be lost. Everything synced comes back on the next sync.}}'**
+  String accountDeleteConfirmUnsynced(num count);
+
+  /// No description provided for @accountDeleteConfirmGuest.
+  ///
+  /// In en, this message translates to:
+  /// **'This clears every link on this phone. Nothing is saved in an account, so this cannot be undone.'**
+  String get accountDeleteConfirmGuest;
 
   /// No description provided for @accountCancel.
   ///
@@ -875,6 +995,48 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Failed to clear local data.'**
   String get accountDeleteFail;
+
+  /// No description provided for @accountDeleteCloudData.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete Cloud Data'**
+  String get accountDeleteCloudData;
+
+  /// No description provided for @accountDeleteCloudTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete cloud data?'**
+  String get accountDeleteCloudTitle;
+
+  /// No description provided for @accountDeleteCloudConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =0{No links are saved in your account. This only clears this phone.} =1{This permanently deletes the 1 link saved in your account and clears this phone. This cannot be undone.} other{This permanently deletes the {count} links saved in your account and clears this phone. This cannot be undone.}}'**
+  String accountDeleteCloudConfirm(num count);
+
+  /// No description provided for @accountDeleteCloudAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete for good'**
+  String get accountDeleteCloudAction;
+
+  /// No description provided for @accountDeleteCloudSuccess.
+  ///
+  /// In en, this message translates to:
+  /// **'Cloud data deleted'**
+  String get accountDeleteCloudSuccess;
+
+  /// No description provided for @accountDeleteCloudFail.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not delete cloud data. Try again.'**
+  String get accountDeleteCloudFail;
+
+  /// No description provided for @accountActionReconfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Something changed while you were confirming. Please try again.'**
+  String get accountActionReconfirm;
 
   /// No description provided for @langEnglish.
   ///

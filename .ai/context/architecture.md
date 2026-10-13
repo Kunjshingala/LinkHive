@@ -51,7 +51,7 @@ lib/
 ```markdown
 App Start
   └─> SplashScreen (SplashBloc fires SplashStarted)
-        └─> SplashComplete → pushReplacement to /home (HomeScreen)
+        └─> SplashComplete → /links (the Links tab; /home redirects there)
               └─> User triggers Save/Sync/Account
                     └─> Auth Check (via AuthService)
                           ├─ Authenticated → Proceed with Action
@@ -71,13 +71,19 @@ All singleton services are wired in `core/utils/locator.dart` (all `registerLazy
 | Service | Depends on |
 |---|---|
 | `AuthService` | — |
-| `ReceiveSharedIntent` | — |
 | `FirebaseFirestoreService` | — |
 | `HiveHelper` | — |
 | `LinkMetadataService` | — |
 | `LinkRepository` | `FirebaseFirestoreService`, `HiveHelper` |
+| `LinkManager` | `LinkRepository` |
+| `ReceiveSharedIntent` | `LinkManager`, `LinkMetadataService` |
+| `ResurfaceNotificationService` | — |
+| `HomeWidgetService` | `LinkManager` |
 | `SyncEngine` | `LinkRepository` |
 | `SyncService` | `LinkRepository`, `SyncEngine` |
+
+The rules for accounts, sign-in, sign-out and sync live in
+[`sync-contract.md`](sync-contract.md).
 
 - **Blocs** receive services via constructor: `AuthBloc(authService: locator<AuthService>())`
 - **Screens** obtain blocs via `BlocProvider` wrapping the content widget
@@ -93,12 +99,18 @@ Defined in `core/utils/navigation/route.dart`. All routes use **named navigation
 |---|---|---|---|
 | `splash` | `/` | `SplashScreen` | — |
 | `login` | `/login` | `LoginScreen` | — |
-| `homeScreen` | `/home` | `HomeScreen` | — |
+| `homeScreen` | `/home` | redirects to `/links` | — |
+| `links` | `/links` | `LinkListScreen` (tab 1, app home) | — |
+| `today` | `/today` | `TodayScreen` (tab 2) | — |
+| `inbox` | `/inbox` | `InboxScreen` (tab 3) | — |
 | `accountScreen` | `/accountScreen` | `AccountScreen` | — |
 | `signup` | `/signup` | `SignupScreen` | — |
 | `addLink` | `/addLink` | `AddLinkScreen` | `String? prefillUrl` |
 | `editLink` | `/editLink` | `AddLinkScreen` | `LinkModel existingLink` |
 | `conflicts` | `/conflicts` | `ConflictScreen` | — |
+
+Links, Today and Inbox are branches of a `StatefulShellRoute.indexedStack`
+wrapped in `AppShell`.
 
 Use `context.goNamed(MyRouteName.xxx)` or `context.pushNamed(MyRouteName.xxx)` — never raw string paths.
 
