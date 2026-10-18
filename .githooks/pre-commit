@@ -1,0 +1,25 @@
+#!/bin/sh
+# Refuses a commit whose staged Dart files are not formatted with the project
+# style (formatter settings in analysis_options.yaml).
+#
+# Enable once per clone:
+#   git config core.hooksPath .githooks
+#
+# It checks the files as they are on disk, so stage the formatted version.
+
+staged=$(git diff --cached --name-only --diff-filter=ACMR -- '*.dart')
+[ -z "$staged" ] && exit 0
+
+if command -v fvm >/dev/null 2>&1; then
+  dart="fvm dart"
+else
+  dart="dart"
+fi
+
+# shellcheck disable=SC2086 # one path per word; repo paths have no spaces
+if ! $dart format --output=none --set-exit-if-changed $staged >/dev/null; then
+  echo "pre-commit: some staged Dart files are not formatted."
+  echo "Run:  fvm dart format lib test"
+  echo "then stage the files again and commit."
+  exit 1
+fi

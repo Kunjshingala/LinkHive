@@ -25,11 +25,15 @@ fvm flutter devices
 # Analyze for lint errors and warnings (must be zero before committing)
 fvm flutter analyze
 
-# Auto-format all Dart files
-fvm dart format lib/
+# Auto-format all Dart files (style: analysis_options.yaml formatter block)
+fvm dart format lib test
 
-# Check formatting without applying
-fvm dart format --output=none lib/
+# Check formatting without applying (must report 0 changed before done)
+fvm dart format --output=none --set-exit-if-changed lib test
+
+# One-time setup per clone: format check on commit, blame skips format commits
+git config core.hooksPath .githooks
+git config blame.ignoreRevsFile .git-blame-ignore-revs
 ```
 
 ---

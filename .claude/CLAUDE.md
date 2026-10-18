@@ -171,7 +171,9 @@ fvm flutter run                                   # Run app on default device
 fvm flutter run -d <device_id>                    # Run on a specific device (see `flutter devices`)
 fvm flutter gen-l10n                              # Regenerate after ARB changes
 fvm dart run build_runner build --delete-conflicting-outputs  # After Hive model changes
-fvm dart format lib/                              # Format all Dart files
+fvm dart format lib test                          # Format all Dart files (width 120, see analysis_options.yaml)
+fvm dart format --output=none --set-exit-if-changed lib test  # Format check: must report 0 changed
+git config core.hooksPath .githooks               # Once per clone: pre-commit format check
 cd ios && pod install                             # After iOS dependency changes
 ```
 

@@ -11,7 +11,7 @@
 fvm flutter run
 fvm flutter analyze
 fvm flutter pub get
-fvm dart format lib/
+fvm dart format lib test
 fvm dart run build_runner build --delete-conflicting-outputs
 
 # NEVER use bare commands
@@ -31,9 +31,10 @@ Run this before declaring any code task done:
 
 ```bash
 fvm flutter analyze
+fvm dart format --output=none --set-exit-if-changed lib test
 ```
 
-Zero errors, zero warnings. Fix every issue before finishing.
+Zero errors, zero warnings, and zero files the formatter would change. Fix every issue before finishing.
 
 For localization changes:
 
@@ -45,7 +46,18 @@ For Hive model changes (after editing `@HiveType` / `@HiveField`):
 
 ```bash
 fvm dart run build_runner build --delete-conflicting-outputs
+fvm dart format lib
 ```
+
+### Code format
+
+One style for every IDE and the command line:
+
+- Dart: `formatter: page_width: 120` in `analysis_options.yaml`; trailing commas are managed by the formatter. VS Code and Android Studio read this file; do not set `dart.lineLength`.
+- Line endings: LF everywhere (`.gitattributes`). Indentation and final newlines: `.editorconfig`.
+- Format with `fvm dart format lib test` (whole folders are fine: the repo is formatted). Generated l10n output is formatted by `gen-l10n` (`format: true`); run `fvm dart format lib` after `build_runner`.
+- Enable the pre-commit hook once per clone: `git config core.hooksPath .githooks`. It refuses a commit with unformatted staged Dart files.
+- `.git-blame-ignore-revs` lists format-only commits; enable it locally with `git config blame.ignoreRevsFile .git-blame-ignore-revs`. Add any future format-only commit to it.
 
 ## 4. Git Discipline
 

@@ -1,0 +1,21 @@
+# Editor basics shared by every IDE. https://editorconfig.org
+# Dart line width is set in analysis_options.yaml (formatter: page_width).
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+[*.{dart,yaml,yml,json,arb}]
+indent_style = space
+indent_size = 2
+
+[*.{kt,kts,swift}]
+indent_style = space
+indent_size = 4
+
+# Two trailing spaces are a line break in Markdown.
+[*.md]
+trim_trailing_whitespace = false

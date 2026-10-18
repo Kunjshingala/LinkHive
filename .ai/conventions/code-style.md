@@ -3,8 +3,10 @@
 ## Language & Formatting
 
 - **Dart** — follow official Dart style guide
-- Use `dart format` (via FVM) before committing: `fvm dart format lib/`
-- Max line length: 100 characters (matches `analysis_options.yaml`)
+- Use `dart format` (via FVM) before committing: `fvm dart format lib test`
+- Max line length: 120 characters (`formatter: page_width: 120` in `analysis_options.yaml`); the formatter manages trailing commas
+- LF line endings everywhere (`.gitattributes`); editor basics in `.editorconfig`
+- The pre-commit hook (`git config core.hooksPath .githooks`) refuses unformatted staged Dart files
 - Use `const` constructors wherever possible (linter enforces this)
 
 ---
