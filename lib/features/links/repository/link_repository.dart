@@ -59,10 +59,7 @@ class LinkRepository implements LocalDataStore, SyncStore {
       operationType: SyncOperation.create,
       payload: localLink.toSyncPayload(),
     );
-    printLog(
-      tag: 'LinkRepository',
-      msg: 'Added link locally: ${localLink.title}',
-    );
+    printLog(tag: 'LinkRepository', msg: 'Added link locally: ${localLink.title}');
   }
 
   Future<void> updateLink(LinkModel link) async {
@@ -115,15 +112,11 @@ class LinkRepository implements LocalDataStore, SyncStore {
     filtered.sort((a, b) => b.createdAt.compareTo(a.createdAt));
 
     if (category.isNotEmpty && category != 'All') {
-      filtered = filtered
-          .where((l) => l.categories.contains(category))
-          .toList();
+      filtered = filtered.where((l) => l.categories.contains(category)).toList();
     }
 
     if (priority.isNotEmpty && priority != 'All') {
-      filtered = filtered
-          .where((l) => l.priority.toLowerCase() == priority.toLowerCase())
-          .toList();
+      filtered = filtered.where((l) => l.priority.toLowerCase() == priority.toLowerCase()).toList();
     }
 
     if (query.trim().isNotEmpty) {
@@ -183,24 +176,19 @@ class LinkRepository implements LocalDataStore, SyncStore {
   // In-memory filters over the links box, like [queryLinks]. Inbox
   // (quick-saved) links are excluded everywhere: they get their own tab.
 
-  Iterable<LinkModel> get _libraryLinks =>
-      _linksBox.values.where((l) => !l.isQuickSaved);
+  Iterable<LinkModel> get _libraryLinks => _linksBox.values.where((l) => !l.isQuickSaved);
 
   /// One page of the Links list for [query].
   List<LinkModel> findLinks(LinkQuery query, {int limit = 20, int offset = 0}) {
     final matches = _matching(query).toList();
-    final comparator = query.sort == LinkSort.site
-        ? _bySiteComparator(matches)
-        : _comparatorFor(query.sort);
+    final comparator = query.sort == LinkSort.site ? _bySiteComparator(matches) : _comparatorFor(query.sort);
     matches.sort(comparator);
     return matches.skip(offset).take(limit).toList();
   }
 
   /// Sites with the most matching links first (ties A–Z), newest first within
   /// a site, so the list reads as one group per site.
-  int Function(LinkModel, LinkModel) _bySiteComparator(
-    List<LinkModel> matches,
-  ) {
+  int Function(LinkModel, LinkModel) _bySiteComparator(List<LinkModel> matches) {
     final hosts = {for (final l in matches) l.id: sourceHost(l.url)};
     final counts = <String, int>{};
     for (final host in hosts.values) {
@@ -229,12 +217,10 @@ class LinkRepository implements LocalDataStore, SyncStore {
       if (l.shareCount < query.minShareCount) return false;
       if (query.host != null && sourceHost(l.url) != query.host) return false;
       if (query.uncategorized && l.categories.isNotEmpty) return false;
-      if (query.categories.isNotEmpty &&
-          !l.categories.any(query.categories.contains)) {
+      if (query.categories.isNotEmpty && !l.categories.any(query.categories.contains)) {
         return false;
       }
-      if (priorities.isNotEmpty &&
-          !priorities.contains(l.priority.toLowerCase())) {
+      if (priorities.isNotEmpty && !priorities.contains(l.priority.toLowerCase())) {
         return false;
       }
       if (q.isNotEmpty &&
@@ -248,8 +234,7 @@ class LinkRepository implements LocalDataStore, SyncStore {
   }
 
   int Function(LinkModel, LinkModel) _comparatorFor(LinkSort sort) {
-    int newestFirst(LinkModel a, LinkModel b) =>
-        b.createdAt.compareTo(a.createdAt);
+    int newestFirst(LinkModel a, LinkModel b) => b.createdAt.compareTo(a.createdAt);
     switch (sort) {
       case LinkSort.newest:
         return newestFirst;
@@ -257,9 +242,7 @@ class LinkRepository implements LocalDataStore, SyncStore {
         return (a, b) => a.createdAt.compareTo(b.createdAt);
       case LinkSort.priority:
         return (a, b) {
-          final byPriority = _priorityRank(
-            a.priority,
-          ).compareTo(_priorityRank(b.priority));
+          final byPriority = _priorityRank(a.priority).compareTo(_priorityRank(b.priority));
           return byPriority != 0 ? byPriority : newestFirst(a, b);
         };
       case LinkSort.mostSaved:
@@ -273,12 +256,11 @@ class LinkRepository implements LocalDataStore, SyncStore {
     }
   }
 
-  static int _priorityRank(String priority) =>
-      switch (priority.toLowerCase()) {
-        'high' => 0,
-        'low' => 2,
-        _ => 1,
-      };
+  static int _priorityRank(String priority) => switch (priority.toLowerCase()) {
+    'high' => 0,
+    'low' => 2,
+    _ => 1,
+  };
 
   /// Counts for the quick chips and "No category".
   LibraryStats getLibraryStats() {
@@ -303,18 +285,14 @@ class LinkRepository implements LocalDataStore, SyncStore {
   /// Sites links come from, most links first. Links without a host are left
   /// out. With [within], counts only links matching that query (for the
   /// per-site group headers).
-  List<NamedCount> getSourceCounts({LinkQuery? within}) => _countBy(
-    (within == null ? _libraryLinks : _matching(within)).map(
-      (l) => [sourceHost(l.url)],
-    ),
-  );
+  List<NamedCount> getSourceCounts({LinkQuery? within}) =>
+      _countBy((within == null ? _libraryLinks : _matching(within)).map((l) => [sourceHost(l.url)]));
 
   /// Every category name used by at least one link, most links first.
   ///
   /// Built from the links rather than the categories box, so legacy built-in
   /// names that are no longer offered still show up while links use them.
-  List<NamedCount> getCategoryCounts() =>
-      _countBy(_libraryLinks.map((l) => l.categories));
+  List<NamedCount> getCategoryCounts() => _countBy(_libraryLinks.map((l) => l.categories));
 
   static List<NamedCount> _countBy(Iterable<Iterable<String>> keysPerLink) {
     final counts = <String, int>{};
@@ -334,38 +312,25 @@ class LinkRepository implements LocalDataStore, SyncStore {
 
   /// Category names [host]'s links already have, most used first, keeping only
   /// names on at least [minLinks] links. Backs the category suggestions.
-  List<NamedCount> getCategoryCountsForHost(String host, {int minLinks = 2}) =>
-      _countBy(
-        _libraryLinks
-            .where((l) => sourceHost(l.url) == host)
-            .map((l) => l.categories),
-      ).where((c) => c.count >= minLinks).toList();
+  List<NamedCount> getCategoryCountsForHost(String host, {int minLinks = 2}) => _countBy(
+    _libraryLinks.where((l) => sourceHost(l.url) == host).map((l) => l.categories),
+  ).where((c) => c.count >= minLinks).toList();
 
   // ─── Bulk writes ───────────────────────────────────────────────────────────
   //
   // Each changed link is written and queued for sync exactly like the
   // single-link versions. Links that wouldn't change are skipped.
 
-  Future<void> markLinksRead(Iterable<String> ids) => _updateEach(
-    ids,
-    (l) => l.isRead ? null : l.copyWith(isRead: true),
-  );
+  Future<void> markLinksRead(Iterable<String> ids) =>
+      _updateEach(ids, (l) => l.isRead ? null : l.copyWith(isRead: true));
 
   Future<void> addCategoryToLinks(Iterable<String> ids, String name) =>
-      _updateEach(
-        ids,
-        (l) => l.categories.contains(name)
-            ? null
-            : l.copyWith(categories: [...l.categories, name]),
-      );
+      _updateEach(ids, (l) => l.categories.contains(name) ? null : l.copyWith(categories: [...l.categories, name]));
 
-  Future<void> setPriorityForLinks(Iterable<String> ids, String priority) =>
-      _updateEach(
-        ids,
-        (l) => l.priority.toLowerCase() == priority.toLowerCase()
-            ? null
-            : l.copyWith(priority: priority),
-      );
+  Future<void> setPriorityForLinks(Iterable<String> ids, String priority) => _updateEach(
+    ids,
+    (l) => l.priority.toLowerCase() == priority.toLowerCase() ? null : l.copyWith(priority: priority),
+  );
 
   Future<void> deleteLinks(Iterable<String> ids) async {
     for (final id in ids.toSet()) {
@@ -373,10 +338,7 @@ class LinkRepository implements LocalDataStore, SyncStore {
     }
   }
 
-  Future<void> _updateEach(
-    Iterable<String> ids,
-    LinkModel? Function(LinkModel) change,
-  ) async {
+  Future<void> _updateEach(Iterable<String> ids, LinkModel? Function(LinkModel) change) async {
     for (final id in ids.toSet()) {
       final link = _linksBox.get(id);
       if (link == null) continue;
@@ -404,11 +366,8 @@ class LinkRepository implements LocalDataStore, SyncStore {
     final unread = _linksBox.values.where((l) => !l.isRead).toList();
     if (unread.isEmpty) return null;
 
-    final due =
-        unread
-            .where((l) => l.resurfaceAt != null && l.resurfaceAt! <= nowMs)
-            .toList()
-          ..sort((a, b) => a.resurfaceAt!.compareTo(b.resurfaceAt!));
+    final due = unread.where((l) => l.resurfaceAt != null && l.resurfaceAt! <= nowMs).toList()
+      ..sort((a, b) => a.resurfaceAt!.compareTo(b.resurfaceAt!));
     if (due.isNotEmpty) return due.first;
 
     final pool = List<LinkModel>.from(unread)
@@ -487,22 +446,17 @@ class LinkRepository implements LocalDataStore, SyncStore {
   List<LinkModel> getUpNextLinks({int count = 3}) {
     // Exclude quick-saved links — they belong to the Inbox, not the managed
     // reading queue surfaced on Home.
-    final unread = _linksBox.values
-        .where((l) => !l.isRead && !l.isQuickSaved)
-        .toList();
+    final unread = _linksBox.values.where((l) => !l.isRead && !l.isQuickSaved).toList();
     unread.sort((a, b) => a.createdAt.compareTo(b.createdAt));
     return unread.take(count).toList();
   }
 
   /// Total number of unread links — used for the Up Next strip label.
   /// Quick-saved (Inbox) links are excluded; they are counted by [quickCount].
-  int get unreadCount =>
-      _linksBox.values.where((l) => !l.isRead && !l.isQuickSaved).length;
+  int get unreadCount => _linksBox.values.where((l) => !l.isRead && !l.isQuickSaved).length;
 
   Future<void> addCategory(CategoryModel category) async {
-    final c = category.id.isEmpty
-        ? CategoryModel(id: _uuid.v4(), name: category.name)
-        : category;
+    final c = category.id.isEmpty ? CategoryModel(id: _uuid.v4(), name: category.name) : category;
     final normalizedName = c.name.trim().toLowerCase();
     final existsInBuiltIns = CategoryUtils.isBuiltIn(normalizedName);
     final existsInCustom = _categoriesBox.values.any(
@@ -528,15 +482,9 @@ class LinkRepository implements LocalDataStore, SyncStore {
   Future<void> deleteCategory(String id) async {
     final name = _categoriesBox.get(id)?.name;
     if (name != null) {
-      final tagged = _linksBox.values
-          .where((l) => l.categories.contains(name))
-          .toList();
+      final tagged = _linksBox.values.where((l) => l.categories.contains(name)).toList();
       for (final link in tagged) {
-        await updateLink(
-          link.copyWith(
-            categories: link.categories.where((c) => c != name).toList(),
-          ),
-        );
+        await updateLink(link.copyWith(categories: link.categories.where((c) => c != name).toList()));
       }
     }
     await _categoriesBox.delete(id);
@@ -563,8 +511,7 @@ class LinkRepository implements LocalDataStore, SyncStore {
 
   /// Returns durable operations in creation order.
   List<SyncOperation> get pendingSyncOperations =>
-      _syncOperationsBox.values.toList()
-        ..sort((a, b) => a.createdAt.compareTo(b.createdAt));
+      _syncOperationsBox.values.toList()..sort((a, b) => a.createdAt.compareTo(b.createdAt));
 
   /// What has not reached the cloud yet: queued writes (links and categories),
   /// how many of them failed their last attempt, and unresolved conflicts.
@@ -573,9 +520,7 @@ class LinkRepository implements LocalDataStore, SyncStore {
     final operations = _syncOperationsBox.values;
     return UnsyncedSummary(
       changes: operations.length,
-      failedChanges: operations
-          .where((operation) => operation.state == SyncOperation.failed)
-          .length,
+      failedChanges: operations.where((operation) => operation.state == SyncOperation.failed).length,
       conflicts: conflicts.length,
     );
   }
@@ -584,8 +529,7 @@ class LinkRepository implements LocalDataStore, SyncStore {
   Stream<BoxEvent> watchSyncOperations() => _syncOperationsBox.watch();
 
   @override
-  int? get lastPulledAt =>
-      _hiveHelper.settingsBox.get(HiveConstants.lastPulledAtKey) as int?;
+  int? get lastPulledAt => _hiveHelper.settingsBox.get(HiveConstants.lastPulledAtKey) as int?;
 
   @override
   Future<SyncRunToken?> beginRun(String uid) async {
@@ -595,25 +539,16 @@ class LinkRepository implements LocalDataStore, SyncStore {
     if (owner == uid) return run;
 
     if (owner == null) {
-      final reset = await _guarded(
-        run,
-        () => settings.delete(HiveConstants.lastPulledAtKey),
-      );
+      final reset = await _guarded(run, () => settings.delete(HiveConstants.lastPulledAtKey));
       if (!reset) return null;
     } else {
-      printLog(
-        tag: 'LinkRepository',
-        msg: 'Local data belongs to another account; wiping before sync',
-      );
+      printLog(tag: 'LinkRepository', msg: 'Local data belongs to another account; wiping before sync');
       await clearLocalData();
       // This wipe moved the count by one; more means another wipe ran too.
       if (_wipeGeneration != run.generation + 1) return null;
       run = SyncRunToken(_wipeGeneration);
     }
-    final claimed = await _guarded(
-      run,
-      () => settings.put(HiveConstants.ownerUidKey, uid),
-    );
+    final claimed = await _guarded(run, () => settings.put(HiveConstants.ownerUidKey, uid));
     return claimed ? run : null;
   }
 
@@ -647,30 +582,22 @@ class LinkRepository implements LocalDataStore, SyncStore {
   /// `_enqueueOperation` resets a replaced operation to pending.
   @override
   bool isStillInFlight(SyncOperation operation) =>
-      _syncOperationsBox.get(operation.operationId)?.state ==
-      SyncOperation.processing;
+      _syncOperationsBox.get(operation.operationId)?.state == SyncOperation.processing;
 
   @override
   LinkModel? getBaseLinkById(String id) => _baseLinksBox.get(id);
 
   @override
-  bool hasPendingOperation(String entityType, String entityId) =>
-      _syncOperationsBox.values.any(
-        (operation) =>
-            operation.entityType == entityType &&
-            operation.entityId == entityId,
-      );
+  bool hasPendingOperation(String entityType, String entityId) => _syncOperationsBox.values.any(
+    (operation) => operation.entityType == entityType && operation.entityId == entityId,
+  );
 
   @override
-  bool hasLocalTombstone(String entityType, String entityId) =>
-      _syncTombstonesBox.containsKey('$entityType:$entityId');
+  bool hasLocalTombstone(String entityType, String entityId) => _syncTombstonesBox.containsKey('$entityType:$entityId');
 
   @override
   Future<bool> putOperation(SyncRunToken run, SyncOperation operation) =>
-      _guarded(
-        run,
-        () => _syncOperationsBox.put(operation.operationId, operation),
-      );
+      _guarded(run, () => _syncOperationsBox.put(operation.operationId, operation));
 
   /// The queued operation can change while its upload waits: an edit replaces
   /// its payload, and deleting an entity whose create was queued removes it.
@@ -679,31 +606,18 @@ class LinkRepository implements LocalDataStore, SyncStore {
   @override
   Future<bool> finishPushed(SyncRunToken run, SyncOperation operation) async {
     final pushedLink =
-        operation.entityType == SyncOperation.linkEntity &&
-            operation.operationType != SyncOperation.delete
-        ? LinkModel.fromFirestore(
-            operation.entityId,
-            operation.payload,
-          ).copyWith(isSynced: true)
+        operation.entityType == SyncOperation.linkEntity && operation.operationType != SyncOperation.delete
+        ? LinkModel.fromFirestore(operation.entityId, operation.payload).copyWith(isSynced: true)
         : null;
 
     if (isStillInFlight(operation)) {
       if (pushedLink != null) {
-        if (!await _guarded(
-              run,
-              () => _linksBox.put(pushedLink.id, pushedLink),
-            ) ||
-            !await _guarded(
-              run,
-              () => _baseLinksBox.put(pushedLink.id, pushedLink),
-            )) {
+        if (!await _guarded(run, () => _linksBox.put(pushedLink.id, pushedLink)) ||
+            !await _guarded(run, () => _baseLinksBox.put(pushedLink.id, pushedLink))) {
           return false;
         }
       }
-      return _guarded(
-        run,
-        () => _syncOperationsBox.delete(operation.operationId),
-      );
+      return _guarded(run, () => _syncOperationsBox.delete(operation.operationId));
     }
 
     if (pushedLink != null && _linksBox.containsKey(pushedLink.id)) {
@@ -732,16 +646,9 @@ class LinkRepository implements LocalDataStore, SyncStore {
       await _guarded(run, () => _baseLinksBox.put(cloudLink.id, cloudLink));
 
   @override
-  Future<bool> applyMerge(
-    SyncRunToken run,
-    LinkModel merged,
-    LinkModel cloudLink,
-  ) async {
+  Future<bool> applyMerge(SyncRunToken run, LinkModel merged, LinkModel cloudLink) async {
     if (!await _guarded(run, () => _linksBox.put(merged.id, merged)) ||
-        !await _guarded(
-          run,
-          () => _baseLinksBox.put(cloudLink.id, cloudLink),
-        )) {
+        !await _guarded(run, () => _baseLinksBox.put(cloudLink.id, cloudLink))) {
       return false;
     }
     // An edit made while these writes waited is newer than the merge and
@@ -762,12 +669,10 @@ class LinkRepository implements LocalDataStore, SyncStore {
 
   @override
   Future<bool> removeLink(SyncRunToken run, String id) async =>
-      await _guarded(run, () => _linksBox.delete(id)) &&
-      await _guarded(run, () => _baseLinksBox.delete(id));
+      await _guarded(run, () => _linksBox.delete(id)) && await _guarded(run, () => _baseLinksBox.delete(id));
 
   @override
-  Future<bool> removeBaseLink(SyncRunToken run, String id) =>
-      _guarded(run, () => _baseLinksBox.delete(id));
+  Future<bool> removeBaseLink(SyncRunToken run, String id) => _guarded(run, () => _baseLinksBox.delete(id));
 
   @override
   Future<bool> saveConflict(
@@ -787,10 +692,7 @@ class LinkRepository implements LocalDataStore, SyncStore {
       cloudVersion: cloud?.toSyncPayload(),
       createdAt: DateTime.now().toUtc().millisecondsSinceEpoch,
     );
-    return await _guarded(
-          run,
-          () => _conflictRecordsBox.put(conflict.conflictId, conflict),
-        ) &&
+    return await _guarded(run, () => _conflictRecordsBox.put(conflict.conflictId, conflict)) &&
         await _guarded(run, () => _conflictLinksBox.put(linkId, local));
   }
 
@@ -799,23 +701,17 @@ class LinkRepository implements LocalDataStore, SyncStore {
       _guarded(run, () => _categoriesBox.put(category.id, category));
 
   @override
-  Future<bool> removeCategory(SyncRunToken run, String id) =>
-      _guarded(run, () => _categoriesBox.delete(id));
+  Future<bool> removeCategory(SyncRunToken run, String id) => _guarded(run, () => _categoriesBox.delete(id));
 
   /// Nothing on this phone is deleted: pulled links are merged in the same way
   /// as on a first sync.
   @override
-  Future<bool> resetPullCursor(SyncRunToken run) => _guarded(
-    run,
-    () => _hiveHelper.settingsBox.delete(HiveConstants.lastPulledAtKey),
-  );
+  Future<bool> resetPullCursor(SyncRunToken run) =>
+      _guarded(run, () => _hiveHelper.settingsBox.delete(HiveConstants.lastPulledAtKey));
 
   @override
-  Future<bool> writePullCursor(SyncRunToken run, int timestampMs) => _guarded(
-    run,
-    () =>
-        _hiveHelper.settingsBox.put(HiveConstants.lastPulledAtKey, timestampMs),
-  );
+  Future<bool> writePullCursor(SyncRunToken run, int timestampMs) =>
+      _guarded(run, () => _hiveHelper.settingsBox.put(HiveConstants.lastPulledAtKey, timestampMs));
 
   Future<void> _enqueueOperation({
     required String entityType,
@@ -825,23 +721,18 @@ class LinkRepository implements LocalDataStore, SyncStore {
   }) async {
     SyncOperation? existing;
     for (final operation in _syncOperationsBox.values) {
-      if (operation.entityType == entityType &&
-          operation.entityId == entityId) {
+      if (operation.entityType == entityType && operation.entityId == entityId) {
         existing = operation;
         break;
       }
     }
 
-    if (existing != null &&
-        existing.operationType == SyncOperation.create &&
-        operationType == SyncOperation.delete) {
+    if (existing != null && existing.operationType == SyncOperation.create && operationType == SyncOperation.delete) {
       await _syncOperationsBox.delete(existing.operationId);
       return;
     }
 
-    final effectiveType =
-        existing?.operationType == SyncOperation.create &&
-            operationType == SyncOperation.update
+    final effectiveType = existing?.operationType == SyncOperation.create && operationType == SyncOperation.update
         ? SyncOperation.create
         : operationType;
     final now = DateTime.now().toUtc().millisecondsSinceEpoch;
@@ -867,18 +758,14 @@ class LinkRepository implements LocalDataStore, SyncStore {
   }
 
   /// Returns unresolved conflicts for presentation and later user resolution.
-  List<ConflictRecord> get conflicts => _conflictRecordsBox.values
-      .where((conflict) => conflict.status == ConflictRecord.unresolved)
-      .toList();
+  List<ConflictRecord> get conflicts =>
+      _conflictRecordsBox.values.where((conflict) => conflict.status == ConflictRecord.unresolved).toList();
 
   /// Keeps the local version and queues it as the new cloud version.
   Future<void> resolveConflictKeepLocal(String conflictId) async {
     final conflict = _conflictRecordsBox.get(conflictId);
     if (conflict == null) return;
-    await resolveConflictWithLink(
-      conflictId,
-      _linkFromPayload(conflict.localVersion),
-    );
+    await resolveConflictWithLink(conflictId, _linkFromPayload(conflict.localVersion));
   }
 
   /// Keeps the cloud version, including accepting a remote deletion.
@@ -910,10 +797,7 @@ class LinkRepository implements LocalDataStore, SyncStore {
   }
 
   /// Saves an explicit user-selected merge and queues it for upload.
-  Future<void> resolveConflictWithLink(
-    String conflictId,
-    LinkModel resolvedLink,
-  ) async {
+  Future<void> resolveConflictWithLink(String conflictId, LinkModel resolvedLink) async {
     final conflict = _conflictRecordsBox.get(conflictId);
     if (conflict == null) return;
     await updateLink(resolvedLink);
@@ -921,16 +805,11 @@ class LinkRepository implements LocalDataStore, SyncStore {
     await _conflictRecordsBox.delete(conflictId);
   }
 
-  LinkModel _linkFromPayload(Map<String, dynamic> payload) =>
-      LinkModel.fromFirestore(payload['id'] as String, payload);
+  LinkModel _linkFromPayload(Map<String, dynamic> payload) => LinkModel.fromFirestore(payload['id'] as String, payload);
 
   Future<void> _removeOperationsFor(String entityType, String entityId) async {
     final operationIds = _syncOperationsBox.values
-        .where(
-          (operation) =>
-              operation.entityType == entityType &&
-              operation.entityId == entityId,
-        )
+        .where((operation) => operation.entityType == entityType && operation.entityId == entityId)
         .map((operation) => operation.operationId)
         .toList();
     for (final operationId in operationIds) {
@@ -958,8 +837,7 @@ class LinkRepository implements LocalDataStore, SyncStore {
   }
 
   @override
-  bool get isWipePending =>
-      _hiveHelper.settingsBox.get(HiveConstants.wipePendingKey) == true;
+  bool get isWipePending => _hiveHelper.settingsBox.get(HiveConstants.wipePendingKey) == true;
 
   @override
   Future<void> setWipePending(bool pending) => pending

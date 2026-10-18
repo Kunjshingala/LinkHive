@@ -37,20 +37,12 @@ void main() {
   blocTest<ConflictBloc, ConflictState>(
     'resolves a conflict by keeping local data',
     build: () {
-      when(
-        () => repository.resolveConflictKeepLocal('conflict-1'),
-      ).thenAnswer((_) async {});
+      when(() => repository.resolveConflictKeepLocal('conflict-1')).thenAnswer((_) async {});
       when(() => repository.conflicts).thenReturn([]);
       return ConflictBloc(repository: repository);
     },
     act: (bloc) => bloc.add(const ConflictKeepLocalRequested('conflict-1')),
-    expect: () => [
-      const ConflictLoaded([]),
-      const ConflictLoading(),
-      const ConflictLoaded([]),
-    ],
-    verify: (_) => verify(
-      () => repository.resolveConflictKeepLocal('conflict-1'),
-    ).called(1),
+    expect: () => [const ConflictLoaded([]), const ConflictLoading(), const ConflictLoaded([])],
+    verify: (_) => verify(() => repository.resolveConflictKeepLocal('conflict-1')).called(1),
   );
 }

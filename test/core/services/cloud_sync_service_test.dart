@@ -26,9 +26,7 @@ void main() {
   late CloudSyncService cloudSync;
 
   setUpAll(() async {
-    hiveDirectory = await Directory.systemTemp.createTemp(
-      'linkhive-cloud-sync-test-',
-    );
+    hiveDirectory = await Directory.systemTemp.createTemp('linkhive-cloud-sync-test-');
     Hive.init(hiveDirectory.path);
     Hive.registerAdapter(LinkModelAdapter());
     Hive.registerAdapter(CategoryModelAdapter());
@@ -59,11 +57,7 @@ void main() {
 
     cloud = FakeFirebaseFirestoreService();
     repository = _FlakyRepository();
-    cloudSync = CloudSyncService(
-      firebaseService: cloud,
-      store: repository,
-      uidProvider: () => uid,
-    );
+    cloudSync = CloudSyncService(firebaseService: cloud, store: repository, uidProvider: () => uid);
   });
 
   tearDown(() => Hive.close());
@@ -71,14 +65,7 @@ void main() {
 
   test('a phone write that fails after a successful upload keeps the change '
       'queued for a retry', () async {
-    await repository.addLink(
-      const LinkModel(
-        id: 'a-1',
-        url: 'https://example.com/a-1',
-        title: 'a-1',
-        createdAt: 100,
-      ),
-    );
+    await repository.addLink(const LinkModel(id: 'a-1', url: 'https://example.com/a-1', title: 'a-1', createdAt: 100));
     repository.failNextFinish = true;
 
     await cloudSync.push();

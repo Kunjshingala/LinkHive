@@ -29,8 +29,7 @@ class SyncEngine implements SyncControl {
   bool _online = true;
   SyncFailure? _runFailure;
 
-  final StreamController<SyncSnapshot> _changes =
-      StreamController<SyncSnapshot>.broadcast();
+  final StreamController<SyncSnapshot> _changes = StreamController<SyncSnapshot>.broadcast();
 
   SyncEngine({
     required CloudSyncService cloudSync,
@@ -38,8 +37,7 @@ class SyncEngine implements SyncControl {
     bool Function()? isAuthenticated,
   }) : _cloudSync = cloudSync,
        _repository = repository,
-       _isAuthenticated =
-           isAuthenticated ?? (() => FirebaseAuth.instance.currentUser != null);
+       _isAuthenticated = isAuthenticated ?? (() => FirebaseAuth.instance.currentUser != null);
 
   /// Enables or disables cloud work for the current authentication session.
   void setCloudWorkEnabled(bool enabled) {
@@ -80,27 +78,21 @@ class SyncEngine implements SyncControl {
       pendingChanges: summary.changes,
       conflicts: summary.conflicts,
       lastSyncedAt: _repository.lastPulledAt,
-      failure: status == SyncStatus.failed
-          ? (failure ?? SyncFailure.unknown)
-          : null,
+      failure: status == SyncStatus.failed ? (failure ?? SyncFailure.unknown) : null,
     );
   }
 
   /// A new snapshot whenever something it shows changes: the engine's own state
   /// or the queue of unsynced writes. Read [snapshot] for the current one.
   @override
-  Stream<SyncSnapshot> watch() => Rx.merge<Object?>([
-    _changes.stream,
-    _repository.watchSyncOperations(),
-  ]).map((_) => snapshot).distinct();
+  Stream<SyncSnapshot> watch() =>
+      Rx.merge<Object?>([_changes.stream, _repository.watchSyncOperations()]).map((_) => snapshot).distinct();
 
   SyncStatus _statusFor(UnsyncedSummary summary, {required bool hasFailure}) {
     if (summary.conflicts > 0) return SyncStatus.conflict;
     // Offline is a state of its own, never a failure and never "syncing".
     if (!_online) {
-      return summary.changes > 0
-          ? SyncStatus.waitingForInternet
-          : SyncStatus.idle;
+      return summary.changes > 0 ? SyncStatus.waitingForInternet : SyncStatus.idle;
     }
     if (_running) return SyncStatus.syncing;
     if (hasFailure) return SyncStatus.failed;

@@ -18,8 +18,6 @@ String formatSavedDate(DateTime when, DateTime now, AppLocalizations l10n) {
 
   if (daysAgo == 0) return l10n.dateToday;
   if (daysAgo == 1) return l10n.dateYesterday;
-  final pattern = when.year == now.year
-      ? DateFormat.MMMd(l10n.localeName)
-      : DateFormat.yMMMd(l10n.localeName);
+  final pattern = when.year == now.year ? DateFormat.MMMd(l10n.localeName) : DateFormat.yMMMd(l10n.localeName);
   return pattern.format(when);
 }

@@ -1,7 +1,6 @@
 import 'dart:async';
 
-import 'package:flutter/foundation.dart'
-    show TargetPlatform, defaultTargetPlatform, kIsWeb;
+import 'package:flutter/foundation.dart' show TargetPlatform, defaultTargetPlatform, kIsWeb;
 import 'package:flutter/widgets.dart' show WidgetsBinding;
 import 'package:receive_sharing_intent/receive_sharing_intent.dart';
 import 'package:uuid/uuid.dart';
@@ -36,11 +35,9 @@ import 'share_feedback.dart';
 /// *after* the save, so nothing blocks the capture. This is what lets sharing
 /// to LinkHive compete with a native "save" button.
 class ReceiveSharedIntent {
-  ReceiveSharedIntent({
-    required LinkManager manager,
-    required LinkMetadataService metadataService,
-  }) : _manager = manager,
-       _metadataService = metadataService;
+  ReceiveSharedIntent({required LinkManager manager, required LinkMetadataService metadataService})
+    : _manager = manager,
+      _metadataService = metadataService;
 
   final LinkManager _manager;
   final LinkMetadataService _metadataService;
@@ -57,13 +54,8 @@ class ReceiveSharedIntent {
     // on web/Windows/macOS/Linux has no platform-channel backing and throws.
     // Desktop/web are out of scope for now (see CLAUDE.md); guard so a build
     // for those platforms doesn't crash on startup instead of silently no-op.
-    if (kIsWeb ||
-        (defaultTargetPlatform != TargetPlatform.android &&
-            defaultTargetPlatform != TargetPlatform.iOS)) {
-      printLog(
-        tag: _tag,
-        msg: 'Share intent unsupported on this platform — skipping',
-      );
+    if (kIsWeb || (defaultTargetPlatform != TargetPlatform.android && defaultTargetPlatform != TargetPlatform.iOS)) {
+      printLog(tag: _tag, msg: 'Share intent unsupported on this platform — skipping');
       return;
     }
     _startListen();
@@ -71,38 +63,33 @@ class ReceiveSharedIntent {
   }
 
   void _startListen() {
-    _intentSubscription ??= ReceiveSharingIntent.instance
-        .getMediaStream()
-        .listen((event) {
-          final url = _extractUrl(event);
-          if (url != null) {
-            printLog(tag: _tag, msg: 'Foreground shared URL: $url');
-            _saveInstantly(url);
-          } else if (_hasContent(event)) {
-            printLog(tag: _tag, msg: 'Non-URL share ignored');
-            _showLocalizedSnackBar((l10n) => l10n.sharedOnlyUrls);
-          }
-        });
+    _intentSubscription ??= ReceiveSharingIntent.instance.getMediaStream().listen((event) {
+      final url = _extractUrl(event);
+      if (url != null) {
+        printLog(tag: _tag, msg: 'Foreground shared URL: $url');
+        _saveInstantly(url);
+      } else if (_hasContent(event)) {
+        printLog(tag: _tag, msg: 'Non-URL share ignored');
+        _showLocalizedSnackBar((l10n) => l10n.sharedOnlyUrls);
+      }
+    });
   }
 
   void _startBGListen() {
-    _intentBackGroundSubscription ??= ReceiveSharingIntent.instance
-        .getInitialMedia()
-        .asStream()
-        .listen((event) {
-          // The plugin hands the launch intent out again on every call until
-          // it is reset (Android replays it when the task is restored), which
-          // would count as another re-share of the same link.
-          ReceiveSharingIntent.instance.reset();
-          final url = _extractUrl(event);
-          if (url != null) {
-            printLog(tag: _tag, msg: 'Cold-start shared URL: $url');
-            _saveInstantly(url, resetToHome: true);
-          } else if (_hasContent(event)) {
-            printLog(tag: _tag, msg: 'Non-URL cold-start share ignored');
-            _showLocalizedSnackBar((l10n) => l10n.sharedOnlyUrls);
-          }
-        });
+    _intentBackGroundSubscription ??= ReceiveSharingIntent.instance.getInitialMedia().asStream().listen((event) {
+      // The plugin hands the launch intent out again on every call until
+      // it is reset (Android replays it when the task is restored), which
+      // would count as another re-share of the same link.
+      ReceiveSharingIntent.instance.reset();
+      final url = _extractUrl(event);
+      if (url != null) {
+        printLog(tag: _tag, msg: 'Cold-start shared URL: $url');
+        _saveInstantly(url, resetToHome: true);
+      } else if (_hasContent(event)) {
+        printLog(tag: _tag, msg: 'Non-URL cold-start share ignored');
+        _showLocalizedSnackBar((l10n) => l10n.sharedOnlyUrls);
+      }
+    });
   }
 
   /// Saves [url] immediately (or merges it into the link it duplicates),
@@ -130,10 +117,7 @@ class ReceiveSharedIntent {
       // Rare: a Hive write failure. Don't show "saved" for something that
       // didn't save; tell the user to share again instead.
       printLog(tag: _tag, msg: 'Instant save failed: $e');
-      _showLocalizedSnackBar(
-        (l10n) =>
-            shareOutcomeMessage(error: e, l10n: l10n, now: DateTime.now()),
-      );
+      _showLocalizedSnackBar((l10n) => shareOutcomeMessage(error: e, l10n: l10n, now: DateTime.now()));
       return;
     }
 
@@ -141,18 +125,11 @@ class ReceiveSharedIntent {
       SaveCreated(:final link) => link,
       SaveMerged(:final merged) => merged,
     };
-    printLog(
-      tag: _tag,
-      msg: 'Instant-saved (${result.runtimeType}): ${saved.url}',
-    );
+    printLog(tag: _tag, msg: 'Instant-saved (${result.runtimeType}): ${saved.url}');
 
     showSavedLinkSnackBar(
       message: result is SaveMerged
-          ? (context) => shareOutcomeMessage(
-              result: result,
-              l10n: context.l10n,
-              now: DateTime.now(),
-            )
+          ? (context) => shareOutcomeMessage(result: result, l10n: context.l10n, now: DateTime.now())
           : null,
       onAddDetails: () {
         if (resetToHome) router.goNamed(MyRouteName.homeScreen);
@@ -160,10 +137,7 @@ class ReceiveSharedIntent {
         // link: background enrichment may have already filled in the title
         // by the time this is tapped, and passing the stale (blank) snapshot
         // would show an empty form even though good data is already saved.
-        router.pushNamed(
-          MyRouteName.editLink,
-          extra: _manager.linkById(saved.id) ?? saved,
-        );
+        router.pushNamed(MyRouteName.editLink, extra: _manager.linkById(saved.id) ?? saved);
       },
       onUndo: () => switch (result) {
         SaveCreated() => _manager.deleteLink(saved.id),
@@ -177,10 +151,7 @@ class ReceiveSharedIntent {
 
   /// Shows a plain localized snackbar, waiting for the first frame when the
   /// messenger isn't mounted yet (a cold-start share arrives before it is).
-  void _showLocalizedSnackBar(
-    String Function(AppLocalizations l10n) message, {
-    bool retryAfterFirstFrame = true,
-  }) {
+  void _showLocalizedSnackBar(String Function(AppLocalizations l10n) message, {bool retryAfterFirstFrame = true}) {
     final context = scaffoldMessengerKey.currentContext;
     if (context == null) {
       if (retryAfterFirstFrame) {
@@ -206,8 +177,7 @@ class ReceiveSharedIntent {
 
       final needsTitle = current.title.isEmpty && metadata.title.isNotEmpty;
       final needsImage = current.image.isEmpty && metadata.image.isNotEmpty;
-      final needsDesc =
-          current.description.isEmpty && metadata.description.isNotEmpty;
+      final needsDesc = current.description.isEmpty && metadata.description.isNotEmpty;
       if (!needsTitle && !needsImage && !needsDesc) return;
 
       await _manager.updateLink(

@@ -18,11 +18,7 @@ class SaveCreated extends SaveResult {
 /// it to revert. [addedVersion] is true when the share brought a URL the
 /// record didn't have yet (it went into [LinkModel.otherUrls]).
 class SaveMerged extends SaveResult {
-  const SaveMerged({
-    required this.merged,
-    required this.previous,
-    required this.addedVersion,
-  });
+  const SaveMerged({required this.merged, required this.previous, required this.addedVersion});
 
   final LinkModel merged;
   final LinkModel previous;

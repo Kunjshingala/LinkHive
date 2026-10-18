@@ -33,20 +33,12 @@ void main() {
       hasInternet = true;
       repository = MockLinkRepository();
       cloudSync = MockCloudSyncService();
-      when(
-        () => repository.unsyncedSummary(),
-      ).thenReturn(const UnsyncedSummary(changes: 2));
+      when(() => repository.unsyncedSummary()).thenReturn(const UnsyncedSummary(changes: 2));
       when(() => cloudSync.lastFailure).thenReturn(null);
       when(() => repository.lastPulledAt).thenReturn(null);
       when(() => cloudSync.push()).thenAnswer((_) async {});
-      when(
-        () => cloudSync.pull(full: any(named: 'full')),
-      ).thenAnswer((_) async {});
-      engine = SyncEngine(
-        cloudSync: cloudSync,
-        repository: repository,
-        isAuthenticated: () => signedIn,
-      );
+      when(() => cloudSync.pull(full: any(named: 'full'))).thenAnswer((_) async {});
+      engine = SyncEngine(cloudSync: cloudSync, repository: repository, isAuthenticated: () => signedIn);
       connectivity = StreamController<InternetStatus>.broadcast();
       syncService = SyncService(
         syncEngine: engine,
@@ -104,24 +96,21 @@ void main() {
       expect(engine.status, SyncStatus.waitingForInternet);
     });
 
-    test(
-      'keeps assuming the phone is online if the first check fails',
-      () async {
-        final failing = SyncService(
-          syncEngine: engine,
-          connectivityChanges: connectivity.stream,
-          hasInternetAccess: () async => throw Exception('no probe'),
-          authChanges: const Stream<Never>.empty(),
-          currentUser: () => signedIn ? MockUser() : null,
-        );
+    test('keeps assuming the phone is online if the first check fails', () async {
+      final failing = SyncService(
+        syncEngine: engine,
+        connectivityChanges: connectivity.stream,
+        hasInternetAccess: () async => throw Exception('no probe'),
+        authChanges: const Stream<Never>.empty(),
+        currentUser: () => signedIn ? MockUser() : null,
+      );
 
-        failing.startListening();
-        await pump();
+      failing.startListening();
+      await pump();
 
-        expect(engine.status, SyncStatus.idle);
-        await connectivity.close();
-      },
-    );
+      expect(engine.status, SyncStatus.idle);
+      await connectivity.close();
+    });
 
     test('a background sync that fails is handled, not thrown', () async {
       when(() => cloudSync.push()).thenThrow(Exception('boom'));

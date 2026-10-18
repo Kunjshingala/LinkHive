@@ -32,8 +32,7 @@ class CloudSyncService implements RemoteDataStore {
     String? Function()? uidProvider,
   }) : _firebaseService = firebaseService,
        _store = store,
-       _uidProvider =
-           uidProvider ?? (() => FirebaseAuth.instance.currentUser?.uid);
+       _uidProvider = uidProvider ?? (() => FirebaseAuth.instance.currentUser?.uid);
 
   final FirebaseFirestoreService _firebaseService;
   final SyncStore _store;
@@ -78,8 +77,7 @@ class CloudSyncService implements RemoteDataStore {
     printLog(tag: _tag, msg: 'Cleared remote data for uid=$uid');
   }
 
-  void _logStopped() =>
-      printLog(tag: _tag, msg: 'Run stopped: local data was wiped');
+  void _logStopped() => printLog(tag: _tag, msg: 'Run stopped: local data was wiped');
 
   // ─── Push ──────────────────────────────────────────────────────────────────
 
@@ -91,9 +89,7 @@ class CloudSyncService implements RemoteDataStore {
 
     final now = DateTime.now().toUtc().millisecondsSinceEpoch;
     for (final operation in _store.dueOperations(now)) {
-      final processingOperation = operation.copyWith(
-        state: SyncOperation.processing,
-      );
+      final processingOperation = operation.copyWith(state: SyncOperation.processing);
       if (!await _store.putOperation(run, processingOperation)) return false;
       try {
         await _send(uid, processingOperation);
@@ -105,8 +101,7 @@ class CloudSyncService implements RemoteDataStore {
         // writing the failed one back would drop that newer change.
         if (!_store.isStillInFlight(processingOperation)) continue;
         final attemptCount = processingOperation.attemptCount + 1;
-        final retryAt =
-            now + SyncBackoff.delayForAttempt(attemptCount).inMilliseconds;
+        final retryAt = now + SyncBackoff.delayForAttempt(attemptCount).inMilliseconds;
         final failed = processingOperation.copyWith(
           state: SyncOperation.failed,
           attemptCount: attemptCount,
@@ -127,10 +122,7 @@ class CloudSyncService implements RemoteDataStore {
         return;
       }
 
-      final link = LinkModel.fromFirestore(
-        operation.entityId,
-        operation.payload,
-      );
+      final link = LinkModel.fromFirestore(operation.entityId, operation.payload);
       if (operation.operationType == SyncOperation.create) {
         await _firebaseService.saveLink(uid, link);
       } else {
@@ -143,10 +135,7 @@ class CloudSyncService implements RemoteDataStore {
       if (operation.operationType == SyncOperation.delete) {
         await _firebaseService.deleteCategory(uid, operation.entityId);
       } else {
-        final category = CategoryModel.fromFirestore(
-          operation.entityId,
-          operation.payload,
-        );
+        final category = CategoryModel.fromFirestore(operation.entityId, operation.payload);
         await _firebaseService.saveCategory(uid, category);
       }
     }
@@ -169,20 +158,14 @@ class CloudSyncService implements RemoteDataStore {
     if (cursor == null) {
       cloudLinks = await _firebaseService.fetchLinks(uid);
     } else {
-      cloudLinks = await _firebaseService.fetchLinksSince(
-        uid,
-        cursor - _pullOverlapMs,
-      );
+      cloudLinks = await _firebaseService.fetchLinksSince(uid, cursor - _pullOverlapMs);
     }
 
     final List<String> deletedIds;
     if (cursor == null) {
       deletedIds = await _firebaseService.fetchDeletedLinks(uid);
     } else {
-      deletedIds = await _firebaseService.fetchDeletedLinksSince(
-        uid,
-        cursor - _pullOverlapMs,
-      );
+      deletedIds = await _firebaseService.fetchDeletedLinksSince(uid, cursor - _pullOverlapMs);
     }
 
     for (final delId in deletedIds) {
@@ -195,10 +178,7 @@ class CloudSyncService implements RemoteDataStore {
     final cloudCategories = await _firebaseService.fetchCategories(uid);
     for (final category in cloudCategories) {
       if (_store.hasLocalTombstone(SyncOperation.categoryEntity, category.id) ||
-          _store.hasPendingOperation(
-            SyncOperation.categoryEntity,
-            category.id,
-          )) {
+          _store.hasPendingOperation(SyncOperation.categoryEntity, category.id)) {
         continue;
       }
       if (!await _store.putCategory(run, category)) return false;
@@ -208,17 +188,11 @@ class CloudSyncService implements RemoteDataStore {
     if (cursor == null) {
       deletedCategoryIds = await _firebaseService.fetchDeletedCategories(uid);
     } else {
-      deletedCategoryIds = await _firebaseService.fetchDeletedCategoriesSince(
-        uid,
-        cursor - _pullOverlapMs,
-      );
+      deletedCategoryIds = await _firebaseService.fetchDeletedCategoriesSince(uid, cursor - _pullOverlapMs);
     }
     for (final categoryId in deletedCategoryIds) {
       if (_store.hasLocalTombstone(SyncOperation.categoryEntity, categoryId) ||
-          _store.hasPendingOperation(
-            SyncOperation.categoryEntity,
-            categoryId,
-          )) {
+          _store.hasPendingOperation(SyncOperation.categoryEntity, categoryId)) {
         continue;
       }
       if (!await _store.removeCategory(run, categoryId)) return false;
@@ -240,8 +214,7 @@ class CloudSyncService implements RemoteDataStore {
     if (localLink == null) return _store.removeBaseLink(run, delId);
 
     if (_store.hasPendingOperation(SyncOperation.linkEntity, delId) ||
-        (baseLink != null &&
-            SyncMergeHelper.hasLocalEdits(baseLink, localLink))) {
+        (baseLink != null && SyncMergeHelper.hasLocalEdits(baseLink, localLink))) {
       return _store.saveConflict(
         run,
         linkId: delId,
@@ -266,11 +239,7 @@ class CloudSyncService implements RemoteDataStore {
       if (localLink == null || baseLink == null) {
         return _store.isCurrentRun(run);
       }
-      final pendingConflicts = SyncMergeHelper.conflictingFields(
-        base: baseLink,
-        local: localLink,
-        cloud: cloudLink,
-      );
+      final pendingConflicts = SyncMergeHelper.conflictingFields(base: baseLink, local: localLink, cloud: cloudLink);
       if (pendingConflicts.isEmpty) return _store.isCurrentRun(run);
       return _store.saveConflict(
         run,
@@ -286,11 +255,7 @@ class CloudSyncService implements RemoteDataStore {
       return _store.putCloudLink(run, cloudLink);
     }
 
-    final conflicts = SyncMergeHelper.conflictingFields(
-      base: baseLink,
-      local: localLink,
-      cloud: cloudLink,
-    );
+    final conflicts = SyncMergeHelper.conflictingFields(base: baseLink, local: localLink, cloud: cloudLink);
     if (conflicts.isNotEmpty) {
       return _store.saveConflict(
         run,
@@ -302,11 +267,7 @@ class CloudSyncService implements RemoteDataStore {
       );
     }
 
-    final mergedLink = SyncMergeHelper.merge(
-      base: baseLink,
-      local: localLink,
-      cloud: cloudLink,
-    );
+    final mergedLink = SyncMergeHelper.merge(base: baseLink, local: localLink, cloud: cloudLink);
     return _store.applyMerge(run, mergedLink, cloudLink);
   }
 }

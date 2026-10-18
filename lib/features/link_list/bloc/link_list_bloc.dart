@@ -37,9 +37,7 @@ class LinkListBloc extends Bloc<LinkListEvent, LinkListState> {
     on<LinkListQueryChanged>(_onQueryChanged);
     on<LinkListSearchChanged>(
       _onSearchChanged,
-      transformer: (events, mapper) => events
-          .debounceTime(const Duration(milliseconds: 300))
-          .switchMap(mapper),
+      transformer: (events, mapper) => events.debounceTime(const Duration(milliseconds: 300)).switchMap(mapper),
     );
     on<LinkListNextPageRequested>(_onNextPageRequested);
     on<LinkListSyncRequested>(_onSyncRequested);
@@ -72,10 +70,7 @@ class LinkListBloc extends Bloc<LinkListEvent, LinkListState> {
     return current is LinkListLoaded ? current.query : const LinkQuery();
   }
 
-  void _onLoadRequested(
-    LinkListLoadRequested event,
-    Emitter<LinkListState> emit,
-  ) {
+  void _onLoadRequested(LinkListLoadRequested event, Emitter<LinkListState> emit) {
     final current = state;
     if (event.silent && current is LinkListLoaded) {
       _guard(emit, () => _emitReloaded(emit, current));
@@ -85,15 +80,10 @@ class LinkListBloc extends Bloc<LinkListEvent, LinkListState> {
     _emitFirstPage(emit, _query);
   }
 
-  void _onQueryChanged(
-    LinkListQueryChanged event,
-    Emitter<LinkListState> emit,
-  ) => _emitFirstPage(emit, event.query);
+  void _onQueryChanged(LinkListQueryChanged event, Emitter<LinkListState> emit) => _emitFirstPage(emit, event.query);
 
-  void _onSearchChanged(
-    LinkListSearchChanged event,
-    Emitter<LinkListState> emit,
-  ) => _emitFirstPage(emit, _query.copyWith(search: event.search));
+  void _onSearchChanged(LinkListSearchChanged event, Emitter<LinkListState> emit) =>
+      _emitFirstPage(emit, _query.copyWith(search: event.search));
 
   /// Loads page one of [query], keeping selection mode if it was on.
   void _emitFirstPage(Emitter<LinkListState> emit, LinkQuery query) {
@@ -120,26 +110,16 @@ class LinkListBloc extends Bloc<LinkListEvent, LinkListState> {
   /// longer match.
   void _emitReloaded(Emitter<LinkListState> emit, LinkListLoaded current) {
     final total = _manager.countLinks(current.query);
-    final count = current.links.length < pageSize
-        ? pageSize
-        : current.links.length;
+    final count = current.links.length < pageSize ? pageSize : current.links.length;
     final links = _manager.findLinks(current.query, limit: count);
     var selected = current.selectedIds;
     if (selected.isNotEmpty) {
-      final matching = _manager
-          .findLinks(current.query, limit: total)
-          .map((l) => l.id)
-          .toSet();
+      final matching = _manager.findLinks(current.query, limit: total).map((l) => l.id).toSet();
       selected = selected.where(matching.contains).toSet();
     }
     emit(
       _withOverview(
-        current.copyWith(
-          links: links,
-          total: total,
-          hasReachedMax: links.length >= total,
-          selectedIds: selected,
-        ),
+        current.copyWith(links: links, total: total, hasReachedMax: links.length >= total, selectedIds: selected),
       ),
     );
   }
@@ -150,10 +130,7 @@ class LinkListBloc extends Bloc<LinkListEvent, LinkListState> {
     sources: _manager.getSourceCounts(),
     categories: _manager.getCategoryCounts(),
     siteCounts: loaded.query.sort == LinkSort.site
-        ? {
-            for (final c in _manager.getSourceCounts(within: loaded.query))
-              c.name: c.count,
-          }
+        ? {for (final c in _manager.getSourceCounts(within: loaded.query)) c.name: c.count}
         : const {},
   );
 
@@ -165,30 +142,15 @@ class LinkListBloc extends Bloc<LinkListEvent, LinkListState> {
     }
   }
 
-  void _onNextPageRequested(
-    LinkListNextPageRequested event,
-    Emitter<LinkListState> emit,
-  ) {
+  void _onNextPageRequested(LinkListNextPageRequested event, Emitter<LinkListState> emit) {
     final current = state;
     if (current is! LinkListLoaded || current.hasReachedMax) return;
-    final next = _manager.findLinks(
-      current.query,
-      limit: pageSize,
-      offset: current.links.length,
-    );
+    final next = _manager.findLinks(current.query, limit: pageSize, offset: current.links.length);
     final links = [...current.links, ...next];
-    emit(
-      current.copyWith(
-        links: links,
-        hasReachedMax: next.isEmpty || links.length >= current.total,
-      ),
-    );
+    emit(current.copyWith(links: links, hasReachedMax: next.isEmpty || links.length >= current.total));
   }
 
-  Future<void> _onSyncRequested(
-    LinkListSyncRequested event,
-    Emitter<LinkListState> emit,
-  ) async {
+  Future<void> _onSyncRequested(LinkListSyncRequested event, Emitter<LinkListState> emit) async {
     final startedAt = DateTime.now();
     try {
       // Through the engine, so it never overlaps another sync.
@@ -211,30 +173,17 @@ class LinkListBloc extends Bloc<LinkListEvent, LinkListState> {
     }
   }
 
-  Future<void> _onReadToggled(
-    LinkListReadToggled event,
-    Emitter<LinkListState> emit,
-  ) => event.link.isRead
-      ? _manager.markAsUnread(event.link.id)
-      : _manager.markAsRead(event.link.id);
+  Future<void> _onReadToggled(LinkListReadToggled event, Emitter<LinkListState> emit) =>
+      event.link.isRead ? _manager.markAsUnread(event.link.id) : _manager.markAsRead(event.link.id);
 
-  Future<void> _onLinkDeleted(
-    LinkListLinkDeleted event,
-    Emitter<LinkListState> emit,
-  ) => _manager.deleteLink(event.id);
+  Future<void> _onLinkDeleted(LinkListLinkDeleted event, Emitter<LinkListState> emit) => _manager.deleteLink(event.id);
 
-  void _onSelectionStarted(
-    LinkListSelectionStarted event,
-    Emitter<LinkListState> emit,
-  ) {
+  void _onSelectionStarted(LinkListSelectionStarted event, Emitter<LinkListState> emit) {
     final current = state;
     if (current is LinkListLoaded) emit(current.copyWith(isSelecting: true));
   }
 
-  void _onSelectionToggled(
-    LinkListSelectionToggled event,
-    Emitter<LinkListState> emit,
-  ) {
+  void _onSelectionToggled(LinkListSelectionToggled event, Emitter<LinkListState> emit) {
     final current = state;
     if (current is! LinkListLoaded) return;
     final selected = {...current.selectedIds};
@@ -242,68 +191,42 @@ class LinkListBloc extends Bloc<LinkListEvent, LinkListState> {
     emit(current.copyWith(isSelecting: true, selectedIds: selected));
   }
 
-  void _onSelectAllRequested(
-    LinkListSelectAllRequested event,
-    Emitter<LinkListState> emit,
-  ) {
+  void _onSelectAllRequested(LinkListSelectAllRequested event, Emitter<LinkListState> emit) {
     final current = state;
     if (current is! LinkListLoaded) return;
     final all = _manager.findLinks(current.query, limit: current.total);
     emit(current.copyWith(selectedIds: all.map((l) => l.id).toSet()));
   }
 
-  void _onSelectionCleared(
-    LinkListSelectionCleared event,
-    Emitter<LinkListState> emit,
-  ) {
+  void _onSelectionCleared(LinkListSelectionCleared event, Emitter<LinkListState> emit) {
     final current = state;
     if (current is LinkListLoaded) {
       emit(current.copyWith(isSelecting: false, selectedIds: {}));
     }
   }
 
-  Future<void> _onBulkMarkRead(
-    LinkListBulkMarkReadRequested event,
-    Emitter<LinkListState> emit,
-  ) => _applyToSelection(emit, _manager.markLinksRead);
+  Future<void> _onBulkMarkRead(LinkListBulkMarkReadRequested event, Emitter<LinkListState> emit) =>
+      _applyToSelection(emit, _manager.markLinksRead);
 
-  Future<void> _onBulkCategoryAdded(
-    LinkListBulkCategoryAdded event,
-    Emitter<LinkListState> emit,
-  ) => _applyToSelection(
-    emit,
-    (ids) => _manager.addCategoryToLinks(ids, event.category),
-  );
+  Future<void> _onBulkCategoryAdded(LinkListBulkCategoryAdded event, Emitter<LinkListState> emit) =>
+      _applyToSelection(emit, (ids) => _manager.addCategoryToLinks(ids, event.category));
 
-  Future<void> _onBulkPriorityChanged(
-    LinkListBulkPriorityChanged event,
-    Emitter<LinkListState> emit,
-  ) => _applyToSelection(
-    emit,
-    (ids) => _manager.setPriorityForLinks(ids, event.priority),
-  );
+  Future<void> _onBulkPriorityChanged(LinkListBulkPriorityChanged event, Emitter<LinkListState> emit) =>
+      _applyToSelection(emit, (ids) => _manager.setPriorityForLinks(ids, event.priority));
 
-  Future<void> _onBulkDelete(
-    LinkListBulkDeleteRequested event,
-    Emitter<LinkListState> emit,
-  ) => _applyToSelection(emit, _manager.deleteLinks);
+  Future<void> _onBulkDelete(LinkListBulkDeleteRequested event, Emitter<LinkListState> emit) =>
+      _applyToSelection(emit, _manager.deleteLinks);
 
   /// Runs [action] on the selected links, then leaves selection mode and
   /// reloads.
-  Future<void> _applyToSelection(
-    Emitter<LinkListState> emit,
-    Future<void> Function(Set<String> ids) action,
-  ) async {
+  Future<void> _applyToSelection(Emitter<LinkListState> emit, Future<void> Function(Set<String> ids) action) async {
     final current = state;
     if (current is! LinkListLoaded || current.selectedIds.isEmpty) return;
     try {
       await action(current.selectedIds);
       final latest = state;
       if (latest is LinkListLoaded) {
-        _emitReloaded(
-          emit,
-          latest.copyWith(isSelecting: false, selectedIds: {}),
-        );
+        _emitReloaded(emit, latest.copyWith(isSelecting: false, selectedIds: {}));
       }
     } catch (e) {
       emit(LinkListError(message: e.toString()));

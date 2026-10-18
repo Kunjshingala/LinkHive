@@ -17,18 +17,13 @@ void main() {
 
     test('prefers a slug segment over a trailing id', () {
       expect(
-        fallbackTitle(
-          'https://www.flipkart.com/apple-airpods-pro-3-bluetooth/p/itm4a09e10dfed93?pid=ACCHNFX2FDJQXSXZ',
-        ),
+        fallbackTitle('https://www.flipkart.com/apple-airpods-pro-3-bluetooth/p/itm4a09e10dfed93?pid=ACCHNFX2FDJQXSXZ'),
         'apple airpods pro 3 bluetooth · flipkart.com',
       );
     });
 
     test('decodes percent-encoding and drops m. prefixes', () {
-      expect(
-        fallbackTitle('https://m.example.com/blog/hello%20world_post'),
-        'hello world post · example.com',
-      );
+      expect(fallbackTitle('https://m.example.com/blog/hello%20world_post'), 'hello world post · example.com');
     });
 
     test('a bare host shows just the host', () {
@@ -44,19 +39,13 @@ void main() {
   group('displayTitle', () {
     test('uses the fetched title when there is one', () {
       expect(
-        displayTitle(
-          'Kunj Shingala | LinkedIn',
-          'https://www.linkedin.com/in/kunjshingala09',
-        ),
+        displayTitle('Kunj Shingala | LinkedIn', 'https://www.linkedin.com/in/kunjshingala09'),
         'Kunj Shingala | LinkedIn',
       );
     });
 
     test('falls back to the URL-derived label when the title is empty', () {
-      expect(
-        displayTitle('', 'https://www.linkedin.com/in/kunjshingala09'),
-        'kunjshingala09 · linkedin.com',
-      );
+      expect(displayTitle('', 'https://www.linkedin.com/in/kunjshingala09'), 'kunjshingala09 · linkedin.com');
     });
   });
 }

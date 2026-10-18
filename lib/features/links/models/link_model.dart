@@ -247,9 +247,7 @@ class LinkModel {
       resurfaceAt: clearResurfaceAt ? null : (resurfaceAt ?? this.resurfaceAt),
       lastResurfacedAt: lastResurfacedAt ?? this.lastResurfacedAt,
       shareCount: shareCount ?? this.shareCount,
-      lastSharedAt: clearLastSharedAt
-          ? null
-          : (lastSharedAt ?? this.lastSharedAt),
+      lastSharedAt: clearLastSharedAt ? null : (lastSharedAt ?? this.lastSharedAt),
       otherUrls: otherUrls ?? this.otherUrls,
     );
   }
@@ -284,12 +282,7 @@ class LinkModel {
   }
 
   /// Serializes the complete local snapshot used by a sync operation.
-  Map<String, dynamic> toSyncPayload() => {
-    ...toFirestore(),
-    'id': id,
-    'syncedAt': syncedAt,
-    'isSynced': isSynced,
-  };
+  Map<String, dynamic> toSyncPayload() => {...toFirestore(), 'id': id, 'syncedAt': syncedAt, 'isSynced': isSynced};
 
   /// Deserializes a Firestore document snapshot into a [LinkModel].
   ///
@@ -320,15 +313,11 @@ class LinkModel {
       title: data[FirebaseConstants.linkTitle] as String? ?? '',
       description: data[FirebaseConstants.linkDescription] as String? ?? '',
       image: data[FirebaseConstants.linkImage] as String? ?? '',
-      categories: List<String>.from(
-        data[FirebaseConstants.linkCategories] as List? ?? [],
-      ),
+      categories: List<String>.from(data[FirebaseConstants.linkCategories] as List? ?? []),
       priority: data[FirebaseConstants.linkPriority] as String? ?? 'Normal',
       // Guard against missing createdAt (e.g. data created before the field
       // was added) by falling back to the current time. This should be rare.
-      createdAt:
-          data[FirebaseConstants.linkCreatedAt] as int? ??
-          DateTime.now().toUtc().millisecondsSinceEpoch,
+      createdAt: data[FirebaseConstants.linkCreatedAt] as int? ?? DateTime.now().toUtc().millisecondsSinceEpoch,
       syncedAt: syncedAtMs,
       isSynced: true,
       isRead: data[FirebaseConstants.linkIsRead] as bool? ?? false,
@@ -338,9 +327,7 @@ class LinkModel {
       // Docs written before these fields existed: saved once, no versions.
       shareCount: data[FirebaseConstants.linkShareCount] as int? ?? 1,
       lastSharedAt: data[FirebaseConstants.linkLastSharedAt] as int?,
-      otherUrls: List<String>.from(
-        data[FirebaseConstants.linkOtherUrls] as List? ?? [],
-      ),
+      otherUrls: List<String>.from(data[FirebaseConstants.linkOtherUrls] as List? ?? []),
     );
   }
 

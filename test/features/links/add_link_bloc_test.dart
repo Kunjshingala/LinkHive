@@ -40,15 +40,11 @@ void main() {
       when(() => mockRepository.findByCanonicalUrl(any())).thenReturn(null);
       // No category history by default, so suggestions come from the
       // built-in site map only.
-      when(
-        () => mockRepository.getCategoryCountsForHost(any()),
-      ).thenReturn(const []);
+      when(() => mockRepository.getCategoryCountsForHost(any())).thenReturn(const []);
     });
 
     setUpAll(() {
-      registerFallbackValue(
-        LinkModel(id: '', url: '', title: '', createdAt: 0),
-      );
+      registerFallbackValue(LinkModel(id: '', url: '', title: '', createdAt: 0));
     });
 
     AddLinkBloc buildBloc() => AddLinkBloc(
@@ -67,18 +63,16 @@ void main() {
     group('category suggestions', () {
       // A valid URL also starts a metadata fetch; these tests don't care.
       setUp(() {
-        when(() => mockMetadataService.fetchMetadata(any())).thenAnswer(
-          (_) async =>
-              const LinkMetadata(title: '', description: '', image: ''),
-        );
+        when(
+          () => mockMetadataService.fetchMetadata(any()),
+        ).thenAnswer((_) async => const LinkMetadata(title: '', description: '', image: ''));
       });
 
       blocTest<AddLinkBloc, AddLinkState>(
         'a URL from a known site suggests its category',
         build: buildBloc,
         seed: () => const AddLinkForm(),
-        act: (bloc) =>
-            bloc.add(const AddLinkFieldChanged(url: 'https://youtu.be/abc')),
+        act: (bloc) => bloc.add(const AddLinkFieldChanged(url: 'https://youtu.be/abc')),
         verify: (bloc) {
           final form = bloc.state as AddLinkForm;
           expect(form.suggestionHost, 'youtube.com');
@@ -95,12 +89,8 @@ void main() {
           return buildBloc();
         },
         seed: () => const AddLinkForm(),
-        act: (bloc) =>
-            bloc.add(const AddLinkFieldChanged(url: 'https://youtu.be/abc')),
-        verify: (bloc) => expect(
-          (bloc.state as AddLinkForm).suggestedCategories,
-          ['Recipes'],
-        ),
+        act: (bloc) => bloc.add(const AddLinkFieldChanged(url: 'https://youtu.be/abc')),
+        verify: (bloc) => expect((bloc.state as AddLinkForm).suggestedCategories, ['Recipes']),
       );
 
       blocTest<AddLinkBloc, AddLinkState>(
@@ -112,9 +102,7 @@ void main() {
           bloc.add(const AddLinkFieldChanged(url: 'https://youtu.be/ab'));
           bloc.add(const AddLinkFieldChanged(url: 'https://youtu.be/abc'));
         },
-        verify: (_) => verify(
-          () => mockRepository.getCategoryCountsForHost('youtube.com'),
-        ).called(1),
+        verify: (_) => verify(() => mockRepository.getCategoryCountsForHost('youtube.com')).called(1),
       );
     });
 
@@ -145,28 +133,18 @@ void main() {
       blocTest<AddLinkBloc, AddLinkState>(
         'emits AddLinkForm with prefillUrl and triggers metadata fetch',
         build: () {
-          when(
-            () => mockMetadataService.fetchMetadata('https://flutter.dev'),
-          ).thenAnswer(
-            (_) async => const LinkMetadata(
-              title: 'Flutter',
-              description: 'Build apps',
-              image: 'https://flutter.dev/img.png',
-            ),
+          when(() => mockMetadataService.fetchMetadata('https://flutter.dev')).thenAnswer(
+            (_) async =>
+                const LinkMetadata(title: 'Flutter', description: 'Build apps', image: 'https://flutter.dev/img.png'),
           );
           return buildBloc();
         },
-        act: (bloc) => bloc.add(
-          const AddLinkInitialized(prefillUrl: 'https://flutter.dev'),
-        ),
+        act: (bloc) => bloc.add(const AddLinkInitialized(prefillUrl: 'https://flutter.dev')),
         expect: () => [
           // Form emitted from initialization
           const AddLinkForm(url: 'https://flutter.dev'),
           // Metadata fetch starts (isFetchingMetadata: true)
-          const AddLinkForm(
-            url: 'https://flutter.dev',
-            isFetchingMetadata: true,
-          ),
+          const AddLinkForm(url: 'https://flutter.dev', isFetchingMetadata: true),
           // Metadata fetch completes
           const AddLinkForm(
             url: 'https://flutter.dev',
@@ -185,25 +163,16 @@ void main() {
       blocTest<AddLinkBloc, AddLinkState>(
         'populates empty fields with fetched metadata',
         build: () {
-          when(
-            () => mockMetadataService.fetchMetadata('https://example.com'),
-          ).thenAnswer(
-            (_) async => const LinkMetadata(
-              title: 'Example',
-              description: 'Example site',
-              image: 'https://example.com/img.png',
-            ),
+          when(() => mockMetadataService.fetchMetadata('https://example.com')).thenAnswer(
+            (_) async =>
+                const LinkMetadata(title: 'Example', description: 'Example site', image: 'https://example.com/img.png'),
           );
           return buildBloc();
         },
         seed: () => const AddLinkForm(url: 'https://example.com'),
-        act: (bloc) =>
-            bloc.add(const AddLinkFetchMetadata('https://example.com')),
+        act: (bloc) => bloc.add(const AddLinkFetchMetadata('https://example.com')),
         expect: () => [
-          const AddLinkForm(
-            url: 'https://example.com',
-            isFetchingMetadata: true,
-          ),
+          const AddLinkForm(url: 'https://example.com', isFetchingMetadata: true),
           const AddLinkForm(
             url: 'https://example.com',
             title: 'Example',
@@ -217,9 +186,7 @@ void main() {
       blocTest<AddLinkBloc, AddLinkState>(
         'fetched metadata overwrites fields when metadata is non-empty',
         build: () {
-          when(
-            () => mockMetadataService.fetchMetadata('https://example.com'),
-          ).thenAnswer(
+          when(() => mockMetadataService.fetchMetadata('https://example.com')).thenAnswer(
             (_) async => const LinkMetadata(
               title: 'Fetched Title',
               description: 'Fetched Desc',
@@ -228,13 +195,8 @@ void main() {
           );
           return buildBloc();
         },
-        seed: () => const AddLinkForm(
-          url: 'https://example.com',
-          title: 'My Custom Title',
-          description: 'My notes',
-        ),
-        act: (bloc) =>
-            bloc.add(const AddLinkFetchMetadata('https://example.com')),
+        seed: () => const AddLinkForm(url: 'https://example.com', title: 'My Custom Title', description: 'My notes'),
+        act: (bloc) => bloc.add(const AddLinkFetchMetadata('https://example.com')),
         expect: () => [
           const AddLinkForm(
             url: 'https://example.com',
@@ -256,24 +218,13 @@ void main() {
       blocTest<AddLinkBloc, AddLinkState>(
         'preserves user-typed content when fetched metadata is empty',
         build: () {
-          when(
-            () => mockMetadataService.fetchMetadata('https://example.com'),
-          ).thenAnswer(
-            (_) async => const LinkMetadata(
-              title: '',
-              description: '',
-              image: 'https://example.com/fetched.png',
-            ),
+          when(() => mockMetadataService.fetchMetadata('https://example.com')).thenAnswer(
+            (_) async => const LinkMetadata(title: '', description: '', image: 'https://example.com/fetched.png'),
           );
           return buildBloc();
         },
-        seed: () => const AddLinkForm(
-          url: 'https://example.com',
-          title: 'My Custom Title',
-          description: 'My notes',
-        ),
-        act: (bloc) =>
-            bloc.add(const AddLinkFetchMetadata('https://example.com')),
+        seed: () => const AddLinkForm(url: 'https://example.com', title: 'My Custom Title', description: 'My notes'),
+        act: (bloc) => bloc.add(const AddLinkFetchMetadata('https://example.com')),
         expect: () => [
           const AddLinkForm(
             url: 'https://example.com',
@@ -301,17 +252,10 @@ void main() {
           return buildBloc();
         },
         seed: () => const AddLinkForm(url: 'https://bad-url.com'),
-        act: (bloc) =>
-            bloc.add(const AddLinkFetchMetadata('https://bad-url.com')),
+        act: (bloc) => bloc.add(const AddLinkFetchMetadata('https://bad-url.com')),
         expect: () => [
-          const AddLinkForm(
-            url: 'https://bad-url.com',
-            isFetchingMetadata: true,
-          ),
-          const AddLinkForm(
-            url: 'https://bad-url.com',
-            isFetchingMetadata: false,
-          ),
+          const AddLinkForm(url: 'https://bad-url.com', isFetchingMetadata: true),
+          const AddLinkForm(url: 'https://bad-url.com', isFetchingMetadata: false),
         ],
       );
 
@@ -320,9 +264,7 @@ void main() {
         'ignores stale metadata when the URL changes and fetches the new URL',
         build: () {
           staleResult = Completer<LinkMetadata>();
-          when(
-            () => mockMetadataService.fetchMetadata('https://old.example'),
-          ).thenAnswer((_) => staleResult.future);
+          when(() => mockMetadataService.fetchMetadata('https://old.example')).thenAnswer((_) => staleResult.future);
           when(
             () => mockMetadataService.fetchMetadata('https://new.example'),
           ).thenAnswer((_) async => const LinkMetadata(title: 'New page'));
@@ -338,15 +280,9 @@ void main() {
         },
         wait: const Duration(milliseconds: 300),
         expect: () => [
-          const AddLinkForm(
-            url: 'https://old.example',
-            isFetchingMetadata: true,
-          ),
+          const AddLinkForm(url: 'https://old.example', isFetchingMetadata: true),
           const AddLinkForm(url: 'https://new.example'),
-          const AddLinkForm(
-            url: 'https://new.example',
-            isFetchingMetadata: true,
-          ),
+          const AddLinkForm(url: 'https://new.example', isFetchingMetadata: true),
           const AddLinkForm(url: 'https://new.example', title: 'New page'),
         ],
       );
@@ -360,27 +296,16 @@ void main() {
         build: buildBloc,
         seed: () => const AddLinkForm(url: 'https://flutter.dev'),
         act: (bloc) => bloc.add(const AddLinkFieldChanged(title: 'New Title')),
-        expect: () => [
-          const AddLinkForm(url: 'https://flutter.dev', title: 'New Title'),
-        ],
+        expect: () => [const AddLinkForm(url: 'https://flutter.dev', title: 'New Title')],
       );
 
       blocTest<AddLinkBloc, AddLinkState>(
         'updates priority and categories',
         build: buildBloc,
         seed: () => const AddLinkForm(url: 'https://flutter.dev'),
-        act: (bloc) => bloc.add(
-          const AddLinkFieldChanged(
-            priority: 'High',
-            categories: ['dev', 'flutter'],
-          ),
-        ),
+        act: (bloc) => bloc.add(const AddLinkFieldChanged(priority: 'High', categories: ['dev', 'flutter'])),
         expect: () => [
-          const AddLinkForm(
-            url: 'https://flutter.dev',
-            priority: 'High',
-            categories: ['dev', 'flutter'],
-          ),
+          const AddLinkForm(url: 'https://flutter.dev', priority: 'High', categories: ['dev', 'flutter']),
         ],
       );
     });
@@ -423,9 +348,7 @@ void main() {
         act: (bloc) => bloc.add(const AddLinkSaveRequested()),
         expect: () => [const AddLinkSaving(), const AddLinkSuccess()],
         verify: (_) {
-          final captured = verify(
-            () => mockRepository.addLink(captureAny()),
-          ).captured;
+          final captured = verify(() => mockRepository.addLink(captureAny())).captured;
           final savedLink = captured.single as LinkModel;
           expect(savedLink.url, 'https://flutter.dev');
         },
@@ -437,8 +360,7 @@ void main() {
           when(() => mockRepository.addLink(any())).thenAnswer((_) async {});
           return buildBloc();
         },
-        seed: () =>
-            const AddLinkForm(url: 'https://flutter.dev', title: 'Flutter'),
+        seed: () => const AddLinkForm(url: 'https://flutter.dev', title: 'Flutter'),
         act: (bloc) => bloc.add(const AddLinkSaveRequested()),
         expect: () => [const AddLinkSaving(), const AddLinkSuccess()],
         verify: (_) {
@@ -480,9 +402,7 @@ void main() {
       blocTest<AddLinkBloc, AddLinkState>(
         'emits [AddLinkSaving, AddLinkError] when repository throws',
         build: () {
-          when(
-            () => mockRepository.addLink(any()),
-          ).thenThrow(Exception('DB error'));
+          when(() => mockRepository.addLink(any())).thenThrow(Exception('DB error'));
           return buildBloc();
         },
         seed: () => const AddLinkForm(url: 'https://flutter.dev'),
@@ -500,9 +420,7 @@ void main() {
         act: (bloc) => bloc.add(const AddLinkSaveRequested()),
         expect: () => [const AddLinkSaving(), const AddLinkSuccess()],
         verify: (_) {
-          final captured = verify(
-            () => mockRepository.addLink(captureAny()),
-          ).captured;
+          final captured = verify(() => mockRepository.addLink(captureAny())).captured;
           final savedLink = captured.first as LinkModel;
           expect(savedLink.title, 'https://flutter.dev');
         },
@@ -510,17 +428,11 @@ void main() {
 
       group('when the URL is already saved', () {
         void stubDuplicate() {
-          when(
-            () => mockRepository.findByCanonicalUrl(any()),
-          ).thenReturn(testLink);
+          when(() => mockRepository.findByCanonicalUrl(any())).thenReturn(testLink);
           when(() => mockRepository.updateLink(any())).thenAnswer((_) async {});
         }
 
-        LinkModel savedUpdate() =>
-            verify(
-                  () => mockRepository.updateLink(captureAny()),
-                ).captured.single
-                as LinkModel;
+        LinkModel savedUpdate() => verify(() => mockRepository.updateLink(captureAny())).captured.single as LinkModel;
 
         blocTest<AddLinkBloc, AddLinkState>(
           'merges instead of adding, keeping the curated title and priority',
@@ -554,10 +466,7 @@ void main() {
             stubDuplicate();
             return buildBloc();
           },
-          seed: () => const AddLinkForm(
-            url: 'https://flutter.dev',
-            resurfaceAt: 1790000000000,
-          ),
+          seed: () => const AddLinkForm(url: 'https://flutter.dev', resurfaceAt: 1790000000000),
           act: (bloc) => bloc.add(const AddLinkSaveRequested()),
           expect: () => [const AddLinkSaving(), isA<AddLinkMerged>()],
           verify: (_) => expect(savedUpdate().resurfaceAt, 1790000000000),
@@ -569,10 +478,7 @@ void main() {
             stubDuplicate();
             return buildBloc();
           },
-          seed: () => const AddLinkForm(
-            url: 'https://flutter.dev',
-            clearResurfaceAt: true,
-          ),
+          seed: () => const AddLinkForm(url: 'https://flutter.dev', clearResurfaceAt: true),
           act: (bloc) => bloc.add(const AddLinkSaveRequested()),
           expect: () => [const AddLinkSaving(), isA<AddLinkMerged>()],
           verify: (_) {

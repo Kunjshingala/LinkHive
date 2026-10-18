@@ -11,11 +11,7 @@ abstract final class AppTypography {
   static const String fontFamily = 'AnekLatin';
 
   /// Scripts Anek Latin doesn't cover: Hindi, Gujarati, then Arabic.
-  static const List<String> fontFamilyFallback = [
-    'AnekDevanagari',
-    'AnekGujarati',
-    'ReadexPro',
-  ];
+  static const List<String> fontFamilyFallback = ['AnekDevanagari', 'AnekGujarati', 'ReadexPro'];
 
   // ─── Screen Titles ────────────────────────────────────────────────
   static const TextStyle displayLarge = TextStyle(

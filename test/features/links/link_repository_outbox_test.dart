@@ -15,9 +15,7 @@ void main() {
   late LinkRepository repository;
 
   setUpAll(() async {
-    hiveDirectory = await Directory.systemTemp.createTemp(
-      'linkhive-outbox-test-',
-    );
+    hiveDirectory = await Directory.systemTemp.createTemp('linkhive-outbox-test-');
     Hive.init(hiveDirectory.path);
     Hive.registerAdapter(LinkModelAdapter());
     Hive.registerAdapter(CategoryModelAdapter());
@@ -51,41 +49,27 @@ void main() {
   tearDown(() => Hive.close());
   tearDownAll(() => hiveDirectory.delete(recursive: true));
 
-  final link = LinkModel(
-    id: 'link-1',
-    url: 'https://example.com',
-    title: 'Example',
-    createdAt: 1,
-  );
+  final link = LinkModel(id: 'link-1', url: 'https://example.com', title: 'Example', createdAt: 1);
 
-  test(
-    'create writes immediately to Hive and queues a durable operation',
-    () async {
-      await repository.addLink(link);
+  test('create writes immediately to Hive and queues a durable operation', () async {
+    await repository.addLink(link);
 
-      expect(repository.queryLinks(limit: 10), hasLength(1));
-      expect(repository.queryLinks(limit: 10).single.isSynced, isFalse);
-      expect(repository.pendingSyncOperations, hasLength(1));
-      expect(
-        repository.pendingSyncOperations.single.operationType,
-        SyncOperation.create,
-      );
-      expect(repository.pendingSyncOperations.single.entityId, 'link-1');
-    },
-  );
+    expect(repository.queryLinks(limit: 10), hasLength(1));
+    expect(repository.queryLinks(limit: 10).single.isSynced, isFalse);
+    expect(repository.pendingSyncOperations, hasLength(1));
+    expect(repository.pendingSyncOperations.single.operationType, SyncOperation.create);
+    expect(repository.pendingSyncOperations.single.entityId, 'link-1');
+  });
 
-  test(
-    'create followed by update coalesces to one create with the newest payload',
-    () async {
-      await repository.addLink(link);
-      await repository.updateLink(link.copyWith(title: 'Updated'));
+  test('create followed by update coalesces to one create with the newest payload', () async {
+    await repository.addLink(link);
+    await repository.updateLink(link.copyWith(title: 'Updated'));
 
-      final operations = repository.pendingSyncOperations;
-      expect(operations, hasLength(1));
-      expect(operations.single.operationType, SyncOperation.create);
-      expect(operations.single.payload['title'], 'Updated');
-    },
-  );
+    final operations = repository.pendingSyncOperations;
+    expect(operations, hasLength(1));
+    expect(operations.single.operationType, SyncOperation.create);
+    expect(operations.single.payload['title'], 'Updated');
+  });
 
   test('local data and queued operations survive a Hive restart', () async {
     await repository.addLink(link);
@@ -99,64 +83,36 @@ void main() {
   });
 
   test('delete persists a tombstone and replaces a pending update', () async {
-    await Hive.box<LinkModel>(
-      HiveConstants.linksBox,
-    ).put(link.id, link.copyWith(isSynced: true));
-    await Hive.box<LinkModel>(
-      HiveConstants.baseLinksBox,
-    ).put(link.id, link.copyWith(isSynced: true));
+    await Hive.box<LinkModel>(HiveConstants.linksBox).put(link.id, link.copyWith(isSynced: true));
+    await Hive.box<LinkModel>(HiveConstants.baseLinksBox).put(link.id, link.copyWith(isSynced: true));
     await repository.updateLink(link.copyWith(title: 'Updated'));
     await repository.deleteLink(link.id);
 
     expect(repository.queryLinks(limit: 10), isEmpty);
-    expect(
-      repository.pendingSyncOperations.single.operationType,
-      SyncOperation.delete,
-    );
-    expect(
-      Hive.box<SyncTombstone>(
-        HiveConstants.syncTombstonesBox,
-      ).values.single.entityId,
-      link.id,
-    );
+    expect(repository.pendingSyncOperations.single.operationType, SyncOperation.delete);
+    expect(Hive.box<SyncTombstone>(HiveConstants.syncTombstonesBox).values.single.entityId, link.id);
   });
 
-  test(
-    'create followed by delete removes the remote operation but retains the tombstone',
-    () async {
-      await repository.addLink(link);
-      await repository.deleteLink(link.id);
+  test('create followed by delete removes the remote operation but retains the tombstone', () async {
+    await repository.addLink(link);
+    await repository.deleteLink(link.id);
 
-      expect(repository.pendingSyncOperations, isEmpty);
-      expect(
-        Hive.box<SyncTombstone>(
-          HiveConstants.syncTombstonesBox,
-        ).values.single.entityId,
-        link.id,
-      );
-    },
-  );
+    expect(repository.pendingSyncOperations, isEmpty);
+    expect(Hive.box<SyncTombstone>(HiveConstants.syncTombstonesBox).values.single.entityId, link.id);
+  });
 
-  test(
-    'category create and delete are represented in the same durable outbox',
-    () async {
-      const category = CategoryModel(id: 'category-1', name: 'Development');
-      await repository.addCategory(category);
-      expect(
-        repository.pendingSyncOperations.single.entityType,
-        SyncOperation.categoryEntity,
-      );
+  test('category create and delete are represented in the same durable outbox', () async {
+    const category = CategoryModel(id: 'category-1', name: 'Development');
+    await repository.addCategory(category);
+    expect(repository.pendingSyncOperations.single.entityType, SyncOperation.categoryEntity);
 
-      await repository.deleteCategory(category.id);
-      expect(repository.pendingSyncOperations, isEmpty);
-      expect(
-        Hive.box<SyncTombstone>(
-          HiveConstants.syncTombstonesBox,
-        ).values.single.entityType,
-        SyncOperation.categoryEntity,
-      );
-    },
-  );
+    await repository.deleteCategory(category.id);
+    expect(repository.pendingSyncOperations, isEmpty);
+    expect(
+      Hive.box<SyncTombstone>(HiveConstants.syncTombstonesBox).values.single.entityType,
+      SyncOperation.categoryEntity,
+    );
+  });
 
   group('deleteCategory', () {
     Box<LinkModel> links() => Hive.box<LinkModel>(HiveConstants.linksBox);
@@ -172,9 +128,7 @@ void main() {
 
     test('removes the name from every link that has it', () async {
       const category = CategoryModel(id: 'c1', name: 'Recipes');
-      await Hive.box<CategoryModel>(
-        HiveConstants.categoriesBox,
-      ).put(category.id, category);
+      await Hive.box<CategoryModel>(HiveConstants.categoriesBox).put(category.id, category);
       await links().put('a', link('a', ['Recipes', 'Travel']));
       await links().put('b', link('b', ['Recipes']));
       await links().put('c', link('c', ['Travel']));
@@ -188,9 +142,7 @@ void main() {
 
     test('queues a sync update only for the links it changed', () async {
       const category = CategoryModel(id: 'c1', name: 'Recipes');
-      await Hive.box<CategoryModel>(
-        HiveConstants.categoriesBox,
-      ).put(category.id, category);
+      await Hive.box<CategoryModel>(HiveConstants.categoriesBox).put(category.id, category);
       await links().put('a', link('a', ['Recipes']));
       await links().put('c', link('c', ['Travel']));
 
@@ -211,12 +163,7 @@ void main() {
       await repository.deleteCategory('missing');
 
       expect(links().get('a')!.categories, ['Recipes']);
-      expect(
-        repository.pendingSyncOperations.where(
-          (op) => op.entityType == SyncOperation.linkEntity,
-        ),
-        isEmpty,
-      );
+      expect(repository.pendingSyncOperations.where((op) => op.entityType == SyncOperation.linkEntity), isEmpty);
     });
   });
 }

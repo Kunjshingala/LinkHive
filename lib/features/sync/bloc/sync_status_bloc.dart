@@ -9,15 +9,9 @@ import 'sync_status_state.dart';
 class SyncStatusBloc extends Bloc<SyncStatusEvent, SyncStatusState> {
   late final StreamSubscription<SyncStatusEvent> _statusSubscription;
 
-  SyncStatusBloc({required SyncEngine syncEngine})
-    : super(SyncStatusState(syncEngine.snapshot)) {
-    on<SyncStatusChanged>(
-      (event, emit) => emit(SyncStatusState(event.snapshot)),
-    );
-    _statusSubscription = syncEngine
-        .watch()
-        .map<SyncStatusEvent>(SyncStatusChanged.new)
-        .listen(add);
+  SyncStatusBloc({required SyncEngine syncEngine}) : super(SyncStatusState(syncEngine.snapshot)) {
+    on<SyncStatusChanged>((event, emit) => emit(SyncStatusState(event.snapshot)));
+    _statusSubscription = syncEngine.watch().map<SyncStatusEvent>(SyncStatusChanged.new).listen(add);
   }
 
   @override

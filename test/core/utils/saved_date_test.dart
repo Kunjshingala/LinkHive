@@ -19,10 +19,7 @@ void main() {
     });
 
     test('previous calendar day reads "yesterday", even under 24h ago', () {
-      expect(
-        formatSavedDate(DateTime(2026, 10, 6, 23, 50), now, en),
-        'yesterday',
-      );
+      expect(formatSavedDate(DateTime(2026, 10, 6, 23, 50), now, en), 'yesterday');
     });
 
     test('earlier this year drops the year', () {
@@ -36,11 +33,7 @@ void main() {
     test('uses the locale for words and dates', () {
       expect(formatSavedDate(DateTime(2026, 10, 7, 1), now, hi), 'आज');
       expect(formatSavedDate(DateTime(2026, 10, 6), now, hi), 'कल');
-      expect(
-        formatSavedDate(DateTime(2026, 9, 28), now, hi),
-        isNot('Sep 28'),
-        reason: 'Hindi month name, not English',
-      );
+      expect(formatSavedDate(DateTime(2026, 9, 28), now, hi), isNot('Sep 28'), reason: 'Hindi month name, not English');
     });
   });
 }

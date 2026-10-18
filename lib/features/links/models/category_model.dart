@@ -63,10 +63,7 @@ class CategoryModel {
   /// Defensively defaults [name] to an empty string if the Firestore field
   /// is missing or of an unexpected type.
   factory CategoryModel.fromFirestore(String id, Map<String, dynamic> data) {
-    return CategoryModel(
-      id: id,
-      name: data[FirebaseConstants.categoryName] as String? ?? '',
-    );
+    return CategoryModel(id: id, name: data[FirebaseConstants.categoryName] as String? ?? '');
   }
 
   @override

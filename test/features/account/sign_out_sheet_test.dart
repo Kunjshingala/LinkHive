@@ -101,37 +101,17 @@ void main() {
 
   testWidgets('offline, it says the changes wait for internet, not that sync '
       'failed', (tester) async {
-    await openSheet(
-      tester,
-      const SyncSnapshot(
-        status: SyncStatus.waitingForInternet,
-        pendingChanges: 2,
-      ),
-    );
+    await openSheet(tester, const SyncSnapshot(status: SyncStatus.waitingForInternet, pendingChanges: 2));
 
-    expect(
-      find.text(
-        '2 changes are waiting for internet. If you sign out now, they are lost.',
-      ),
-      findsOneWidget,
-    );
+    expect(find.text('2 changes are waiting for internet. If you sign out now, they are lost.'), findsOneWidget);
     expect(find.textContaining('could not sync'), findsNothing);
     // Syncing cannot help offline, so the safe choice is to back out.
     expect(find.text('Sync now'), findsNothing);
     expect(find.text('Cancel'), findsOneWidget);
   });
 
-  testWidgets('"Sign out anyway" hands back exactly what the user was shown', (
-    tester,
-  ) async {
-    await openSheet(
-      tester,
-      const SyncSnapshot(
-        status: SyncStatus.waitingForInternet,
-        pendingChanges: 2,
-        conflicts: 1,
-      ),
-    );
+  testWidgets('"Sign out anyway" hands back exactly what the user was shown', (tester) async {
+    await openSheet(tester, const SyncSnapshot(status: SyncStatus.waitingForInternet, pendingChanges: 2, conflicts: 1));
 
     await tester.tap(find.text('Sign out anyway'));
     await tester.pumpAndSettle();
@@ -140,18 +120,10 @@ void main() {
     expect(shown, const UnsyncedSummary(changes: 2, conflicts: 1));
   });
 
-  testWidgets('online with changes pending, "Sync now" asks for a sync', (
-    tester,
-  ) async {
-    await openSheet(
-      tester,
-      const SyncSnapshot(status: SyncStatus.failed, pendingChanges: 1),
-    );
+  testWidgets('online with changes pending, "Sync now" asks for a sync', (tester) async {
+    await openSheet(tester, const SyncSnapshot(status: SyncStatus.failed, pendingChanges: 1));
 
-    expect(
-      find.text('1 change could not sync. Try again, or sign out and lose it.'),
-      findsOneWidget,
-    );
+    expect(find.text('1 change could not sync. Try again, or sign out and lose it.'), findsOneWidget);
     // The sheet already asked once when it opened.
     verify(() => session.requestSync()).called(1);
 
@@ -162,44 +134,24 @@ void main() {
     expect(closed, isFalse);
   });
 
-  testWidgets('while syncing it shows progress and still allows leaving', (
-    tester,
-  ) async {
-    await openSheet(
-      tester,
-      const SyncSnapshot(status: SyncStatus.syncing, pendingChanges: 3),
-    );
+  testWidgets('while syncing it shows progress and still allows leaving', (tester) async {
+    await openSheet(tester, const SyncSnapshot(status: SyncStatus.syncing, pendingChanges: 3));
 
-    expect(
-      find.text(
-        'Syncing 3 changes. Wait for them to finish, or sign out and lose them.',
-      ),
-      findsOneWidget,
-    );
+    expect(find.text('Syncing 3 changes. Wait for them to finish, or sign out and lose them.'), findsOneWidget);
     expect(find.byType(CircularProgressIndicator), findsOneWidget);
     expect(find.text('Sign out anyway'), findsOneWidget);
   });
 
-  testWidgets('a conflict cannot be fixed by syncing, so it only warns', (
-    tester,
-  ) async {
-    await openSheet(
-      tester,
-      const SyncSnapshot(status: SyncStatus.conflict, conflicts: 1),
-    );
+  testWidgets('a conflict cannot be fixed by syncing, so it only warns', (tester) async {
+    await openSheet(tester, const SyncSnapshot(status: SyncStatus.conflict, conflicts: 1));
 
     expect(find.textContaining('need your decision'), findsOneWidget);
     expect(find.text('Sync now'), findsNothing);
     expect(find.text('Sign out anyway'), findsOneWidget);
   });
 
-  testWidgets('updates live: once sync catches up, signing out is safe', (
-    tester,
-  ) async {
-    await openSheet(
-      tester,
-      const SyncSnapshot(status: SyncStatus.syncing, pendingChanges: 2),
-    );
+  testWidgets('updates live: once sync catches up, signing out is safe', (tester) async {
+    await openSheet(tester, const SyncSnapshot(status: SyncStatus.syncing, pendingChanges: 2));
     expect(find.text('Sign out anyway'), findsOneWidget);
 
     live.add(const SyncSnapshot());
@@ -219,13 +171,7 @@ void main() {
     tester.platformDispatcher.textScaleFactorTestValue = 1.3;
     addTearDown(tester.platformDispatcher.clearAllTestValues);
 
-    await openSheet(
-      tester,
-      const SyncSnapshot(
-        status: SyncStatus.waitingForInternet,
-        pendingChanges: 12,
-      ),
-    );
+    await openSheet(tester, const SyncSnapshot(status: SyncStatus.waitingForInternet, pendingChanges: 12));
 
     expect(tester.takeException(), isNull);
     expect(find.text('Sign out anyway'), findsOneWidget);

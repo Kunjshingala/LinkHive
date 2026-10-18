@@ -21,9 +21,7 @@ class InboxBloc extends Bloc<InboxEvent, InboxState> {
   /// Subscription to the Hive links box stream. Cancelled in [close].
   late final StreamSubscription<void> _boxSubscription;
 
-  InboxBloc({required LinkManager manager})
-    : _manager = manager,
-      super(const InboxInitial()) {
+  InboxBloc({required LinkManager manager}) : _manager = manager, super(const InboxInitial()) {
     on<InboxLoadRequested>(_onLoadRequested);
     on<InboxLinkDeleted>(_onLinkDeleted);
 
@@ -40,10 +38,7 @@ class InboxBloc extends Bloc<InboxEvent, InboxState> {
     return super.close();
   }
 
-  Future<void> _onLoadRequested(
-    InboxLoadRequested event,
-    Emitter<InboxState> emit,
-  ) async {
+  Future<void> _onLoadRequested(InboxLoadRequested event, Emitter<InboxState> emit) async {
     if (!event.silent) emit(const InboxLoading());
     try {
       emit(InboxLoaded(links: _manager.queryQuickLinks()));
@@ -52,10 +47,7 @@ class InboxBloc extends Bloc<InboxEvent, InboxState> {
     }
   }
 
-  Future<void> _onLinkDeleted(
-    InboxLinkDeleted event,
-    Emitter<InboxState> emit,
-  ) async {
+  Future<void> _onLinkDeleted(InboxLinkDeleted event, Emitter<InboxState> emit) async {
     try {
       await _manager.deleteLink(event.linkId);
       // The box watch also refreshes, but emit immediately for a snappy UI.

@@ -46,18 +46,13 @@ void main() {
     locator.registerSingleton<LinkManager>(manager);
     locator.registerSingleton<SyncEngine>(MockSyncEngine());
     when(() => manager.watchLinks()).thenAnswer((_) => changes.stream);
-    when(() => manager.getLibraryStats()).thenReturn(
-      const LibraryStats(total: 2, unread: 2, high: 1, uncategorized: 1),
-    );
+    when(
+      () => manager.getLibraryStats(),
+    ).thenReturn(const LibraryStats(total: 2, unread: 2, high: 1, uncategorized: 1));
     when(
       () => manager.getSourceCounts(within: any(named: 'within')),
-    ).thenReturn(const [
-      NamedCount('youtube.com', 1),
-      NamedCount('amazon.in', 1),
-    ]);
-    when(
-      () => manager.getCategoryCounts(),
-    ).thenReturn(const [NamedCount('Watch', 1)]);
+    ).thenReturn(const [NamedCount('youtube.com', 1), NamedCount('amazon.in', 1)]);
+    when(() => manager.getCategoryCounts()).thenReturn(const [NamedCount('Watch', 1)]);
     when(
       () => manager.findLinks(
         any(),
@@ -83,9 +78,7 @@ void main() {
     ),
   );
 
-  testWidgets('shows search, quick chips, filter buttons and the links', (
-    tester,
-  ) async {
+  testWidgets('shows search, quick chips, filter buttons and the links', (tester) async {
     await tester.pumpWidget(app());
     await tester.pumpAndSettle();
 
@@ -100,9 +93,7 @@ void main() {
     expect(find.text('Pizza video'), findsOneWidget);
   });
 
-  testWidgets('shows the empty state when nothing is saved yet', (
-    tester,
-  ) async {
+  testWidgets('shows the empty state when nothing is saved yet', (tester) async {
     when(() => manager.getLibraryStats()).thenReturn(const LibraryStats());
     when(
       () => manager.findLinks(
@@ -137,9 +128,7 @@ void main() {
     expect(find.text('2 links'), findsOneWidget);
   });
 
-  testWidgets('the Source sheet picks a site and the button turns into it', (
-    tester,
-  ) async {
+  testWidgets('the Source sheet picks a site and the button turns into it', (tester) async {
     await tester.pumpWidget(app());
     await tester.pumpAndSettle();
 
@@ -179,32 +168,27 @@ void main() {
     ).called(greaterThan(0));
   });
 
-  testWidgets(
-    'Select enters selection mode: action bar shows, nav hides, close ends it',
-    (tester) async {
-      await tester.pumpWidget(app());
-      await tester.pumpAndSettle();
+  testWidgets('Select enters selection mode: action bar shows, nav hides, close ends it', (tester) async {
+    await tester.pumpWidget(app());
+    await tester.pumpAndSettle();
 
-      await tester.tap(find.byIcon(Icons.checklist_rounded));
-      await tester.pumpAndSettle();
-      expect(find.text('Select links'), findsOneWidget);
-      expect(find.text('Mark read'), findsOneWidget);
-      expect(AppShell.navVisible.value, isFalse);
+    await tester.tap(find.byIcon(Icons.checklist_rounded));
+    await tester.pumpAndSettle();
+    expect(find.text('Select links'), findsOneWidget);
+    expect(find.text('Mark read'), findsOneWidget);
+    expect(AppShell.navVisible.value, isFalse);
 
-      await tester.tap(find.text('Keyboard'));
-      await tester.pumpAndSettle();
-      expect(find.text('1 selected'), findsOneWidget);
+    await tester.tap(find.text('Keyboard'));
+    await tester.pumpAndSettle();
+    expect(find.text('1 selected'), findsOneWidget);
 
-      await tester.tap(find.byIcon(Icons.close_rounded));
-      await tester.pumpAndSettle();
-      expect(find.text('Mark read'), findsNothing);
-      expect(AppShell.navVisible.value, isTrue);
-    },
-  );
+    await tester.tap(find.byIcon(Icons.close_rounded));
+    await tester.pumpAndSettle();
+    expect(find.text('Mark read'), findsNothing);
+    expect(AppShell.navVisible.value, isTrue);
+  });
 
-  testWidgets('long-press also starts selection with that link picked', (
-    tester,
-  ) async {
+  testWidgets('long-press also starts selection with that link picked', (tester) async {
     await tester.pumpWidget(app());
     await tester.pumpAndSettle();
 
@@ -214,9 +198,7 @@ void main() {
     expect(find.text('1 selected'), findsOneWidget);
   });
 
-  testWidgets('the Add button sits above the floating nav, not under it', (
-    tester,
-  ) async {
+  testWidgets('the Add button sits above the floating nav, not under it', (tester) async {
     // Same layout as AppShell: the nav floats over the body (extendBody).
     await tester.pumpWidget(
       MaterialApp.router(
@@ -234,10 +216,7 @@ void main() {
                   currentIndex: 0,
                   onTap: (_) {},
                   items: const [
-                    AppBottomNavItem(
-                      icon: Icons.collections_bookmark_rounded,
-                      label: 'Links',
-                    ),
+                    AppBottomNavItem(icon: Icons.collections_bookmark_rounded, label: 'Links'),
                     AppBottomNavItem(icon: Icons.today_rounded, label: 'Today'),
                   ],
                 ),
@@ -254,9 +233,7 @@ void main() {
     expect(addButton.bottom, lessThanOrEqualTo(nav.top));
   });
 
-  testWidgets('floating nav labels only the active tab and shows the badge', (
-    tester,
-  ) async {
+  testWidgets('floating nav labels only the active tab and shows the badge', (tester) async {
     int? tapped;
     await tester.pumpWidget(
       MaterialApp(
@@ -266,16 +243,9 @@ void main() {
             currentIndex: 0,
             onTap: (i) => tapped = i,
             items: const [
-              AppBottomNavItem(
-                icon: Icons.collections_bookmark_rounded,
-                label: 'Links',
-              ),
+              AppBottomNavItem(icon: Icons.collections_bookmark_rounded, label: 'Links'),
               AppBottomNavItem(icon: Icons.today_rounded, label: 'Today'),
-              AppBottomNavItem(
-                icon: Icons.inbox_rounded,
-                label: 'Inbox',
-                badgeCount: 4,
-              ),
+              AppBottomNavItem(icon: Icons.inbox_rounded, label: 'Inbox', badgeCount: 4),
             ],
           ),
         ),

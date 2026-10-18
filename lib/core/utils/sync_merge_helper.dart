@@ -3,20 +3,12 @@ import '../utils/utils.dart';
 
 class SyncMergeHelper {
   /// Returns fields changed on both sides from the same base version.
-  static List<String> conflictingFields({
-    required LinkModel base,
-    required LinkModel local,
-    required LinkModel cloud,
-  }) {
+  static List<String> conflictingFields({required LinkModel base, required LinkModel local, required LinkModel cloud}) {
     final fields = <String>[];
-    if (base.title != local.title &&
-        base.title != cloud.title &&
-        local.title != cloud.title) {
+    if (base.title != local.title && base.title != cloud.title && local.title != cloud.title) {
       fields.add('title');
     }
-    if (base.url != local.url &&
-        base.url != cloud.url &&
-        local.url != cloud.url) {
+    if (base.url != local.url && base.url != cloud.url && local.url != cloud.url) {
       fields.add('url');
     }
     if (base.description != local.description &&
@@ -24,14 +16,10 @@ class SyncMergeHelper {
         local.description != cloud.description) {
       fields.add('description');
     }
-    if (base.image != local.image &&
-        base.image != cloud.image &&
-        local.image != cloud.image) {
+    if (base.image != local.image && base.image != cloud.image && local.image != cloud.image) {
       fields.add('image');
     }
-    if (base.priority != local.priority &&
-        base.priority != cloud.priority &&
-        local.priority != cloud.priority) {
+    if (base.priority != local.priority && base.priority != cloud.priority && local.priority != cloud.priority) {
       fields.add('priority');
     }
     return fields;
@@ -43,11 +31,7 @@ class SyncMergeHelper {
   /// returns the cloud link.
   /// The `isSynced` flag will be set to `false` if any local edits were preserved
   /// against the cloud state, signaling that the merged result needs to be pushed up.
-  static LinkModel merge({
-    required LinkModel base,
-    required LinkModel local,
-    required LinkModel cloud,
-  }) {
+  static LinkModel merge({required LinkModel base, required LinkModel local, required LinkModel cloud}) {
     // If local hasn't changed since last sync, just take cloud
     if (_isEqual(base, local)) {
       return cloud;
@@ -68,21 +52,11 @@ class SyncMergeHelper {
     final priorityChangedCloud = base.priority != cloud.priority;
 
     // Resolve conflicts (Cloud wins on direct collisions)
-    final resolvedTitle = (titleChangedLocally && !titleChangedCloud)
-        ? local.title
-        : cloud.title;
-    final resolvedUrl = (urlChangedLocally && !urlChangedCloud)
-        ? local.url
-        : cloud.url;
-    final resolvedDesc = (descChangedLocally && !descChangedCloud)
-        ? local.description
-        : cloud.description;
-    final resolvedImage = (imageChangedLocally && !imageChangedCloud)
-        ? local.image
-        : cloud.image;
-    final resolvedPriority = (priorityChangedLocally && !priorityChangedCloud)
-        ? local.priority
-        : cloud.priority;
+    final resolvedTitle = (titleChangedLocally && !titleChangedCloud) ? local.title : cloud.title;
+    final resolvedUrl = (urlChangedLocally && !urlChangedCloud) ? local.url : cloud.url;
+    final resolvedDesc = (descChangedLocally && !descChangedCloud) ? local.description : cloud.description;
+    final resolvedImage = (imageChangedLocally && !imageChangedCloud) ? local.image : cloud.image;
+    final resolvedPriority = (priorityChangedLocally && !priorityChangedCloud) ? local.priority : cloud.priority;
 
     // Merge Categories using Set Math
     final baseCats = base.categories.toSet();
@@ -115,8 +89,7 @@ class SyncMergeHelper {
     if (!_isEqual(mergedLink, cloud)) {
       printLog(
         tag: 'SyncMergeHelper',
-        msg:
-            'Merged local changes into cloud link ${mergedLink.id}. Marking as unsynced.',
+        msg: 'Merged local changes into cloud link ${mergedLink.id}. Marking as unsynced.',
       );
       return mergedLink.copyWith(isSynced: false);
     }

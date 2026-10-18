@@ -14,8 +14,7 @@ import 'package:link_hive/features/links/models/link_model.dart';
 import 'package:link_hive/features/links/repository/link_repository.dart';
 import 'package:mocktail/mocktail.dart';
 
-class MockFirebaseFirestoreService extends Mock
-    implements FirebaseFirestoreService {}
+class MockFirebaseFirestoreService extends Mock implements FirebaseFirestoreService {}
 
 void main() {
   late Directory hiveDirectory;
@@ -32,9 +31,7 @@ void main() {
   );
 
   setUpAll(() async {
-    hiveDirectory = await Directory.systemTemp.createTemp(
-      'linkhive-cursor-test-',
-    );
+    hiveDirectory = await Directory.systemTemp.createTemp('linkhive-cursor-test-');
     Hive.init(hiveDirectory.path);
     Hive.registerAdapter(LinkModelAdapter());
     Hive.registerAdapter(CategoryModelAdapter());
@@ -56,23 +53,13 @@ void main() {
 
   void stubEmptyPull() {
     // Full-fetch variants (used when no cursor exists)
-    when(
-      () => firebaseService.fetchDeletedLinks('user-1'),
-    ).thenAnswer((_) async => []);
-    when(
-      () => firebaseService.fetchDeletedCategories('user-1'),
-    ).thenAnswer((_) async => []);
+    when(() => firebaseService.fetchDeletedLinks('user-1')).thenAnswer((_) async => []);
+    when(() => firebaseService.fetchDeletedCategories('user-1')).thenAnswer((_) async => []);
     // Incremental variants (used when cursor is present) — match any since value
-    when(
-      () => firebaseService.fetchDeletedLinksSince('user-1', any()),
-    ).thenAnswer((_) async => []);
-    when(
-      () => firebaseService.fetchDeletedCategoriesSince('user-1', any()),
-    ).thenAnswer((_) async => []);
+    when(() => firebaseService.fetchDeletedLinksSince('user-1', any())).thenAnswer((_) async => []);
+    when(() => firebaseService.fetchDeletedCategoriesSince('user-1', any())).thenAnswer((_) async => []);
     // Categories always use a full fetch (no server timestamp on CategoryModel)
-    when(
-      () => firebaseService.fetchCategories('user-1'),
-    ).thenAnswer((_) async => []);
+    when(() => firebaseService.fetchCategories('user-1')).thenAnswer((_) async => []);
   }
 
   setUp(() async {
@@ -89,26 +76,17 @@ void main() {
     ]);
     // The phone already belongs to this user, as it does after the first sync.
     // Without a recorded owner the first run resets the cursor on purpose.
-    await Hive.box(HiveConstants.settingsBox).put(
-      HiveConstants.ownerUidKey,
-      'user-1',
-    );
+    await Hive.box(HiveConstants.settingsBox).put(HiveConstants.ownerUidKey, 'user-1');
     firebaseService = MockFirebaseFirestoreService();
     repository = LinkRepository(hiveHelper: HiveHelper());
-    cloudSync = CloudSyncService(
-      firebaseService: firebaseService,
-      store: repository,
-      uidProvider: () => 'user-1',
-    );
+    cloudSync = CloudSyncService(firebaseService: firebaseService, store: repository, uidProvider: () => 'user-1');
   });
 
   tearDown(() => Hive.close());
   tearDownAll(() => hiveDirectory.delete(recursive: true));
 
   test('first pull with no cursor calls fetchLinks (full bootstrap)', () async {
-    when(
-      () => firebaseService.fetchLinks('user-1'),
-    ).thenAnswer((_) async => [baseLink]);
+    when(() => firebaseService.fetchLinks('user-1')).thenAnswer((_) async => [baseLink]);
     stubEmptyPull();
 
     await cloudSync.pull();
@@ -118,85 +96,57 @@ void main() {
   });
 
   test('pull advances the cursor stored in the settings box', () async {
-    when(
-      () => firebaseService.fetchLinks('user-1'),
-    ).thenAnswer((_) async => []);
+    when(() => firebaseService.fetchLinks('user-1')).thenAnswer((_) async => []);
     stubEmptyPull();
 
     final before = DateTime.now().toUtc().millisecondsSinceEpoch;
     await cloudSync.pull();
     final after = DateTime.now().toUtc().millisecondsSinceEpoch;
 
-    final saved =
-        Hive.box(HiveConstants.settingsBox).get(HiveConstants.lastPulledAtKey)
-            as int?;
+    final saved = Hive.box(HiveConstants.settingsBox).get(HiveConstants.lastPulledAtKey) as int?;
     expect(saved, isNotNull);
     expect(saved, greaterThanOrEqualTo(before));
     expect(saved, lessThanOrEqualTo(after));
   });
 
-  test(
-    'subsequent pull calls fetchLinksSince with cursor minus 60-second overlap',
-    () async {
-      const cursor = 200000;
-      const expectedSince = cursor - 60 * 1000; // 60-second overlap
-      await Hive.box(
-        HiveConstants.settingsBox,
-      ).put(HiveConstants.lastPulledAtKey, cursor);
+  test('subsequent pull calls fetchLinksSince with cursor minus 60-second overlap', () async {
+    const cursor = 200000;
+    const expectedSince = cursor - 60 * 1000; // 60-second overlap
+    await Hive.box(HiveConstants.settingsBox).put(HiveConstants.lastPulledAtKey, cursor);
 
-      when(
-        () => firebaseService.fetchLinksSince('user-1', expectedSince),
-      ).thenAnswer((_) async => []);
-      stubEmptyPull();
+    when(() => firebaseService.fetchLinksSince('user-1', expectedSince)).thenAnswer((_) async => []);
+    stubEmptyPull();
 
-      await cloudSync.pull();
+    await cloudSync.pull();
 
-      verify(
-        () => firebaseService.fetchLinksSince('user-1', expectedSince),
-      ).called(1);
-      verifyNever(() => firebaseService.fetchLinks(any()));
-    },
-  );
+    verify(() => firebaseService.fetchLinksSince('user-1', expectedSince)).called(1);
+    verifyNever(() => firebaseService.fetchLinks(any()));
+  });
 
-  test(
-    'clearLocalData resets the cursor to force a full fetch on next pull',
-    () async {
-      await Hive.box(
-        HiveConstants.settingsBox,
-      ).put(HiveConstants.lastPulledAtKey, 999999);
+  test('clearLocalData resets the cursor to force a full fetch on next pull', () async {
+    await Hive.box(HiveConstants.settingsBox).put(HiveConstants.lastPulledAtKey, 999999);
 
-      await repository.clearLocalData();
+    await repository.clearLocalData();
 
-      final cursor =
-          Hive.box(HiveConstants.settingsBox).get(HiveConstants.lastPulledAtKey)
-              as int?;
-      expect(cursor, isNull);
-    },
-  );
+    final cursor = Hive.box(HiveConstants.settingsBox).get(HiveConstants.lastPulledAtKey) as int?;
+    expect(cursor, isNull);
+  });
 
   // ─── Two-device scenarios ─────────────────────────────────────────────────
 
   test('two-device edit: a link edited on device B is merged into device A on '
       'the next incremental pull', () async {
     // Device A synced this link previously; base == local.
-    await Hive.box<LinkModel>(
-      HiveConstants.linksBox,
-    ).put(baseLink.id, baseLink);
-    await Hive.box<LinkModel>(
-      HiveConstants.baseLinksBox,
-    ).put(baseLink.id, baseLink);
+    await Hive.box<LinkModel>(HiveConstants.linksBox).put(baseLink.id, baseLink);
+    await Hive.box<LinkModel>(HiveConstants.baseLinksBox).put(baseLink.id, baseLink);
 
     // Device A last pulled at T=100.
     const cursor = 100;
-    await Hive.box(
-      HiveConstants.settingsBox,
-    ).put(HiveConstants.lastPulledAtKey, cursor);
+    await Hive.box(HiveConstants.settingsBox).put(HiveConstants.lastPulledAtKey, cursor);
 
     // Device B edited the link after T=100; Firestore returns the new version.
     final cloudUpdated = baseLink.copyWith(title: 'Device B title');
-    when(
-      () => firebaseService.fetchLinksSince('user-1', cursor - 60 * 1000),
-    ).thenAnswer((_) async => [cloudUpdated]);
+    when(() => firebaseService.fetchLinksSince('user-1', cursor - 60 * 1000)).thenAnswer((_) async => [cloudUpdated]);
     stubEmptyPull();
 
     await cloudSync.pull();
@@ -210,34 +160,19 @@ void main() {
   test('two-device delete: a link deleted on device B is removed from device A '
       'on the next incremental pull', () async {
     // Device A has the link locally and in the base box.
-    await Hive.box<LinkModel>(
-      HiveConstants.linksBox,
-    ).put(baseLink.id, baseLink);
-    await Hive.box<LinkModel>(
-      HiveConstants.baseLinksBox,
-    ).put(baseLink.id, baseLink);
+    await Hive.box<LinkModel>(HiveConstants.linksBox).put(baseLink.id, baseLink);
+    await Hive.box<LinkModel>(HiveConstants.baseLinksBox).put(baseLink.id, baseLink);
 
     // Device A last pulled at T=100.
-    await Hive.box(
-      HiveConstants.settingsBox,
-    ).put(HiveConstants.lastPulledAtKey, 100);
+    await Hive.box(HiveConstants.settingsBox).put(HiveConstants.lastPulledAtKey, 100);
 
     // Device B deleted the link; Firestore tombstone collection reflects this.
-    when(
-      () => firebaseService.fetchLinksSince('user-1', 100 - 60 * 1000),
-    ).thenAnswer((_) async => []);
+    when(() => firebaseService.fetchLinksSince('user-1', 100 - 60 * 1000)).thenAnswer((_) async => []);
     when(
       () => firebaseService.fetchDeletedLinksSince('user-1', 100 - 60 * 1000),
     ).thenAnswer((_) async => [baseLink.id]);
-    when(
-      () => firebaseService.fetchCategories('user-1'),
-    ).thenAnswer((_) async => []);
-    when(
-      () => firebaseService.fetchDeletedCategoriesSince(
-        'user-1',
-        100 - 60 * 1000,
-      ),
-    ).thenAnswer((_) async => []);
+    when(() => firebaseService.fetchCategories('user-1')).thenAnswer((_) async => []);
+    when(() => firebaseService.fetchDeletedCategoriesSince('user-1', 100 - 60 * 1000)).thenAnswer((_) async => []);
 
     await cloudSync.pull();
 
@@ -247,76 +182,46 @@ void main() {
   test('subsequent pull uses fetchDeletedLinksSince for tombstones', () async {
     const cursor = 300000;
     const expectedSince = cursor - 60 * 1000;
-    await Hive.box(
-      HiveConstants.settingsBox,
-    ).put(HiveConstants.lastPulledAtKey, cursor);
+    await Hive.box(HiveConstants.settingsBox).put(HiveConstants.lastPulledAtKey, cursor);
 
-    when(
-      () => firebaseService.fetchLinksSince('user-1', expectedSince),
-    ).thenAnswer((_) async => []);
-    when(
-      () => firebaseService.fetchDeletedLinksSince('user-1', expectedSince),
-    ).thenAnswer((_) async => []);
+    when(() => firebaseService.fetchLinksSince('user-1', expectedSince)).thenAnswer((_) async => []);
+    when(() => firebaseService.fetchDeletedLinksSince('user-1', expectedSince)).thenAnswer((_) async => []);
     stubEmptyPull();
 
     await cloudSync.pull();
 
-    verify(
-      () => firebaseService.fetchDeletedLinksSince('user-1', expectedSince),
-    ).called(1);
+    verify(() => firebaseService.fetchDeletedLinksSince('user-1', expectedSince)).called(1);
     verifyNever(() => firebaseService.fetchDeletedLinks(any()));
   });
 
-  test(
-    'subsequent pull uses fetchDeletedCategoriesSince for category tombstones',
-    () async {
-      const cursor = 300000;
-      const expectedSince = cursor - 60 * 1000;
-      await Hive.box(
-        HiveConstants.settingsBox,
-      ).put(HiveConstants.lastPulledAtKey, cursor);
+  test('subsequent pull uses fetchDeletedCategoriesSince for category tombstones', () async {
+    const cursor = 300000;
+    const expectedSince = cursor - 60 * 1000;
+    await Hive.box(HiveConstants.settingsBox).put(HiveConstants.lastPulledAtKey, cursor);
 
-      when(
-        () => firebaseService.fetchLinksSince('user-1', expectedSince),
-      ).thenAnswer((_) async => []);
-      stubEmptyPull();
+    when(() => firebaseService.fetchLinksSince('user-1', expectedSince)).thenAnswer((_) async => []);
+    stubEmptyPull();
 
-      await cloudSync.pull();
+    await cloudSync.pull();
 
-      verify(
-        () => firebaseService.fetchDeletedCategoriesSince(
-          'user-1',
-          expectedSince,
-        ),
-      ).called(1);
-      verifyNever(() => firebaseService.fetchDeletedCategories(any()));
-    },
-  );
+    verify(() => firebaseService.fetchDeletedCategoriesSince('user-1', expectedSince)).called(1);
+    verifyNever(() => firebaseService.fetchDeletedCategories(any()));
+  });
 
-  test(
-    'overlap window includes records at the exact cursor boundary',
-    () async {
-      const cursor = 5000;
-      const overlap = 60 * 1000;
-      // A link whose syncedAt falls inside the overlap window [cursor-overlap,
-      // cursor] must be fetched even though it predates the cursor.
-      final linkAtBoundary = baseLink.copyWith(id: 'boundary-link');
+  test('overlap window includes records at the exact cursor boundary', () async {
+    const cursor = 5000;
+    const overlap = 60 * 1000;
+    // A link whose syncedAt falls inside the overlap window [cursor-overlap,
+    // cursor] must be fetched even though it predates the cursor.
+    final linkAtBoundary = baseLink.copyWith(id: 'boundary-link');
 
-      await Hive.box(
-        HiveConstants.settingsBox,
-      ).put(HiveConstants.lastPulledAtKey, cursor);
+    await Hive.box(HiveConstants.settingsBox).put(HiveConstants.lastPulledAtKey, cursor);
 
-      when(
-        () => firebaseService.fetchLinksSince('user-1', cursor - overlap),
-      ).thenAnswer((_) async => [linkAtBoundary]);
-      stubEmptyPull();
+    when(() => firebaseService.fetchLinksSince('user-1', cursor - overlap)).thenAnswer((_) async => [linkAtBoundary]);
+    stubEmptyPull();
 
-      await cloudSync.pull();
+    await cloudSync.pull();
 
-      expect(
-        repository.queryLinks(limit: 10).any((l) => l.id == 'boundary-link'),
-        isTrue,
-      );
-    },
-  );
+    expect(repository.queryLinks(limit: 10).any((l) => l.id == 'boundary-link'), isTrue);
+  });
 }

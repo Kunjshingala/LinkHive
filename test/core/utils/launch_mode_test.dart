@@ -13,46 +13,28 @@ import 'package:url_launcher/url_launcher.dart';
 void main() {
   group('launchModeForUrl', () {
     test('uses the in-app browser for https', () {
-      expect(
-        launchModeForUrl(Uri.parse('https://wellfound.com/jobs')),
-        LaunchMode.inAppBrowserView,
-      );
+      expect(launchModeForUrl(Uri.parse('https://wellfound.com/jobs')), LaunchMode.inAppBrowserView);
     });
 
     test('uses the in-app browser for http', () {
-      expect(
-        launchModeForUrl(Uri.parse('http://example.com')),
-        LaunchMode.inAppBrowserView,
-      );
+      expect(launchModeForUrl(Uri.parse('http://example.com')), LaunchMode.inAppBrowserView);
     });
 
     test('falls back to the external app for mailto', () {
-      expect(
-        launchModeForUrl(Uri.parse('mailto:someone@example.com')),
-        LaunchMode.externalApplication,
-      );
+      expect(launchModeForUrl(Uri.parse('mailto:someone@example.com')), LaunchMode.externalApplication);
     });
 
     test('falls back to the external app for tel', () {
-      expect(
-        launchModeForUrl(Uri.parse('tel:+15551234567')),
-        LaunchMode.externalApplication,
-      );
+      expect(launchModeForUrl(Uri.parse('tel:+15551234567')), LaunchMode.externalApplication);
     });
 
     test('falls back to the external app for a custom scheme', () {
-      expect(
-        launchModeForUrl(Uri.parse('linkhive://today')),
-        LaunchMode.externalApplication,
-      );
+      expect(launchModeForUrl(Uri.parse('linkhive://today')), LaunchMode.externalApplication);
     });
 
     test('falls back to the external app for a scheme-less url', () {
       // Uri.parse('example.com') yields an empty scheme, not https.
-      expect(
-        launchModeForUrl(Uri.parse('example.com')),
-        LaunchMode.externalApplication,
-      );
+      expect(launchModeForUrl(Uri.parse('example.com')), LaunchMode.externalApplication);
     });
   });
 }

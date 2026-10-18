@@ -28,9 +28,7 @@ class InboxScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) =>
-          InboxBloc(manager: locator<LinkManager>())
-            ..add(const InboxLoadRequested()),
+      create: (_) => InboxBloc(manager: locator<LinkManager>())..add(const InboxLoadRequested()),
       child: const _InboxContent(),
     );
   }
@@ -49,11 +47,8 @@ class _InboxContent extends StatelessWidget {
         child: BlocBuilder<InboxBloc, InboxState>(
           builder: (context, state) {
             return switch (state) {
-              InboxInitial() || InboxLoading() => Center(
-                child: CircularProgressIndicator(
-                  color: Theme.of(context).colorScheme.primary,
-                ),
-              ),
+              InboxInitial() ||
+              InboxLoading() => Center(child: CircularProgressIndicator(color: Theme.of(context).colorScheme.primary)),
               InboxLoaded(:final links) =>
                 links.isEmpty
                     ? EmptyState(
@@ -69,10 +64,8 @@ class _InboxContent extends StatelessWidget {
                           AppSpacing.xxl,
                         ),
                         itemCount: links.length,
-                        separatorBuilder: (_, _) =>
-                            const SizedBox(height: AppSpacing.lg),
-                        itemBuilder: (context, index) =>
-                            _InboxItem(link: links[index]),
+                        separatorBuilder: (_, _) => const SizedBox(height: AppSpacing.lg),
+                        itemBuilder: (context, index) => _InboxItem(link: links[index]),
                       ),
               InboxError(:final message) => Center(child: Text(message)),
             };
@@ -107,8 +100,7 @@ class _InboxItem extends StatelessWidget {
                 icon: Icons.tune_rounded,
                 height: 44,
                 shadowColor: AppColors.success,
-                onPressed: () =>
-                    context.pushNamed(MyRouteName.editLink, extra: link),
+                onPressed: () => context.pushNamed(MyRouteName.editLink, extra: link),
               ),
             ),
             const SizedBox(width: AppSpacing.sm),

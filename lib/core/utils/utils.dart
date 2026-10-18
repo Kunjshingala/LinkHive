@@ -49,6 +49,4 @@ void printLog({String tag = "Utils", required String msg}) {
 /// `mailto:` belongs in a mail client, `tel:` in the dialer. Neither has any
 /// business in a browser tab.
 LaunchMode launchModeForUrl(Uri uri) =>
-    uri.scheme == 'http' || uri.scheme == 'https'
-    ? LaunchMode.inAppBrowserView
-    : LaunchMode.externalApplication;
+    uri.scheme == 'http' || uri.scheme == 'https' ? LaunchMode.inAppBrowserView : LaunchMode.externalApplication;

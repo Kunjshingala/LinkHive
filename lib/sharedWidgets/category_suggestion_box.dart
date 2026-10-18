@@ -42,19 +42,12 @@ class CategorySuggestionBox extends StatelessWidget {
         children: [
           Row(
             children: [
-              const Icon(
-                Icons.auto_awesome_rounded,
-                size: 16,
-                color: AppColors.black,
-              ),
+              const Icon(Icons.auto_awesome_rounded, size: 16, color: AppColors.black),
               const SizedBox(width: AppSpacing.xs + 2),
               Expanded(
                 child: Text(
                   context.l10n.bulkCategorySuggested(host),
-                  style: theme.textTheme.labelLarge!.copyWith(
-                    color: AppColors.black,
-                    fontWeight: FontWeight.w700,
-                  ),
+                  style: theme.textTheme.labelLarge!.copyWith(color: AppColors.black, fontWeight: FontWeight.w700),
                 ),
               ),
             ],
@@ -68,9 +61,7 @@ class CategorySuggestionBox extends StatelessWidget {
                 primary: AppColors.black,
                 onPrimary: AppColors.white,
               ),
-              extensions: [
-                context.neoBrutal.copyWith(borderColor: AppColors.black),
-              ],
+              extensions: [context.neoBrutal.copyWith(borderColor: AppColors.black)],
             ),
             child: Wrap(
               spacing: AppSpacing.sm,

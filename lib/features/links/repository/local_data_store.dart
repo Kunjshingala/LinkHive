@@ -85,11 +85,7 @@ abstract interface class SyncStore {
 
   /// Stores [merged] locally and [cloudLink] as its base, and queues the merge
   /// when it kept local edits.
-  Future<bool> applyMerge(
-    SyncRunToken run,
-    LinkModel merged,
-    LinkModel cloudLink,
-  );
+  Future<bool> applyMerge(SyncRunToken run, LinkModel merged, LinkModel cloudLink);
 
   /// Removes link [id] and its base.
   Future<bool> removeLink(SyncRunToken run, String id);

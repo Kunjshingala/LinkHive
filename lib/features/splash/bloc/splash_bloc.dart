@@ -13,10 +13,7 @@ class SplashBloc extends Bloc<SplashEvent, SplashState> {
 
   /// Handle splash started event
   /// Wait for 3 seconds then emit complete state
-  Future<void> _onStarted(
-    SplashStarted event,
-    Emitter<SplashState> emit,
-  ) async {
+  Future<void> _onStarted(SplashStarted event, Emitter<SplashState> emit) async {
     emit(const SplashLoading());
     await Future.delayed(_splashDuration);
     // The splash can be replaced before the timer fires — e.g. a cold-start

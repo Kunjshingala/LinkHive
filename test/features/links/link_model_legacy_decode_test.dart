@@ -66,38 +66,35 @@ void main() {
     await hiveDirectory.delete(recursive: true);
   });
 
-  test(
-    'a link stored before fields 14–16 existed decodes with defaults',
-    () async {
-      Hive.registerAdapter<LinkModel>(_LegacyLinkModelAdapter());
-      final legacyBox = await Hive.openBox<LinkModel>('links');
-      await legacyBox.put(
-        'old-1',
-        const LinkModel(
-          id: 'old-1',
-          url: 'https://www.linkedin.com/in/kunjshingala09',
-          title: 'Kunj Shingala | LinkedIn',
-          createdAt: 1758000000000,
-          isRead: true,
-          isQuickSaved: true,
-          lastResurfacedAt: 1758500000000,
-        ),
-      );
-      await legacyBox.close();
+  test('a link stored before fields 14–16 existed decodes with defaults', () async {
+    Hive.registerAdapter<LinkModel>(_LegacyLinkModelAdapter());
+    final legacyBox = await Hive.openBox<LinkModel>('links');
+    await legacyBox.put(
+      'old-1',
+      const LinkModel(
+        id: 'old-1',
+        url: 'https://www.linkedin.com/in/kunjshingala09',
+        title: 'Kunj Shingala | LinkedIn',
+        createdAt: 1758000000000,
+        isRead: true,
+        isQuickSaved: true,
+        lastResurfacedAt: 1758500000000,
+      ),
+    );
+    await legacyBox.close();
 
-      Hive.registerAdapter<LinkModel>(LinkModelAdapter(), override: true);
-      final box = await Hive.openBox<LinkModel>('links');
-      final link = box.get('old-1')!;
+    Hive.registerAdapter<LinkModel>(LinkModelAdapter(), override: true);
+    final box = await Hive.openBox<LinkModel>('links');
+    final link = box.get('old-1')!;
 
-      expect(link.shareCount, 1);
-      expect(link.lastSharedAt, isNull);
-      expect(link.otherUrls, isEmpty);
-      // The fields that were stored must come back unchanged.
-      expect(link.url, 'https://www.linkedin.com/in/kunjshingala09');
-      expect(link.title, 'Kunj Shingala | LinkedIn');
-      expect(link.isRead, isTrue);
-      expect(link.isQuickSaved, isTrue);
-      expect(link.lastResurfacedAt, 1758500000000);
-    },
-  );
+    expect(link.shareCount, 1);
+    expect(link.lastSharedAt, isNull);
+    expect(link.otherUrls, isEmpty);
+    // The fields that were stored must come back unchanged.
+    expect(link.url, 'https://www.linkedin.com/in/kunjshingala09');
+    expect(link.title, 'Kunj Shingala | LinkedIn');
+    expect(link.isRead, isTrue);
+    expect(link.isQuickSaved, isTrue);
+    expect(link.lastResurfacedAt, 1758500000000);
+  });
 }

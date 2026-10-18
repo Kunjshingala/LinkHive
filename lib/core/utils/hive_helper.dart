@@ -39,9 +39,7 @@ class HiveHelper {
       // The pull cursor lives in the settings box and outlives the link boxes.
       // Kept, it would make the next pull incremental and the links deleted
       // above would never come back; without it the pull is a full fetch.
-      await Hive.box(HiveConstants.settingsBox).delete(
-        HiveConstants.lastPulledAtKey,
-      );
+      await Hive.box(HiveConstants.settingsBox).delete(HiveConstants.lastPulledAtKey);
     }
     await Hive.openBox<CategoryModel>(HiveConstants.categoriesBox);
     await Hive.openBox<SyncOperation>(HiveConstants.syncOperationsBox);
@@ -52,16 +50,10 @@ class HiveHelper {
   // Box Getters
   Box get settingsBox => Hive.box(HiveConstants.settingsBox);
   Box<LinkModel> get linksBox => Hive.box<LinkModel>(HiveConstants.linksBox);
-  Box<LinkModel> get baseLinksBox =>
-      Hive.box<LinkModel>(HiveConstants.baseLinksBox);
-  Box<LinkModel> get conflictLinksBox =>
-      Hive.box<LinkModel>(HiveConstants.conflictLinksBox);
-  Box<CategoryModel> get categoriesBox =>
-      Hive.box<CategoryModel>(HiveConstants.categoriesBox);
-  Box<SyncOperation> get syncOperationsBox =>
-      Hive.box<SyncOperation>(HiveConstants.syncOperationsBox);
-  Box<SyncTombstone> get syncTombstonesBox =>
-      Hive.box<SyncTombstone>(HiveConstants.syncTombstonesBox);
-  Box<ConflictRecord> get conflictRecordsBox =>
-      Hive.box<ConflictRecord>(HiveConstants.conflictRecordsBox);
+  Box<LinkModel> get baseLinksBox => Hive.box<LinkModel>(HiveConstants.baseLinksBox);
+  Box<LinkModel> get conflictLinksBox => Hive.box<LinkModel>(HiveConstants.conflictLinksBox);
+  Box<CategoryModel> get categoriesBox => Hive.box<CategoryModel>(HiveConstants.categoriesBox);
+  Box<SyncOperation> get syncOperationsBox => Hive.box<SyncOperation>(HiveConstants.syncOperationsBox);
+  Box<SyncTombstone> get syncTombstonesBox => Hive.box<SyncTombstone>(HiveConstants.syncTombstonesBox);
+  Box<ConflictRecord> get conflictRecordsBox => Hive.box<ConflictRecord>(HiveConstants.conflictRecordsBox);
 }

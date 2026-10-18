@@ -13,9 +13,7 @@ class ConflictRecordAdapter extends TypeAdapter<ConflictRecord> {
   @override
   ConflictRecord read(BinaryReader reader) {
     final numOfFields = reader.readByte();
-    final fields = <int, dynamic>{
-      for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
-    };
+    final fields = <int, dynamic>{for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read()};
     return ConflictRecord(
       conflictId: fields[0] as String,
       linkId: fields[1] as String,
@@ -56,7 +54,5 @@ class ConflictRecordAdapter extends TypeAdapter<ConflictRecord> {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is ConflictRecordAdapter &&
-          runtimeType == other.runtimeType &&
-          typeId == other.typeId;
+      other is ConflictRecordAdapter && runtimeType == other.runtimeType && typeId == other.typeId;
 }

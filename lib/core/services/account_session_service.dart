@@ -74,18 +74,13 @@ class AccountSessionService {
   /// Throws if a step fails. Sync is resumed and the wipe marker stays set
   /// until the sequence has finished, so a retry or the next launch completes
   /// it.
-  Future<SessionActionResult> signOut({
-    required UnsyncedSummary confirmed,
-    bool clearRemote = false,
-  }) {
+  Future<SessionActionResult> signOut({required UnsyncedSummary confirmed, bool clearRemote = false}) {
     return _wipe(confirmed: confirmed, clearRemote: clearRemote, signOut: true);
   }
 
   /// Removes this phone's copy of the data and stays signed in. The next sync
   /// brings back everything that reached the cloud.
-  Future<SessionActionResult> wipeLocalData({
-    required UnsyncedSummary confirmed,
-  }) {
+  Future<SessionActionResult> wipeLocalData({required UnsyncedSummary confirmed}) {
     return _wipe(confirmed: confirmed, clearRemote: false, signOut: false);
   }
 
@@ -94,9 +89,7 @@ class AccountSessionService {
   ///
   /// The phone's copy goes too: kept alone, it would no longer match the
   /// cloud, and edits to it would fail to sync.
-  Future<SessionActionResult> deleteCloudData({
-    required UnsyncedSummary confirmed,
-  }) {
+  Future<SessionActionResult> deleteCloudData({required UnsyncedSummary confirmed}) {
     return _wipe(confirmed: confirmed, clearRemote: true, signOut: false);
   }
 

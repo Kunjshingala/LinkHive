@@ -18,34 +18,23 @@ void main() {
     googleSignIn = MockGoogleSignIn();
     when(() => firebaseAuth.signOut()).thenAnswer((_) async {});
     when(() => googleSignIn.signOut()).thenAnswer((_) async {});
-    service = AuthService(
-      firebaseAuth: firebaseAuth,
-      googleSignIn: googleSignIn,
-    );
+    service = AuthService(firebaseAuth: firebaseAuth, googleSignIn: googleSignIn);
   });
 
   group('signOut', () {
     test('signs out of Google, then of Firebase', () async {
       await service.signOut();
 
-      verifyInOrder([
-        () => googleSignIn.signOut(),
-        () => firebaseAuth.signOut(),
-      ]);
+      verifyInOrder([() => googleSignIn.signOut(), () => firebaseAuth.signOut()]);
     });
 
-    test(
-      'still ends the Firebase session when the Google sign-out fails',
-      () async {
-        when(
-          () => googleSignIn.signOut(),
-        ).thenThrow(StateError('not signed in'));
+    test('still ends the Firebase session when the Google sign-out fails', () async {
+      when(() => googleSignIn.signOut()).thenThrow(StateError('not signed in'));
 
-        await expectLater(service.signOut(), completes);
+      await expectLater(service.signOut(), completes);
 
-        verify(() => firebaseAuth.signOut()).called(1);
-      },
-    );
+      verify(() => firebaseAuth.signOut()).called(1);
+    });
 
     test('reports a failed Firebase sign-out', () async {
       when(() => firebaseAuth.signOut()).thenThrow(StateError('auth down'));

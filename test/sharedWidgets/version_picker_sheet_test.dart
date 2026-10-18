@@ -15,8 +15,7 @@ class MockLinkManager extends Mock implements LinkManager {}
 void main() {
   late MockLinkManager manager;
 
-  const plain =
-      'https://luxury.tatacliq.com/sennheiser-ie-200/p-mp000000030311042';
+  const plain = 'https://luxury.tatacliq.com/sennheiser-ie-200/p-mp000000030311042';
   const affiliate = '$plain?utm_source=youtube&utm_content=YT3&cid=YTaffiliate';
 
   final single = LinkModel(id: '1', url: plain, title: 'IE 200', createdAt: 1);
@@ -26,9 +25,7 @@ void main() {
 
   setUp(() {
     manager = MockLinkManager();
-    when(
-      () => manager.openLink(any(), url: any(named: 'url')),
-    ).thenAnswer((_) async {});
+    when(() => manager.openLink(any(), url: any(named: 'url'))).thenAnswer((_) async {});
     when(() => manager.openLink(any())).thenAnswer((_) async {});
     when(() => manager.keepOnlyVersion(any(), any())).thenAnswer((_) async {});
     if (locator.isRegistered<LinkManager>()) locator.unregister<LinkManager>();
@@ -47,10 +44,7 @@ void main() {
           path: '/',
           builder: (context, _) => Scaffold(
             body: Center(
-              child: TextButton(
-                onPressed: () => onTap(context),
-                child: const Text('go'),
-              ),
+              child: TextButton(onPressed: () => onTap(context), child: const Text('go')),
             ),
           ),
         ),
@@ -67,9 +61,7 @@ void main() {
     verify(() => manager.openLink(single)).called(1);
   });
 
-  testWidgets('lists the main URL first, then each version with its tracking', (
-    tester,
-  ) async {
+  testWidgets('lists the main URL first, then each version with its tracking', (tester) async {
     await tester.pumpWidget(host((c) => openLinkWithVersions(c, twoVersions)));
     await tester.tap(find.text('go'));
     await tester.pumpAndSettle();
@@ -93,9 +85,7 @@ void main() {
     verifyNever(() => manager.keepOnlyVersion(any(), any()));
   });
 
-  testWidgets('"Keep only this one" keeps the pick, then opens it', (
-    tester,
-  ) async {
+  testWidgets('"Keep only this one" keeps the pick, then opens it', (tester) async {
     await tester.pumpWidget(host((c) => openLinkWithVersions(c, twoVersions)));
     await tester.tap(find.text('go'));
     await tester.pumpAndSettle();

@@ -48,8 +48,7 @@ class _ConflictScreenContent extends StatelessWidget {
             padding: AppSpacing.pagePadding,
             itemCount: state.conflicts.length,
             separatorBuilder: (_, _) => const SizedBox(height: AppSpacing.lg),
-            itemBuilder: (context, index) =>
-                _ConflictCard(state.conflicts[index]),
+            itemBuilder: (context, index) => _ConflictCard(state.conflicts[index]),
           );
         },
       ),
@@ -64,20 +63,15 @@ class _ConflictCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final localTitle =
-        conflict.localVersion['title'] as String? ?? conflict.linkId;
-    final cloudTitle =
-        conflict.cloudVersion?['title'] as String? ?? context.l10n.conflictDeletedInCloud;
+    final localTitle = conflict.localVersion['title'] as String? ?? conflict.linkId;
+    final cloudTitle = conflict.cloudVersion?['title'] as String? ?? context.l10n.conflictDeletedInCloud;
     final bloc = context.read<ConflictBloc>();
 
     return Container(
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface,
-        border: Border.all(
-          color: Theme.of(context).colorScheme.outline,
-          width: 2,
-        ),
+        border: Border.all(color: Theme.of(context).colorScheme.outline, width: 2),
         borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
       ),
       child: Column(
@@ -87,9 +81,7 @@ class _ConflictCard extends StatelessWidget {
           const SizedBox(height: AppSpacing.xs),
           Text(context.l10n.conflictLocalVersion(localTitle)),
           Text(context.l10n.conflictCloudVersion(cloudTitle)),
-          Text(
-            context.l10n.conflictFields(conflict.conflictingFields.join(', ')),
-          ),
+          Text(context.l10n.conflictFields(conflict.conflictingFields.join(', '))),
           const SizedBox(height: AppSpacing.md),
           Row(
             children: [
@@ -97,16 +89,14 @@ class _ConflictCard extends StatelessWidget {
                 child: NeoBrutalistButton(
                   text: context.l10n.conflictKeepLocal,
                   variant: ButtonVariant.outlined,
-                  onPressed: () =>
-                      bloc.add(ConflictKeepLocalRequested(conflict.conflictId)),
+                  onPressed: () => bloc.add(ConflictKeepLocalRequested(conflict.conflictId)),
                 ),
               ),
               const SizedBox(width: AppSpacing.sm),
               Expanded(
                 child: NeoBrutalistButton(
                   text: context.l10n.conflictKeepCloud,
-                  onPressed: () =>
-                      bloc.add(ConflictKeepCloudRequested(conflict.conflictId)),
+                  onPressed: () => bloc.add(ConflictKeepCloudRequested(conflict.conflictId)),
                 ),
               ),
             ],

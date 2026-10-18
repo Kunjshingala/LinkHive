@@ -166,10 +166,7 @@ class _AddCategorySheetContentState extends State<_AddCategorySheetContent> {
               ),
               const SizedBox(width: AppSpacing.md),
               Expanded(
-                child: NeoBrutalistButton(
-                  text: widget.l10n.newCategoryAdd,
-                  onPressed: () => _submit(context),
-                ),
+                child: NeoBrutalistButton(text: widget.l10n.newCategoryAdd, onPressed: () => _submit(context)),
               ),
             ],
           ),

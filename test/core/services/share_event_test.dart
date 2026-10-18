@@ -38,10 +38,7 @@ void main() {
     });
 
     test('only the first shared item is read', () {
-      final event = [
-        const _Item('https://example.com/first'),
-        const _Item('https://example.com/second'),
-      ];
+      final event = [const _Item('https://example.com/first'), const _Item('https://example.com/second')];
 
       expect(shareEventUrl(event), 'https://example.com/first');
     });

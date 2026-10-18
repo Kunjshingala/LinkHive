@@ -42,12 +42,12 @@ Future<void> main() async {
 
 /// The bundled typefaces' licenses, shown on Flutter's license page.
 Stream<LicenseEntry> _fontLicenses() async* {
-  yield LicenseEntryWithLineBreaks(
-    const ['Anek Latin', 'Anek Devanagari', 'Anek Gujarati'],
-    await rootBundle.loadString('assets/licenses/OFL-Anek.txt'),
-  );
-  yield LicenseEntryWithLineBreaks(
-    const ['Readex Pro'],
-    await rootBundle.loadString('assets/licenses/OFL-ReadexPro.txt'),
-  );
+  yield LicenseEntryWithLineBreaks(const [
+    'Anek Latin',
+    'Anek Devanagari',
+    'Anek Gujarati',
+  ], await rootBundle.loadString('assets/licenses/OFL-Anek.txt'));
+  yield LicenseEntryWithLineBreaks(const [
+    'Readex Pro',
+  ], await rootBundle.loadString('assets/licenses/OFL-ReadexPro.txt'));
 }

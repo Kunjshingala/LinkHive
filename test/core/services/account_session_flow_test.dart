@@ -37,9 +37,7 @@ void main() {
   String? currentUid;
 
   setUpAll(() async {
-    hiveDirectory = await Directory.systemTemp.createTemp(
-      'linkhive-session-test-',
-    );
+    hiveDirectory = await Directory.systemTemp.createTemp('linkhive-session-test-');
     Hive.init(hiveDirectory.path);
     Hive.registerAdapter(LinkModelAdapter());
     Hive.registerAdapter(CategoryModelAdapter());
@@ -71,24 +69,11 @@ void main() {
     currentUid = null;
     cloud = FakeFirebaseFirestoreService();
     repository = LinkRepository(hiveHelper: HiveHelper());
-    final cloudSync = CloudSyncService(
-      firebaseService: cloud,
-      store: repository,
-      uidProvider: () => currentUid,
-    );
-    engine = SyncEngine(
-      cloudSync: cloudSync,
-      repository: repository,
-      isAuthenticated: () => currentUid != null,
-    );
+    final cloudSync = CloudSyncService(firebaseService: cloud, store: repository, uidProvider: () => currentUid);
+    engine = SyncEngine(cloudSync: cloudSync, repository: repository, isAuthenticated: () => currentUid != null);
     auth = MockAuthService();
     when(() => auth.signOut()).thenAnswer((_) async => currentUid = null);
-    session = AccountSessionService(
-      authService: auth,
-      sync: engine,
-      store: repository,
-      remote: cloudSync,
-    );
+    session = AccountSessionService(authService: auth, sync: engine, store: repository, remote: cloudSync);
   });
 
   tearDown(() async {
@@ -98,88 +83,68 @@ void main() {
 
   tearDownAll(() => hiveDirectory.delete(recursive: true));
 
-  LinkModel link(String id) => LinkModel(
-    id: id,
-    url: 'https://example.com/$id',
-    title: id,
-    createdAt: 100,
-  );
+  LinkModel link(String id) => LinkModel(id: id, url: 'https://example.com/$id', title: id, createdAt: 100);
 
-  List<String> localIds() =>
-      repository.queryLinks(limit: 100).map((l) => l.id).toList()..sort();
+  List<String> localIds() => repository.queryLinks(limit: 100).map((l) => l.id).toList()..sort();
 
-  List<String> cloudIds(String uid) =>
-      cloud.linksOf(uid).map((l) => l.id).toList()..sort();
+  List<String> cloudIds(String uid) => cloud.linksOf(uid).map((l) => l.id).toList()..sort();
 
   Future<void> signIn(String uid) async {
     currentUid = uid;
     await engine.requestSync(pull: true);
   }
 
-  Future<SessionActionResult> signOut() =>
-      session.signOut(confirmed: repository.unsyncedSummary());
+  Future<SessionActionResult> signOut() => session.signOut(confirmed: repository.unsyncedSummary());
 
   Object? setting(String key) => Hive.box(HiveConstants.settingsBox).get(key);
 
-  test(
-    'a second account sees only its own links, and neither cloud is touched',
-    () async {
-      cloud.seedLink(accountA, link('a-1'), syncedAt: 1000);
-      cloud.seedLink(accountA, link('a-2'), syncedAt: 2000);
-      cloud.seedLink(accountB, link('b-1'), syncedAt: 1500);
+  test('a second account sees only its own links, and neither cloud is touched', () async {
+    cloud.seedLink(accountA, link('a-1'), syncedAt: 1000);
+    cloud.seedLink(accountA, link('a-2'), syncedAt: 2000);
+    cloud.seedLink(accountB, link('b-1'), syncedAt: 1500);
 
-      await signIn(accountA);
-      expect(localIds(), ['a-1', 'a-2']);
+    await signIn(accountA);
+    expect(localIds(), ['a-1', 'a-2']);
 
-      expect(await signOut(), SessionActionResult.completed);
-      expect(localIds(), isEmpty);
-      expect(setting(HiveConstants.ownerUidKey), isNull);
-      expect(setting(HiveConstants.lastPulledAtKey), isNull);
-      expect(repository.isWipePending, isFalse);
+    expect(await signOut(), SessionActionResult.completed);
+    expect(localIds(), isEmpty);
+    expect(setting(HiveConstants.ownerUidKey), isNull);
+    expect(setting(HiveConstants.lastPulledAtKey), isNull);
+    expect(repository.isWipePending, isFalse);
 
-      await signIn(accountB);
+    await signIn(accountB);
 
-      expect(localIds(), ['b-1']);
-      expect(cloudIds(accountA), ['a-1', 'a-2']);
-      expect(cloudIds(accountB), ['b-1']);
-      expect(cloud.deletedLinkIdsOf(accountB), isEmpty);
-    },
-  );
+    expect(localIds(), ['b-1']);
+    expect(cloudIds(accountA), ['a-1', 'a-2']);
+    expect(cloudIds(accountB), ['b-1']);
+    expect(cloud.deletedLinkIdsOf(accountB), isEmpty);
+  });
 
-  test(
-    'links that reached the cloud come back when the same account signs in again',
-    () async {
-      await signIn(accountA);
-      await repository.addLink(link('a-new'));
-      await engine.requestSync(); // pushed
+  test('links that reached the cloud come back when the same account signs in again', () async {
+    await signIn(accountA);
+    await repository.addLink(link('a-new'));
+    await engine.requestSync(); // pushed
 
-      await signOut();
-      expect(localIds(), isEmpty);
-      await signIn(accountA);
+    await signOut();
+    expect(localIds(), isEmpty);
+    await signIn(accountA);
 
-      expect(localIds(), ['a-new']);
-    },
-  );
+    expect(localIds(), ['a-new']);
+  });
 
-  test(
-    'signing out with unsynced work, once confirmed, loses only that work',
-    () async {
-      cloud.seedLink(accountA, link('a-1'), syncedAt: 1000);
-      await signIn(accountA);
-      await repository.addLink(link('a-unsynced')); // never pushed
+  test('signing out with unsynced work, once confirmed, loses only that work', () async {
+    cloud.seedLink(accountA, link('a-1'), syncedAt: 1000);
+    await signIn(accountA);
+    await repository.addLink(link('a-unsynced')); // never pushed
 
-      final shown = repository.unsyncedSummary();
-      expect(shown.changes, 1);
-      expect(
-        await session.signOut(confirmed: shown),
-        SessionActionResult.completed,
-      );
+    final shown = repository.unsyncedSummary();
+    expect(shown.changes, 1);
+    expect(await session.signOut(confirmed: shown), SessionActionResult.completed);
 
-      await signIn(accountA);
-      expect(localIds(), ['a-1']);
-      expect(cloudIds(accountA), ['a-1']);
-    },
-  );
+    await signIn(accountA);
+    expect(localIds(), ['a-1']);
+    expect(cloudIds(accountA), ['a-1']);
+  });
 
   test('a link saved after the sheet was shown stops the sign-out', () async {
     await signIn(accountA);
@@ -235,70 +200,56 @@ void main() {
     expect(localIds(), ['b-1']);
   });
 
-  test(
-    'a wipe interrupted by the app being killed is finished at the next launch',
-    () async {
-      cloud.seedLink(accountA, link('a-1'), syncedAt: 1000);
-      await signIn(accountA);
-      await repository.setWipePending(true); // the app died right after this
+  test('a wipe interrupted by the app being killed is finished at the next launch', () async {
+    cloud.seedLink(accountA, link('a-1'), syncedAt: 1000);
+    await signIn(accountA);
+    await repository.setWipePending(true); // the app died right after this
 
-      await session.recoverInterruptedWipe();
+    await session.recoverInterruptedWipe();
 
-      expect(localIds(), isEmpty);
-      expect(repository.isWipePending, isFalse);
-      expect(setting(HiveConstants.ownerUidKey), isNull);
-    },
-  );
+    expect(localIds(), isEmpty);
+    expect(repository.isWipePending, isFalse);
+    expect(setting(HiveConstants.ownerUidKey), isNull);
+  });
 
-  test(
-    'without an interrupted wipe the launch recovery leaves the data alone',
-    () async {
-      cloud.seedLink(accountA, link('a-1'), syncedAt: 1000);
-      await signIn(accountA);
+  test('without an interrupted wipe the launch recovery leaves the data alone', () async {
+    cloud.seedLink(accountA, link('a-1'), syncedAt: 1000);
+    await signIn(accountA);
 
-      await session.recoverInterruptedWipe();
+    await session.recoverInterruptedWipe();
 
-      expect(localIds(), ['a-1']);
-    },
-  );
+    expect(localIds(), ['a-1']);
+  });
 
-  test(
-    'deleting the cloud data empties the account and the phone, and stays signed in',
-    () async {
-      cloud.seedLink(accountA, link('a-1'), syncedAt: 1000);
-      cloud.seedLink(accountB, link('b-1'), syncedAt: 1000);
-      await signIn(accountA);
+  test('deleting the cloud data empties the account and the phone, and stays signed in', () async {
+    cloud.seedLink(accountA, link('a-1'), syncedAt: 1000);
+    cloud.seedLink(accountB, link('b-1'), syncedAt: 1000);
+    await signIn(accountA);
 
-      final result = await session.deleteCloudData(
-        confirmed: repository.unsyncedSummary(),
-      );
+    final result = await session.deleteCloudData(confirmed: repository.unsyncedSummary());
 
-      expect(result, SessionActionResult.completed);
-      expect(currentUid, accountA);
-      expect(localIds(), isEmpty);
-      expect(cloudIds(accountA), isEmpty);
-      expect(cloudIds(accountB), ['b-1']); // another account is untouched
-      await engine.requestSync(pull: true);
-      expect(localIds(), isEmpty); // nothing comes back: it is gone for good
-    },
-  );
+    expect(result, SessionActionResult.completed);
+    expect(currentUid, accountA);
+    expect(localIds(), isEmpty);
+    expect(cloudIds(accountA), isEmpty);
+    expect(cloudIds(accountB), ['b-1']); // another account is untouched
+    await engine.requestSync(pull: true);
+    expect(localIds(), isEmpty); // nothing comes back: it is gone for good
+  });
 
-  test(
-    'a full resync brings back a cloud link the normal sync skipped',
-    () async {
-      cloud.seedLink(accountA, link('a-1'), syncedAt: 5000);
-      await signIn(accountA); // the cursor is now at 5000
-      // A link whose server time is behind the cursor, for example one that
-      // was written late by another device.
-      cloud.seedLink(accountA, link('a-late'), syncedAt: 1000);
+  test('a full resync brings back a cloud link the normal sync skipped', () async {
+    cloud.seedLink(accountA, link('a-1'), syncedAt: 5000);
+    await signIn(accountA); // the cursor is now at 5000
+    // A link whose server time is behind the cursor, for example one that
+    // was written late by another device.
+    cloud.seedLink(accountA, link('a-late'), syncedAt: 1000);
 
-      await engine.requestSync(pull: true);
-      expect(localIds(), ['a-1']);
+    await engine.requestSync(pull: true);
+    expect(localIds(), ['a-1']);
 
-      await engine.requestFullResync();
-      expect(localIds(), ['a-1', 'a-late']);
-    },
-  );
+    await engine.requestFullResync();
+    expect(localIds(), ['a-1', 'a-late']);
+  });
 
   test('a full resync keeps what is only on this phone', () async {
     await signIn(accountA);
@@ -310,21 +261,16 @@ void main() {
     expect(cloudIds(accountA), ['a-unsynced']); // pushed first, then pulled
   });
 
-  test(
-    '"Delete local data" stays signed in and the next sync refills the phone',
-    () async {
-      cloud.seedLink(accountA, link('a-1'), syncedAt: 1000);
-      await signIn(accountA);
+  test('"Delete local data" stays signed in and the next sync refills the phone', () async {
+    cloud.seedLink(accountA, link('a-1'), syncedAt: 1000);
+    await signIn(accountA);
 
-      final result = await session.wipeLocalData(
-        confirmed: repository.unsyncedSummary(),
-      );
+    final result = await session.wipeLocalData(confirmed: repository.unsyncedSummary());
 
-      expect(result, SessionActionResult.completed);
-      expect(currentUid, accountA);
-      expect(localIds(), isEmpty);
-      await engine.requestSync(pull: true);
-      expect(localIds(), ['a-1']);
-    },
-  );
+    expect(result, SessionActionResult.completed);
+    expect(currentUid, accountA);
+    expect(localIds(), isEmpty);
+    await engine.requestSync(pull: true);
+    expect(localIds(), ['a-1']);
+  });
 }

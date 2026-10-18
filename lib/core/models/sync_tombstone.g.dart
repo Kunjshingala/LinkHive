@@ -13,14 +13,8 @@ class SyncTombstoneAdapter extends TypeAdapter<SyncTombstone> {
   @override
   SyncTombstone read(BinaryReader reader) {
     final numOfFields = reader.readByte();
-    final fields = <int, dynamic>{
-      for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
-    };
-    return SyncTombstone(
-      entityType: fields[0] as String,
-      entityId: fields[1] as String,
-      deletedAt: fields[2] as int,
-    );
+    final fields = <int, dynamic>{for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read()};
+    return SyncTombstone(entityType: fields[0] as String, entityId: fields[1] as String, deletedAt: fields[2] as int);
   }
 
   @override
@@ -41,7 +35,5 @@ class SyncTombstoneAdapter extends TypeAdapter<SyncTombstone> {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is SyncTombstoneAdapter &&
-          runtimeType == other.runtimeType &&
-          typeId == other.typeId;
+      other is SyncTombstoneAdapter && runtimeType == other.runtimeType && typeId == other.typeId;
 }

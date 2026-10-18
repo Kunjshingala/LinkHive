@@ -22,9 +22,7 @@ void main() {
   final nowMs = now.millisecondsSinceEpoch;
 
   setUpAll(() {
-    registerFallbackValue(
-      const LinkModel(id: 'fallback', url: '', title: '', createdAt: 0),
-    );
+    registerFallbackValue(const LinkModel(id: 'fallback', url: '', title: '', createdAt: 0));
   });
 
   setUp(() {
@@ -48,52 +46,30 @@ void main() {
       if (matches.isEmpty) return null;
       return matches.reduce((a, b) => a.createdAt <= b.createdAt ? a : b);
     });
-    when(
-      () => repository.addLink(any()),
-    ).thenAnswer((inv) => write(inv.positionalArguments.first as LinkModel));
-    when(
-      () => repository.updateLink(any()),
-    ).thenAnswer((inv) => write(inv.positionalArguments.first as LinkModel));
-    when(
-      () => repository.getLinkById(any()),
-    ).thenAnswer((inv) => store[inv.positionalArguments.first as String]);
+    when(() => repository.addLink(any())).thenAnswer((inv) => write(inv.positionalArguments.first as LinkModel));
+    when(() => repository.updateLink(any())).thenAnswer((inv) => write(inv.positionalArguments.first as LinkModel));
+    when(() => repository.getLinkById(any())).thenAnswer((inv) => store[inv.positionalArguments.first as String]);
   });
 
-  LinkModel candidate(
-    String id,
-    String url, {
-    List<String> categories = const [],
-  }) => LinkModel(
-    id: id,
-    url: url,
-    title: '',
-    createdAt: nowMs,
-    isQuickSaved: true,
-    categories: categories,
-  );
+  LinkModel candidate(String id, String url, {List<String> categories = const []}) =>
+      LinkModel(id: id, url: url, title: '', createdAt: nowMs, isQuickSaved: true, categories: categories);
 
-  const reelA =
-      'https://www.instagram.com/reel/DeKio97zfoF/?stkn=aW4yNHE1cm9ubW00';
+  const reelA = 'https://www.instagram.com/reel/DeKio97zfoF/?stkn=aW4yNHE1cm9ubW00';
   // Same reel, but through a creator campaign link: a real second version.
-  const reelB =
-      'https://www.instagram.com/reel/DeKio97zfoF/?utm_source=creator';
+  const reelB = 'https://www.instagram.com/reel/DeKio97zfoF/?utm_source=creator';
   // Same reel with only a different share token: not a version.
-  const reelAFreshToken =
-      'https://www.instagram.com/reel/DeKio97zfoF/?stkn=c29tZXRoaW5nZWxzZQ';
+  const reelAFreshToken = 'https://www.instagram.com/reel/DeKio97zfoF/?stkn=c29tZXRoaW5nZWxzZQ';
 
   group('created', () {
-    test(
-      'a new URL is stored with shareCount 1 and lastSharedAt = createdAt',
-      () async {
-        final result = await manager.saveOrMerge(candidate('1', reelA));
+    test('a new URL is stored with shareCount 1 and lastSharedAt = createdAt', () async {
+      final result = await manager.saveOrMerge(candidate('1', reelA));
 
-        expect(result, isA<SaveCreated>());
-        final saved = store['1']!;
-        expect(saved.shareCount, 1);
-        expect(saved.lastSharedAt, nowMs);
-        expect(saved.url, reelA);
-      },
-    );
+      expect(result, isA<SaveCreated>());
+      final saved = store['1']!;
+      expect(saved.shareCount, 1);
+      expect(saved.lastSharedAt, nowMs);
+      expect(saved.url, reelA);
+    });
 
     test('a schedule picked on the form applies to the new link', () async {
       await manager.saveOrMerge(candidate('1', reelA), resurfaceAt: 123);
@@ -118,24 +94,19 @@ void main() {
       store['orig'] = original;
     });
 
-    test(
-      'a re-share merges into the original instead of creating a link',
-      () async {
-        final result = await manager.saveOrMerge(candidate('new', reelB));
+    test('a re-share merges into the original instead of creating a link', () async {
+      final result = await manager.saveOrMerge(candidate('new', reelB));
 
-        expect(result, isA<SaveMerged>());
-        expect(store.keys, ['orig']);
-        final merged = store['orig']!;
-        expect(merged.shareCount, 2);
-        expect(merged.lastSharedAt, nowMs);
-        expect(merged.resurfaceAt, nowMs, reason: 'due again in Today');
-      },
-    );
+      expect(result, isA<SaveMerged>());
+      expect(store.keys, ['orig']);
+      final merged = store['orig']!;
+      expect(merged.shareCount, 2);
+      expect(merged.lastSharedAt, nowMs);
+      expect(merged.resurfaceAt, nowMs, reason: 'due again in Today');
+    });
 
     test('keeps every existing field, including the saved URL', () async {
-      await manager.saveOrMerge(
-        candidate('new', reelB, categories: const ['video']),
-      );
+      await manager.saveOrMerge(candidate('new', reelB, categories: const ['video']));
 
       final merged = store['orig']!;
       expect(merged.url, reelA);
@@ -159,9 +130,7 @@ void main() {
     });
 
     test('a fresh share token alone is not another version', () async {
-      final result = await manager.saveOrMerge(
-        candidate('new', reelAFreshToken),
-      );
+      final result = await manager.saveOrMerge(candidate('new', reelAFreshToken));
 
       expect((result as SaveMerged).addedVersion, isFalse);
       expect(store['orig']!.otherUrls, isEmpty);
@@ -180,12 +149,7 @@ void main() {
 
     test('keeps at most 5 other versions, dropping the oldest', () async {
       for (var i = 1; i <= 6; i++) {
-        await manager.saveOrMerge(
-          candidate(
-            'n$i',
-            'https://www.instagram.com/reel/DeKio97zfoF/?utm_source=v$i',
-          ),
-        );
+        await manager.saveOrMerge(candidate('n$i', 'https://www.instagram.com/reel/DeKio97zfoF/?utm_source=v$i'));
       }
 
       final versions = store['orig']!.otherUrls;
@@ -213,10 +177,7 @@ void main() {
     test('Someday leaves it unread but not due', () async {
       store['orig'] = original.copyWith(isRead: true, resurfaceAt: 42);
 
-      await manager.saveOrMerge(
-        candidate('new', reelB),
-        clearResurfaceAt: true,
-      );
+      await manager.saveOrMerge(candidate('new', reelB), clearResurfaceAt: true);
 
       expect(store['orig']!.isRead, isFalse);
       expect(store['orig']!.resurfaceAt, isNull);
@@ -230,16 +191,10 @@ void main() {
 
   group('undoMerge', () {
     test('reverts the merge and never deletes the original', () async {
-      final original = LinkModel(
-        id: 'orig',
-        url: reelA,
-        title: 'T',
-        createdAt: 1000,
-      );
+      final original = LinkModel(id: 'orig', url: reelA, title: 'T', createdAt: 1000);
       store['orig'] = original;
 
-      final result =
-          await manager.saveOrMerge(candidate('new', reelB)) as SaveMerged;
+      final result = await manager.saveOrMerge(candidate('new', reelB)) as SaveMerged;
       await manager.undoMerge(result.previous);
 
       final reverted = store['orig']!;
@@ -252,35 +207,19 @@ void main() {
     });
 
     test('restores archived state', () async {
-      store['orig'] = LinkModel(
-        id: 'orig',
-        url: reelA,
-        title: 'T',
-        createdAt: 1000,
-        isRead: true,
-      );
+      store['orig'] = LinkModel(id: 'orig', url: reelA, title: 'T', createdAt: 1000, isRead: true);
 
-      final result =
-          await manager.saveOrMerge(candidate('new', reelB)) as SaveMerged;
+      final result = await manager.saveOrMerge(candidate('new', reelB)) as SaveMerged;
       await manager.undoMerge(result.previous);
 
       expect(store['orig']!.isRead, isTrue);
     });
 
     test('keeps metadata that arrived after the merge', () async {
-      store['orig'] = LinkModel(
-        id: 'orig',
-        url: reelA,
-        title: '',
-        createdAt: 1000,
-      );
+      store['orig'] = LinkModel(id: 'orig', url: reelA, title: '', createdAt: 1000);
 
-      final result =
-          await manager.saveOrMerge(candidate('new', reelB)) as SaveMerged;
-      store['orig'] = store['orig']!.copyWith(
-        title: 'Fetched title',
-        image: 'img',
-      );
+      final result = await manager.saveOrMerge(candidate('new', reelB)) as SaveMerged;
+      store['orig'] = store['orig']!.copyWith(title: 'Fetched title', image: 'img');
       await manager.undoMerge(result.previous);
 
       expect(store['orig']!.title, 'Fetched title');
@@ -288,14 +227,8 @@ void main() {
     });
 
     test('does nothing when the link was deleted meanwhile', () async {
-      store['orig'] = LinkModel(
-        id: 'orig',
-        url: reelA,
-        title: '',
-        createdAt: 1000,
-      );
-      final result =
-          await manager.saveOrMerge(candidate('new', reelB)) as SaveMerged;
+      store['orig'] = LinkModel(id: 'orig', url: reelA, title: '', createdAt: 1000);
+      final result = await manager.saveOrMerge(candidate('new', reelB)) as SaveMerged;
       store.remove('orig');
 
       await manager.undoMerge(result.previous);
@@ -306,13 +239,7 @@ void main() {
 
   group('keepOnlyVersion', () {
     test('makes the chosen URL the link and clears the others', () async {
-      store['orig'] = LinkModel(
-        id: 'orig',
-        url: reelA,
-        title: 'T',
-        createdAt: 1000,
-        otherUrls: const [reelB],
-      );
+      store['orig'] = LinkModel(id: 'orig', url: reelA, title: 'T', createdAt: 1000, otherUrls: const [reelB]);
 
       await manager.keepOnlyVersion(store['orig']!, reelB);
 
@@ -322,25 +249,16 @@ void main() {
   });
 
   group('serialization', () {
-    test(
-      'two concurrent shares of one URL make one link with shareCount 2',
-      () async {
-        await Future.wait([
-          manager.saveOrMerge(candidate('a', reelA)),
-          manager.saveOrMerge(candidate('b', reelB)),
-        ]);
+    test('two concurrent shares of one URL make one link with shareCount 2', () async {
+      await Future.wait([manager.saveOrMerge(candidate('a', reelA)), manager.saveOrMerge(candidate('b', reelB))]);
 
-        expect(store, hasLength(1));
-        expect(store.values.single.shareCount, 2);
-      },
-    );
+      expect(store, hasLength(1));
+      expect(store.values.single.shareCount, 2);
+    });
 
     test('a failed save does not block the next one', () async {
       failNextWrite = true;
-      await expectLater(
-        manager.saveOrMerge(candidate('a', reelA)),
-        throwsStateError,
-      );
+      await expectLater(manager.saveOrMerge(candidate('a', reelA)), throwsStateError);
 
       final result = await manager.saveOrMerge(candidate('b', reelA));
 
@@ -348,26 +266,14 @@ void main() {
       expect(store.keys, ['b']);
     });
 
-    test(
-      'an Undo racing a re-share applies in order without losing a count',
-      () async {
-        store['orig'] = LinkModel(
-          id: 'orig',
-          url: reelA,
-          title: '',
-          createdAt: 1000,
-        );
-        final first =
-            await manager.saveOrMerge(candidate('n1', reelB)) as SaveMerged;
+    test('an Undo racing a re-share applies in order without losing a count', () async {
+      store['orig'] = LinkModel(id: 'orig', url: reelA, title: '', createdAt: 1000);
+      final first = await manager.saveOrMerge(candidate('n1', reelB)) as SaveMerged;
 
-        await Future.wait([
-          manager.undoMerge(first.previous),
-          manager.saveOrMerge(candidate('n2', reelB)),
-        ]);
+      await Future.wait([manager.undoMerge(first.previous), manager.saveOrMerge(candidate('n2', reelB))]);
 
-        // Undo ran first (shareCount back to 1), then the re-share counted.
-        expect(store['orig']!.shareCount, 2);
-      },
-    );
+      // Undo ran first (shareCount back to 1), then the re-share counted.
+      expect(store['orig']!.shareCount, 2);
+    });
   });
 }

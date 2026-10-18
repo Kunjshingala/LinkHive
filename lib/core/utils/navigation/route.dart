@@ -33,53 +33,24 @@ final router = GoRouter(
   navigatorKey: navigatorKey,
   initialLocation: '/',
   routes: [
-    GoRoute(
-      path: '/',
-      name: MyRouteName.splash,
-      builder: (context, state) => const SplashScreen(),
-    ),
-    GoRoute(
-      path: '/login',
-      name: MyRouteName.login,
-      builder: (context, state) => const LoginScreen(),
-    ),
+    GoRoute(path: '/', name: MyRouteName.splash, builder: (context, state) => const SplashScreen()),
+    GoRoute(path: '/login', name: MyRouteName.login, builder: (context, state) => const LoginScreen()),
     // Old entry point, kept so login, signup, account, share and widget
     // callers keep working: the app's home is now the Links tab.
-    GoRoute(
-      path: '/home',
-      name: MyRouteName.homeScreen,
-      redirect: (context, state) => '/links',
-    ),
+    GoRoute(path: '/home', name: MyRouteName.homeScreen, redirect: (context, state) => '/links'),
     StatefulShellRoute.indexedStack(
-      builder: (context, state, navigationShell) =>
-          AppShell(navigationShell: navigationShell),
+      builder: (context, state, navigationShell) => AppShell(navigationShell: navigationShell),
       branches: [
         StatefulShellBranch(
           routes: [
-            GoRoute(
-              path: '/links',
-              name: MyRouteName.links,
-              builder: (context, state) => const LinkListScreen(),
-            ),
+            GoRoute(path: '/links', name: MyRouteName.links, builder: (context, state) => const LinkListScreen()),
           ],
         ),
         StatefulShellBranch(
-          routes: [
-            GoRoute(
-              path: '/today',
-              name: MyRouteName.today,
-              builder: (context, state) => const TodayScreen(),
-            ),
-          ],
+          routes: [GoRoute(path: '/today', name: MyRouteName.today, builder: (context, state) => const TodayScreen())],
         ),
         StatefulShellBranch(
-          routes: [
-            GoRoute(
-              path: '/inbox',
-              name: MyRouteName.inbox,
-              builder: (context, state) => const InboxScreen(),
-            ),
-          ],
+          routes: [GoRoute(path: '/inbox', name: MyRouteName.inbox, builder: (context, state) => const InboxScreen())],
         ),
       ],
     ),
@@ -88,11 +59,7 @@ final router = GoRouter(
       name: MyRouteName.accountScreen,
       builder: (context, state) => const AccountScreen(),
     ),
-    GoRoute(
-      path: '/signup',
-      name: MyRouteName.signup,
-      builder: (context, state) => const SignupScreen(),
-    ),
+    GoRoute(path: '/signup', name: MyRouteName.signup, builder: (context, state) => const SignupScreen()),
     GoRoute(
       path: '/addLink',
       name: MyRouteName.addLink,
@@ -111,10 +78,6 @@ final router = GoRouter(
         return AddLinkScreen(existingLink: existingLink);
       },
     ),
-    GoRoute(
-      path: '/conflicts',
-      name: MyRouteName.conflicts,
-      builder: (context, state) => const ConflictScreen(),
-    ),
+    GoRoute(path: '/conflicts', name: MyRouteName.conflicts, builder: (context, state) => const ConflictScreen()),
   ],
 );

@@ -22,7 +22,7 @@ void main() {
         createdAt: now.millisecondsSinceEpoch,
         syncedAt: now.millisecondsSinceEpoch,
       );
-      
+
       cloudLink = baseLink.copyWith();
       localLink = baseLink.copyWith();
     });
@@ -57,11 +57,7 @@ void main() {
       localLink = localLink.copyWith(title: 'Local Title');
       cloudLink = cloudLink.copyWith(title: 'Cloud Title');
 
-      final result = SyncMergeHelper.merge(
-        base: baseLink,
-        local: localLink,
-        cloud: cloudLink,
-      );
+      final result = SyncMergeHelper.merge(base: baseLink, local: localLink, cloud: cloudLink);
 
       // Cloud wins direct conflicts
       expect(result.title, 'Cloud Title');
@@ -73,11 +69,7 @@ void main() {
       localLink = localLink.copyWith(title: 'Local Title');
       cloudLink = cloudLink.copyWith(description: 'Cloud Description');
 
-      final result = SyncMergeHelper.merge(
-        base: baseLink,
-        local: localLink,
-        cloud: cloudLink,
-      );
+      final result = SyncMergeHelper.merge(base: baseLink, local: localLink, cloud: cloudLink);
 
       expect(result.title, 'Local Title'); // Kept local change
       expect(result.description, 'Cloud Description'); // Received cloud change
@@ -91,11 +83,7 @@ void main() {
       // Cloud added 'D'
       cloudLink = cloudLink.copyWith(categories: ['A', 'B', 'D']);
 
-      final result = SyncMergeHelper.merge(
-        base: baseLink,
-        local: localLink,
-        cloud: cloudLink,
-      );
+      final result = SyncMergeHelper.merge(base: baseLink, local: localLink, cloud: cloudLink);
 
       // Result should have:
       // 'A' (kept by both)

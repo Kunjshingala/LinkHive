@@ -33,8 +33,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get homeEmptyStateTitle => 'No Links yet!';
 
   @override
-  String get homeEmptyStateSubtitle =>
-      'Get started by saving your first Web Link.';
+  String get homeEmptyStateSubtitle => 'Get started by saving your first Web Link.';
 
   @override
   String get addLinkButton => 'Add Link';
@@ -163,8 +162,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get inboxEmptyTitle => 'Inbox zero';
 
   @override
-  String get inboxEmptySubtitle =>
-      'Links you save in a hurry land here. Add details to file them away.';
+  String get inboxEmptySubtitle => 'Links you save in a hurry land here. Add details to file them away.';
 
   @override
   String get todayTitle => 'Today';
@@ -212,8 +210,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get accountSignInPromo => 'Sign in to backup your links';
 
   @override
-  String get accountSignInDesc =>
-      'Keep your collection safe and synced across devices.';
+  String get accountSignInDesc => 'Keep your collection safe and synced across devices.';
 
   @override
   String get accountStatLocal => 'Local Only';
@@ -257,8 +254,7 @@ class AppLocalizationsEn extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other:
-          '$count changes are not synced yet. If you sign out now, they are lost.',
+      other: '$count changes are not synced yet. If you sign out now, they are lost.',
       one: '1 change is not synced yet. If you sign out now, it is lost.',
     );
     return '$_temp0';
@@ -269,8 +265,7 @@ class AppLocalizationsEn extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other:
-          'Syncing $count changes. Wait for them to finish, or sign out and lose them.',
+      other: 'Syncing $count changes. Wait for them to finish, or sign out and lose them.',
       one: 'Syncing 1 change. Wait for it to finish, or sign out and lose it.',
     );
     return '$_temp0';
@@ -281,8 +276,7 @@ class AppLocalizationsEn extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other:
-          '$count changes are waiting for internet. If you sign out now, they are lost.',
+      other: '$count changes are waiting for internet. If you sign out now, they are lost.',
       one: '1 change is waiting for internet. If you sign out now, it is lost.',
     );
     return '$_temp0';
@@ -293,8 +287,7 @@ class AppLocalizationsEn extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other:
-          '$count changes could not sync. Try again, or sign out and lose them.',
+      other: '$count changes could not sync. Try again, or sign out and lose them.',
       one: '1 change could not sync. Try again, or sign out and lose it.',
     );
     return '$_temp0';
@@ -311,8 +304,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get accountSignOutAnyway => 'Sign out anyway';
 
   @override
-  String get accountSignedOutSuccess =>
-      'Signed out. This phone\'s copy was cleared.';
+  String get accountSignedOutSuccess => 'Signed out. This phone\'s copy was cleared.';
 
   @override
   String get accountSignOutError => 'Couldn\'t sign out. Please try again.';
@@ -486,12 +478,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get accountSyncFailureTimeout => 'The cloud did not answer in time.';
 
   @override
-  String get accountSyncFailurePermission =>
-      'This account is not allowed to sync.';
+  String get accountSyncFailurePermission => 'This account is not allowed to sync.';
 
   @override
-  String get accountSyncFailureUnavailable =>
-      'The cloud cannot be reached right now.';
+  String get accountSyncFailureUnavailable => 'The cloud cannot be reached right now.';
 
   @override
   String get accountSyncFailureUnknown => 'Something went wrong while syncing.';
@@ -533,8 +523,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get accountDelete => 'Delete';
 
   @override
-  String get accountDeleteSuccess =>
-      'Local data functionally deleted. Restart or Sync.';
+  String get accountDeleteSuccess => 'Local data functionally deleted. Restart or Sync.';
 
   @override
   String get accountDeleteFail => 'Failed to clear local data.';
@@ -552,8 +541,7 @@ class AppLocalizationsEn extends AppLocalizations {
       locale: localeName,
       other:
           'This permanently deletes the $count links saved in your account and clears this phone. This cannot be undone.',
-      one:
-          'This permanently deletes the 1 link saved in your account and clears this phone. This cannot be undone.',
+      one: 'This permanently deletes the 1 link saved in your account and clears this phone. This cannot be undone.',
       zero: 'No links are saved in your account. This only clears this phone.',
     );
     return '$_temp0';
@@ -566,12 +554,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get accountDeleteCloudSuccess => 'Cloud data deleted';
 
   @override
-  String get accountDeleteCloudFail =>
-      'Could not delete cloud data. Try again.';
+  String get accountDeleteCloudFail => 'Could not delete cloud data. Try again.';
 
   @override
-  String get accountActionReconfirm =>
-      'Something changed while you were confirming. Please try again.';
+  String get accountActionReconfirm => 'Something changed while you were confirming. Please try again.';
 
   @override
   String get langEnglish => 'English';
@@ -592,8 +578,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get authErrWrongPassword => 'Wrong password provided for that user.';
 
   @override
-  String get authErrEmailAlreadyInUse =>
-      'The account already exists for that email.';
+  String get authErrEmailAlreadyInUse => 'The account already exists for that email.';
 
   @override
   String get authErrWeakPassword => 'The password provided is too weak.';
@@ -602,8 +587,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get authErrInvalidEmail => 'The email address is malformed.';
 
   @override
-  String get authErrInvalidCredential =>
-      'Incorrect email or password. Please try again.';
+  String get authErrInvalidCredential => 'Incorrect email or password. Please try again.';
 
   @override
   String authErrDefault(Object message) {
@@ -611,8 +595,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get authErrGoogleUnavailable =>
-      'Google sign-in isn\'t available right now. Please sign in with your email.';
+  String get authErrGoogleUnavailable => 'Google sign-in isn\'t available right now. Please sign in with your email.';
 
   @override
   String get newCategoryTitle => 'New Category';
@@ -658,8 +641,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get sharedAnotherVersion =>
-      'Saved another version of this link, it\'ll come back in Today';
+  String get sharedAnotherVersion => 'Saved another version of this link, it\'ll come back in Today';
 
   @override
   String addAlreadySavedKept(String date) {
@@ -680,22 +662,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String todaySavedCount(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: 'Saved $count×',
-    );
+    String _temp0 = intl.Intl.pluralLogic(count, locale: localeName, other: 'Saved $count×');
     return '$_temp0';
   }
 
   @override
   String todaySavedCountA11y(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: 'Saved $count times',
-      one: 'Saved once',
-    );
+    String _temp0 = intl.Intl.pluralLogic(count, locale: localeName, other: 'Saved $count times', one: 'Saved once');
     return '$_temp0';
   }
 
@@ -713,12 +686,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String libraryLinkCount(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count links',
-      one: '1 link',
-    );
+    String _temp0 = intl.Intl.pluralLogic(count, locale: localeName, other: '$count links', one: '1 link');
     return '$_temp0';
   }
 
@@ -818,12 +786,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String sourceSheetCount(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count sites',
-      one: '1 site',
-    );
+    String _temp0 = intl.Intl.pluralLogic(count, locale: localeName, other: '$count sites', one: '1 site');
     return '$_temp0';
   }
 
@@ -885,15 +848,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get notificationTitle => 'Links waiting';
 
   @override
-  String get notificationBody =>
-      'You saved something worth another look — tap to see one.';
+  String get notificationBody => 'You saved something worth another look — tap to see one.';
 
   @override
   String get notificationChannelName => 'Daily Resurface';
 
   @override
-  String get notificationChannelDescription =>
-      'One daily reminder to look at a saved link';
+  String get notificationChannelDescription => 'One daily reminder to look at a saved link';
 
   @override
   String get widgetTodaysPick => 'Today\'s pick';

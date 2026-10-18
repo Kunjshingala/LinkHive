@@ -17,16 +17,9 @@ const Duration cloudCallTimeout = Duration(seconds: 30);
 /// document id and can be repeated.
 ///
 /// [name] says which call it was, for the log.
-Future<T> withCallTimeout<T>(
-  String name,
-  Future<T> Function() call, {
-  Duration timeout = cloudCallTimeout,
-}) {
+Future<T> withCallTimeout<T>(String name, Future<T> Function() call, {Duration timeout = cloudCallTimeout}) {
   return call().timeout(
     timeout,
-    onTimeout: () => throw TimeoutException(
-      '$name did not finish within ${timeout.inSeconds}s',
-      timeout,
-    ),
+    onTimeout: () => throw TimeoutException('$name did not finish within ${timeout.inSeconds}s', timeout),
   );
 }

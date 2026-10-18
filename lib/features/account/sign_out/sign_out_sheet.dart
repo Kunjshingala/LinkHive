@@ -26,13 +26,10 @@ Future<UnsyncedSummary?> showSignOutSheet(BuildContext context) {
     backgroundColor: Theme.of(context).colorScheme.surface,
     shape: RoundedRectangleBorder(
       side: BorderSide(color: Theme.of(context).colorScheme.outline, width: 2),
-      borderRadius: const BorderRadius.vertical(
-        top: Radius.circular(AppSpacing.radiusXl),
-      ),
+      borderRadius: const BorderRadius.vertical(top: Radius.circular(AppSpacing.radiusXl)),
     ),
     builder: (_) => BlocProvider(
-      create: (_) =>
-          SignOutCubit(sessionService: locator<AccountSessionService>()),
+      create: (_) => SignOutCubit(sessionService: locator<AccountSessionService>()),
       child: const _SignOutSheet(),
     ),
   );
@@ -53,24 +50,14 @@ class _SignOutSheet extends StatelessWidget {
             final unsynced = snapshot.unsynced;
             // Syncing cannot fix a conflict or reach the cloud while offline,
             // so "Sync now" is only offered when it can help.
-            final canSyncNow =
-                snapshot.conflicts == 0 &&
-                snapshot.status != SyncStatus.waitingForInternet;
+            final canSyncNow = snapshot.conflicts == 0 && snapshot.status != SyncStatus.waitingForInternet;
 
             return Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(
-                  Icons.logout_rounded,
-                  color: AppColors.error,
-                  size: 48,
-                ),
+                const Icon(Icons.logout_rounded, color: AppColors.error, size: 48),
                 const SizedBox(height: AppSpacing.md),
-                Text(
-                  l10n.accountSignOut,
-                  style: AppTypography.titleLarge,
-                  textAlign: TextAlign.center,
-                ),
+                Text(l10n.accountSignOut, style: AppTypography.titleLarge, textAlign: TextAlign.center),
                 const SizedBox(height: AppSpacing.sm),
                 // A live region: a screen reader announces it when the state
                 // changes while the sheet is open.
@@ -79,9 +66,7 @@ class _SignOutSheet extends StatelessWidget {
                   child: Text(
                     _messageFor(l10n, snapshot),
                     textAlign: TextAlign.center,
-                    style: AppTypography.bodyMedium.copyWith(
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
-                    ),
+                    style: AppTypography.bodyMedium.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
                   ),
                 ),
                 const SizedBox(height: AppSpacing.xl),
@@ -107,10 +92,7 @@ class _SignOutSheet extends StatelessWidget {
                       onPressed: () => context.read<SignOutCubit>().syncNow(),
                     )
                   else
-                    NeoBrutalistButton(
-                      text: l10n.accountCancel,
-                      onPressed: () => context.pop(),
-                    ),
+                    NeoBrutalistButton(text: l10n.accountCancel, onPressed: () => context.pop()),
                   const SizedBox(height: AppSpacing.md),
                   NeoBrutalistButton(
                     text: l10n.accountSignOutAnyway,
@@ -138,8 +120,7 @@ class _SignOutSheet extends StatelessWidget {
       SyncStatus.syncing => l10n.accountSignOutSyncing(count),
       SyncStatus.waitingForInternet => l10n.accountSignOutWaiting(count),
       SyncStatus.failed => l10n.accountSignOutFailed(count),
-      SyncStatus.idle ||
-      SyncStatus.conflict => l10n.accountSignOutPending(count),
+      SyncStatus.idle || SyncStatus.conflict => l10n.accountSignOutPending(count),
     };
   }
 }

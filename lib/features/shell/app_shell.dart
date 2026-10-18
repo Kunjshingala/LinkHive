@@ -39,9 +39,7 @@ class AppShell extends StatelessWidget {
     return MultiBlocProvider(
       providers: [
         BlocProvider(create: (_) => ShellBloc()),
-        BlocProvider(
-          create: (_) => InboxBadgeCubit(manager: locator<LinkManager>()),
-        ),
+        BlocProvider(create: (_) => InboxBadgeCubit(manager: locator<LinkManager>())),
       ],
       child: BlocListener<ShellBloc, ShellState>(
         listener: (context, state) {
@@ -62,11 +60,7 @@ class AppShell extends StatelessWidget {
               }
               context.read<ShellBloc>().add(const ShellBackPressed());
             },
-            child: Scaffold(
-              extendBody: true,
-              body: navigationShell,
-              bottomNavigationBar: _bottomNav(context),
-            ),
+            child: Scaffold(extendBody: true, body: navigationShell, bottomNavigationBar: _bottomNav(context)),
           ),
         ),
       ),
@@ -82,24 +76,11 @@ class AppShell extends StatelessWidget {
           builder: (context, inboxCount) => AppBottomNav(
             currentIndex: navigationShell.currentIndex,
             // Tapping the current tab again returns it to its first screen.
-            onTap: (index) => navigationShell.goBranch(
-              index,
-              initialLocation: index == navigationShell.currentIndex,
-            ),
+            onTap: (index) => navigationShell.goBranch(index, initialLocation: index == navigationShell.currentIndex),
             items: [
-              AppBottomNavItem(
-                icon: Icons.collections_bookmark_rounded,
-                label: context.l10n.homeTitle,
-              ),
-              AppBottomNavItem(
-                icon: Icons.today_rounded,
-                label: context.l10n.todayTitle,
-              ),
-              AppBottomNavItem(
-                icon: Icons.inbox_rounded,
-                label: context.l10n.inboxTitle,
-                badgeCount: inboxCount,
-              ),
+              AppBottomNavItem(icon: Icons.collections_bookmark_rounded, label: context.l10n.homeTitle),
+              AppBottomNavItem(icon: Icons.today_rounded, label: context.l10n.todayTitle),
+              AppBottomNavItem(icon: Icons.inbox_rounded, label: context.l10n.inboxTitle, badgeCount: inboxCount),
             ],
           ),
         );

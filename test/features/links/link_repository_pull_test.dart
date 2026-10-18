@@ -14,8 +14,7 @@ import 'package:link_hive/features/links/models/link_model.dart';
 import 'package:link_hive/features/links/repository/link_repository.dart';
 import 'package:mocktail/mocktail.dart';
 
-class MockFirebaseFirestoreService extends Mock
-    implements FirebaseFirestoreService {}
+class MockFirebaseFirestoreService extends Mock implements FirebaseFirestoreService {}
 
 void main() {
   late Directory hiveDirectory;
@@ -33,9 +32,7 @@ void main() {
   const cloudCategory = CategoryModel(id: 'cloud-category', name: 'Cloud');
 
   setUpAll(() async {
-    hiveDirectory = await Directory.systemTemp.createTemp(
-      'linkhive-pull-test-',
-    );
+    hiveDirectory = await Directory.systemTemp.createTemp('linkhive-pull-test-');
     Hive.init(hiveDirectory.path);
     Hive.registerAdapter(LinkModelAdapter());
     Hive.registerAdapter(CategoryModelAdapter());
@@ -69,39 +66,24 @@ void main() {
     ]);
     firebaseService = MockFirebaseFirestoreService();
     repository = LinkRepository(hiveHelper: HiveHelper());
-    cloudSync = CloudSyncService(
-      firebaseService: firebaseService,
-      store: repository,
-      uidProvider: () => 'user-1',
-    );
+    cloudSync = CloudSyncService(firebaseService: firebaseService, store: repository, uidProvider: () => 'user-1');
   });
 
   tearDown(() => Hive.close());
   tearDownAll(() => hiveDirectory.delete(recursive: true));
 
-  test(
-    'pull restores remote links and categories into Hive after local data is cleared',
-    () async {
-      when(
-        () => firebaseService.fetchLinks('user-1'),
-      ).thenAnswer((_) async => [cloudLink]);
-      when(
-        () => firebaseService.fetchDeletedLinks('user-1'),
-      ).thenAnswer((_) async => []);
-      when(
-        () => firebaseService.fetchCategories('user-1'),
-      ).thenAnswer((_) async => [cloudCategory]);
-      when(
-        () => firebaseService.fetchDeletedCategories('user-1'),
-      ).thenAnswer((_) async => []);
+  test('pull restores remote links and categories into Hive after local data is cleared', () async {
+    when(() => firebaseService.fetchLinks('user-1')).thenAnswer((_) async => [cloudLink]);
+    when(() => firebaseService.fetchDeletedLinks('user-1')).thenAnswer((_) async => []);
+    when(() => firebaseService.fetchCategories('user-1')).thenAnswer((_) async => [cloudCategory]);
+    when(() => firebaseService.fetchDeletedCategories('user-1')).thenAnswer((_) async => []);
 
-      await repository.clearLocalData();
-      await cloudSync.pull();
+    await repository.clearLocalData();
+    await cloudSync.pull();
 
-      expect(repository.queryLinks(limit: 10).single.id, cloudLink.id);
-      expect(repository.getCategories().single.id, cloudCategory.id);
-    },
-  );
+    expect(repository.queryLinks(limit: 10).single.id, cloudLink.id);
+    expect(repository.getCategories().single.id, cloudCategory.id);
+  });
 
   test('pull preserves a same-field edit as an unresolved conflict', () async {
     const base = LinkModel(
@@ -115,18 +97,10 @@ void main() {
     final cloud = base.copyWith(title: 'Cloud title', isSynced: true);
     await Hive.box<LinkModel>(HiveConstants.linksBox).put(base.id, local);
     await Hive.box<LinkModel>(HiveConstants.baseLinksBox).put(base.id, base);
-    when(
-      () => firebaseService.fetchLinks('user-1'),
-    ).thenAnswer((_) async => [cloud]);
-    when(
-      () => firebaseService.fetchDeletedLinks('user-1'),
-    ).thenAnswer((_) async => []);
-    when(
-      () => firebaseService.fetchCategories('user-1'),
-    ).thenAnswer((_) async => []);
-    when(
-      () => firebaseService.fetchDeletedCategories('user-1'),
-    ).thenAnswer((_) async => []);
+    when(() => firebaseService.fetchLinks('user-1')).thenAnswer((_) async => [cloud]);
+    when(() => firebaseService.fetchDeletedLinks('user-1')).thenAnswer((_) async => []);
+    when(() => firebaseService.fetchCategories('user-1')).thenAnswer((_) async => []);
+    when(() => firebaseService.fetchDeletedCategories('user-1')).thenAnswer((_) async => []);
 
     await cloudSync.pull();
 
@@ -135,106 +109,66 @@ void main() {
     expect(repository.conflicts.single.cloudVersion?['title'], 'Cloud title');
   });
 
-  test(
-    'pull records a conflict when a pending local operation meets a cloud edit',
-    () async {
-      const base = LinkModel(
-        id: 'pending-conflict-link',
-        url: 'https://example.com',
-        title: 'Base title',
-        createdAt: 1,
-        isSynced: true,
-      );
-      await Hive.box<LinkModel>(HiveConstants.linksBox).put(base.id, base);
-      await Hive.box<LinkModel>(HiveConstants.baseLinksBox).put(base.id, base);
-      await repository.updateLink(base.copyWith(title: 'Local title'));
-      final cloud = base.copyWith(title: 'Cloud title', isSynced: true);
-      when(
-        () => firebaseService.fetchLinks('user-1'),
-      ).thenAnswer((_) async => [cloud]);
-      when(
-        () => firebaseService.fetchDeletedLinks('user-1'),
-      ).thenAnswer((_) async => []);
-      when(
-        () => firebaseService.fetchCategories('user-1'),
-      ).thenAnswer((_) async => []);
-      when(
-        () => firebaseService.fetchDeletedCategories('user-1'),
-      ).thenAnswer((_) async => []);
+  test('pull records a conflict when a pending local operation meets a cloud edit', () async {
+    const base = LinkModel(
+      id: 'pending-conflict-link',
+      url: 'https://example.com',
+      title: 'Base title',
+      createdAt: 1,
+      isSynced: true,
+    );
+    await Hive.box<LinkModel>(HiveConstants.linksBox).put(base.id, base);
+    await Hive.box<LinkModel>(HiveConstants.baseLinksBox).put(base.id, base);
+    await repository.updateLink(base.copyWith(title: 'Local title'));
+    final cloud = base.copyWith(title: 'Cloud title', isSynced: true);
+    when(() => firebaseService.fetchLinks('user-1')).thenAnswer((_) async => [cloud]);
+    when(() => firebaseService.fetchDeletedLinks('user-1')).thenAnswer((_) async => []);
+    when(() => firebaseService.fetchCategories('user-1')).thenAnswer((_) async => []);
+    when(() => firebaseService.fetchDeletedCategories('user-1')).thenAnswer((_) async => []);
 
-      await cloudSync.pull();
+    await cloudSync.pull();
 
-      expect(repository.conflicts.single.linkId, base.id);
-      expect(repository.conflicts.single.conflictingFields, ['title']);
-    },
-  );
+    expect(repository.conflicts.single.linkId, base.id);
+    expect(repository.conflicts.single.conflictingFields, ['title']);
+  });
 
-  test(
-    'local tombstones prevent an older remote link from reappearing',
-    () async {
-      await Hive.box<SyncTombstone>(HiveConstants.syncTombstonesBox).put(
-        '${SyncOperation.linkEntity}:${cloudLink.id}',
-        const SyncTombstone(
-          entityType: SyncOperation.linkEntity,
-          entityId: 'cloud-link',
-          deletedAt: 2,
-        ),
-      );
-      when(
-        () => firebaseService.fetchLinks('user-1'),
-      ).thenAnswer((_) async => [cloudLink]);
-      when(
-        () => firebaseService.fetchDeletedLinks('user-1'),
-      ).thenAnswer((_) async => []);
-      when(
-        () => firebaseService.fetchCategories('user-1'),
-      ).thenAnswer((_) async => []);
-      when(
-        () => firebaseService.fetchDeletedCategories('user-1'),
-      ).thenAnswer((_) async => []);
+  test('local tombstones prevent an older remote link from reappearing', () async {
+    await Hive.box<SyncTombstone>(HiveConstants.syncTombstonesBox).put(
+      '${SyncOperation.linkEntity}:${cloudLink.id}',
+      const SyncTombstone(entityType: SyncOperation.linkEntity, entityId: 'cloud-link', deletedAt: 2),
+    );
+    when(() => firebaseService.fetchLinks('user-1')).thenAnswer((_) async => [cloudLink]);
+    when(() => firebaseService.fetchDeletedLinks('user-1')).thenAnswer((_) async => []);
+    when(() => firebaseService.fetchCategories('user-1')).thenAnswer((_) async => []);
+    when(() => firebaseService.fetchDeletedCategories('user-1')).thenAnswer((_) async => []);
 
-      await cloudSync.pull();
+    await cloudSync.pull();
 
-      expect(repository.queryLinks(limit: 10), isEmpty);
-    },
-  );
+    expect(repository.queryLinks(limit: 10), isEmpty);
+  });
 
-  test(
-    'keep-local conflict resolution queues the selected local version',
-    () async {
-      const base = LinkModel(
-        id: 'resolve-link',
-        url: 'https://example.com',
-        title: 'Base title',
-        createdAt: 1,
-        isSynced: true,
-      );
-      final local = base.copyWith(title: 'Local title', isSynced: false);
-      final cloud = base.copyWith(title: 'Cloud title', isSynced: true);
-      await Hive.box<LinkModel>(HiveConstants.linksBox).put(base.id, local);
-      await Hive.box<LinkModel>(HiveConstants.baseLinksBox).put(base.id, base);
-      when(
-        () => firebaseService.fetchLinks('user-1'),
-      ).thenAnswer((_) async => [cloud]);
-      when(
-        () => firebaseService.fetchDeletedLinks('user-1'),
-      ).thenAnswer((_) async => []);
-      when(
-        () => firebaseService.fetchCategories('user-1'),
-      ).thenAnswer((_) async => []);
-      when(
-        () => firebaseService.fetchDeletedCategories('user-1'),
-      ).thenAnswer((_) async => []);
+  test('keep-local conflict resolution queues the selected local version', () async {
+    const base = LinkModel(
+      id: 'resolve-link',
+      url: 'https://example.com',
+      title: 'Base title',
+      createdAt: 1,
+      isSynced: true,
+    );
+    final local = base.copyWith(title: 'Local title', isSynced: false);
+    final cloud = base.copyWith(title: 'Cloud title', isSynced: true);
+    await Hive.box<LinkModel>(HiveConstants.linksBox).put(base.id, local);
+    await Hive.box<LinkModel>(HiveConstants.baseLinksBox).put(base.id, base);
+    when(() => firebaseService.fetchLinks('user-1')).thenAnswer((_) async => [cloud]);
+    when(() => firebaseService.fetchDeletedLinks('user-1')).thenAnswer((_) async => []);
+    when(() => firebaseService.fetchCategories('user-1')).thenAnswer((_) async => []);
+    when(() => firebaseService.fetchDeletedCategories('user-1')).thenAnswer((_) async => []);
 
-      await cloudSync.pull();
-      final conflict = repository.conflicts.single;
-      await repository.resolveConflictKeepLocal(conflict.conflictId);
+    await cloudSync.pull();
+    final conflict = repository.conflicts.single;
+    await repository.resolveConflictKeepLocal(conflict.conflictId);
 
-      expect(repository.conflicts, isEmpty);
-      expect(
-        repository.pendingSyncOperations.single.payload['title'],
-        'Local title',
-      );
-    },
-  );
+    expect(repository.conflicts, isEmpty);
+    expect(repository.pendingSyncOperations.single.payload['title'], 'Local title');
+  });
 }

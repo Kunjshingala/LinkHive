@@ -31,14 +31,8 @@ void main() {
     when(() => repository.unsyncedSummary()).thenAnswer((_) => summary);
     when(() => cloudSync.lastFailure).thenReturn(null);
     when(() => repository.lastPulledAt).thenReturn(null);
-    when(
-      () => repository.watchSyncOperations(),
-    ).thenAnswer((_) => queueChanges.stream);
-    engine = SyncEngine(
-      cloudSync: cloudSync,
-      repository: repository,
-      isAuthenticated: () => true,
-    );
+    when(() => repository.watchSyncOperations()).thenAnswer((_) => queueChanges.stream);
+    engine = SyncEngine(cloudSync: cloudSync, repository: repository, isAuthenticated: () => true);
   });
 
   tearDown(() async {
@@ -49,12 +43,8 @@ void main() {
   blocTest<SyncStatusBloc, SyncStatusState>(
     'starts with the engine snapshot and reflects status events',
     build: () => SyncStatusBloc(syncEngine: engine),
-    act: (bloc) => bloc.add(
-      const SyncStatusChanged(SyncSnapshot(status: SyncStatus.conflict)),
-    ),
-    expect: () => [
-      const SyncStatusState(SyncSnapshot(status: SyncStatus.conflict)),
-    ],
+    act: (bloc) => bloc.add(const SyncStatusChanged(SyncSnapshot(status: SyncStatus.conflict))),
+    expect: () => [const SyncStatusState(SyncSnapshot(status: SyncStatus.conflict))],
   );
 
   test('receives status changes emitted by the engine', () async {

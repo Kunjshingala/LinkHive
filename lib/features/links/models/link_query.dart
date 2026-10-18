@@ -57,8 +57,7 @@ class LinkQuery extends Equatable {
   /// The quick chip this query matches, or [QuickFilter.all] when it matches
   /// none of the presets exactly.
   QuickFilter get quickFilter {
-    final high = priorities.length == 1 &&
-        priorities.single.toLowerCase() == 'high';
+    final high = priorities.length == 1 && priorities.single.toLowerCase() == 'high';
     if (minShareCount >= 2 && readFilter == ReadFilter.all && priorities.isEmpty) {
       return QuickFilter.savedTwice;
     }
@@ -125,16 +124,7 @@ class LinkQuery extends Equatable {
   );
 
   @override
-  List<Object?> get props => [
-    search,
-    categories,
-    uncategorized,
-    priorities,
-    host,
-    readFilter,
-    minShareCount,
-    sort,
-  ];
+  List<Object?> get props => [search, categories, uncategorized, priorities, host, readFilter, minShareCount, sort];
 }
 
 /// The counts behind the quick chips. Inbox links are excluded.
@@ -166,14 +156,7 @@ class LibraryStats extends Equatable {
   };
 
   @override
-  List<Object?> get props => [
-    total,
-    unread,
-    high,
-    savedTwicePlus,
-    read,
-    uncategorized,
-  ];
+  List<Object?> get props => [total, unread, high, savedTwicePlus, read, uncategorized];
 }
 
 /// A name with how many links have it: a source host or a category.

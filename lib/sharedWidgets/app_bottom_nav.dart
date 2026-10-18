@@ -6,11 +6,7 @@ import '../core/theme/app_spacing.dart';
 
 /// One destination in [AppBottomNav].
 class AppBottomNavItem {
-  const AppBottomNavItem({
-    required this.icon,
-    required this.label,
-    this.badgeCount = 0,
-  });
+  const AppBottomNavItem({required this.icon, required this.label, this.badgeCount = 0});
 
   final IconData icon;
   final String label;
@@ -26,12 +22,7 @@ class AppBottomNavItem {
 /// others show their icon only (screen readers still get the label). Put it
 /// in a `Scaffold` with `extendBody: true` so content scrolls under it.
 class AppBottomNav extends StatelessWidget {
-  const AppBottomNav({
-    super.key,
-    required this.items,
-    required this.currentIndex,
-    required this.onTap,
-  });
+  const AppBottomNav({super.key, required this.items, required this.currentIndex, required this.onTap});
 
   final List<AppBottomNavItem> items;
   final int currentIndex;
@@ -45,12 +36,7 @@ class AppBottomNav extends StatelessWidget {
     final neo = context.neoBrutal;
     return SafeArea(
       top: false,
-      minimum: const EdgeInsets.fromLTRB(
-        AppSpacing.md,
-        0,
-        AppSpacing.md,
-        AppSpacing.md,
-      ),
+      minimum: const EdgeInsets.fromLTRB(AppSpacing.md, 0, AppSpacing.md, AppSpacing.md),
       child: Container(
         height: barHeight,
         padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
@@ -59,22 +45,14 @@ class AppBottomNav extends StatelessWidget {
           borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
           border: Border.all(color: neo.borderColor, width: neo.borderWidth),
           boxShadow: [
-            BoxShadow(
-              color: neo.borderColor,
-              offset: Offset(neo.shadowOffset, neo.shadowOffset),
-              blurRadius: 0,
-            ),
+            BoxShadow(color: neo.borderColor, offset: Offset(neo.shadowOffset, neo.shadowOffset), blurRadius: 0),
           ],
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             for (var i = 0; i < items.length; i++)
-              _NavButton(
-                item: items[i],
-                selected: i == currentIndex,
-                onTap: () => onTap(i),
-              ),
+              _NavButton(item: items[i], selected: i == currentIndex, onTap: () => onTap(i)),
           ],
         ),
       ),
@@ -83,11 +61,7 @@ class AppBottomNav extends StatelessWidget {
 }
 
 class _NavButton extends StatelessWidget {
-  const _NavButton({
-    required this.item,
-    required this.selected,
-    required this.onTap,
-  });
+  const _NavButton({required this.item, required this.selected, required this.onTap});
 
   final AppBottomNavItem item;
   final bool selected;
@@ -112,9 +86,7 @@ class _NavButton extends StatelessWidget {
           curve: Curves.easeOut,
           height: 48,
           constraints: const BoxConstraints(minWidth: 56),
-          padding: EdgeInsets.symmetric(
-            horizontal: selected ? AppSpacing.md + 2 : AppSpacing.md,
-          ),
+          padding: EdgeInsets.symmetric(horizontal: selected ? AppSpacing.md + 2 : AppSpacing.md),
           decoration: BoxDecoration(
             color: selected ? cs.primary : AppColors.transparent,
             borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
@@ -122,21 +94,15 @@ class _NavButton extends StatelessWidget {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              _IconWithBadge(
-                icon: item.icon,
-                color: color,
-                count: item.badgeCount,
-              ),
+              _IconWithBadge(icon: item.icon, color: color, count: item.badgeCount),
               if (selected) ...[
                 const SizedBox(width: AppSpacing.sm),
                 Text(
                   item.label,
                   maxLines: 1,
-                  style: Theme.of(context).textTheme.labelLarge!.copyWith(
-                    color: color,
-                    fontWeight: FontWeight.w700,
-                    fontSize: 14,
-                  ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.labelLarge!.copyWith(color: color, fontWeight: FontWeight.w700, fontSize: 14),
                 ),
               ],
             ],
@@ -148,11 +114,7 @@ class _NavButton extends StatelessWidget {
 }
 
 class _IconWithBadge extends StatelessWidget {
-  const _IconWithBadge({
-    required this.icon,
-    required this.color,
-    required this.count,
-  });
+  const _IconWithBadge({required this.icon, required this.color, required this.count});
 
   final IconData icon;
   final Color? color;
@@ -177,16 +139,11 @@ class _IconWithBadge extends StatelessWidget {
             decoration: BoxDecoration(
               color: AppColors.accentOrange,
               borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
-              border: Border.all(
-                color: AppColors.black,
-                width: context.neoBrutal.borderWidth,
-              ),
+              border: Border.all(color: AppColors.black, width: context.neoBrutal.borderWidth),
             ),
             child: Text(
               count > 99 ? '99+' : '$count',
-              style: Theme.of(
-                context,
-              ).textTheme.labelSmall!.copyWith(color: AppColors.black),
+              style: Theme.of(context).textTheme.labelSmall!.copyWith(color: AppColors.black),
             ),
           ),
         ),

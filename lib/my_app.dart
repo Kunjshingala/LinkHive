@@ -29,9 +29,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
 
   /// Created here rather than in build so the notification service can start
   /// in the saved language (see initState).
-  late final LocaleCubit _localeCubit = LocaleCubit(
-    hiveHelper: locator<HiveHelper>(),
-  );
+  late final LocaleCubit _localeCubit = LocaleCubit(hiveHelper: locator<HiveHelper>());
 
   @override
   void initState() {
@@ -44,9 +42,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
     // the router is attached (needed for a cold-start notification tap to
     // navigate), fails silently on its own — see
     // ResurfaceNotificationService.initialize().
-    locator<ResurfaceNotificationService>().initialize(
-      locale: _localeCubit.state,
-    );
+    locator<ResurfaceNotificationService>().initialize(locale: _localeCubit.state);
     // Same fire-and-forget pattern: pushes initial data to the home-screen
     // widget and starts watching for changes. Android only for now — see
     // HomeWidgetService's doc comment.
@@ -84,9 +80,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
     return MultiBlocProvider(
       providers: [
         BlocProvider.value(value: _localeCubit),
-        BlocProvider(
-          create: (_) => ThemeCubit(hiveHelper: locator<HiveHelper>()),
-        ),
+        BlocProvider(create: (_) => ThemeCubit(hiveHelper: locator<HiveHelper>())),
       ],
       child: BlocConsumer<LocaleCubit, Locale>(
         // Keep the daily notification and the home-screen widget in the
@@ -116,8 +110,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
                     data: mediaQuery.copyWith(textScaler: TextScaler.noScaling),
                     child: GestureDetector(
                       behavior: HitTestBehavior.translucent,
-                      onTap: () =>
-                          FocusManager.instance.primaryFocus?.unfocus(),
+                      onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
                       child: child ?? const SizedBox.shrink(),
                     ),
                   );
