@@ -33,9 +33,7 @@ class TodayBloc extends Bloc<TodayEvent, TodayState> {
   /// [close].
   late final StreamSubscription<void> _boxSubscription;
 
-  TodayBloc({required LinkManager manager})
-    : _manager = manager,
-      super(const TodayInitial()) {
+  TodayBloc({required LinkManager manager}) : _manager = manager, super(const TodayInitial()) {
     on<TodayLoadRequested>(_onLoadRequested);
     on<TodayRefreshRequested>(_onRefreshRequested);
     on<TodayOpenRequested>(_onOpenRequested);
@@ -55,23 +53,14 @@ class TodayBloc extends Bloc<TodayEvent, TodayState> {
     return super.close();
   }
 
-  Future<void> _onLoadRequested(
-    TodayLoadRequested event,
-    Emitter<TodayState> emit,
-  ) async {
+  Future<void> _onLoadRequested(TodayLoadRequested event, Emitter<TodayState> emit) async {
     emit(const TodayLoading());
     await _emitCandidate(emit);
   }
 
-  Future<void> _onRefreshRequested(
-    TodayRefreshRequested event,
-    Emitter<TodayState> emit,
-  ) => _emitCandidate(emit);
+  Future<void> _onRefreshRequested(TodayRefreshRequested event, Emitter<TodayState> emit) => _emitCandidate(emit);
 
-  Future<void> _onOpenRequested(
-    TodayOpenRequested event,
-    Emitter<TodayState> emit,
-  ) async {
+  Future<void> _onOpenRequested(TodayOpenRequested event, Emitter<TodayState> emit) async {
     final current = state;
     if (current is! TodayLoaded) return;
     final url = event.url;
@@ -82,20 +71,14 @@ class TodayBloc extends Bloc<TodayEvent, TodayState> {
     await _emitCandidate(emit);
   }
 
-  Future<void> _onArchiveRequested(
-    TodayArchiveRequested event,
-    Emitter<TodayState> emit,
-  ) async {
+  Future<void> _onArchiveRequested(TodayArchiveRequested event, Emitter<TodayState> emit) async {
     final current = state;
     if (current is! TodayLoaded) return;
     await _manager.archiveLink(current.link);
     await _emitCandidate(emit);
   }
 
-  Future<void> _onSnoozeRequested(
-    TodaySnoozeRequested event,
-    Emitter<TodayState> emit,
-  ) async {
+  Future<void> _onSnoozeRequested(TodaySnoozeRequested event, Emitter<TodayState> emit) async {
     final current = state;
     if (current is! TodayLoaded) return;
     await _manager.snoozeLink(current.link);

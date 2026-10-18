@@ -46,11 +46,9 @@ export 'save_result.dart';
 /// effectively fire-and-forget. Every path uses this order now, so there is
 /// one answer rather than four.
 class LinkManager {
-  LinkManager({
-    required LinkRepository repository,
-    DateTime Function() clock = DateTime.now,
-  }) : _repository = repository,
-       _clock = clock;
+  LinkManager({required LinkRepository repository, DateTime Function() clock = DateTime.now})
+    : _repository = repository,
+      _clock = clock;
 
   final LinkRepository _repository;
   final DateTime Function() _clock;
@@ -112,13 +110,11 @@ class LinkManager {
 
   LibraryStats getLibraryStats() => _repository.getLibraryStats();
 
-  List<NamedCount> getSourceCounts({LinkQuery? within}) =>
-      _repository.getSourceCounts(within: within);
+  List<NamedCount> getSourceCounts({LinkQuery? within}) => _repository.getSourceCounts(within: within);
 
   List<NamedCount> getCategoryCounts() => _repository.getCategoryCounts();
 
-  List<NamedCount> getCategoryCountsForHost(String host) =>
-      _repository.getCategoryCountsForHost(host);
+  List<NamedCount> getCategoryCountsForHost(String host) => _repository.getCategoryCountsForHost(host);
 
   /// Every category worth offering in a picker: the built-ins, the user's
   /// own, and any name in use on a link (legacy built-ins included). No
@@ -132,17 +128,14 @@ class LinkManager {
     ].where((name) => seen.add(name.toLowerCase())).toList();
   }
 
-  Future<void> markLinksRead(Iterable<String> ids) =>
-      _repository.markLinksRead(ids);
+  Future<void> markLinksRead(Iterable<String> ids) => _repository.markLinksRead(ids);
 
-  Future<void> addCategoryToLinks(Iterable<String> ids, String name) =>
-      _repository.addCategoryToLinks(ids, name);
+  Future<void> addCategoryToLinks(Iterable<String> ids, String name) => _repository.addCategoryToLinks(ids, name);
 
   Future<void> setPriorityForLinks(Iterable<String> ids, String priority) =>
       _repository.setPriorityForLinks(ids, priority);
 
-  Future<void> deleteLinks(Iterable<String> ids) =>
-      _repository.deleteLinks(ids);
+  Future<void> deleteLinks(Iterable<String> ids) => _repository.deleteLinks(ids);
 
   Future<void> markAsRead(String id) => _repository.markLinkAsRead(id);
 
@@ -152,8 +145,7 @@ class LinkManager {
 
   List<CategoryModel> getCategories() => _repository.getCategories();
 
-  Future<void> addCategory(CategoryModel category) =>
-      _repository.addCategory(category);
+  Future<void> addCategory(CategoryModel category) => _repository.addCategory(category);
 
   Future<void> deleteCategory(String id) => _repository.deleteCategory(id);
 
@@ -214,11 +206,7 @@ class LinkManager {
   /// by `LinkModel.copyWith` and the Add form: [resurfaceAt] for Tonight /
   /// Weekend, [clearResurfaceAt] for Someday, neither for "no pick". No pick
   /// on a merge means due now. It applies to the new record on create too.
-  Future<SaveResult> saveOrMerge(
-    LinkModel candidate, {
-    int? resurfaceAt,
-    bool clearResurfaceAt = false,
-  }) {
+  Future<SaveResult> saveOrMerge(LinkModel candidate, {int? resurfaceAt, bool clearResurfaceAt = false}) {
     return _saveLock.synchronized(() async {
       final existing = _repository.findByCanonicalUrl(candidate.url);
       if (existing == null) {
@@ -237,11 +225,8 @@ class LinkManager {
       // igsh/si on every share must not fill the picker.
       final candidateKey = versionKey(candidate.url);
       final addedVersion =
-          candidateKey != versionKey(existing.url) &&
-          !existing.otherUrls.any((url) => versionKey(url) == candidateKey);
-      final otherUrls = addedVersion
-          ? _keepNewest([...existing.otherUrls, candidate.url])
-          : existing.otherUrls;
+          candidateKey != versionKey(existing.url) && !existing.otherUrls.any((url) => versionKey(url) == candidateKey);
+      final otherUrls = addedVersion ? _keepNewest([...existing.otherUrls, candidate.url]) : existing.otherUrls;
 
       final merged = existing.copyWith(
         isRead: false,
@@ -253,11 +238,7 @@ class LinkManager {
         otherUrls: otherUrls,
       );
       await _repository.updateLink(merged);
-      return SaveMerged(
-        merged: merged,
-        previous: existing,
-        addedVersion: addedVersion,
-      );
+      return SaveMerged(merged: merged, previous: existing, addedVersion: addedVersion);
     });
   }
 
@@ -294,15 +275,12 @@ class LinkManager {
   Future<void> keepOnlyVersion(LinkModel link, String url) {
     return _saveLock.synchronized(() async {
       final current = _repository.getLinkById(link.id) ?? link;
-      await _repository.updateLink(
-        current.copyWith(url: url, otherUrls: const []),
-      );
+      await _repository.updateLink(current.copyWith(url: url, otherUrls: const []));
     });
   }
 
-  List<String> _keepNewest(List<String> urls) => urls.length <= maxOtherUrls
-      ? urls
-      : urls.sublist(urls.length - maxOtherUrls);
+  List<String> _keepNewest(List<String> urls) =>
+      urls.length <= maxOtherUrls ? urls : urls.sublist(urls.length - maxOtherUrls);
 
   /// Read + resurfaced, the pair that takes a link out of the resurface pool.
   ///

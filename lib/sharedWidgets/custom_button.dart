@@ -85,7 +85,9 @@ class _NeoBrutalistButtonState extends State<NeoBrutalistButton> {
     final isCircle = widget.shape == BoxShape.circle;
     final effectiveBorderRadius = isCircle
         ? null
-        : BorderRadius.circular(widget.borderRadius ?? (widget.text == null ? AppSpacing.radiusLg : AppSpacing.radiusFull));
+        : BorderRadius.circular(
+            widget.borderRadius ?? (widget.text == null ? AppSpacing.radiusLg : AppSpacing.radiusFull),
+          );
 
     return GestureDetector(
       onTapDown: isDisabled ? null : (_) => setState(() => _pressed = true),
@@ -145,7 +147,11 @@ class _NeoBrutalistButtonState extends State<NeoBrutalistButton> {
                           if (widget.text != null)
                             Text(
                               widget.text!,
-                              style: AppTypography.bodyMedium.copyWith(color: fgColor, fontWeight: FontWeight.w700, letterSpacing: 0.3),
+                              style: AppTypography.bodyMedium.copyWith(
+                                color: fgColor,
+                                fontWeight: FontWeight.w700,
+                                letterSpacing: 0.3,
+                              ),
                             ),
                         ],
                       ),

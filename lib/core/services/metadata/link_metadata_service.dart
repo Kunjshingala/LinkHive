@@ -1,7 +1,6 @@
 import '../../utils/utils.dart';
 import 'metadata_fetcher.dart';
-import 'metadata_fetcher_io.dart'
-    if (dart.library.html) 'metadata_fetcher_web.dart';
+import 'metadata_fetcher_io.dart' if (dart.library.html) 'metadata_fetcher_web.dart';
 
 /// Result of a metadata fetch attempt.
 class LinkMetadata {
@@ -83,18 +82,9 @@ class LinkMetadataService {
   /// this treatment; "&amp;lt;" still decodes to the literal text "&lt;".
   String _decodeHtmlEntities(String value) {
     return value
-        .replaceAllMapped(
-          RegExp(r'&amp;(#x?[0-9a-fA-F]+;)'),
-          (m) => '&${m.group(1)}',
-        )
-        .replaceAllMapped(
-          RegExp(r'&#x([0-9a-fA-F]+);'),
-          (m) => String.fromCharCode(int.parse(m.group(1)!, radix: 16)),
-        )
-        .replaceAllMapped(
-          RegExp(r'&#(\d+);'),
-          (m) => String.fromCharCode(int.parse(m.group(1)!)),
-        )
+        .replaceAllMapped(RegExp(r'&amp;(#x?[0-9a-fA-F]+;)'), (m) => '&${m.group(1)}')
+        .replaceAllMapped(RegExp(r'&#x([0-9a-fA-F]+);'), (m) => String.fromCharCode(int.parse(m.group(1)!, radix: 16)))
+        .replaceAllMapped(RegExp(r'&#(\d+);'), (m) => String.fromCharCode(int.parse(m.group(1)!)))
         .replaceAll('&quot;', '"')
         .replaceAll('&#39;', "'")
         .replaceAll('&apos;', "'")

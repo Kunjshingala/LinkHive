@@ -71,18 +71,11 @@ void main() {
     ),
   );
 
-  List<String> ids(LinkQuery query) =>
-      repository.findLinks(query, limit: 100).map((l) => l.id).toList();
+  List<String> ids(LinkQuery query) => repository.findLinks(query, limit: 100).map((l) => l.id).toList();
 
   group('findLinks filters', () {
     setUp(() async {
-      await put(
-        'yt',
-        url: 'https://youtu.be/abc',
-        categories: ['Watch'],
-        priority: 'High',
-        createdAt: 3,
-      );
+      await put('yt', url: 'https://youtu.be/abc', categories: ['Watch'], priority: 'High', createdAt: 3);
       await put(
         'ig',
         url: 'https://www.instagram.com/reel/x/',
@@ -111,26 +104,17 @@ void main() {
     });
 
     test('read state', () {
-      expect(ids(const LinkQuery(readFilter: ReadFilter.unread)), [
-        'yt',
-        'blog',
-      ]);
+      expect(ids(const LinkQuery(readFilter: ReadFilter.unread)), ['yt', 'blog']);
       expect(ids(const LinkQuery(readFilter: ReadFilter.read)), ['ig']);
     });
 
     test('categories match any of the selected names', () {
-      expect(ids(const LinkQuery(categories: {'Read', 'Watch'})), [
-        'yt',
-        'blog',
-      ]);
+      expect(ids(const LinkQuery(categories: {'Read', 'Watch'})), ['yt', 'blog']);
     });
 
     test('priorities compare case-insensitively', () {
       expect(ids(const LinkQuery(priorities: {'Low'})), ['blog']);
-      expect(ids(const LinkQuery(priorities: {'high', 'LOW'})), [
-        'yt',
-        'blog',
-      ]);
+      expect(ids(const LinkQuery(priorities: {'high', 'LOW'})), ['yt', 'blog']);
     });
 
     test('host matches the folded source host', () {
@@ -148,15 +132,7 @@ void main() {
     });
 
     test('filters combine', () {
-      expect(
-        ids(
-          const LinkQuery(
-            categories: {'Recipes'},
-            readFilter: ReadFilter.unread,
-          ),
-        ),
-        ['blog'],
-      );
+      expect(ids(const LinkQuery(categories: {'Recipes'}, readFilter: ReadFilter.unread)), ['blog']);
     });
 
     test('countLinks matches the full result size', () {
@@ -164,37 +140,15 @@ void main() {
     });
 
     test('paging uses offset and limit', () {
-      expect(
-        repository
-            .findLinks(const LinkQuery(), limit: 1, offset: 1)
-            .map((l) => l.id),
-        ['ig'],
-      );
+      expect(repository.findLinks(const LinkQuery(), limit: 1, offset: 1).map((l) => l.id), ['ig']);
     });
   });
 
   group('findLinks sort', () {
     setUp(() async {
-      await put(
-        'a',
-        url: 'https://b-site.com/1',
-        priority: 'Low',
-        createdAt: 1,
-        shareCount: 2,
-      );
-      await put(
-        'b',
-        url: 'https://a-site.com/1',
-        priority: 'High',
-        createdAt: 2,
-      );
-      await put(
-        'c',
-        url: 'https://c-site.com/1',
-        priority: 'Normal',
-        createdAt: 3,
-        shareCount: 5,
-      );
+      await put('a', url: 'https://b-site.com/1', priority: 'Low', createdAt: 1, shareCount: 2);
+      await put('b', url: 'https://a-site.com/1', priority: 'High', createdAt: 2);
+      await put('c', url: 'https://c-site.com/1', priority: 'Normal', createdAt: 3, shareCount: 5);
     });
 
     test('newest and oldest', () {
@@ -217,13 +171,7 @@ void main() {
     test('by site puts the site with most links first, newest within', () async {
       await put('d', url: 'https://c-site.com/2', createdAt: 9);
       await put('e', url: 'https://c-site.com/3', createdAt: 1);
-      expect(ids(const LinkQuery(sort: LinkSort.site)), [
-        'd',
-        'c',
-        'e',
-        'b',
-        'a',
-      ]);
+      expect(ids(const LinkQuery(sort: LinkSort.site)), ['d', 'c', 'e', 'b', 'a']);
     });
   });
 
@@ -247,22 +195,15 @@ void main() {
     await put('b', url: 'https://youtu.be/2');
     await put('c', url: 'https://amazon.in/x', categories: ['Watch']);
 
-    expect(
-      repository.getSourceCounts(
-        within: const LinkQuery(categories: {'Watch'}),
-      ),
-      const [NamedCount('amazon.in', 1), NamedCount('youtube.com', 1)],
-    );
+    expect(repository.getSourceCounts(within: const LinkQuery(categories: {'Watch'})), const [
+      NamedCount('amazon.in', 1),
+      NamedCount('youtube.com', 1),
+    ]);
   });
 
   group('overview counts', () {
     setUp(() async {
-      await put(
-        'a',
-        url: 'https://youtu.be/1',
-        categories: ['Watch'],
-        priority: 'High',
-      );
+      await put('a', url: 'https://youtu.be/1', categories: ['Watch'], priority: 'High');
       await put(
         'b',
         url: 'https://www.youtube.com/watch?v=2',
@@ -270,37 +211,19 @@ void main() {
         isRead: true,
         shareCount: 2,
       );
-      await put(
-        'c',
-        url: 'https://amazon.in/dp/1',
-        categories: ['Shop'],
-      );
-      await put(
-        'inbox',
-        url: 'https://youtu.be/3',
-        categories: ['Watch'],
-        isQuickSaved: true,
-      );
+      await put('c', url: 'https://amazon.in/dp/1', categories: ['Shop']);
+      await put('inbox', url: 'https://youtu.be/3', categories: ['Watch'], isQuickSaved: true);
     });
 
     test('getLibraryStats excludes the Inbox', () {
       expect(
         repository.getLibraryStats(),
-        const LibraryStats(
-          total: 3,
-          unread: 2,
-          high: 1,
-          savedTwicePlus: 1,
-          read: 1,
-        ),
+        const LibraryStats(total: 3, unread: 2, high: 1, savedTwicePlus: 1, read: 1),
       );
     });
 
     test('getSourceCounts groups by folded host, most first', () {
-      expect(repository.getSourceCounts(), const [
-        NamedCount('youtube.com', 2),
-        NamedCount('amazon.in', 1),
-      ]);
+      expect(repository.getSourceCounts(), const [NamedCount('youtube.com', 2), NamedCount('amazon.in', 1)]);
     });
 
     test('getCategoryCounts lists names in use, most first then A–Z', () {
@@ -312,13 +235,11 @@ void main() {
     });
 
     test('getCategoryCountsForHost keeps names used on 2+ links', () {
-      expect(repository.getCategoryCountsForHost('youtube.com'), const [
+      expect(repository.getCategoryCountsForHost('youtube.com'), const [NamedCount('Watch', 2)]);
+      expect(repository.getCategoryCountsForHost('youtube.com', minLinks: 1), const [
         NamedCount('Watch', 2),
+        NamedCount('Learn', 1),
       ]);
-      expect(
-        repository.getCategoryCountsForHost('youtube.com', minLinks: 1),
-        const [NamedCount('Watch', 2), NamedCount('Learn', 1)],
-      );
     });
   });
 
@@ -365,10 +286,7 @@ void main() {
       await repository.deleteLinks(['a', 'c', 'missing']);
 
       expect(links().keys, ['b']);
-      expect(
-        Hive.box<SyncTombstone>(HiveConstants.syncTombstonesBox).length,
-        2,
-      );
+      expect(Hive.box<SyncTombstone>(HiveConstants.syncTombstonesBox).length, 2);
     });
   });
 }

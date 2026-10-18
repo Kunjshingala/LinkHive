@@ -32,10 +32,7 @@ class AccountBloc extends Bloc<AccountEvent, AccountState> {
     add(const AccountLoadRequested());
   }
 
-  Future<void> _onSignOutRequested(
-    AccountSignOutRequested event,
-    Emitter<AccountState> emit,
-  ) {
+  Future<void> _onSignOutRequested(AccountSignOutRequested event, Emitter<AccountState> emit) {
     return _runWipe(
       emit,
       action: AccountAction.signOut,
@@ -44,10 +41,7 @@ class AccountBloc extends Bloc<AccountEvent, AccountState> {
     );
   }
 
-  Future<void> _onWipeLocalRequested(
-    AccountWipeLocalRequested event,
-    Emitter<AccountState> emit,
-  ) {
+  Future<void> _onWipeLocalRequested(AccountWipeLocalRequested event, Emitter<AccountState> emit) {
     return _runWipe(
       emit,
       action: AccountAction.wipeLocal,
@@ -56,10 +50,7 @@ class AccountBloc extends Bloc<AccountEvent, AccountState> {
     );
   }
 
-  Future<void> _onDeleteCloudDataRequested(
-    AccountDeleteCloudDataRequested event,
-    Emitter<AccountState> emit,
-  ) {
+  Future<void> _onDeleteCloudDataRequested(AccountDeleteCloudDataRequested event, Emitter<AccountState> emit) {
     return _runWipe(
       emit,
       action: AccountAction.deleteCloud,
@@ -79,11 +70,7 @@ class AccountBloc extends Bloc<AccountEvent, AccountState> {
     emit(const AccountLoading());
     try {
       final result = await run();
-      emit(
-        result == SessionActionResult.completed
-            ? done
-            : const AccountNeedsReconfirmation(),
-      );
+      emit(result == SessionActionResult.completed ? done : const AccountNeedsReconfirmation());
     } catch (error) {
       printLog(tag: 'AccountBloc', msg: '$action failed: $error');
       emit(AccountActionFailed(action));
@@ -96,26 +83,14 @@ class AccountBloc extends Bloc<AccountEvent, AccountState> {
     final (total, synced, unsynced) = _linkRepository.getLinkStats();
 
     if (user != null) {
-      emit(
-        AccountAuthenticated(
-          user,
-          totalLinks: total,
-          syncedLinks: synced,
-          unsyncedLinks: unsynced,
-        ),
-      );
+      emit(AccountAuthenticated(user, totalLinks: total, syncedLinks: synced, unsyncedLinks: unsynced));
     } else {
       // Guests are always "local only" regardless of past sync flags.
-      emit(
-        AccountGuest(totalLinks: total, syncedLinks: 0, unsyncedLinks: total),
-      );
+      emit(AccountGuest(totalLinks: total, syncedLinks: 0, unsyncedLinks: total));
     }
   }
 
-  Future<void> _onGoogleSignIn(
-    AccountGoogleSignInRequested event,
-    Emitter<AccountState> emit,
-  ) async {
+  Future<void> _onGoogleSignIn(AccountGoogleSignInRequested event, Emitter<AccountState> emit) async {
     emit(const AccountLoading());
     try {
       await _authService.signInWithGoogle();
@@ -126,18 +101,9 @@ class AccountBloc extends Bloc<AccountEvent, AccountState> {
 
       final (total, synced, unsynced) = _linkRepository.getLinkStats();
       if (user != null) {
-        emit(
-          AccountAuthenticated(
-            user,
-            totalLinks: total,
-            syncedLinks: synced,
-            unsyncedLinks: unsynced,
-          ),
-        );
+        emit(AccountAuthenticated(user, totalLinks: total, syncedLinks: synced, unsyncedLinks: unsynced));
       } else {
-        emit(
-          AccountGuest(totalLinks: total, syncedLinks: 0, unsyncedLinks: total),
-        );
+        emit(AccountGuest(totalLinks: total, syncedLinks: 0, unsyncedLinks: total));
       }
     } catch (e) {
       printLog(tag: 'AccountBloc', msg: 'Google sign-in error: $e');

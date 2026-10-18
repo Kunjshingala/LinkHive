@@ -90,9 +90,7 @@ class _SignupScreenContentState extends State<_SignupScreenContent> {
                 children: [
                   Text(
                     context.l10n.signupTitle,
-                    style: context.text.headlineMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: context.text.headlineMedium?.copyWith(fontWeight: FontWeight.bold),
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: AppSpacing.sm),

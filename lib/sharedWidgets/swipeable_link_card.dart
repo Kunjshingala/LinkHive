@@ -72,9 +72,7 @@ class _SwipeableLinkCardState extends State<SwipeableLinkCard> {
     AlignmentGeometry iconAlignment = Alignment.center;
     if (_direction == DismissDirection.startToEnd) {
       boxColor = AppColors.success;
-      actionIcon = link.isRead
-          ? Icons.mark_email_unread_rounded
-          : Icons.check_circle_rounded;
+      actionIcon = link.isRead ? Icons.mark_email_unread_rounded : Icons.check_circle_rounded;
       iconAlignment = AlignmentDirectional.centerStart;
     } else if (_direction == DismissDirection.endToStart) {
       boxColor = cs.error;
@@ -94,14 +92,9 @@ class _SwipeableLinkCardState extends State<SwipeableLinkCard> {
               decoration: BoxDecoration(
                 color: boxColor,
                 borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
-                border: Border.all(
-                  color: neo.borderColor,
-                  width: neo.borderWidth,
-                ),
+                border: Border.all(color: neo.borderColor, width: neo.borderWidth),
               ),
-              child: actionIcon == null
-                  ? null
-                  : Icon(actionIcon, color: AppColors.black, size: 26),
+              child: actionIcon == null ? null : Icon(actionIcon, color: AppColors.black, size: 26),
             ),
           ),
         ),
@@ -109,8 +102,7 @@ class _SwipeableLinkCardState extends State<SwipeableLinkCard> {
         // backgrounds are empty: the colored reveal is the back box behind it.
         Dismissible(
           key: ValueKey('dismiss_${link.id}'),
-          onUpdate: (details) =>
-              _setDirection(details.progress > 0 ? details.direction : null),
+          onUpdate: (details) => _setDirection(details.progress > 0 ? details.direction : null),
           background: const SizedBox.shrink(),
           secondaryBackground: const SizedBox.shrink(),
           confirmDismiss: (direction) async {
@@ -135,9 +127,7 @@ class _SwipeableLinkCardState extends State<SwipeableLinkCard> {
                     child: DecoratedBox(
                       decoration: BoxDecoration(
                         color: Theme.of(context).scaffoldBackgroundColor,
-                        borderRadius: BorderRadius.circular(
-                          AppSpacing.radiusLg,
-                        ),
+                        borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
                       ),
                     ),
                   ),
@@ -146,8 +136,7 @@ class _SwipeableLinkCardState extends State<SwipeableLinkCard> {
                     child: LinkCard(
                       link: link,
                       searchQuery: widget.searchQuery,
-                      onEdit: () =>
-                          context.pushNamed(MyRouteName.editLink, extra: link),
+                      onEdit: () => context.pushNamed(MyRouteName.editLink, extra: link),
                       onDelete: widget.onDelete,
                     ),
                   ),
@@ -201,9 +190,7 @@ class _PressableCardState extends State<_PressableCard> {
       onPointerMove: (event) {
         // Cancel the press once the finger moves (a scroll or swipe), so the
         // effect only fires on genuine taps.
-        if (_pressed &&
-            _downPosition != null &&
-            (event.position - _downPosition!).distance > 12) {
+        if (_pressed && _downPosition != null && (event.position - _downPosition!).distance > 12) {
           _setPressed(false);
         }
       },
@@ -212,9 +199,7 @@ class _PressableCardState extends State<_PressableCard> {
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 100),
         curve: Curves.easeOut,
-        transform: _pressed
-            ? Matrix4.translationValues(dx, dy, 0)
-            : Matrix4.identity(),
+        transform: _pressed ? Matrix4.translationValues(dx, dy, 0) : Matrix4.identity(),
         child: widget.child,
       ),
     );

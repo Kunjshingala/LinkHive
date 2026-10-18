@@ -5,10 +5,7 @@ import 'package:link_hive/core/utils/validator/validator.dart';
 void main() {
   group('extractSharedUrl', () {
     test('a bare link is returned as is', () {
-      expect(
-        extractSharedUrl('https://youtu.be/Px_3O3KeR24?si=abc'),
-        'https://youtu.be/Px_3O3KeR24?si=abc',
-      );
+      expect(extractSharedUrl('https://youtu.be/Px_3O3KeR24?si=abc'), 'https://youtu.be/Px_3O3KeR24?si=abc');
     });
 
     test('Flipkart: sentence, newline, link', () {
@@ -30,20 +27,9 @@ void main() {
     });
 
     test('takes the first link and drops sentence punctuation', () {
-      expect(
-        extractSharedUrl(
-          'See https://example.com/a, or https://example.com/b.',
-        ),
-        'https://example.com/a',
-      );
-      expect(
-        extractSharedUrl('(https://example.com/page)'),
-        'https://example.com/page',
-      );
-      expect(
-        extractSharedUrl('Read this: https://example.com/page.'),
-        'https://example.com/page',
-      );
+      expect(extractSharedUrl('See https://example.com/a, or https://example.com/b.'), 'https://example.com/a');
+      expect(extractSharedUrl('(https://example.com/page)'), 'https://example.com/page');
+      expect(extractSharedUrl('Read this: https://example.com/page.'), 'https://example.com/page');
     });
 
     test('keeps query strings and fragments', () {
@@ -55,22 +41,14 @@ void main() {
 
     test('other apps: Myntra, an uppercase scheme, text after the link', () {
       expect(
-        extractSharedUrl(
-          'Check out this kurta on Myntra: HTTPS://www.myntra.com/12345?utm_source=share thanks!',
-        ),
+        extractSharedUrl('Check out this kurta on Myntra: HTTPS://www.myntra.com/12345?utm_source=share thanks!'),
         'HTTPS://www.myntra.com/12345?utm_source=share',
       );
     });
 
     test('a link in angle brackets or quotes loses the wrapper', () {
-      expect(
-        extractSharedUrl('Link <https://example.com/page> here'),
-        'https://example.com/page',
-      );
-      expect(
-        extractSharedUrl('"https://example.com/page"'),
-        'https://example.com/page',
-      );
+      expect(extractSharedUrl('Link <https://example.com/page> here'), 'https://example.com/page');
+      expect(extractSharedUrl('"https://example.com/page"'), 'https://example.com/page');
     });
 
     test('text without a link gives null', () {

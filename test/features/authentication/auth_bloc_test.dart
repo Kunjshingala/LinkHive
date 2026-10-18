@@ -33,16 +33,11 @@ void main() {
       'emits [AuthLoading, AuthSuccess] when signInWithEmailPassword succeeds',
       build: () {
         when(
-          () => mockAuthService.signInWithEmailPassword(
-            'test@test.com',
-            'password',
-          ),
+          () => mockAuthService.signInWithEmailPassword('test@test.com', 'password'),
         ).thenAnswer((_) async => null); // mock the implicit dynamic return
         return authBloc;
       },
-      act: (bloc) => bloc.add(
-        const AuthSignInRequested(email: 'test@test.com', password: 'password'),
-      ),
+      act: (bloc) => bloc.add(const AuthSignInRequested(email: 'test@test.com', password: 'password')),
       expect: () => [const AuthLoading(), const AuthSuccess()],
     );
 
@@ -50,25 +45,18 @@ void main() {
       'emits [AuthLoading, AuthError] when signInWithEmailPassword fails',
       build: () {
         when(
-          () => mockAuthService.signInWithEmailPassword(
-            'test@test.com',
-            'password',
-          ),
+          () => mockAuthService.signInWithEmailPassword('test@test.com', 'password'),
         ).thenThrow(Exception('Auth Failed'));
         return authBloc;
       },
-      act: (bloc) => bloc.add(
-        const AuthSignInRequested(email: 'test@test.com', password: 'password'),
-      ),
+      act: (bloc) => bloc.add(const AuthSignInRequested(email: 'test@test.com', password: 'password')),
       expect: () => [const AuthLoading(), isA<AuthError>()],
     );
 
     blocTest<AuthBloc, AuthState>(
       'emits [AuthLoading, AuthSuccess] when signInWithGoogle returns a credential',
       build: () {
-        when(
-          () => mockAuthService.signInWithGoogle(),
-        ).thenAnswer((_) async => MockUserCredential());
+        when(() => mockAuthService.signInWithGoogle()).thenAnswer((_) async => MockUserCredential());
         return authBloc;
       },
       act: (bloc) => bloc.add(const AuthGoogleSignInRequested()),
@@ -79,9 +67,7 @@ void main() {
       'emits [AuthLoading, AuthInitial] and no error when the user cancels Google sign-in',
       build: () {
         // AuthService returns null for a user-dismissed Google sheet.
-        when(
-          () => mockAuthService.signInWithGoogle(),
-        ).thenAnswer((_) async => null);
+        when(() => mockAuthService.signInWithGoogle()).thenAnswer((_) async => null);
         return authBloc;
       },
       act: (bloc) => bloc.add(const AuthGoogleSignInRequested()),
@@ -91,9 +77,7 @@ void main() {
     blocTest<AuthBloc, AuthState>(
       'emits [AuthLoading, AuthError] when Google sign-in genuinely fails',
       build: () {
-        when(
-          () => mockAuthService.signInWithGoogle(),
-        ).thenThrow(Exception('Google Failed'));
+        when(() => mockAuthService.signInWithGoogle()).thenThrow(Exception('Google Failed'));
         return authBloc;
       },
       act: (bloc) => bloc.add(const AuthGoogleSignInRequested()),

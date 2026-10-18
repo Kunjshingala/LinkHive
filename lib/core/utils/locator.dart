@@ -22,57 +22,36 @@ void setupLocator() {
   // Lazy singleton: the factory runs on first resolve (in MyApp.initState),
   // by which point LinkRepository and LinkMetadataService are registered.
   locator.registerLazySingleton<ReceiveSharedIntent>(
-    () => ReceiveSharedIntent(
-      manager: locator<LinkManager>(),
-      metadataService: locator<LinkMetadataService>(),
-    ),
+    () => ReceiveSharedIntent(manager: locator<LinkManager>(), metadataService: locator<LinkMetadataService>()),
   );
-  locator.registerLazySingleton<ResurfaceNotificationService>(
-    () => ResurfaceNotificationService(),
-  );
-  locator.registerLazySingleton<HomeWidgetService>(
-    () => HomeWidgetService(manager: locator<LinkManager>()),
-  );
+  locator.registerLazySingleton<ResurfaceNotificationService>(() => ResurfaceNotificationService());
+  locator.registerLazySingleton<HomeWidgetService>(() => HomeWidgetService(manager: locator<LinkManager>()));
 
   // ─── Firebase / Cloud ───────────────────────────────────────────
-  locator.registerLazySingleton<FirebaseFirestoreService>(
-    () => FirebaseFirestoreService(),
-  );
+  locator.registerLazySingleton<FirebaseFirestoreService>(() => FirebaseFirestoreService());
 
   // ─── Hive ─────────────────────────────────────────────────────────
   locator.registerLazySingleton<HiveHelper>(() => HiveHelper());
 
   // ─── Metadata ───────────────────────────────────────────────────
-  locator.registerLazySingleton<LinkMetadataService>(
-    () => LinkMetadataService(),
-  );
+  locator.registerLazySingleton<LinkMetadataService>(() => LinkMetadataService());
 
   // ─── Repository ─────────────────────────────────────────────────
-  locator.registerLazySingleton<LinkRepository>(
-    () => LinkRepository(hiveHelper: locator<HiveHelper>()),
-  );
+  locator.registerLazySingleton<LinkRepository>(() => LinkRepository(hiveHelper: locator<HiveHelper>()));
 
   // ─── Cloud sync (push, pull, merge; the only Firestore user) ────
   locator.registerLazySingleton<CloudSyncService>(
-    () => CloudSyncService(
-      firebaseService: locator<FirebaseFirestoreService>(),
-      store: locator<LinkRepository>(),
-    ),
+    () => CloudSyncService(firebaseService: locator<FirebaseFirestoreService>(), store: locator<LinkRepository>()),
   );
 
   // ─── Link actions ───────────────────────────────────────────────
   // Every "do something to a link" composite (open / archive / snooze) lives
   // here so the behavior is defined once. The repository stays the single
   // source for persistence; this is the single source for actions.
-  locator.registerLazySingleton<LinkManager>(
-    () => LinkManager(repository: locator<LinkRepository>()),
-  );
+  locator.registerLazySingleton<LinkManager>(() => LinkManager(repository: locator<LinkRepository>()));
 
   locator.registerLazySingleton<SyncEngine>(
-    () => SyncEngine(
-      cloudSync: locator<CloudSyncService>(),
-      repository: locator<LinkRepository>(),
-    ),
+    () => SyncEngine(cloudSync: locator<CloudSyncService>(), repository: locator<LinkRepository>()),
   );
 
   // ─── Account session (sign-out and wipes) ───────────────────────
@@ -88,7 +67,5 @@ void setupLocator() {
   );
 
   // ─── Sync service (depends on the engine) ───────────────────────
-  locator.registerLazySingleton<SyncService>(
-    () => SyncService(syncEngine: locator<SyncEngine>()),
-  );
+  locator.registerLazySingleton<SyncService>(() => SyncService(syncEngine: locator<SyncEngine>()));
 }

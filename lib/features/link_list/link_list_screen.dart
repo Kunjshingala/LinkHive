@@ -38,10 +38,9 @@ class LinkListScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => LinkListBloc(
-        manager: locator<LinkManager>(),
-        syncEngine: locator<SyncEngine>(),
-      )..add(const LinkListLoadRequested()),
+      create: (_) =>
+          LinkListBloc(manager: locator<LinkManager>(), syncEngine: locator<SyncEngine>())
+            ..add(const LinkListLoadRequested()),
       child: const _LinkListContent(),
     );
   }
@@ -83,8 +82,7 @@ class _LinkListContentState extends State<_LinkListContent> {
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<LinkListBloc, LinkListState>(
-      listenWhen: (previous, current) =>
-          _isSelecting(previous) != _isSelecting(current),
+      listenWhen: (previous, current) => _isSelecting(previous) != _isSelecting(current),
       listener: (context, state) {
         AppShell.navVisible.value = !_isSelecting(state);
       },
@@ -99,9 +97,7 @@ class _LinkListContentState extends State<_LinkListContent> {
           },
           child: Scaffold(
             backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-            appBar: selecting
-                ? _selectionAppBar(context, loaded!)
-                : _appBar(context),
+            appBar: selecting ? _selectionAppBar(context, loaded!) : _appBar(context),
             body: RefreshIndicator(
               color: Theme.of(context).colorScheme.primary,
               onRefresh: () {
@@ -117,28 +113,22 @@ class _LinkListContentState extends State<_LinkListContent> {
                     padding: EdgeInsets.only(bottom: _navClearance(context)),
                     child: const _AddButton(),
                   ),
-            bottomNavigationBar: selecting
-                ? _SelectionActionBar(selectedCount: loaded!.selectedIds.length)
-                : null,
+            bottomNavigationBar: selecting ? _SelectionActionBar(selectedCount: loaded!.selectedIds.length) : null,
           ),
         );
       },
     );
   }
 
-  static bool _isSelecting(LinkListState state) =>
-      state is LinkListLoaded && state.isSelecting;
+  static bool _isSelecting(LinkListState state) => state is LinkListLoaded && state.isSelecting;
 
   /// How far the shell's floating nav reaches above the system inset.
   ///
   /// The shell uses `extendBody`, so the nav overlaps this screen and its
   /// height arrives as extra bottom padding. This Scaffold only lifts the Add
   /// button by the system inset, which would leave it under the nav.
-  static double _navClearance(BuildContext context) => math.max(
-    0,
-    MediaQuery.paddingOf(context).bottom -
-        MediaQuery.viewPaddingOf(context).bottom,
-  );
+  static double _navClearance(BuildContext context) =>
+      math.max(0, MediaQuery.paddingOf(context).bottom - MediaQuery.viewPaddingOf(context).bottom);
 
   PreferredSizeWidget _appBar(BuildContext context) {
     return CommonAppBar(
@@ -158,9 +148,7 @@ class _LinkListContentState extends State<_LinkListContent> {
           child: NeoBrutalistButton(
             icon: Icons.checklist_rounded,
             shape: BoxShape.circle,
-            onPressed: () => context.read<LinkListBloc>().add(
-              const LinkListSelectionStarted(),
-            ),
+            onPressed: () => context.read<LinkListBloc>().add(const LinkListSelectionStarted()),
           ),
         ),
         const SizedBox(width: AppSpacing.pageH),
@@ -168,10 +156,7 @@ class _LinkListContentState extends State<_LinkListContent> {
     );
   }
 
-  PreferredSizeWidget _selectionAppBar(
-    BuildContext context,
-    LinkListLoaded loaded,
-  ) {
+  PreferredSizeWidget _selectionAppBar(BuildContext context, LinkListLoaded loaded) {
     final bloc = context.read<LinkListBloc>();
     final count = loaded.selectedIds.length;
     return CommonAppBar(
@@ -187,9 +172,7 @@ class _LinkListContentState extends State<_LinkListContent> {
           ),
         ),
       ),
-      titleText: count == 0
-          ? context.l10n.listSelectTitle
-          : context.l10n.listSelectedCount(count),
+      titleText: count == 0 ? context.l10n.listSelectTitle : context.l10n.listSelectedCount(count),
       actions: [
         Tooltip(
           message: context.l10n.listSelectAll,
@@ -206,18 +189,12 @@ class _LinkListContentState extends State<_LinkListContent> {
 
   Widget _body(BuildContext context, LinkListState state) {
     return switch (state) {
-      LinkListInitial() || LinkListLoading() => Center(
-        child: CircularProgressIndicator(
-          color: Theme.of(context).colorScheme.primary,
-        ),
-      ),
+      LinkListInitial() ||
+      LinkListLoading() => Center(child: CircularProgressIndicator(color: Theme.of(context).colorScheme.primary)),
       LinkListError(:final message) => ListView(
-        children: [
-          Padding(padding: AppSpacing.pagePadding, child: Text(message)),
-        ],
+        children: [Padding(padding: AppSpacing.pagePadding, child: Text(message))],
       ),
-      LinkListLoaded(:final stats, :final query)
-          when stats.total == 0 && !query.hasFilters => ListView(
+      LinkListLoaded(:final stats, :final query) when stats.total == 0 && !query.hasFilters => ListView(
         physics: const AlwaysScrollableScrollPhysics(),
         children: [
           EmptyState(
@@ -279,9 +256,7 @@ class _Controls extends StatelessWidget {
             padding: const EdgeInsets.only(top: AppSpacing.md),
             child: Text(
               context.l10n.libraryLinkCount(state.total),
-              style: Theme.of(context).textTheme.labelLarge!.copyWith(
-                fontWeight: FontWeight.w700,
-              ),
+              style: Theme.of(context).textTheme.labelLarge!.copyWith(fontWeight: FontWeight.w700),
             ),
           ),
       ],
@@ -313,16 +288,13 @@ class _QuickChips extends StatelessWidget {
       child: Row(
         children: [
           for (final quick in QuickFilter.values) ...[
-            if (quick != QuickFilter.all)
-              const SizedBox(width: AppSpacing.sm),
+            if (quick != QuickFilter.all) const SizedBox(width: AppSpacing.sm),
             _QuickChip(
               label: _label(context, quick),
               count: state.stats.countFor(quick),
               selected: quick == current,
               returnColor: quick == QuickFilter.savedTwice,
-              onTap: () => context.read<LinkListBloc>().add(
-                LinkListQueryChanged(state.query.withQuickFilter(quick)),
-              ),
+              onTap: () => context.read<LinkListBloc>().add(LinkListQueryChanged(state.query.withQuickFilter(quick))),
             ),
           ],
         ],
@@ -354,12 +326,8 @@ class _QuickChip extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
     final text = Theme.of(context).textTheme;
     final fg = selected ? cs.onPrimary : cs.onSurface;
-    final badgeFill = selected
-        ? cs.onPrimary
-        : (returnColor ? AppColors.accentPurple : cs.surfaceContainerHighest);
-    final badgeText = selected
-        ? cs.primary
-        : (returnColor ? AppColors.black : cs.onSurface);
+    final badgeFill = selected ? cs.onPrimary : (returnColor ? AppColors.accentPurple : cs.surfaceContainerHighest);
+    final badgeText = selected ? cs.primary : (returnColor ? AppColors.black : cs.onSurface);
     return Semantics(
       button: true,
       selected: selected,
@@ -368,22 +336,13 @@ class _QuickChip extends StatelessWidget {
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 150),
           height: 38,
-          padding: const EdgeInsetsDirectional.only(
-            start: AppSpacing.md - 2,
-            end: AppSpacing.sm,
-          ),
+          padding: const EdgeInsetsDirectional.only(start: AppSpacing.md - 2, end: AppSpacing.sm),
           decoration: BoxDecoration(
             color: selected ? cs.primary : cs.surface,
             borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
             border: Border.all(color: neo.borderColor, width: neo.borderWidth),
             boxShadow: selected
-                ? [
-                    BoxShadow(
-                      color: AppColors.shadowMint,
-                      offset: const Offset(3, 3),
-                      blurRadius: 0,
-                    ),
-                  ]
+                ? [BoxShadow(color: AppColors.shadowMint, offset: const Offset(3, 3), blurRadius: 0)]
                 : null,
           ),
           child: Row(
@@ -391,28 +350,15 @@ class _QuickChip extends StatelessWidget {
             children: [
               Text(
                 label,
-                style: text.labelLarge!.copyWith(
-                  color: fg,
-                  fontWeight: FontWeight.w700,
-                  fontSize: 14,
-                ),
+                style: text.labelLarge!.copyWith(color: fg, fontWeight: FontWeight.w700, fontSize: 14),
               ),
               const SizedBox(width: AppSpacing.xs + 2),
               Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: AppSpacing.sm - 1,
-                  vertical: 1,
-                ),
-                decoration: BoxDecoration(
-                  color: badgeFill,
-                  borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
-                ),
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm - 1, vertical: 1),
+                decoration: BoxDecoration(color: badgeFill, borderRadius: BorderRadius.circular(AppSpacing.radiusFull)),
                 child: Text(
                   '$count',
-                  style: text.labelSmall!.copyWith(
-                    color: badgeText,
-                    fontWeight: FontWeight.w800,
-                  ),
+                  style: text.labelSmall!.copyWith(color: badgeText, fontWeight: FontWeight.w800),
                 ),
               ),
             ],
@@ -447,11 +393,7 @@ class _FilterButtons extends StatelessWidget {
     if (pick == null) return;
     final host = pick.value;
     bloc.add(
-      LinkListQueryChanged(
-        host == null
-            ? state.query.copyWith(clearHost: true)
-            : state.query.copyWith(host: host),
-      ),
+      LinkListQueryChanged(host == null ? state.query.copyWith(clearHost: true) : state.query.copyWith(host: host)),
     );
   }
 
@@ -459,11 +401,7 @@ class _FilterButtons extends StatelessWidget {
     final bloc = context.read<LinkListBloc>();
     final pick = await _showSheet<_Pick<_CategoryChoice>>(
       context,
-      _CategorySheet(
-        categories: state.categories,
-        stats: state.stats,
-        query: state.query,
-      ),
+      _CategorySheet(categories: state.categories, stats: state.stats, query: state.query),
     );
     if (pick == null) return;
     bloc.add(LinkListQueryChanged(pick.value.applyTo(state.query)));
@@ -506,9 +444,7 @@ class _FilterButtons extends StatelessWidget {
             label: query.host ?? context.l10n.listFilterSource,
             isSet: query.host != null,
             onTap: () => _pickSource(context),
-            onClear: () => bloc.add(
-              LinkListQueryChanged(query.copyWith(clearHost: true)),
-            ),
+            onClear: () => bloc.add(LinkListQueryChanged(query.copyWith(clearHost: true))),
           ),
         ),
         const SizedBox(width: AppSpacing.sm),
@@ -517,11 +453,7 @@ class _FilterButtons extends StatelessWidget {
             label: categoryLabel ?? context.l10n.bulkCategory,
             isSet: categoryLabel != null,
             onTap: () => _pickCategory(context),
-            onClear: () => bloc.add(
-              LinkListQueryChanged(
-                query.copyWith(categories: {}, uncategorized: false),
-              ),
-            ),
+            onClear: () => bloc.add(LinkListQueryChanged(query.copyWith(categories: {}, uncategorized: false))),
           ),
         ),
         const SizedBox(width: AppSpacing.sm),
@@ -563,10 +495,7 @@ class _FilterButton extends StatelessWidget {
       color: isSet ? AppColors.accentGreen : cs.surface,
       shape: RoundedRectangleBorder(
         borderRadius: radius,
-        side: BorderSide(
-          color: isSet ? AppColors.black : neo.borderColor,
-          width: neo.borderWidth,
-        ),
+        side: BorderSide(color: isSet ? AppColors.black : neo.borderColor, width: neo.borderWidth),
       ),
       child: InkWell(
         customBorder: RoundedRectangleBorder(borderRadius: radius),
@@ -581,10 +510,7 @@ class _FilterButton extends StatelessWidget {
                   label,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: Theme.of(context).textTheme.labelLarge!.copyWith(
-                    color: fg,
-                    fontWeight: FontWeight.w700,
-                  ),
+                  style: Theme.of(context).textTheme.labelLarge!.copyWith(color: fg, fontWeight: FontWeight.w700),
                 ),
               ),
               if (isSet && onClear != null)
@@ -633,11 +559,7 @@ class _AddButton extends StatelessWidget {
 // ─── Rows ─────────────────────────────────────────────────────────────────────
 
 class _LinkRows extends StatelessWidget {
-  const _LinkRows({
-    required this.state,
-    required this.controller,
-    required this.header,
-  });
+  const _LinkRows({required this.state, required this.controller, required this.header});
 
   final LinkListLoaded state;
   final ScrollController controller;
@@ -648,10 +570,7 @@ class _LinkRows extends StatelessWidget {
     switch (state.query.sort) {
       case LinkSort.newest:
       case LinkSort.oldest:
-        final saved = DateTime.fromMillisecondsSinceEpoch(
-          link.createdAt,
-          isUtc: true,
-        ).toLocal();
+        final saved = DateTime.fromMillisecondsSinceEpoch(link.createdAt, isUtc: true).toLocal();
         final now = DateTime.now();
         final today = DateTime(now.year, now.month, now.day);
         final day = DateTime(saved.year, saved.month, saved.day);
@@ -677,9 +596,7 @@ class _LinkRows extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final months = DateFormat.yMMMM(
-      Localizations.localeOf(context).toLanguageTag(),
-    );
+    final months = DateFormat.yMMMM(Localizations.localeOf(context).toLanguageTag());
     final rows = <Object>[];
     String? lastGroup;
     for (final link in state.links) {
@@ -698,12 +615,7 @@ class _LinkRows extends StatelessWidget {
     return ListView.builder(
       controller: controller,
       physics: const AlwaysScrollableScrollPhysics(),
-      padding: EdgeInsets.fromLTRB(
-        AppSpacing.pageH,
-        AppSpacing.sm,
-        AppSpacing.pageH,
-        bottom,
-      ),
+      padding: EdgeInsets.fromLTRB(AppSpacing.pageH, AppSpacing.sm, AppSpacing.pageH, bottom),
       itemCount: 1 + (rows.isEmpty ? 1 : rows.length) + footer,
       itemBuilder: (context, index) {
         if (index == 0) return header;
@@ -738,8 +650,7 @@ class _LinkRows extends StatelessWidget {
                   searchQuery: state.query.search,
                   onToggleRead: () => bloc.add(LinkListReadToggled(link)),
                   onDelete: () => bloc.add(LinkListLinkDeleted(link.id)),
-                  onLongPress: () =>
-                      bloc.add(LinkListSelectionToggled(link.id)),
+                  onLongPress: () => bloc.add(LinkListSelectionToggled(link.id)),
                 ),
         );
       },
@@ -755,14 +666,8 @@ class _GroupHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(
-        top: AppSpacing.lg,
-        bottom: AppSpacing.sm + AppSpacing.xs,
-      ),
-      child: Text(
-        label.toUpperCase(),
-        style: Theme.of(context).textTheme.labelSmall,
-      ),
+      padding: const EdgeInsets.only(top: AppSpacing.lg, bottom: AppSpacing.sm + AppSpacing.xs),
+      child: Text(label.toUpperCase(), style: Theme.of(context).textTheme.labelSmall),
     );
   }
 }
@@ -770,11 +675,7 @@ class _GroupHeader extends StatelessWidget {
 /// A [LinkCard] in selection mode: tap toggles it, a filled check and a green
 /// hard shadow mark it as picked.
 class _SelectableLinkCard extends StatelessWidget {
-  const _SelectableLinkCard({
-    required this.link,
-    required this.selected,
-    required this.onTap,
-  });
+  const _SelectableLinkCard({required this.link, required this.selected, required this.onTap});
 
   final LinkModel link;
   final bool selected;
@@ -799,14 +700,9 @@ class _SelectableLinkCard extends StatelessWidget {
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 color: selected ? cs.primary : cs.surface,
-                border: Border.all(
-                  color: neo.borderColor,
-                  width: neo.borderWidth,
-                ),
+                border: Border.all(color: neo.borderColor, width: neo.borderWidth),
               ),
-              child: selected
-                  ? Icon(Icons.check_rounded, size: 16, color: cs.onPrimary)
-                  : null,
+              child: selected ? Icon(Icons.check_rounded, size: 16, color: cs.onPrimary) : null,
             ),
             const SizedBox(width: AppSpacing.sm + AppSpacing.xs),
             Expanded(
@@ -816,9 +712,7 @@ class _SelectableLinkCard extends StatelessWidget {
                   borderRadius: BorderRadius.circular(AppSpacing.radiusLg),
                   boxShadow: [
                     BoxShadow(
-                      color: selected
-                          ? AppColors.success
-                          : AppColors.transparent,
+                      color: selected ? AppColors.success : AppColors.transparent,
                       offset: Offset(neo.shadowOffset - 1, neo.shadowOffset),
                       blurRadius: 0,
                     ),
@@ -851,10 +745,7 @@ class _SelectionActionBar extends StatelessWidget {
     final category = await _showSheet<String>(
       context,
       BlocProvider(
-        create: (_) => CategoryPickerCubit(
-          manager: locator<LinkManager>(),
-          selectedIds: state.selectedIds,
-        ),
+        create: (_) => CategoryPickerCubit(manager: locator<LinkManager>(), selectedIds: state.selectedIds),
         child: _CategoryPickerSheet(linkCount: state.selectedIds.length),
       ),
     );
@@ -899,11 +790,7 @@ class _SelectionActionBar extends StatelessWidget {
     final l10n = context.l10n;
     final bloc = context.read<LinkListBloc>();
     final enabled = selectedCount > 0;
-    final divider = VerticalDivider(
-      width: neo.borderWidth,
-      thickness: neo.borderWidth,
-      color: neo.borderColor,
-    );
+    final divider = VerticalDivider(width: neo.borderWidth, thickness: neo.borderWidth, color: neo.borderColor);
     return DecoratedBox(
       decoration: BoxDecoration(
         color: cs.surface,
@@ -920,9 +807,7 @@ class _SelectionActionBar extends StatelessWidget {
               _ActionCell(
                 icon: Icons.done_all_rounded,
                 label: l10n.bulkMarkRead,
-                onTap: enabled
-                    ? () => bloc.add(const LinkListBulkMarkReadRequested())
-                    : null,
+                onTap: enabled ? () => bloc.add(const LinkListBulkMarkReadRequested()) : null,
               ),
               divider,
               _ActionCell(
@@ -952,12 +837,7 @@ class _SelectionActionBar extends StatelessWidget {
 }
 
 class _ActionCell extends StatelessWidget {
-  const _ActionCell({
-    required this.icon,
-    required this.label,
-    required this.onTap,
-    this.color,
-  });
+  const _ActionCell({required this.icon, required this.label, required this.onTap, this.color});
 
   final IconData icon;
   final String label;
@@ -980,10 +860,7 @@ class _ActionCell extends StatelessWidget {
               label,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: Theme.of(context).textTheme.labelLarge!.copyWith(
-                color: fg,
-                fontWeight: FontWeight.w700,
-              ),
+              style: Theme.of(context).textTheme.labelLarge!.copyWith(color: fg, fontWeight: FontWeight.w700),
             ),
           ],
         ),
@@ -1007,11 +884,7 @@ Future<T?> _showSheet<T>(BuildContext context, Widget sheet) {
     context: context,
     isScrollControlled: true,
     backgroundColor: Theme.of(context).colorScheme.surface,
-    shape: const RoundedRectangleBorder(
-      borderRadius: BorderRadius.vertical(
-        top: Radius.circular(AppSpacing.radiusXl),
-      ),
-    ),
+    shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(AppSpacing.radiusXl))),
     builder: (_) => sheet,
   );
 }
@@ -1029,9 +902,7 @@ class _SheetFrame extends StatelessWidget {
     final text = Theme.of(context).textTheme;
     return SafeArea(
       child: ConstrainedBox(
-        constraints: BoxConstraints(
-          maxHeight: MediaQuery.sizeOf(context).height * 0.85,
-        ),
+        constraints: BoxConstraints(maxHeight: MediaQuery.sizeOf(context).height * 0.85),
         child: SingleChildScrollView(
           padding: EdgeInsets.fromLTRB(
             AppSpacing.lg,
@@ -1066,27 +937,15 @@ class _SheetLabel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(
-        top: AppSpacing.lg,
-        bottom: AppSpacing.sm + AppSpacing.xs,
-      ),
-      child: Text(
-        text.toUpperCase(),
-        style: Theme.of(context).textTheme.labelSmall,
-      ),
+      padding: const EdgeInsets.only(top: AppSpacing.lg, bottom: AppSpacing.sm + AppSpacing.xs),
+      child: Text(text.toUpperCase(), style: Theme.of(context).textTheme.labelSmall),
     );
   }
 }
 
 /// A row in the Source and Category sheets: avatar, name, count, tick.
 class _PickRow extends StatelessWidget {
-  const _PickRow({
-    required this.label,
-    required this.count,
-    required this.selected,
-    required this.onTap,
-    this.avatar,
-  });
+  const _PickRow({required this.label, required this.count, required this.selected, required this.onTap, this.avatar});
 
   final String label;
   final int count;
@@ -1110,8 +969,7 @@ class _PickRow extends StatelessWidget {
     final neo = context.neoBrutal;
     final cs = Theme.of(context).colorScheme;
     final text = Theme.of(context).textTheme;
-    final letter =
-        avatar ?? (label.isEmpty ? '?' : label.characters.first.toUpperCase());
+    final letter = avatar ?? (label.isEmpty ? '?' : label.characters.first.toUpperCase());
     return Semantics(
       button: true,
       selected: selected,
@@ -1120,9 +978,7 @@ class _PickRow extends StatelessWidget {
         child: Container(
           height: 54,
           decoration: BoxDecoration(
-            border: Border(
-              bottom: BorderSide(color: cs.surfaceContainerHighest, width: 2),
-            ),
+            border: Border(bottom: BorderSide(color: cs.surfaceContainerHighest, width: 2)),
           ),
           child: Row(
             children: [
@@ -1133,17 +989,11 @@ class _PickRow extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: _fills[label.hashCode.abs() % _fills.length],
                   shape: BoxShape.circle,
-                  border: Border.all(
-                    color: AppColors.black,
-                    width: neo.borderWidth,
-                  ),
+                  border: Border.all(color: AppColors.black, width: neo.borderWidth),
                 ),
                 child: Text(
                   letter,
-                  style: text.labelLarge!.copyWith(
-                    color: AppColors.black,
-                    fontWeight: FontWeight.w800,
-                  ),
+                  style: text.labelLarge!.copyWith(color: AppColors.black, fontWeight: FontWeight.w800),
                 ),
               ),
               const SizedBox(width: AppSpacing.sm + AppSpacing.xs),
@@ -1152,15 +1002,10 @@ class _PickRow extends StatelessWidget {
                   label,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: text.titleSmall!.copyWith(
-                    fontWeight: selected ? FontWeight.w800 : FontWeight.w600,
-                  ),
+                  style: text.titleSmall!.copyWith(fontWeight: selected ? FontWeight.w800 : FontWeight.w600),
                 ),
               ),
-              Text(
-                '$count',
-                style: text.labelLarge!.copyWith(fontWeight: FontWeight.w700),
-              ),
+              Text('$count', style: text.labelLarge!.copyWith(fontWeight: FontWeight.w700)),
               const SizedBox(width: AppSpacing.sm),
               SizedBox(
                 width: 24,
@@ -1168,15 +1013,8 @@ class _PickRow extends StatelessWidget {
                     ? Container(
                         width: 24,
                         height: 24,
-                        decoration: BoxDecoration(
-                          color: cs.primary,
-                          shape: BoxShape.circle,
-                        ),
-                        child: Icon(
-                          Icons.check_rounded,
-                          size: 16,
-                          color: cs.onPrimary,
-                        ),
+                        decoration: BoxDecoration(color: cs.primary, shape: BoxShape.circle),
+                        child: Icon(Icons.check_rounded, size: 16, color: cs.onPrimary),
                       )
                     : null,
               ),
@@ -1209,9 +1047,7 @@ class _SourceSheetState extends State<_SourceSheet> {
     final total = widget.sources.fold<int>(0, (sum, s) => sum + s.count);
     final shown = _filter.isEmpty
         ? widget.sources
-        : widget.sources
-              .where((s) => s.name.contains(_filter.toLowerCase()))
-              .toList();
+        : widget.sources.where((s) => s.name.contains(_filter.toLowerCase())).toList();
     return _SheetFrame(
       title: l10n.listFilterSource,
       trailing: l10n.sourceSheetCount(widget.sources.length),
@@ -1254,16 +1090,14 @@ class _AllCategories extends _CategoryChoice {
   const _AllCategories();
 
   @override
-  LinkQuery applyTo(LinkQuery query) =>
-      query.copyWith(categories: {}, uncategorized: false);
+  LinkQuery applyTo(LinkQuery query) => query.copyWith(categories: {}, uncategorized: false);
 }
 
 class _NoCategory extends _CategoryChoice {
   const _NoCategory();
 
   @override
-  LinkQuery applyTo(LinkQuery query) =>
-      query.copyWith(categories: {}, uncategorized: true);
+  LinkQuery applyTo(LinkQuery query) => query.copyWith(categories: {}, uncategorized: true);
 }
 
 class _NamedCategory extends _CategoryChoice {
@@ -1272,16 +1106,11 @@ class _NamedCategory extends _CategoryChoice {
   final String name;
 
   @override
-  LinkQuery applyTo(LinkQuery query) =>
-      query.copyWith(categories: {name}, uncategorized: false);
+  LinkQuery applyTo(LinkQuery query) => query.copyWith(categories: {name}, uncategorized: false);
 }
 
 class _CategorySheet extends StatelessWidget {
-  const _CategorySheet({
-    required this.categories,
-    required this.stats,
-    required this.query,
-  });
+  const _CategorySheet({required this.categories, required this.stats, required this.query});
 
   final List<NamedCount> categories;
   final LibraryStats stats;
@@ -1314,9 +1143,7 @@ class _CategorySheet extends StatelessWidget {
             label: CategoryUtils.getLocalizedCategory(context, category.name),
             count: category.count,
             selected: picked == category.name,
-            onTap: () => context.pop(
-              _Pick<_CategoryChoice>(_NamedCategory(category.name)),
-            ),
+            onTap: () => context.pop(_Pick<_CategoryChoice>(_NamedCategory(category.name))),
           ),
       ],
     );

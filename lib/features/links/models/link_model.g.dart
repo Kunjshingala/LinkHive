@@ -13,9 +13,7 @@ class LinkModelAdapter extends TypeAdapter<LinkModel> {
   @override
   LinkModel read(BinaryReader reader) {
     final numOfFields = reader.readByte();
-    final fields = <int, dynamic>{
-      for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
-    };
+    final fields = <int, dynamic>{for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read()};
     return LinkModel(
       id: fields[0] as String,
       url: fields[1] as String,
@@ -82,8 +80,5 @@ class LinkModelAdapter extends TypeAdapter<LinkModel> {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is LinkModelAdapter &&
-          runtimeType == other.runtimeType &&
-          typeId == other.typeId;
+      identical(this, other) || other is LinkModelAdapter && runtimeType == other.runtimeType && typeId == other.typeId;
 }

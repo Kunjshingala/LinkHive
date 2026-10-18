@@ -162,8 +162,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get inboxEmptyTitle => 'لا شيء في الوارد';
 
   @override
-  String get inboxEmptySubtitle =>
-      'الروابط التي تحفظها بسرعة تظهر هنا. أضف التفاصيل لتنظيمها.';
+  String get inboxEmptySubtitle => 'الروابط التي تحفظها بسرعة تظهر هنا. أضف التفاصيل لتنظيمها.';
 
   @override
   String get todayTitle => 'اليوم';
@@ -211,8 +210,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get accountSignInPromo => 'سجّل الدخول لعمل نسخة احتياطية لروابطك';
 
   @override
-  String get accountSignInDesc =>
-      'حافظ على أمان مجموعتك ومزامنتها عبر الأجهزة.';
+  String get accountSignInDesc => 'حافظ على أمان مجموعتك ومزامنتها عبر الأجهزة.';
 
   @override
   String get accountStatLocal => 'محلي فقط';
@@ -270,12 +268,9 @@ class AppLocalizationsAr extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other:
-          'جارٍ مزامنة $count تغيير. انتظر حتى تنتهي، أو سجّل الخروج وافقدها.',
-      many:
-          'جارٍ مزامنة $count تغييرًا. انتظر حتى تنتهي، أو سجّل الخروج وافقدها.',
-      few:
-          'جارٍ مزامنة $count تغييرات. انتظر حتى تنتهي، أو سجّل الخروج وافقدها.',
+      other: 'جارٍ مزامنة $count تغيير. انتظر حتى تنتهي، أو سجّل الخروج وافقدها.',
+      many: 'جارٍ مزامنة $count تغييرًا. انتظر حتى تنتهي، أو سجّل الخروج وافقدها.',
+      few: 'جارٍ مزامنة $count تغييرات. انتظر حتى تنتهي، أو سجّل الخروج وافقدها.',
       two: 'جارٍ مزامنة تغييرين. انتظر حتى ينتهيا، أو سجّل الخروج وافقدهما.',
       one: 'جارٍ مزامنة تغيير واحد. انتظر حتى ينتهي، أو سجّل الخروج وافقده.',
     );
@@ -301,12 +296,9 @@ class AppLocalizationsAr extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other:
-          'تعذّرت مزامنة $count تغيير. حاول مرة أخرى، أو سجّل الخروج وافقدها.',
-      many:
-          'تعذّرت مزامنة $count تغييرًا. حاول مرة أخرى، أو سجّل الخروج وافقدها.',
-      few:
-          'تعذّرت مزامنة $count تغييرات. حاول مرة أخرى، أو سجّل الخروج وافقدها.',
+      other: 'تعذّرت مزامنة $count تغيير. حاول مرة أخرى، أو سجّل الخروج وافقدها.',
+      many: 'تعذّرت مزامنة $count تغييرًا. حاول مرة أخرى، أو سجّل الخروج وافقدها.',
+      few: 'تعذّرت مزامنة $count تغييرات. حاول مرة أخرى، أو سجّل الخروج وافقدها.',
       two: 'تعذّرت مزامنة تغييرين. حاول مرة أخرى، أو سجّل الخروج وافقدهما.',
       one: 'تعذّرت مزامنة تغيير واحد. حاول مرة أخرى، أو سجّل الخروج وافقده.',
     );
@@ -324,12 +316,10 @@ class AppLocalizationsAr extends AppLocalizations {
   String get accountSignOutAnyway => 'سجّل الخروج على أي حال';
 
   @override
-  String get accountSignedOutSuccess =>
-      'تم تسجيل الخروج. تم مسح نسخة هذا الهاتف.';
+  String get accountSignedOutSuccess => 'تم تسجيل الخروج. تم مسح نسخة هذا الهاتف.';
 
   @override
-  String get accountSignOutError =>
-      'تعذّر تسجيل الخروج. يرجى المحاولة مرة أخرى.';
+  String get accountSignOutError => 'تعذّر تسجيل الخروج. يرجى المحاولة مرة أخرى.';
 
   @override
   String get authWelcome => 'مرحباً بعودتك!';
@@ -509,12 +499,10 @@ class AppLocalizationsAr extends AppLocalizations {
   String get accountSyncFailureTimeout => 'لم تستجب السحابة في الوقت المناسب.';
 
   @override
-  String get accountSyncFailurePermission =>
-      'هذا الحساب غير مسموح له بالمزامنة.';
+  String get accountSyncFailurePermission => 'هذا الحساب غير مسموح له بالمزامنة.';
 
   @override
-  String get accountSyncFailureUnavailable =>
-      'لا يمكن الوصول إلى السحابة الآن.';
+  String get accountSyncFailureUnavailable => 'لا يمكن الوصول إلى السحابة الآن.';
 
   @override
   String get accountSyncFailureUnknown => 'حدث خطأ أثناء المزامنة.';
@@ -562,8 +550,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get accountDelete => 'حذف';
 
   @override
-  String get accountDeleteSuccess =>
-      'تم حذف البيانات المحلية. أعد التشغيل أو المزامنة.';
+  String get accountDeleteSuccess => 'تم حذف البيانات المحلية. أعد التشغيل أو المزامنة.';
 
   @override
   String get accountDeleteFail => 'فشل في مسح البيانات المحلية.';
@@ -579,18 +566,12 @@ class AppLocalizationsAr extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other:
-          'سيؤدي هذا إلى حذف $count رابط محفوظ في حسابك نهائيًا وإفراغ هذا الهاتف. لا يمكن التراجع عن ذلك.',
-      many:
-          'سيؤدي هذا إلى حذف $count رابطًا محفوظًا في حسابك نهائيًا وإفراغ هذا الهاتف. لا يمكن التراجع عن ذلك.',
-      few:
-          'سيؤدي هذا إلى حذف $count روابط محفوظة في حسابك نهائيًا وإفراغ هذا الهاتف. لا يمكن التراجع عن ذلك.',
-      two:
-          'سيؤدي هذا إلى حذف الرابطين المحفوظين في حسابك نهائيًا وإفراغ هذا الهاتف. لا يمكن التراجع عن ذلك.',
-      one:
-          'سيؤدي هذا إلى حذف الرابط المحفوظ في حسابك نهائيًا وإفراغ هذا الهاتف. لا يمكن التراجع عن ذلك.',
-      zero:
-          'لا توجد روابط محفوظة في حسابك. سيؤدي هذا إلى إفراغ هذا الهاتف فقط.',
+      other: 'سيؤدي هذا إلى حذف $count رابط محفوظ في حسابك نهائيًا وإفراغ هذا الهاتف. لا يمكن التراجع عن ذلك.',
+      many: 'سيؤدي هذا إلى حذف $count رابطًا محفوظًا في حسابك نهائيًا وإفراغ هذا الهاتف. لا يمكن التراجع عن ذلك.',
+      few: 'سيؤدي هذا إلى حذف $count روابط محفوظة في حسابك نهائيًا وإفراغ هذا الهاتف. لا يمكن التراجع عن ذلك.',
+      two: 'سيؤدي هذا إلى حذف الرابطين المحفوظين في حسابك نهائيًا وإفراغ هذا الهاتف. لا يمكن التراجع عن ذلك.',
+      one: 'سيؤدي هذا إلى حذف الرابط المحفوظ في حسابك نهائيًا وإفراغ هذا الهاتف. لا يمكن التراجع عن ذلك.',
+      zero: 'لا توجد روابط محفوظة في حسابك. سيؤدي هذا إلى إفراغ هذا الهاتف فقط.',
     );
     return '$_temp0';
   }
@@ -602,12 +583,10 @@ class AppLocalizationsAr extends AppLocalizations {
   String get accountDeleteCloudSuccess => 'تم حذف بيانات السحابة';
 
   @override
-  String get accountDeleteCloudFail =>
-      'تعذر حذف بيانات السحابة. حاول مرة أخرى.';
+  String get accountDeleteCloudFail => 'تعذر حذف بيانات السحابة. حاول مرة أخرى.';
 
   @override
-  String get accountActionReconfirm =>
-      'تغيّر شيء أثناء التأكيد. حاول مرة أخرى.';
+  String get accountActionReconfirm => 'تغيّر شيء أثناء التأكيد. حاول مرة أخرى.';
 
   @override
   String get langEnglish => 'الإنجليزية';
@@ -622,16 +601,13 @@ class AppLocalizationsAr extends AppLocalizations {
   String get langArabic => 'العربية';
 
   @override
-  String get authErrUserNotFound =>
-      'لم يتم العثور على مستخدم لهذا البريد الإلكتروني.';
+  String get authErrUserNotFound => 'لم يتم العثور على مستخدم لهذا البريد الإلكتروني.';
 
   @override
-  String get authErrWrongPassword =>
-      'كلمة المرور المقدمة لهذا المستخدم غير صحيحة.';
+  String get authErrWrongPassword => 'كلمة المرور المقدمة لهذا المستخدم غير صحيحة.';
 
   @override
-  String get authErrEmailAlreadyInUse =>
-      'الحساب موجود بالفعل لهذا البريد الإلكتروني.';
+  String get authErrEmailAlreadyInUse => 'الحساب موجود بالفعل لهذا البريد الإلكتروني.';
 
   @override
   String get authErrWeakPassword => 'كلمة المرور المقدمة ضعيفة جدًا.';
@@ -640,8 +616,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get authErrInvalidEmail => 'عنوان البريد الإلكتروني غير صحيح.';
 
   @override
-  String get authErrInvalidCredential =>
-      'البريد الإلكتروني أو كلمة المرور غير صحيحة. يرجى المحاولة مرة أخرى.';
+  String get authErrInvalidCredential => 'البريد الإلكتروني أو كلمة المرور غير صحيحة. يرجى المحاولة مرة أخرى.';
 
   @override
   String authErrDefault(Object message) {
@@ -696,8 +671,7 @@ class AppLocalizationsAr extends AppLocalizations {
   }
 
   @override
-  String get sharedAnotherVersion =>
-      'تم حفظ نسخة أخرى من هذا الرابط، وسيعود في «اليوم»';
+  String get sharedAnotherVersion => 'تم حفظ نسخة أخرى من هذا الرابط، وسيعود في «اليوم»';
 
   @override
   String addAlreadySavedKept(String date) {
@@ -943,15 +917,13 @@ class AppLocalizationsAr extends AppLocalizations {
   String get notificationTitle => 'روابط بانتظارك';
 
   @override
-  String get notificationBody =>
-      'حفظت شيئًا يستحق نظرة أخرى، اضغط لترى واحدًا.';
+  String get notificationBody => 'حفظت شيئًا يستحق نظرة أخرى، اضغط لترى واحدًا.';
 
   @override
   String get notificationChannelName => 'تذكير يومي';
 
   @override
-  String get notificationChannelDescription =>
-      'تذكير يومي واحد لإلقاء نظرة على رابط محفوظ';
+  String get notificationChannelDescription => 'تذكير يومي واحد لإلقاء نظرة على رابط محفوظ';
 
   @override
   String get widgetTodaysPick => 'اختيار اليوم';

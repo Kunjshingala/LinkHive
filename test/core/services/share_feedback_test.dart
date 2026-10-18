@@ -26,17 +26,10 @@ void main() {
   );
 
   SaveMerged merged(LinkModel previous, {bool addedVersion = false}) =>
-      SaveMerged(
-        merged: previous,
-        previous: previous,
-        addedVersion: addedVersion,
-      );
+      SaveMerged(merged: previous, previous: previous, addedVersion: addedVersion);
 
   test('a new save confirms it', () {
-    expect(
-      shareOutcomeMessage(result: SaveCreated(link()), l10n: l10n, now: now),
-      'Saved to LinkHive',
-    );
+    expect(shareOutcomeMessage(result: SaveCreated(link()), l10n: l10n, now: now), 'Saved to LinkHive');
   });
 
   test('a merge into an unread link says when it was saved', () {
@@ -47,10 +40,7 @@ void main() {
   });
 
   test('a merge into an archived link says it was archived', () {
-    final archived = link(
-      isRead: true,
-      lastResurfacedAt: DateTime(2026, 9, 28).millisecondsSinceEpoch,
-    );
+    final archived = link(isRead: true, lastResurfacedAt: DateTime(2026, 9, 28).millisecondsSinceEpoch);
 
     expect(
       shareOutcomeMessage(result: merged(archived), l10n: l10n, now: now),
@@ -60,11 +50,7 @@ void main() {
 
   test('a new URL version wins over the archived message', () {
     expect(
-      shareOutcomeMessage(
-        result: merged(link(isRead: true), addedVersion: true),
-        l10n: l10n,
-        now: now,
-      ),
+      shareOutcomeMessage(result: merged(link(isRead: true), addedVersion: true), l10n: l10n, now: now),
       "Saved another version of this link, it'll come back in Today",
     );
   });

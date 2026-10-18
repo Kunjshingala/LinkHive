@@ -14,10 +14,7 @@ void main() {
   late StreamController<SyncSnapshot> live;
 
   const nothingToLose = SyncSnapshot();
-  const waiting = SyncSnapshot(
-    status: SyncStatus.waitingForInternet,
-    pendingChanges: 2,
-  );
+  const waiting = SyncSnapshot(status: SyncStatus.waitingForInternet, pendingChanges: 2);
 
   setUp(() {
     session = MockAccountSessionService();

@@ -24,8 +24,7 @@ import '../utils/utils.dart';
 /// downloading + caching the image file for the native widget to read,
 /// real but non-trivial extra work for what's a cosmetic improvement).
 class HomeWidgetService {
-  HomeWidgetService({required LinkManager manager})
-    : _manager = manager;
+  HomeWidgetService({required LinkManager manager}) : _manager = manager;
 
   final LinkManager _manager;
   final String _tag = 'HomeWidgetService';
@@ -56,9 +55,7 @@ class HomeWidgetService {
     try {
       await _pushData();
 
-      _boxSubscription ??= _manager.watchLinks().listen(
-        (_) => _pushData(),
-      );
+      _boxSubscription ??= _manager.watchLinks().listen((_) => _pushData());
 
       // Cold start via a widget tap: the app wasn't running, so no stream
       // event fires for it — check explicitly once, same pattern as
@@ -92,28 +89,13 @@ class HomeWidgetService {
     try {
       final pick = _manager.currentPick();
       await HomeWidget.saveWidgetData<bool>('has_pick', pick != null);
-      await HomeWidget.saveWidgetData<String>(
-        'pick_title',
-        pick == null ? '' : displayTitle(pick.title, pick.url),
-      );
-      await HomeWidget.saveWidgetData<String>(
-        'pick_host',
-        pick == null ? '' : _host(pick.url),
-      );
-      await HomeWidget.saveWidgetData<int>(
-        'inbox_count',
-        _manager.inboxCount,
-      );
-      await HomeWidget.saveWidgetData<int>(
-        'unread_count',
-        _manager.unreadCount,
-      );
+      await HomeWidget.saveWidgetData<String>('pick_title', pick == null ? '' : displayTitle(pick.title, pick.url));
+      await HomeWidget.saveWidgetData<String>('pick_host', pick == null ? '' : _host(pick.url));
+      await HomeWidget.saveWidgetData<int>('inbox_count', _manager.inboxCount);
+      await HomeWidget.saveWidgetData<int>('unread_count', _manager.unreadCount);
       final l10n = lookupAppLocalizations(_locale);
       await HomeWidget.saveWidgetData<String>('label_pick', l10n.widgetTodaysPick);
-      await HomeWidget.saveWidgetData<String>(
-        'label_nothing_waiting',
-        l10n.widgetNothingWaiting,
-      );
+      await HomeWidget.saveWidgetData<String>('label_nothing_waiting', l10n.widgetNothingWaiting);
       await HomeWidget.saveWidgetData<String>('label_caught_up', l10n.todayEmptyTitle);
       await HomeWidget.saveWidgetData<String>('label_inbox', l10n.inboxTitle);
       await HomeWidget.saveWidgetData<String>('label_unread', l10n.libraryUnread);
@@ -122,10 +104,7 @@ class HomeWidgetService {
       // Deliberately loud: a silent catch here hid a broken widget-class
       // lookup that made every update a no-op while the widget kept showing
       // stale data.
-      printLog(
-        tag: _tag,
-        msg: 'WIDGET UPDATE FAILED — widget will show stale data: $e',
-      );
+      printLog(tag: _tag, msg: 'WIDGET UPDATE FAILED — widget will show stale data: $e');
     }
   }
 
@@ -169,10 +148,7 @@ class HomeWidgetService {
       // The widget drew a pick but there's nothing to resurface now — it was
       // read, archived or deleted since the last draw. Show the user
       // something rather than appearing to do nothing, and re-sync the widget.
-      printLog(
-        tag: _tag,
-        msg: 'Widget tap had no candidate — widget was stale',
-      );
+      printLog(tag: _tag, msg: 'Widget tap had no candidate — widget was stale');
       router.goNamed(MyRouteName.homeScreen);
       unawaited(_pushData());
       return;

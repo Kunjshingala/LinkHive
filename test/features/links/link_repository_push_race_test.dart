@@ -30,9 +30,7 @@ void main() {
   late CloudSyncService cloudSync;
 
   setUpAll(() async {
-    hiveDirectory = await Directory.systemTemp.createTemp(
-      'linkhive-push-race-test-',
-    );
+    hiveDirectory = await Directory.systemTemp.createTemp('linkhive-push-race-test-');
     Hive.init(hiveDirectory.path);
     Hive.registerAdapter(LinkModelAdapter());
     Hive.registerAdapter(CategoryModelAdapter());
@@ -64,28 +62,17 @@ void main() {
     cloud = FakeFirebaseFirestoreService();
     hiveHelper = _GatedHiveHelper();
     repository = LinkRepository(hiveHelper: hiveHelper);
-    cloudSync = CloudSyncService(
-      firebaseService: cloud,
-      store: repository,
-      uidProvider: () => uid,
-    );
+    cloudSync = CloudSyncService(firebaseService: cloud, store: repository, uidProvider: () => uid);
   });
 
   tearDown(() => Hive.close());
   tearDownAll(() => hiveDirectory.delete(recursive: true));
 
-  LinkModel link(String id, {String title = 'v1'}) => LinkModel(
-    id: id,
-    url: 'https://example.com/$id',
-    title: title,
-    createdAt: 100,
-  );
+  LinkModel link(String id, {String title = 'v1'}) =>
+      LinkModel(id: id, url: 'https://example.com/$id', title: title, createdAt: 100);
 
   /// Holds the first call to [method] open until `release` is called.
-  ({Future<void> reached, void Function() release}) holdCall(
-    String method, {
-    Object? thenThrow,
-  }) {
+  ({Future<void> reached, void Function() release}) holdCall(String method, {Object? thenThrow}) {
     final reached = Completer<void>();
     final gate = Completer<void>();
     cloud.onCall = (called, _) async {
@@ -98,9 +85,7 @@ void main() {
   }
 
   LinkModel queuedLink(String id) {
-    final operation = repository.pendingSyncOperations.singleWhere(
-      (operation) => operation.entityId == id,
-    );
+    final operation = repository.pendingSyncOperations.singleWhere((operation) => operation.entityId == id);
     return LinkModel.fromFirestore(id, operation.payload);
   }
 
@@ -112,9 +97,7 @@ void main() {
 
       final push = cloudSync.push();
       await hold.reached;
-      await repository.updateLink(
-        repository.getLinkById('a-1')!.copyWith(title: 'v2'),
-      );
+      await repository.updateLink(repository.getLinkById('a-1')!.copyWith(title: 'v2'));
       hold.release();
       await push;
 
@@ -132,66 +115,52 @@ void main() {
       expect(repository.getLinkById('a-1')!.isSynced, isTrue);
     });
 
-    test(
-      'a link deleted while its create uploads is deleted from the cloud too',
-      () async {
-        await repository.addLink(link('a-1'));
-        final hold = holdCall('saveLink');
+    test('a link deleted while its create uploads is deleted from the cloud too', () async {
+      await repository.addLink(link('a-1'));
+      final hold = holdCall('saveLink');
 
-        final push = cloudSync.push();
-        await hold.reached;
-        await repository.deleteLink('a-1');
-        hold.release();
-        await push;
+      final push = cloudSync.push();
+      await hold.reached;
+      await repository.deleteLink('a-1');
+      hold.release();
+      await push;
 
-        expect(repository.getLinkById('a-1'), isNull);
-        cloud.onCall = null;
-        await cloudSync.push();
+      expect(repository.getLinkById('a-1'), isNull);
+      cloud.onCall = null;
+      await cloudSync.push();
 
-        expect(cloud.linksOf(uid), isEmpty);
-        expect(cloud.deletedLinkIdsOf(uid), {'a-1'});
-        expect(repository.pendingSyncOperations, isEmpty);
-      },
-    );
+      expect(cloud.linksOf(uid), isEmpty);
+      expect(cloud.deletedLinkIdsOf(uid), {'a-1'});
+      expect(repository.pendingSyncOperations, isEmpty);
+    });
 
     test('an edit made while a failing upload waits is kept queued', () async {
       await repository.addLink(link('a-1'));
       final hold = holdCall(
         'saveLink',
-        thenThrow: FirebaseException(
-          plugin: 'cloud_firestore',
-          code: 'unavailable',
-        ),
+        thenThrow: FirebaseException(plugin: 'cloud_firestore', code: 'unavailable'),
       );
 
       final push = cloudSync.push();
       await hold.reached;
-      await repository.updateLink(
-        repository.getLinkById('a-1')!.copyWith(title: 'v2'),
-      );
+      await repository.updateLink(repository.getLinkById('a-1')!.copyWith(title: 'v2'));
       hold.release();
       await push;
 
       expect(repository.getLinkById('a-1')!.title, 'v2');
       expect(queuedLink('a-1').title, 'v2');
-      expect(
-        repository.pendingSyncOperations.single.state,
-        SyncOperation.pending,
-      );
+      expect(repository.pendingSyncOperations.single.state, SyncOperation.pending);
     });
 
-    test(
-      'a link left alone during its upload is marked synced, as before',
-      () async {
-        await repository.addLink(link('a-1'));
+    test('a link left alone during its upload is marked synced, as before', () async {
+      await repository.addLink(link('a-1'));
 
-        await cloudSync.push();
+      await cloudSync.push();
 
-        expect(repository.getLinkById('a-1')!.isSynced, isTrue);
-        expect(repository.pendingSyncOperations, isEmpty);
-        expect(cloud.linksOf(uid).single.title, 'v1');
-      },
-    );
+      expect(repository.getLinkById('a-1')!.isSynced, isTrue);
+      expect(repository.pendingSyncOperations, isEmpty);
+      expect(cloud.linksOf(uid).single.title, 'v1');
+    });
   });
 
   group('pull merge', () {
@@ -199,22 +168,14 @@ void main() {
         'merge in the queue', () async {
       // The phone holds a synced copy, then a local title edit that was never
       // queued (so the pull merges instead of skipping it).
-      cloud.seedLink(
-        uid,
-        link('m-1').copyWith(description: 'd1'),
-        syncedAt: 1000,
-      );
+      cloud.seedLink(uid, link('m-1').copyWith(description: 'd1'), syncedAt: 1000);
       await cloudSync.pull();
       final synced = repository.getLinkById('m-1')!;
       await Hive.box<LinkModel>(
         HiveConstants.linksBox,
       ).put('m-1', synced.copyWith(title: 'local title', isSynced: false));
       // The cloud changes another field after the last pull.
-      cloud.seedLink(
-        uid,
-        synced.copyWith(description: 'd2'),
-        syncedAt: DateTime.now().toUtc().millisecondsSinceEpoch,
-      );
+      cloud.seedLink(uid, synced.copyWith(description: 'd2'), syncedAt: DateTime.now().toUtc().millisecondsSinceEpoch);
 
       final baseWrite = hiveHelper.holdBasePut('m-1');
       final pull = cloudSync.pull();
@@ -269,8 +230,7 @@ class _GatedBaseBox implements Box<LinkModel> {
   }
 
   @override
-  LinkModel? get(dynamic key, {LinkModel? defaultValue}) =>
-      _inner.get(key, defaultValue: defaultValue);
+  LinkModel? get(dynamic key, {LinkModel? defaultValue}) => _inner.get(key, defaultValue: defaultValue);
 
   @override
   Future<void> delete(dynamic key) => _inner.delete(key);
@@ -279,6 +239,5 @@ class _GatedBaseBox implements Box<LinkModel> {
   Future<int> clear() => _inner.clear();
 
   @override
-  dynamic noSuchMethod(Invocation invocation) =>
-      throw UnimplementedError('${invocation.memberName} is not gated');
+  dynamic noSuchMethod(Invocation invocation) => throw UnimplementedError('${invocation.memberName} is not gated');
 }

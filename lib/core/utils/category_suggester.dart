@@ -33,10 +33,7 @@ class CategorySuggester {
   /// [history] is the category counts for [host]'s other links, as returned
   /// by `LinkRepository.getCategoryCountsForHost` (already filtered to names
   /// used on 2+ links). Empty [host] gets no suggestions.
-  static List<String> suggest({
-    required String host,
-    required List<NamedCount> history,
-  }) {
+  static List<String> suggest({required String host, required List<NamedCount> history}) {
     if (host.isEmpty) return const [];
     if (history.isNotEmpty) {
       return history.take(maxSuggestions).map((c) => c.name).toList();

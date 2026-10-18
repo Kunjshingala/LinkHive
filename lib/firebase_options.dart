@@ -8,9 +8,7 @@ import 'package:flutter/foundation.dart';
 abstract class FirebaseConfig {
   // ─── Shared ────────────────────────────────────────────────────────
   static const projectId = String.fromEnvironment('FB_PROJECT_ID');
-  static const messagingSenderId = String.fromEnvironment(
-    'FB_MESSAGING_SENDER_ID',
-  );
+  static const messagingSenderId = String.fromEnvironment('FB_MESSAGING_SENDER_ID');
   static const storageBucket = String.fromEnvironment('FB_STORAGE_BUCKET');
 
   // ─── Android ───────────────────────────────────────────────────────
@@ -44,9 +42,7 @@ abstract class FirebaseConfig {
       case TargetPlatform.iOS:
         return ios;
       default:
-        throw UnsupportedError(
-          'FirebaseConfig: unsupported platform $defaultTargetPlatform',
-        );
+        throw UnsupportedError('FirebaseConfig: unsupported platform $defaultTargetPlatform');
     }
   }
 

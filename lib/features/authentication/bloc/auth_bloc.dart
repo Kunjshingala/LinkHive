@@ -8,9 +8,7 @@ import 'auth_state.dart';
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final AuthService _authService;
 
-  AuthBloc({required AuthService authService})
-    : _authService = authService,
-      super(const AuthInitial()) {
+  AuthBloc({required AuthService authService}) : _authService = authService, super(const AuthInitial()) {
     // Register event handlers
     on<AuthSignInRequested>(_onSignInRequested);
     on<AuthSignUpRequested>(_onSignUpRequested);
@@ -18,10 +16,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   }
 
   /// Handle email/password sign in
-  Future<void> _onSignInRequested(
-    AuthSignInRequested event,
-    Emitter<AuthState> emit,
-  ) async {
+  Future<void> _onSignInRequested(AuthSignInRequested event, Emitter<AuthState> emit) async {
     emit(const AuthLoading());
     try {
       await _authService.signInWithEmailPassword(event.email, event.password);
@@ -34,10 +29,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   }
 
   /// Handle email/password sign up
-  Future<void> _onSignUpRequested(
-    AuthSignUpRequested event,
-    Emitter<AuthState> emit,
-  ) async {
+  Future<void> _onSignUpRequested(AuthSignUpRequested event, Emitter<AuthState> emit) async {
     emit(const AuthLoading());
     try {
       await _authService.signUpWithEmailPassword(event.email, event.password);
@@ -50,10 +42,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   }
 
   /// Handle Google sign in
-  Future<void> _onGoogleSignInRequested(
-    AuthGoogleSignInRequested event,
-    Emitter<AuthState> emit,
-  ) async {
+  Future<void> _onGoogleSignInRequested(AuthGoogleSignInRequested event, Emitter<AuthState> emit) async {
     emit(const AuthLoading());
     try {
       final credential = await _authService.signInWithGoogle();

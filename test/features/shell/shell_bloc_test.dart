@@ -30,9 +30,7 @@ void main() {
     blocTest<ShellBloc, ShellState>(
       'emits [ShellBackPressedOnce] again when timeout has expired',
       build: ShellBloc.new,
-      seed: () => ShellBackPressedOnce(
-        pressTime: DateTime.now().subtract(const Duration(seconds: 4)),
-      ),
+      seed: () => ShellBackPressedOnce(pressTime: DateTime.now().subtract(const Duration(seconds: 4))),
       act: (bloc) => bloc.add(const ShellBackPressed()),
       expect: () => [isA<ShellBackPressedOnce>()],
     );

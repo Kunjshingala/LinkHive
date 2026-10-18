@@ -6,11 +6,9 @@ import 'package:link_hive/core/utils/url_canonical.dart';
 /// or two different links that look alike (must not match). A false match is
 /// worse than a missed duplicate: it hides one of the user's links.
 void main() {
-  void expectSame(String a, String b) =>
-      expect(canonicalUrl(a), canonicalUrl(b), reason: '$a\n  vs\n$b');
+  void expectSame(String a, String b) => expect(canonicalUrl(a), canonicalUrl(b), reason: '$a\n  vs\n$b');
 
-  void expectDifferent(String a, String b) =>
-      expect(canonicalUrl(a), isNot(canonicalUrl(b)), reason: '$a\n  vs\n$b');
+  void expectDifferent(String a, String b) => expect(canonicalUrl(a), isNot(canonicalUrl(b)), reason: '$a\n  vs\n$b');
 
   group('Instagram', () {
     test('same reel with different stkn share tokens matches', () {
@@ -42,10 +40,7 @@ void main() {
     });
 
     test('a reel is never folded into a post with the same code', () {
-      expectDifferent(
-        'https://www.instagram.com/reel/DeKio97zfoF/',
-        'https://www.instagram.com/p/DeKio97zfoF/',
-      );
+      expectDifferent('https://www.instagram.com/reel/DeKio97zfoF/', 'https://www.instagram.com/p/DeKio97zfoF/');
     });
   });
 
@@ -80,12 +75,8 @@ void main() {
     });
 
     test('a community post keeps its own path', () {
-      const post =
-          'http://youtube.com/post/UgkxzTNOczNYuVNuo4qUkNUaoFVbgfoLqJZM?si=3EkH8O0RyDVOLOyN';
-      expectSame(
-        post,
-        'https://www.youtube.com/post/UgkxzTNOczNYuVNuo4qUkNUaoFVbgfoLqJZM',
-      );
+      const post = 'http://youtube.com/post/UgkxzTNOczNYuVNuo4qUkNUaoFVbgfoLqJZM?si=3EkH8O0RyDVOLOyN';
+      expectSame(post, 'https://www.youtube.com/post/UgkxzTNOczNYuVNuo4qUkNUaoFVbgfoLqJZM');
       expect(canonicalUrl(post), contains('/post/'));
       expect(canonicalUrl(post), isNot(contains('/watch')));
     });
@@ -133,44 +124,26 @@ void main() {
 
   group('per-host keys only apply on their own hosts', () {
     test('si is kept off YouTube/Spotify', () {
-      expectDifferent(
-        'https://example.com/page?si=1',
-        'https://example.com/page?si=2',
-      );
+      expectDifferent('https://example.com/page?si=1', 'https://example.com/page?si=2');
     });
 
     test('stkn and pageUID are kept on other hosts', () {
-      expectDifferent(
-        'https://example.com/a?stkn=1',
-        'https://example.com/a?stkn=2',
-      );
-      expectDifferent(
-        'https://example.com/a?pageUID=1',
-        'https://example.com/a?pageUID=2',
-      );
+      expectDifferent('https://example.com/a?stkn=1', 'https://example.com/a?stkn=2');
+      expectDifferent('https://example.com/a?pageUID=1', 'https://example.com/a?pageUID=2');
     });
 
     test('a look-alike host does not get YouTube rules', () {
-      expectDifferent(
-        'https://notyoutube.com/watch?v=a&si=1',
-        'https://notyoutube.com/watch?v=a&si=2',
-      );
+      expectDifferent('https://notyoutube.com/watch?v=a&si=1', 'https://notyoutube.com/watch?v=a&si=2');
     });
   });
 
   group('general normalization', () {
     test('http and https, www and trailing slash are ignored', () {
-      expectSame(
-        'http://www.github.com/Kunjshingala/',
-        'https://github.com/Kunjshingala',
-      );
+      expectSame('http://www.github.com/Kunjshingala/', 'https://github.com/Kunjshingala');
     });
 
     test('param order is ignored', () {
-      expectSame(
-        'https://example.com/a?x=1&y=2',
-        'https://example.com/a?y=2&x=1',
-      );
+      expectSame('https://example.com/a?x=1&y=2', 'https://example.com/a?y=2&x=1');
     });
 
     test('an all-tracking query equals no query', () {
@@ -185,39 +158,24 @@ void main() {
         'https://dart.dev/blog/google-summer-of-code-2026-results#results',
         'https://dart.dev/blog/google-summer-of-code-2026-results',
       );
-      expectDifferent(
-        'https://app.example.com/#/item/1',
-        'https://app.example.com/#/item/2',
-      );
+      expectDifferent('https://app.example.com/#/item/1', 'https://app.example.com/#/item/2');
     });
 
     test('fragments that pick different content are kept', () {
-      expectDifferent(
-        'https://mail.google.com/mail/u/0/#inbox/AAA',
-        'https://mail.google.com/mail/u/0/#inbox/BBB',
-      );
+      expectDifferent('https://mail.google.com/mail/u/0/#inbox/AAA', 'https://mail.google.com/mail/u/0/#inbox/BBB');
       expectDifferent(
         'https://docs.google.com/spreadsheets/d/ID/edit#gid=0',
         'https://docs.google.com/spreadsheets/d/ID/edit#gid=999',
       );
-      expectDifferent(
-        'https://example.com/doc.pdf#page=3',
-        'https://example.com/doc.pdf#page=40',
-      );
+      expectDifferent('https://example.com/doc.pdf#page=3', 'https://example.com/doc.pdf#page=40');
     });
 
     test('unknown params are kept as part of the link', () {
-      expectDifferent(
-        'https://wellfound.com/jobs?role=1',
-        'https://wellfound.com/jobs?role=2',
-      );
+      expectDifferent('https://wellfound.com/jobs?role=1', 'https://wellfound.com/jobs?role=2');
     });
 
     test('path case is kept', () {
-      expectDifferent(
-        'https://x.com/KunjShingala_09',
-        'https://x.com/kunjshingala_09',
-      );
+      expectDifferent('https://x.com/KunjShingala_09', 'https://x.com/kunjshingala_09');
     });
 
     test('a scheme-less URL matches its https form', () {
@@ -228,12 +186,9 @@ void main() {
   group('exact keys for real saved links', () {
     test('produces the expected matching key', () {
       const cases = {
-        'https://www.instagram.com/reel/DeKio97zfoF/?stkn=aW4yNHE1cm9ubW00':
-            'https://instagram.com/reel/DeKio97zfoF',
-        'https://youtu.be/Px_3O3KeR24?t=293&si=UzI6xOOWvJbDNkl_':
-            'https://youtube.com/watch?v=Px_3O3KeR24',
-        'https://youtube.com/shorts/LObzlk67yI4?si=JasHbeqoVBGnz4Zm':
-            'https://youtube.com/watch?v=LObzlk67yI4',
+        'https://www.instagram.com/reel/DeKio97zfoF/?stkn=aW4yNHE1cm9ubW00': 'https://instagram.com/reel/DeKio97zfoF',
+        'https://youtu.be/Px_3O3KeR24?t=293&si=UzI6xOOWvJbDNkl_': 'https://youtube.com/watch?v=Px_3O3KeR24',
+        'https://youtube.com/shorts/LObzlk67yI4?si=JasHbeqoVBGnz4Zm': 'https://youtube.com/watch?v=LObzlk67yI4',
         'http://youtube.com/post/UgkxzTNOczNYuVNuo4qUkNUaoFVbgfoLqJZM?si=3EkH8O0RyDVOLOyN':
             'https://youtube.com/post/UgkxzTNOczNYuVNuo4qUkNUaoFVbgfoLqJZM',
         'https://www.flipkart.com/google-pixel-buds-2a-bluetooth/p/itm8928d5d2b1881?pid=ACCHGFZWVGZZXYBV&lid=LSTACCHGFZWVGZZXYBVJVYNMQ&hl_lid=&marketplace=FLIPKART&fm=eyJ3dHAiOiJyZWNvIn0%3D&pageUID=1791343334457':
@@ -245,22 +200,14 @@ void main() {
         'https://www.amazon.in/Godrej-Comprehensive-1-5T-HIC-18Q3TH/dp/B0GMD5NPX6':
             'https://amazon.in/Godrej-Comprehensive-1-5T-HIC-18Q3TH/dp/B0GMD5NPX6',
       };
-      cases.forEach(
-        (input, key) => expect(canonicalUrl(input), key, reason: input),
-      );
+      cases.forEach((input, key) => expect(canonicalUrl(input), key, reason: input));
     });
   });
 
   group('known limitations', () {
-    test(
-      'Facebook share short-links get a new code per share and do not match',
-      () {
-        expectDifferent(
-          'https://www.facebook.com/share/r/1FGkCPD78X/',
-          'https://www.facebook.com/share/r/9ZzOtherCode/',
-        );
-      },
-    );
+    test('Facebook share short-links get a new code per share and do not match', () {
+      expectDifferent('https://www.facebook.com/share/r/1FGkCPD78X/', 'https://www.facebook.com/share/r/9ZzOtherCode/');
+    });
   });
 
   versionKeyTests();
@@ -274,10 +221,7 @@ void versionKeyTests() {
         versionKey('https://www.instagram.com/reel/X/?igsh=a&stkn=b'),
         versionKey('https://www.instagram.com/reel/X/?igsh=c&stkn=d'),
       );
-      expect(
-        versionKey('https://youtu.be/X?si=one'),
-        versionKey('https://youtu.be/X?si=two'),
-      );
+      expect(versionKey('https://youtu.be/X?si=one'), versionKey('https://youtu.be/X?si=two'));
     });
 
     test('campaign and affiliate params are a different version', () {
@@ -285,44 +229,26 @@ void versionKeyTests() {
         versionKey('https://shop.example/p?utm_source=creator&igsh=a'),
         isNot(versionKey('https://shop.example/p?igsh=a')),
       );
-      expect(
-        versionKey('https://youtu.be/X?t=293&si=a'),
-        isNot(versionKey('https://youtu.be/X?si=a')),
-      );
+      expect(versionKey('https://youtu.be/X?t=293&si=a'), isNot(versionKey('https://youtu.be/X?si=a')));
     });
 
     test('per-host tracking keys are ignored too, but a timestamp is not', () {
-      expect(
-        versionKey('https://youtu.be/X?feature=shared&si=a'),
-        versionKey('https://youtu.be/X'),
-      );
+      expect(versionKey('https://youtu.be/X?feature=shared&si=a'), versionKey('https://youtu.be/X'));
       expect(
         versionKey('https://www.aliexpress.com/item/1.html?spm=a2g0.1'),
         versionKey('https://www.aliexpress.com/item/1.html'),
       );
-      expect(
-        versionKey('https://youtu.be/X?t=293'),
-        isNot(versionKey('https://youtu.be/X')),
-      );
+      expect(versionKey('https://youtu.be/X?t=293'), isNot(versionKey('https://youtu.be/X')));
     });
 
     test('empty query, repeated keys and a ? inside a fragment', () {
       expect(versionKey('https://shop.example/p?'), 'https://shop.example/p');
-      expect(
-        versionKey('https://shop.example/p?igsh=1&igsh=2&a=1'),
-        'https://shop.example/p?a=1',
-      );
-      expect(
-        versionKey('https://shop.example/p#a?si=1'),
-        'https://shop.example/p#a?si=1',
-      );
+      expect(versionKey('https://shop.example/p?igsh=1&igsh=2&a=1'), 'https://shop.example/p?a=1');
+      expect(versionKey('https://shop.example/p#a?si=1'), 'https://shop.example/p#a?si=1');
     });
 
     test('keeps the rest of the URL exactly as written', () {
-      expect(
-        versionKey('https://shop.example/p?b=2&igsh=a&a=1#/item/1'),
-        'https://shop.example/p?b=2&a=1#/item/1',
-      );
+      expect(versionKey('https://shop.example/p?b=2&igsh=a&a=1#/item/1'), 'https://shop.example/p?b=2&a=1#/item/1');
       expect(versionKey('https://shop.example/p'), 'https://shop.example/p');
     });
   });

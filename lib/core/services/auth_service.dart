@@ -22,34 +22,19 @@ class AuthService {
 
   Future<void> _ensureInitialized() async {
     if (!_isInitialized) {
-      await _googleSignIn.initialize(
-        clientId: FirebaseConfig.iosClientId,
-        serverClientId: FirebaseConfig.webClientId,
-      );
+      await _googleSignIn.initialize(clientId: FirebaseConfig.iosClientId, serverClientId: FirebaseConfig.webClientId);
       _isInitialized = true;
     }
   }
 
   // Sign in with Email and Password
-  Future<UserCredential?> signInWithEmailPassword(
-    String email,
-    String password,
-  ) async {
-    return await _firebaseAuth.signInWithEmailAndPassword(
-      email: email,
-      password: password,
-    );
+  Future<UserCredential?> signInWithEmailPassword(String email, String password) async {
+    return await _firebaseAuth.signInWithEmailAndPassword(email: email, password: password);
   }
 
   // Sign up with Email and Password
-  Future<UserCredential?> signUpWithEmailPassword(
-    String email,
-    String password,
-  ) async {
-    return await _firebaseAuth.createUserWithEmailAndPassword(
-      email: email,
-      password: password,
-    );
+  Future<UserCredential?> signUpWithEmailPassword(String email, String password) async {
+    return await _firebaseAuth.createUserWithEmailAndPassword(email: email, password: password);
   }
 
   /// Sign in with Google.
@@ -76,9 +61,7 @@ class AuthService {
     final googleAuth = googleUser.authentication;
 
     // Create a new credential
-    final OAuthCredential credential = GoogleAuthProvider.credential(
-      idToken: googleAuth.idToken,
-    );
+    final OAuthCredential credential = GoogleAuthProvider.credential(idToken: googleAuth.idToken);
 
     // Sign in to Firebase with the Google [UserCredential]
     return await _firebaseAuth.signInWithCredential(credential);

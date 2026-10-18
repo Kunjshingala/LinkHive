@@ -14,9 +14,5 @@ class SyncTombstone {
   @HiveField(2)
   final int deletedAt;
 
-  const SyncTombstone({
-    required this.entityType,
-    required this.entityId,
-    required this.deletedAt,
-  });
+  const SyncTombstone({required this.entityType, required this.entityId, required this.deletedAt});
 }

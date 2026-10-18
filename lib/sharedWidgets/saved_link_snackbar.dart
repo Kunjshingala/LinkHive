@@ -95,13 +95,7 @@ class SavedLinkSnackContent extends StatelessWidget {
   final VoidCallback? onEdit;
   final VoidCallback onUndo;
 
-  const SavedLinkSnackContent({
-    super.key,
-    this.message,
-    this.onAddDetails,
-    this.onEdit,
-    required this.onUndo,
-  });
+  const SavedLinkSnackContent({super.key, this.message, this.onAddDetails, this.onEdit, required this.onUndo});
 
   /// Touch-target height for the bar's buttons (design review D13).
   static const buttonHeight = 44.0;
@@ -115,10 +109,7 @@ class SavedLinkSnackContent extends StatelessWidget {
       message ?? context.l10n.sharedSaveConfirm,
       maxLines: isMerge ? 3 : 1,
       overflow: TextOverflow.ellipsis,
-      style: AppTypography.bodyMedium.copyWith(
-        color: cs.onSurface,
-        fontWeight: FontWeight.w600,
-      ),
+      style: AppTypography.bodyMedium.copyWith(color: cs.onSurface, fontWeight: FontWeight.w600),
     );
 
     final primaryLabel = onAddDetails != null
@@ -152,11 +143,7 @@ class SavedLinkSnackContent extends StatelessWidget {
     if (!isMerge) {
       return Row(
         children: [
-          const Icon(
-            Icons.check_circle_rounded,
-            color: AppColors.success,
-            size: 22,
-          ),
+          const Icon(Icons.check_circle_rounded, color: AppColors.success, size: 22),
           SizedBox(width: AppSpacing.sm),
           Expanded(child: text),
           SizedBox(width: AppSpacing.sm),
@@ -202,11 +189,7 @@ class _MergeBadge extends StatelessWidget {
         shape: BoxShape.circle,
         border: Border.all(color: neo.borderColor, width: neo.borderWidth),
       ),
-      child: const Icon(
-        Icons.history_rounded,
-        color: AppColors.black,
-        size: 18,
-      ),
+      child: const Icon(Icons.history_rounded, color: AppColors.black, size: 18),
     );
   }
 }

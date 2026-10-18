@@ -94,8 +94,7 @@ String canonicalUrl(String url) {
     final segments = uri.pathSegments.where((s) => s.isNotEmpty).toList();
     if (rawHost == 'youtu.be' && segments.isNotEmpty) {
       youtubeVideoId = segments.first;
-    } else if (segments.length >= 2 &&
-        _youtubeVideoPathPrefixes.contains(segments.first)) {
+    } else if (segments.length >= 2 && _youtubeVideoPathPrefixes.contains(segments.first)) {
       youtubeVideoId = segments[1];
     } else if (!(segments.length == 1 && segments.first == 'watch')) {
       // A post, channel, playlist or handle page: keep its own path, and keep
@@ -119,11 +118,9 @@ String canonicalUrl(String url) {
   return 'https://$host$port$path$query$fragment';
 }
 
-bool _hostMatches(String host, String domain) =>
-    host == domain || host.endsWith('.$domain');
+bool _hostMatches(String host, String domain) => host == domain || host.endsWith('.$domain');
 
-bool _isYoutube(String host) =>
-    _hostMatches(host, 'youtube.com') || host == 'youtu.be';
+bool _isYoutube(String host) => _hostMatches(host, 'youtube.com') || host == 'youtu.be';
 
 String _stripPrefix(String host) {
   if (host.startsWith('www.')) return host.substring(4);
@@ -183,11 +180,7 @@ String versionKey(String url) {
   final query = beforeHash
       .substring(q + 1)
       .split('&')
-      .where(
-        (s) =>
-            s.isNotEmpty &&
-            !_shareTokenKeys.contains(_decode(s.split('=').first)),
-      )
+      .where((s) => s.isNotEmpty && !_shareTokenKeys.contains(_decode(s.split('=').first)))
       .join('&');
   return '${beforeHash.substring(0, q)}${query.isEmpty ? '' : '?$query'}$fragment';
 }

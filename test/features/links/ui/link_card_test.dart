@@ -54,12 +54,7 @@ void main() {
         // Using the built-in app theme to prevent NeoBrutal extension crash
         theme: buildLinkHiveTheme(),
         home: Scaffold(
-          body: LinkCard(
-            link: link,
-            searchQuery: searchQuery,
-            onDelete: () {},
-            onEdit: () {},
-          ),
+          body: LinkCard(link: link, searchQuery: searchQuery, onDelete: () {}, onEdit: () {}),
         ),
       );
     }
@@ -70,7 +65,7 @@ void main() {
 
         // Verify title
         expect(find.text('Flutter Dev'), findsOneWidget);
-        
+
         // Verify URL (host)
         expect(find.text('flutter.dev'), findsOneWidget);
 
@@ -81,7 +76,7 @@ void main() {
 
     testWidgets('shows offline cloud icon when not synced', (tester) async {
       final unsyncedLink = testLink.copyWith(isSynced: false);
-      
+
       await mockNetworkImages(() async {
         await tester.pumpWidget(buildTestWidget(unsyncedLink));
 
@@ -95,9 +90,7 @@ void main() {
         await tester.pumpWidget(buildTestWidget(testLink, searchQuery: 'flutter'));
 
         final richTexts = tester.widgetList<RichText>(find.byType(RichText));
-        final highlighted = richTexts.any(
-          (richText) => _containsHighlightedSpan(richText.text),
-        );
+        final highlighted = richTexts.any((richText) => _containsHighlightedSpan(richText.text));
         expect(highlighted, isTrue);
       });
     });
@@ -123,10 +116,7 @@ void main() {
             supportedLocales: AppLocalizations.supportedLocales,
             theme: buildLinkHiveTheme(),
             home: Scaffold(
-              body: LinkCard(
-                link: testLink,
-                onEdit: () => editCalled = true,
-              ),
+              body: LinkCard(link: testLink, onEdit: () => editCalled = true),
             ),
           ),
         );

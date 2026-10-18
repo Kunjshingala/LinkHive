@@ -47,29 +47,20 @@ class SyncService {
     _syncEngine.setCloudWorkEnabled(currentUser != null);
     if (currentUser != null) requestSyncInBackground(pull: true);
 
-    _authSubscription =
-        (_authChanges ?? FirebaseAuth.instance.authStateChanges()).listen((
-          user,
-        ) {
-          final isAuthenticated = user != null;
-          _syncEngine.setCloudWorkEnabled(isAuthenticated);
-          if (isAuthenticated) requestSyncInBackground(pull: true);
-        });
+    _authSubscription = (_authChanges ?? FirebaseAuth.instance.authStateChanges()).listen((user) {
+      final isAuthenticated = user != null;
+      _syncEngine.setCloudWorkEnabled(isAuthenticated);
+      if (isAuthenticated) requestSyncInBackground(pull: true);
+    });
 
     _checkConnectivityNow();
-    _subscription =
-        (_connectivityChanges ?? InternetConnection().onStatusChange).listen((
-          status,
-        ) {
-          final online = status == InternetStatus.connected;
-          _syncEngine.setOnline(online);
-          if (online) requestSyncInBackground();
-        });
+    _subscription = (_connectivityChanges ?? InternetConnection().onStatusChange).listen((status) {
+      final online = status == InternetStatus.connected;
+      _syncEngine.setOnline(online);
+      if (online) requestSyncInBackground();
+    });
 
-    _periodicTimer = Timer.periodic(
-      const Duration(minutes: 5),
-      (_) => requestSyncInBackground(),
-    );
+    _periodicTimer = Timer.periodic(const Duration(minutes: 5), (_) => requestSyncInBackground());
   }
 
   User? _firebaseCurrentUser() => FirebaseAuth.instance.currentUser;
@@ -77,23 +68,18 @@ class SyncService {
   /// Learns the connection once at start, before the first change event.
   /// If the check itself fails the engine keeps assuming the phone is online.
   void _checkConnectivityNow() {
-    final hasInternet =
-        _hasInternetAccess ?? (() => InternetConnection().hasInternetAccess);
+    final hasInternet = _hasInternetAccess ?? (() => InternetConnection().hasInternetAccess);
     unawaited(
       hasInternet().then(
         _syncEngine.setOnline,
         onError: (Object error) {
-          printLog(
-            tag: 'SyncService',
-            msg: 'Connectivity check failed: $error',
-          );
+          printLog(tag: 'SyncService', msg: 'Connectivity check failed: $error');
         },
       ),
     );
   }
 
-  Future<void> requestSync({bool pull = false}) =>
-      _syncEngine.requestSync(pull: pull);
+  Future<void> requestSync({bool pull = false}) => _syncEngine.requestSync(pull: pull);
 
   /// Downloads everything from the cloud again. See
   /// [SyncEngine.requestFullResync].

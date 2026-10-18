@@ -17,11 +17,7 @@ import 'sync_description.dart';
 /// failed, how many changes are still on this phone, and when the last sync
 /// finished. As a guest nothing syncs, so it says the links are only here.
 class SyncStatusCard extends StatelessWidget {
-  const SyncStatusCard({
-    super.key,
-    required this.isSignedIn,
-    required this.onRetry,
-  });
+  const SyncStatusCard({super.key, required this.isSignedIn, required this.onRetry});
 
   final bool isSignedIn;
 
@@ -128,12 +124,7 @@ class _CardShell extends StatelessWidget {
                           Text(title, style: AppTypography.titleSmall),
                           for (final line in details) ...[
                             const SizedBox(height: AppSpacing.xs),
-                            Text(
-                              line,
-                              style: AppTypography.caption.copyWith(
-                                color: scheme.onSurfaceVariant,
-                              ),
-                            ),
+                            Text(line, style: AppTypography.caption.copyWith(color: scheme.onSurfaceVariant)),
                           ],
                         ],
                       ),

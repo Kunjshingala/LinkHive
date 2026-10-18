@@ -21,23 +21,16 @@ Future<void> runSyncDataFlow(BuildContext context) async {
   while (true) {
     final l10n = context.l10n;
     final sync = locator<SyncService>();
-    showSnackBar(
-      checkEverything ? l10n.accountSyncCheckingMsg : l10n.accountSyncingMsg,
-    );
+    showSnackBar(checkEverything ? l10n.accountSyncCheckingMsg : l10n.accountSyncingMsg);
     try {
-      await (checkEverything
-          ? sync.requestFullResync()
-          : sync.requestSync(pull: true));
+      await (checkEverything ? sync.requestFullResync() : sync.requestSync(pull: true));
     } catch (error) {
       printLog(tag: 'SyncData', msg: 'Sync failed: $error');
     }
     if (!context.mounted) return;
 
     context.read<AccountBloc>().add(const AccountLoadRequested());
-    final again = await showSyncResultSheet(
-      context,
-      locator<SyncEngine>().snapshot,
-    );
+    final again = await showSyncResultSheet(context, locator<SyncEngine>().snapshot);
     if (again != true || !context.mounted) return;
     checkEverything = true;
   }

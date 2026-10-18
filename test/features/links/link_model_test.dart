@@ -92,20 +92,15 @@ void main() {
       expect(updated.otherUrls, ['https://flutter.dev/?utm_source=x']);
     });
 
-    test(
-      'clearLastSharedAt writes null (Undo of a merge on a legacy link)',
-      () {
-        final shared = testLink.copyWith(lastSharedAt: now);
+    test('clearLastSharedAt writes null (Undo of a merge on a legacy link)', () {
+      final shared = testLink.copyWith(lastSharedAt: now);
 
-        expect(shared.copyWith(clearLastSharedAt: true).lastSharedAt, isNull);
-        expect(shared.copyWith(lastSharedAt: null).lastSharedAt, now);
-      },
-    );
+      expect(shared.copyWith(clearLastSharedAt: true).lastSharedAt, isNull);
+      expect(shared.copyWith(lastSharedAt: null).lastSharedAt, now);
+    });
 
     test('toFirestore includes the merge fields', () {
-      final map = testLink
-          .copyWith(shareCount: 2, lastSharedAt: now, otherUrls: ['u2'])
-          .toFirestore();
+      final map = testLink.copyWith(shareCount: 2, lastSharedAt: now, otherUrls: ['u2']).toFirestore();
 
       expect(map[FirebaseConstants.linkShareCount], 2);
       expect(map[FirebaseConstants.linkLastSharedAt], now);

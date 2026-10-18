@@ -9,12 +9,7 @@ import '../utils/saved_date.dart';
 /// device. Precedence: an [error] wins; then a merge that kept a new URL
 /// version; then a merge that brought back an archived link; then a plain
 /// merge; then a new save.
-String shareOutcomeMessage({
-  SaveResult? result,
-  Object? error,
-  required AppLocalizations l10n,
-  required DateTime now,
-}) {
+String shareOutcomeMessage({SaveResult? result, Object? error, required AppLocalizations l10n, required DateTime now}) {
   if (error != null || result == null) return l10n.sharedSaveFailed;
 
   return switch (result) {
@@ -23,9 +18,7 @@ String shareOutcomeMessage({
     SaveMerged(:final previous) when previous.isRead => l10n.sharedUnarchived(
       _date(previous.lastResurfacedAt ?? previous.createdAt, now, l10n),
     ),
-    SaveMerged(:final previous) => l10n.sharedAlreadySaved(
-      _date(previous.createdAt, now, l10n),
-    ),
+    SaveMerged(:final previous) => l10n.sharedAlreadySaved(_date(previous.createdAt, now, l10n)),
   };
 }
 

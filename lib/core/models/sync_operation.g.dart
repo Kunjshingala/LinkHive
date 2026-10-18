@@ -13,9 +13,7 @@ class SyncOperationAdapter extends TypeAdapter<SyncOperation> {
   @override
   SyncOperation read(BinaryReader reader) {
     final numOfFields = reader.readByte();
-    final fields = <int, dynamic>{
-      for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
-    };
+    final fields = <int, dynamic>{for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read()};
     return SyncOperation(
       operationId: fields[0] as String,
       entityType: fields[1] as String,
@@ -62,7 +60,5 @@ class SyncOperationAdapter extends TypeAdapter<SyncOperation> {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is SyncOperationAdapter &&
-          runtimeType == other.runtimeType &&
-          typeId == other.typeId;
+      other is SyncOperationAdapter && runtimeType == other.runtimeType && typeId == other.typeId;
 }

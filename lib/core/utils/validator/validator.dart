@@ -28,14 +28,9 @@ String validateUrl(String url) {
 /// https://amzn.in/d/xyz"), so the whole text can't be treated as the URL.
 /// Punctuation that ends the sentence is not part of the link.
 String? extractSharedUrl(String text) {
-  final match = RegExp(
-    r'https?://[^\s<>"]+',
-    caseSensitive: false,
-  ).firstMatch(text);
+  final match = RegExp(r'https?://[^\s<>"]+', caseSensitive: false).firstMatch(text);
   if (match == null) return null;
 
-  final link = match
-      .group(0)!
-      .replaceFirst(RegExp(r'''[.,;:!?)\]}'"]+$'''), '');
+  final link = match.group(0)!.replaceFirst(RegExp(r'''[.,;:!?)\]}'"]+$'''), '');
   return normalizeUrl(link) == null ? null : link;
 }

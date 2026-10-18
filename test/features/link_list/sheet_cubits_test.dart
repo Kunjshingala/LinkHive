@@ -22,27 +22,17 @@ void main() {
   });
 
   group('CategoryPickerCubit', () {
-    LinkModel link(String id, String url) =>
-        LinkModel(id: id, url: url, title: id, createdAt: 0);
+    LinkModel link(String id, String url) => LinkModel(id: id, url: url, title: id, createdAt: 0);
 
     setUp(() {
-      when(
-        () => manager.linkById('a'),
-      ).thenReturn(link('a', 'https://youtu.be/1'));
-      when(
-        () => manager.linkById('b'),
-      ).thenReturn(link('b', 'https://www.youtube.com/watch?v=2'));
-      when(
-        () => manager.linkById('c'),
-      ).thenReturn(link('c', 'https://amazon.in/x'));
+      when(() => manager.linkById('a')).thenReturn(link('a', 'https://youtu.be/1'));
+      when(() => manager.linkById('b')).thenReturn(link('b', 'https://www.youtube.com/watch?v=2'));
+      when(() => manager.linkById('c')).thenReturn(link('c', 'https://amazon.in/x'));
       when(() => manager.getCategoryCountsForHost(any())).thenReturn(const []);
     });
 
     test('links from one site get its suggestion, picked by default', () {
-      final cubit = CategoryPickerCubit(
-        manager: manager,
-        selectedIds: {'a', 'b'},
-      );
+      final cubit = CategoryPickerCubit(manager: manager, selectedIds: {'a', 'b'});
       expect(cubit.state.host, 'youtube.com');
       expect(cubit.state.suggested, ['Watch']);
       expect(cubit.state.picked, 'Watch');
@@ -50,10 +40,7 @@ void main() {
     });
 
     test('links from different sites get no suggestion', () {
-      final cubit = CategoryPickerCubit(
-        manager: manager,
-        selectedIds: {'a', 'c'},
-      );
+      final cubit = CategoryPickerCubit(manager: manager, selectedIds: {'a', 'c'});
       expect(cubit.state.host, '');
       expect(cubit.state.suggested, isEmpty);
       expect(cubit.state.picked, isNull);

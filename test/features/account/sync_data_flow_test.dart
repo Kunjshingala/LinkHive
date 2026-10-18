@@ -19,8 +19,7 @@ class MockSyncService extends Mock implements SyncService {}
 
 class MockSyncEngine extends Mock implements SyncEngine {}
 
-class MockAccountBloc extends MockBloc<AccountEvent, AccountState>
-    implements AccountBloc {}
+class MockAccountBloc extends MockBloc<AccountEvent, AccountState> implements AccountBloc {}
 
 /// "Sync Data": sync, then say how it went, and offer to check everything
 /// again.
@@ -61,10 +60,7 @@ void main() {
                 child: Builder(
                   builder: (context) => Scaffold(
                     body: Center(
-                      child: TextButton(
-                        onPressed: () => runSyncDataFlow(context),
-                        child: const Text('sync'),
-                      ),
+                      child: TextButton(onPressed: () => runSyncDataFlow(context), child: const Text('sync')),
                     ),
                   ),
                 ),
@@ -78,14 +74,10 @@ void main() {
     await tester.pumpAndSettle();
   }
 
-  testWidgets('syncs, reloads the account and shows how it went', (
-    tester,
-  ) async {
-    when(() => engine.snapshot).thenReturn(
-      SyncSnapshot(
-        lastSyncedAt: DateTime(2026, 3, 4, 10, 30).millisecondsSinceEpoch,
-      ),
-    );
+  testWidgets('syncs, reloads the account and shows how it went', (tester) async {
+    when(
+      () => engine.snapshot,
+    ).thenReturn(SyncSnapshot(lastSyncedAt: DateTime(2026, 3, 4, 10, 30).millisecondsSinceEpoch));
 
     await pumpFlow(tester);
 
@@ -106,9 +98,7 @@ void main() {
     verifyNever(() => sync.requestFullResync());
   });
 
-  testWidgets('"Check everything again" downloads everything, then reports', (
-    tester,
-  ) async {
+  testWidgets('"Check everything again" downloads everything, then reports', (tester) async {
     await pumpFlow(tester);
 
     await tester.tap(find.text('Check everything again'));
@@ -122,19 +112,11 @@ void main() {
     expect(find.text('Done'), findsNothing);
   });
 
-  testWidgets('a failed sync is reported from the sync state, not thrown', (
-    tester,
-  ) async {
+  testWidgets('a failed sync is reported from the sync state, not thrown', (tester) async {
+    when(() => sync.requestSync(pull: true)).thenAnswer((_) async => throw StateError('offline'));
     when(
-      () => sync.requestSync(pull: true),
-    ).thenAnswer((_) async => throw StateError('offline'));
-    when(() => engine.snapshot).thenReturn(
-      const SyncSnapshot(
-        status: SyncStatus.failed,
-        pendingChanges: 1,
-        failure: SyncFailure.timeout,
-      ),
-    );
+      () => engine.snapshot,
+    ).thenReturn(const SyncSnapshot(status: SyncStatus.failed, pendingChanges: 1, failure: SyncFailure.timeout));
 
     await pumpFlow(tester);
 
@@ -145,12 +127,9 @@ void main() {
   });
 
   testWidgets('offline, checking again is not offered', (tester) async {
-    when(() => engine.snapshot).thenReturn(
-      const SyncSnapshot(
-        status: SyncStatus.waitingForInternet,
-        pendingChanges: 2,
-      ),
-    );
+    when(
+      () => engine.snapshot,
+    ).thenReturn(const SyncSnapshot(status: SyncStatus.waitingForInternet, pendingChanges: 2));
 
     await pumpFlow(tester);
 

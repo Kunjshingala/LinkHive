@@ -8,9 +8,7 @@ import 'conflict_state.dart';
 class ConflictBloc extends Bloc<ConflictEvent, ConflictState> {
   final LinkRepository _repository;
 
-  ConflictBloc({required LinkRepository repository})
-    : _repository = repository,
-      super(const ConflictInitial()) {
+  ConflictBloc({required LinkRepository repository}) : _repository = repository, super(const ConflictInitial()) {
     on<ConflictLoadRequested>(_onLoad);
     on<ConflictKeepLocalRequested>(_onKeepLocal);
     on<ConflictKeepCloudRequested>(_onKeepCloud);
@@ -21,30 +19,15 @@ class ConflictBloc extends Bloc<ConflictEvent, ConflictState> {
     emit(ConflictLoaded(_repository.conflicts));
   }
 
-  Future<void> _onKeepLocal(
-    ConflictKeepLocalRequested event,
-    Emitter<ConflictState> emit,
-  ) async {
-    await _resolve(
-      emit,
-      () => _repository.resolveConflictKeepLocal(event.conflictId),
-    );
+  Future<void> _onKeepLocal(ConflictKeepLocalRequested event, Emitter<ConflictState> emit) async {
+    await _resolve(emit, () => _repository.resolveConflictKeepLocal(event.conflictId));
   }
 
-  Future<void> _onKeepCloud(
-    ConflictKeepCloudRequested event,
-    Emitter<ConflictState> emit,
-  ) async {
-    await _resolve(
-      emit,
-      () => _repository.resolveConflictKeepCloud(event.conflictId),
-    );
+  Future<void> _onKeepCloud(ConflictKeepCloudRequested event, Emitter<ConflictState> emit) async {
+    await _resolve(emit, () => _repository.resolveConflictKeepCloud(event.conflictId));
   }
 
-  Future<void> _resolve(
-    Emitter<ConflictState> emit,
-    Future<void> Function() action,
-  ) async {
+  Future<void> _resolve(Emitter<ConflictState> emit, Future<void> Function() action) async {
     emit(const ConflictLoading());
     try {
       await action();

@@ -18,11 +18,8 @@ void main() {
   late UnsyncedSummary summary;
   late SyncFailure? repositoryFailure;
 
-  SyncEngine buildEngine({bool authenticated = true}) => SyncEngine(
-    cloudSync: cloudSync,
-    repository: repository,
-    isAuthenticated: () => authenticated,
-  );
+  SyncEngine buildEngine({bool authenticated = true}) =>
+      SyncEngine(cloudSync: cloudSync, repository: repository, isAuthenticated: () => authenticated);
 
   setUp(() {
     repository = MockLinkRepository();
@@ -70,9 +67,7 @@ void main() {
 
   test('runs pull after push when requested', () async {
     when(() => cloudSync.push()).thenAnswer((_) async {});
-    when(
-      () => cloudSync.pull(full: any(named: 'full')),
-    ).thenAnswer((_) async {});
+    when(() => cloudSync.pull(full: any(named: 'full'))).thenAnswer((_) async {});
     final engine = buildEngine();
 
     await engine.requestSync(pull: true);
@@ -108,12 +103,8 @@ void main() {
     setUp(() {
       firstPush = Completer<void>();
       var pushes = 0;
-      when(() => cloudSync.push()).thenAnswer(
-        (_) => ++pushes == 1 ? firstPush.future : Future<void>.value(),
-      );
-      when(
-        () => cloudSync.pull(full: any(named: 'full')),
-      ).thenAnswer((_) async {});
+      when(() => cloudSync.push()).thenAnswer((_) => ++pushes == 1 ? firstPush.future : Future<void>.value());
+      when(() => cloudSync.pull(full: any(named: 'full'))).thenAnswer((_) async {});
       engine = buildEngine();
     });
 
@@ -158,9 +149,7 @@ void main() {
   test('a pull requested during a pull shares that run', () async {
     final pullRun = Completer<void>();
     when(() => cloudSync.push()).thenAnswer((_) async {});
-    when(
-      () => cloudSync.pull(full: any(named: 'full')),
-    ).thenAnswer((_) => pullRun.future);
+    when(() => cloudSync.pull(full: any(named: 'full'))).thenAnswer((_) => pullRun.future);
     final engine = buildEngine();
 
     final first = engine.requestSync(pull: true);
@@ -204,9 +193,7 @@ void main() {
   group('full resync', () {
     setUp(() {
       when(() => cloudSync.push()).thenAnswer((_) async {});
-      when(
-        () => cloudSync.pull(full: any(named: 'full')),
-      ).thenAnswer((_) async {});
+      when(() => cloudSync.pull(full: any(named: 'full'))).thenAnswer((_) async {});
     });
 
     // The cursor itself is forgotten inside the pull run, behind the wipe
@@ -231,9 +218,7 @@ void main() {
         'over the reset', () async {
       final push = Completer<void>();
       var pushes = 0;
-      when(
-        () => cloudSync.push(),
-      ).thenAnswer((_) => ++pushes == 1 ? push.future : Future<void>.value());
+      when(() => cloudSync.push()).thenAnswer((_) => ++pushes == 1 ? push.future : Future<void>.value());
       final engine = buildEngine();
 
       final running = engine.requestSync();
@@ -249,9 +234,7 @@ void main() {
 
     test('still runs when the run it waited for failed', () async {
       var pushes = 0;
-      when(() => cloudSync.push()).thenAnswer(
-        (_) async => ++pushes == 1 ? throw Exception('offline') : null,
-      );
+      when(() => cloudSync.push()).thenAnswer((_) async => ++pushes == 1 ? throw Exception('offline') : null);
       final engine = buildEngine();
 
       final running = engine.requestSync();
@@ -317,16 +300,13 @@ void main() {
       expect(engine.status, SyncStatus.waitingForInternet);
     });
 
-    test(
-      'online with failed changes after a run is failed, with the reason',
-      () {
-        summary = const UnsyncedSummary(changes: 2, failedChanges: 2);
-        repositoryFailure = SyncFailure.timeout;
+    test('online with failed changes after a run is failed, with the reason', () {
+      summary = const UnsyncedSummary(changes: 2, failedChanges: 2);
+      repositoryFailure = SyncFailure.timeout;
 
-        expect(engine.status, SyncStatus.failed);
-        expect(engine.snapshot.failure, SyncFailure.timeout);
-      },
-    );
+      expect(engine.status, SyncStatus.failed);
+      expect(engine.snapshot.failure, SyncFailure.timeout);
+    });
 
     test('a retry in progress shows syncing, not the old failure', () async {
       summary = const UnsyncedSummary(changes: 1, failedChanges: 1);
@@ -340,11 +320,7 @@ void main() {
     });
 
     test('a conflict wins over every other state', () {
-      summary = const UnsyncedSummary(
-        changes: 1,
-        failedChanges: 1,
-        conflicts: 1,
-      );
+      summary = const UnsyncedSummary(changes: 1, failedChanges: 1, conflicts: 1);
       engine.setOnline(false);
 
       expect(engine.status, SyncStatus.conflict);
@@ -362,9 +338,7 @@ void main() {
 
     setUp(() {
       queueChanges = StreamController<BoxEvent>.broadcast();
-      when(
-        () => repository.watchSyncOperations(),
-      ).thenAnswer((_) => queueChanges.stream);
+      when(() => repository.watchSyncOperations()).thenAnswer((_) => queueChanges.stream);
     });
 
     tearDown(() => queueChanges.close());
@@ -380,10 +354,7 @@ void main() {
       engine.setOnline(false);
       await Future<void>.delayed(Duration.zero);
 
-      expect(snapshots.map((s) => s.status), [
-        SyncStatus.idle,
-        SyncStatus.waitingForInternet,
-      ]);
+      expect(snapshots.map((s) => s.status), [SyncStatus.idle, SyncStatus.waitingForInternet]);
       expect(snapshots.map((s) => s.pendingChanges), [1, 1]);
       await subscription.cancel();
       await engine.dispose();

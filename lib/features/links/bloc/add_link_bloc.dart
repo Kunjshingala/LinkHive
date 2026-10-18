@@ -64,22 +64,17 @@ class AddLinkBloc extends Bloc<AddLinkEvent, AddLinkState> {
   /// is ignored when its generation is no longer current.
   int _metadataGeneration = 0;
 
-  AddLinkBloc({
-    required LinkManager manager,
-    required LinkMetadataService metadataService,
-  }) : _manager = manager,
-       _metadataService = metadataService,
-       super(const AddLinkInitial()) {
+  AddLinkBloc({required LinkManager manager, required LinkMetadataService metadataService})
+    : _manager = manager,
+      _metadataService = metadataService,
+      super(const AddLinkInitial()) {
     // Register a handler for every event type. Using named handlers keeps
     // each piece of logic isolated and independently testable.
     on<AddLinkInitialized>(_onInitialized);
     // Metadata requests are debounced and switched to the latest URL. This
     // prevents a request per keystroke and stops queued older URLs from
     // competing with the URL currently being edited.
-    on<AddLinkFetchMetadata>(
-      _onFetchMetadata,
-      transformer: _debounce(const Duration(milliseconds: 300)),
-    );
+    on<AddLinkFetchMetadata>(_onFetchMetadata, transformer: _debounce(const Duration(milliseconds: 300)));
     on<AddLinkFieldChanged>(_onFieldChanged);
     on<AddLinkSaveRequested>(_onSaveRequested);
   }
@@ -93,9 +88,7 @@ class AddLinkBloc extends Bloc<AddLinkEvent, AddLinkState> {
       suggestionHost: host,
       suggestedCategories: CategorySuggester.suggest(
         host: host,
-        history: host.isEmpty
-            ? const []
-            : _manager.getCategoryCountsForHost(host),
+        history: host.isEmpty ? const [] : _manager.getCategoryCountsForHost(host),
       ),
     );
   }
@@ -178,15 +171,10 @@ class AddLinkBloc extends Bloc<AddLinkEvent, AddLinkState> {
   /// fetch starts before this one completes, the response is discarded. The
   /// latest form state is read after awaiting the service so edits made during
   /// the request are not replaced by an old snapshot.
-  Future<void> _onFetchMetadata(
-    AddLinkFetchMetadata event,
-    Emitter<AddLinkState> emit,
-  ) async {
+  Future<void> _onFetchMetadata(AddLinkFetchMetadata event, Emitter<AddLinkState> emit) async {
     // Snapshot the current form state; fall back to a blank form if for some
     // reason the state isn't AddLinkForm yet (defensive guard).
-    final current = state is AddLinkForm
-        ? state as AddLinkForm
-        : const AddLinkForm();
+    final current = state is AddLinkForm ? state as AddLinkForm : const AddLinkForm();
     final normalizedUrl = normalizeUrl(event.url);
     if (normalizedUrl == null) {
       _metadataGeneration++;
@@ -213,9 +201,7 @@ class AddLinkBloc extends Bloc<AddLinkEvent, AddLinkState> {
     final updated = latest.copyWith(
       url: normalizedUrl,
       title: metadata.title.isNotEmpty ? metadata.title : current.title,
-      description: metadata.description.isNotEmpty
-          ? metadata.description
-          : current.description,
+      description: metadata.description.isNotEmpty ? metadata.description : current.description,
       image: metadata.image.isNotEmpty ? metadata.image : current.image,
       isFetchingMetadata: false, // Always clear the loading indicator.
     );
@@ -231,9 +217,7 @@ class AddLinkBloc extends Bloc<AddLinkEvent, AddLinkState> {
   ///
   /// This handler is synchronous and very lightweight — no async work here.
   void _onFieldChanged(AddLinkFieldChanged event, Emitter<AddLinkState> emit) {
-    final current = state is AddLinkForm
-        ? state as AddLinkForm
-        : const AddLinkForm();
+    final current = state is AddLinkForm ? state as AddLinkForm : const AddLinkForm();
 
     if (event.url != null) {
       // Any URL edit makes the current metadata response obsolete. A valid
@@ -277,10 +261,7 @@ class AddLinkBloc extends Bloc<AddLinkEvent, AddLinkState> {
   ///      and a UTC epoch `createdAt` timestamp, then calls `repository.addLink`.
   /// 5. **Emit [AddLinkSuccess]** on success, or **[AddLinkError]** if the
   ///    repository throws.
-  Future<void> _onSaveRequested(
-    AddLinkSaveRequested event,
-    Emitter<AddLinkState> emit,
-  ) async {
+  Future<void> _onSaveRequested(AddLinkSaveRequested event, Emitter<AddLinkState> emit) async {
     final current = state;
 
     // Guard: this handler should only run while the form is active.
@@ -310,9 +291,7 @@ class AddLinkBloc extends Bloc<AddLinkEvent, AddLinkState> {
         // Falls back to the URL as the title if the user left it empty.
         final updatedLink = _editingLink!.copyWith(
           url: normalizedUrl,
-          title: current.title.trim().isEmpty
-              ? normalizedUrl
-              : current.title.trim(),
+          title: current.title.trim().isEmpty ? normalizedUrl : current.title.trim(),
           description: current.description.trim(),
           image: current.image,
           categories: current.categories,
@@ -339,9 +318,7 @@ class AddLinkBloc extends Bloc<AddLinkEvent, AddLinkState> {
         final link = LinkModel(
           id: _uuid.v4(),
           url: normalizedUrl,
-          title: current.title.trim().isEmpty
-              ? normalizedUrl
-              : current.title.trim(),
+          title: current.title.trim().isEmpty ? normalizedUrl : current.title.trim(),
           description: current.description.trim(),
           image: current.image,
           categories: current.categories,

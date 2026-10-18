@@ -19,9 +19,7 @@ void main() {
   late LinkRepository repository;
 
   setUpAll(() async {
-    hiveDirectory = await Directory.systemTemp.createTemp(
-      'linkhive-sync-store-test-',
-    );
+    hiveDirectory = await Directory.systemTemp.createTemp('linkhive-sync-store-test-');
     Hive.init(hiveDirectory.path);
     Hive.registerAdapter(LinkModelAdapter());
     Hive.registerAdapter(CategoryModelAdapter());
@@ -55,12 +53,7 @@ void main() {
   tearDown(() => Hive.close());
   tearDownAll(() => hiveDirectory.delete(recursive: true));
 
-  const link = LinkModel(
-    id: 'l-1',
-    url: 'https://example.com/l-1',
-    title: 'l-1',
-    createdAt: 100,
-  );
+  const link = LinkModel(id: 'l-1', url: 'https://example.com/l-1', title: 'l-1', createdAt: 100);
   final operation = SyncOperation(
     operationId: 'op-1',
     entityType: SyncOperation.linkEntity,
@@ -75,22 +68,10 @@ void main() {
   void expectNothingStored() {
     expect(Hive.box<LinkModel>(HiveConstants.linksBox).isEmpty, isTrue);
     expect(Hive.box<LinkModel>(HiveConstants.baseLinksBox).isEmpty, isTrue);
-    expect(
-      Hive.box<LinkModel>(HiveConstants.conflictLinksBox).isEmpty,
-      isTrue,
-    );
-    expect(
-      Hive.box<CategoryModel>(HiveConstants.categoriesBox).isEmpty,
-      isTrue,
-    );
-    expect(
-      Hive.box<SyncOperation>(HiveConstants.syncOperationsBox).isEmpty,
-      isTrue,
-    );
-    expect(
-      Hive.box<ConflictRecord>(HiveConstants.conflictRecordsBox).isEmpty,
-      isTrue,
-    );
+    expect(Hive.box<LinkModel>(HiveConstants.conflictLinksBox).isEmpty, isTrue);
+    expect(Hive.box<CategoryModel>(HiveConstants.categoriesBox).isEmpty, isTrue);
+    expect(Hive.box<SyncOperation>(HiveConstants.syncOperationsBox).isEmpty, isTrue);
+    expect(Hive.box<ConflictRecord>(HiveConstants.conflictRecordsBox).isEmpty, isTrue);
     final settings = Hive.box(HiveConstants.settingsBox);
     expect(settings.get(HiveConstants.lastPulledAtKey), isNull);
     expect(settings.get(HiveConstants.ownerUidKey), isNull);
@@ -101,20 +82,12 @@ void main() {
       'putOperation': (run) => repository.putOperation(run, operation),
       'finishPushed': (run) => repository.finishPushed(run, operation),
       'putCloudLink': (run) => repository.putCloudLink(run, link),
-      'applyMerge': (run) =>
-          repository.applyMerge(run, link.copyWith(isSynced: false), link),
+      'applyMerge': (run) => repository.applyMerge(run, link.copyWith(isSynced: false), link),
       'removeLink': (run) => repository.removeLink(run, 'l-1'),
       'removeBaseLink': (run) => repository.removeBaseLink(run, 'l-1'),
-      'saveConflict': (run) => repository.saveConflict(
-        run,
-        linkId: 'l-1',
-        base: link,
-        local: link,
-        cloud: null,
-        fields: const ['delete'],
-      ),
-      'putCategory': (run) =>
-          repository.putCategory(run, CategoryModel(id: 'c-1', name: 'Work')),
+      'saveConflict': (run) =>
+          repository.saveConflict(run, linkId: 'l-1', base: link, local: link, cloud: null, fields: const ['delete']),
+      'putCategory': (run) => repository.putCategory(run, CategoryModel(id: 'c-1', name: 'Work')),
       'removeCategory': (run) => repository.removeCategory(run, 'c-1'),
       'resetPullCursor': (run) => repository.resetPullCursor(run),
       'writePullCursor': (run) => repository.writePullCursor(run, 42),
@@ -136,11 +109,7 @@ void main() {
       final run = (await repository.beginRun('user-1'))!;
 
       // The first write starts synchronously; the wipe lands right after it.
-      final merge = repository.applyMerge(
-        run,
-        link.copyWith(title: 'merged', isSynced: false),
-        link,
-      );
+      final merge = repository.applyMerge(run, link.copyWith(title: 'merged', isSynced: false), link);
       await repository.clearLocalData();
 
       expect(await merge, isFalse);
@@ -169,8 +138,7 @@ void main() {
   });
 
   group('beginRun', () {
-    Object? owner() =>
-        Hive.box(HiveConstants.settingsBox).get(HiveConstants.ownerUidKey);
+    Object? owner() => Hive.box(HiveConstants.settingsBox).get(HiveConstants.ownerUidKey);
 
     test('claims a phone with no owner', () async {
       expect(await repository.beginRun('user-1'), isNotNull);
@@ -185,20 +153,15 @@ void main() {
       expect(owner(), isNull);
     });
 
-    test(
-      'a wipe while replacing another account\'s data records no owner',
-      () async {
-        await Hive.box(
-          HiveConstants.settingsBox,
-        ).put(HiveConstants.ownerUidKey, 'user-2');
+    test('a wipe while replacing another account\'s data records no owner', () async {
+      await Hive.box(HiveConstants.settingsBox).put(HiveConstants.ownerUidKey, 'user-2');
 
-        final begin = repository.beginRun('user-1');
-        await repository.clearLocalData();
+      final begin = repository.beginRun('user-1');
+      await repository.clearLocalData();
 
-        expect(await begin, isNull);
-        expect(owner(), isNull);
-      },
-    );
+      expect(await begin, isNull);
+      expect(owner(), isNull);
+    });
 
     test('a run is stale after a wipe and current otherwise', () async {
       final run = (await repository.beginRun('user-1'))!;

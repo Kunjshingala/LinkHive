@@ -9,12 +9,8 @@ import '../../links/manager/link_manager.dart';
 /// Emits only when the number changes, so other link edits don't rebuild the
 /// bottom nav.
 class InboxBadgeCubit extends Cubit<int> {
-  InboxBadgeCubit({required LinkManager manager})
-    : _manager = manager,
-      super(manager.inboxCount) {
-    _subscription = _manager.watchLinks().listen(
-      (_) => emit(_manager.inboxCount),
-    );
+  InboxBadgeCubit({required LinkManager manager}) : _manager = manager, super(manager.inboxCount) {
+    _subscription = _manager.watchLinks().listen((_) => emit(_manager.inboxCount));
   }
 
   final LinkManager _manager;

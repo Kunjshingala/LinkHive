@@ -41,41 +41,28 @@ void main() {
   tearDown(() => Hive.close());
   tearDownAll(() => hiveDirectory.delete(recursive: true));
 
-  LinkModel link(String id, String url, int createdAt) =>
-      LinkModel(id: id, url: url, title: '', createdAt: createdAt);
+  LinkModel link(String id, String url, int createdAt) => LinkModel(id: id, url: url, title: '', createdAt: createdAt);
 
   test('finds a saved link through different tracking params', () async {
-    await repository.addLink(
-      link('1', 'https://youtu.be/Px_3O3KeR24?si=D1aFI2KXKKo0u0ob', 1),
-    );
+    await repository.addLink(link('1', 'https://youtu.be/Px_3O3KeR24?si=D1aFI2KXKKo0u0ob', 1));
 
-    final found = repository.findByCanonicalUrl(
-      'https://youtu.be/Px_3O3KeR24?t=293&si=UzI6xOOWvJbDNkl_',
-    );
+    final found = repository.findByCanonicalUrl('https://youtu.be/Px_3O3KeR24?t=293&si=UzI6xOOWvJbDNkl_');
 
     expect(found?.id, '1');
   });
 
   test('returns null for a different link', () async {
-    await repository.addLink(
-      link('1', 'https://youtu.be/Px_3O3KeR24?si=D1aFI2KXKKo0u0ob', 1),
-    );
+    await repository.addLink(link('1', 'https://youtu.be/Px_3O3KeR24?si=D1aFI2KXKKo0u0ob', 1));
 
-    expect(
-      repository.findByCanonicalUrl('https://youtu.be/3mnhueXepdM?si=ODjo'),
-      isNull,
-    );
+    expect(repository.findByCanonicalUrl('https://youtu.be/3mnhueXepdM?si=ODjo'), isNull);
   });
 
-  test(
-    'with legacy duplicates, the oldest record is the merge target',
-    () async {
-      const reel = 'https://www.instagram.com/reel/DeKio97zfoF/';
-      await repository.addLink(link('newer', '$reel?stkn=b', 200));
-      await repository.addLink(link('oldest', '$reel?stkn=a', 100));
-      await repository.addLink(link('middle', reel, 150));
+  test('with legacy duplicates, the oldest record is the merge target', () async {
+    const reel = 'https://www.instagram.com/reel/DeKio97zfoF/';
+    await repository.addLink(link('newer', '$reel?stkn=b', 200));
+    await repository.addLink(link('oldest', '$reel?stkn=a', 100));
+    await repository.addLink(link('middle', reel, 150));
 
-      expect(repository.findByCanonicalUrl('$reel?stkn=c')?.id, 'oldest');
-    },
-  );
+    expect(repository.findByCanonicalUrl('$reel?stkn=c')?.id, 'oldest');
+  });
 }

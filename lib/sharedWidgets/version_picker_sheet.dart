@@ -33,19 +33,12 @@ Future<void> openLinkWithVersions(BuildContext context, LinkModel link) async {
 /// Bottom sheet listing the link's main URL then its other versions. Each row
 /// shows where it goes and which query parts it carries ("utm_source · cid"),
 /// so an affiliate version is recognisable. Returns null when dismissed.
-Future<VersionChoice?> showVersionPickerSheet(
-  BuildContext context,
-  LinkModel link,
-) {
+Future<VersionChoice?> showVersionPickerSheet(BuildContext context, LinkModel link) {
   return showModalBottomSheet<VersionChoice>(
     context: context,
     isScrollControlled: true,
     backgroundColor: Theme.of(context).colorScheme.surface,
-    shape: const RoundedRectangleBorder(
-      borderRadius: BorderRadius.vertical(
-        top: Radius.circular(AppSpacing.radiusXl),
-      ),
-    ),
+    shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(AppSpacing.radiusXl))),
     builder: (_) => VersionPickerSheet(link: link),
   );
 }
@@ -75,10 +68,7 @@ class _VersionPickerSheetState extends State<VersionPickerSheet> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text(
-              context.l10n.versionPickerTitle,
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
+            Text(context.l10n.versionPickerTitle, style: Theme.of(context).textTheme.titleMedium),
             SizedBox(height: AppSpacing.sm),
             Flexible(
               child: SingleChildScrollView(
@@ -96,23 +86,16 @@ class _VersionPickerSheetState extends State<VersionPickerSheet> {
                             _whereItGoes(url),
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
-                            style: AppTypography.bodyMedium.copyWith(
-                              color: cs.onSurface,
-                              fontWeight: FontWeight.w600,
-                            ),
+                            style: AppTypography.bodyMedium.copyWith(color: cs.onSurface, fontWeight: FontWeight.w600),
                           ),
                           subtitle: Text(
                             [
-                              if (url == _urls.first)
-                                context.l10n.versionPickerSavedFirst,
-                              _queryKeys(url) ??
-                                  context.l10n.versionPickerNoTracking,
+                              if (url == _urls.first) context.l10n.versionPickerSavedFirst,
+                              _queryKeys(url) ?? context.l10n.versionPickerNoTracking,
                             ].join(' · '),
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
-                            style: AppTypography.caption.copyWith(
-                              color: cs.onSurfaceVariant,
-                            ),
+                            style: AppTypography.caption.copyWith(color: cs.onSurfaceVariant),
                           ),
                         ),
                     ],
@@ -125,16 +108,14 @@ class _VersionPickerSheetState extends State<VersionPickerSheet> {
               key: const ValueKey('versionPickerOpen'),
               text: context.l10n.todayOpen,
               icon: Icons.open_in_new_rounded,
-              onPressed: () =>
-                  context.pop<VersionChoice>((url: _selected, keepOnly: false)),
+              onPressed: () => context.pop<VersionChoice>((url: _selected, keepOnly: false)),
             ),
             SizedBox(height: AppSpacing.sm),
             NeoBrutalistButton(
               key: const ValueKey('versionPickerKeepOnly'),
               text: context.l10n.versionPickerKeepOnly,
               variant: ButtonVariant.outlined,
-              onPressed: () =>
-                  context.pop<VersionChoice>((url: _selected, keepOnly: true)),
+              onPressed: () => context.pop<VersionChoice>((url: _selected, keepOnly: true)),
             ),
           ],
         ),

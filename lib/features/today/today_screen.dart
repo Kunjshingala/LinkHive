@@ -31,9 +31,7 @@ class TodayScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) =>
-          TodayBloc(manager: locator<LinkManager>())
-            ..add(const TodayLoadRequested()),
+      create: (_) => TodayBloc(manager: locator<LinkManager>())..add(const TodayLoadRequested()),
       child: const _TodayContent(),
     );
   }
@@ -52,11 +50,8 @@ class _TodayContent extends StatelessWidget {
         child: BlocBuilder<TodayBloc, TodayState>(
           builder: (context, state) {
             return switch (state) {
-              TodayInitial() || TodayLoading() => Center(
-                child: CircularProgressIndicator(
-                  color: Theme.of(context).colorScheme.primary,
-                ),
-              ),
+              TodayInitial() ||
+              TodayLoading() => Center(child: CircularProgressIndicator(color: Theme.of(context).colorScheme.primary)),
               TodayEmpty() => EmptyState(
                 icon: Icons.check_circle_outline_rounded,
                 title: context.l10n.todayEmptyTitle,
@@ -107,10 +102,7 @@ class _ResurfaceCard extends StatelessWidget {
               decoration: BoxDecoration(
                 color: Theme.of(context).colorScheme.surface,
                 borderRadius: BorderRadius.circular(AppSpacing.radiusXl),
-                border: Border.all(
-                  color: neo.borderColor,
-                  width: neo.borderWidth,
-                ),
+                border: Border.all(color: neo.borderColor, width: neo.borderWidth),
               ),
               padding: EdgeInsets.all(AppSpacing.lg),
               child: Column(
@@ -119,16 +111,13 @@ class _ResurfaceCard extends StatelessWidget {
                 children: [
                   if (link.image.isNotEmpty && !_isSvgUrl(link.image))
                     ClipRRect(
-                      borderRadius: BorderRadius.circular(
-                        AppSpacing.radiusLg - neo.borderWidth,
-                      ),
+                      borderRadius: BorderRadius.circular(AppSpacing.radiusLg - neo.borderWidth),
                       child: AspectRatio(
                         aspectRatio: 16 / 9,
                         child: CachedNetworkImage(
                           imageUrl: link.image,
                           fit: BoxFit.cover,
-                          errorWidget: (context, url, error) =>
-                              const SizedBox.shrink(),
+                          errorWidget: (context, url, error) => const SizedBox.shrink(),
                         ),
                       ),
                     ),
@@ -151,9 +140,9 @@ class _ResurfaceCard extends StatelessWidget {
                         host,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: Theme.of(context).textTheme.labelLarge!.copyWith(
-                          color: Theme.of(context).colorScheme.primary,
-                        ),
+                        style: Theme.of(
+                          context,
+                        ).textTheme.labelLarge!.copyWith(color: Theme.of(context).colorScheme.primary),
                       ),
                       SavedCountChip(count: link.shareCount),
                     ],
@@ -197,9 +186,7 @@ class _ResurfaceCard extends StatelessWidget {
                   variant: ButtonVariant.outlined,
                   onPressed: () {
                     showSnackBar(context.l10n.todayArchivedConfirm);
-                    context.read<TodayBloc>().add(
-                      const TodayArchiveRequested(),
-                    );
+                    context.read<TodayBloc>().add(const TodayArchiveRequested());
                   },
                 ),
               ),

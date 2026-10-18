@@ -44,15 +44,12 @@ class FakeFirebaseFirestoreService implements FirebaseFirestoreService {
   List<LinkModel> linksOf(String uid) => _sortedLinks(uid);
 
   /// Ids of the link tombstones in [uid]'s cloud.
-  Set<String> deletedLinkIdsOf(String uid) =>
-      _deletedLinks[uid]?.keys.toSet() ?? <String>{};
+  Set<String> deletedLinkIdsOf(String uid) => _deletedLinks[uid]?.keys.toSet() ?? <String>{};
 
   /// Categories in [uid]'s cloud.
-  List<CategoryModel> categoriesOf(String uid) =>
-      _categories[uid]?.values.toList() ?? <CategoryModel>[];
+  List<CategoryModel> categoriesOf(String uid) => _categories[uid]?.values.toList() ?? <CategoryModel>[];
 
-  Map<String, LinkModel> _linkMap(String uid) =>
-      _links.putIfAbsent(uid, () => {});
+  Map<String, LinkModel> _linkMap(String uid) => _links.putIfAbsent(uid, () => {});
 
   List<LinkModel> _sortedLinks(String uid) {
     final links = _links[uid]?.values.toList() ?? <LinkModel>[];
@@ -119,25 +116,16 @@ class FakeFirebaseFirestoreService implements FirebaseFirestoreService {
   @override
   Future<List<LinkModel>> fetchLinksSince(String uid, int sinceMs) async {
     await _enter('fetchLinksSince', uid);
-    final links = _linkMap(
-      uid,
-    ).values.where((link) => (link.syncedAt ?? 0) >= sinceMs).toList();
+    final links = _linkMap(uid).values.where((link) => (link.syncedAt ?? 0) >= sinceMs).toList();
     links.sort((a, b) => (a.syncedAt ?? 0).compareTo(b.syncedAt ?? 0));
     return links;
   }
 
   /// Returns the first [limit] links; paging by [startAfter] is not modelled.
   @override
-  Future<Map<String, dynamic>> fetchPaginatedLinks(
-    String uid, {
-    DocumentSnapshot? startAfter,
-    int limit = 20,
-  }) async {
+  Future<Map<String, dynamic>> fetchPaginatedLinks(String uid, {DocumentSnapshot? startAfter, int limit = 20}) async {
     await _enter('fetchPaginatedLinks', uid);
-    return {
-      'links': _sortedLinks(uid).take(limit).toList(),
-      'lastDocument': null,
-    };
+    return {'links': _sortedLinks(uid).take(limit).toList(), 'lastDocument': null};
   }
 
   // ─── Categories ────────────────────────────────────────────────────────────
@@ -162,10 +150,7 @@ class FakeFirebaseFirestoreService implements FirebaseFirestoreService {
   }
 
   @override
-  Future<List<String>> fetchDeletedCategoriesSince(
-    String uid,
-    int sinceMs,
-  ) async {
+  Future<List<String>> fetchDeletedCategoriesSince(String uid, int sinceMs) async {
     await _enter('fetchDeletedCategoriesSince', uid);
     return _idsSince(_deletedCategories[uid], sinceMs);
   }
@@ -189,9 +174,6 @@ class FakeFirebaseFirestoreService implements FirebaseFirestoreService {
 
   List<String> _idsSince(Map<String, int>? tombstones, int sinceMs) {
     if (tombstones == null) return <String>[];
-    return tombstones.entries
-        .where((entry) => entry.value >= sinceMs)
-        .map((entry) => entry.key)
-        .toList();
+    return tombstones.entries.where((entry) => entry.value >= sinceMs).map((entry) => entry.key).toList();
   }
 }

@@ -5,15 +5,8 @@ import 'package:flutter_test/flutter_test.dart';
 
 class MockFirebaseCoreHostApi implements TestFirebaseCoreHostApi {
   @override
-  Future<CoreInitializeResponse> initializeApp(
-    String appName,
-    CoreFirebaseOptions initializeAppRequest,
-  ) async {
-    return CoreInitializeResponse(
-      name: appName,
-      options: initializeAppRequest,
-      pluginConstants: {},
-    );
+  Future<CoreInitializeResponse> initializeApp(String appName, CoreFirebaseOptions initializeAppRequest) async {
+    return CoreInitializeResponse(name: appName, options: initializeAppRequest, pluginConstants: {});
   }
 
   @override

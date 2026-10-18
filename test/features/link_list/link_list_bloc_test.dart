@@ -18,13 +18,8 @@ void main() {
   late MockSyncEngine engine;
   late StreamController<BoxEvent> changes;
 
-  LinkModel link(String id, {bool isRead = false}) => LinkModel(
-    id: id,
-    url: 'https://e.com/$id',
-    title: id,
-    createdAt: 0,
-    isRead: isRead,
-  );
+  LinkModel link(String id, {bool isRead = false}) =>
+      LinkModel(id: id, url: 'https://e.com/$id', title: id, createdAt: 0, isRead: isRead);
 
   final all = List.generate(25, (i) => link('l$i'));
   const stats = LibraryStats(total: 25, unread: 25, uncategorized: 3);
@@ -73,9 +68,7 @@ void main() {
     changes = StreamController<BoxEvent>.broadcast();
     when(() => manager.watchLinks()).thenAnswer((_) => changes.stream);
     when(() => manager.getLibraryStats()).thenReturn(stats);
-    when(
-      () => manager.getSourceCounts(within: any(named: 'within')),
-    ).thenReturn(sources);
+    when(() => manager.getSourceCounts(within: any(named: 'within'))).thenReturn(sources);
     when(() => manager.getCategoryCounts()).thenReturn(const []);
     stubLinks(() => all);
   });
@@ -103,27 +96,16 @@ void main() {
     'a quick chip reloads from the first page with its query',
     build: build,
     seed: () => loaded(links: all, hasReachedMax: true),
-    act: (bloc) => bloc.add(
-      LinkListQueryChanged(
-        const LinkQuery().withQuickFilter(QuickFilter.unread),
-      ),
-    ),
-    expect: () => [
-      loaded(query: const LinkQuery(readFilter: ReadFilter.unread)),
-    ],
+    act: (bloc) => bloc.add(LinkListQueryChanged(const LinkQuery().withQuickFilter(QuickFilter.unread))),
+    expect: () => [loaded(query: const LinkQuery(readFilter: ReadFilter.unread))],
   );
 
   blocTest<LinkListBloc, LinkListState>(
     'sorting by site loads per-site counts for the group headers',
     build: build,
     seed: loaded,
-    act: (bloc) => bloc.add(
-      const LinkListQueryChanged(LinkQuery(sort: LinkSort.site)),
-    ),
-    verify: (bloc) => expect(
-      (bloc.state as LinkListLoaded).siteCounts,
-      {'e.com': 25},
-    ),
+    act: (bloc) => bloc.add(const LinkListQueryChanged(LinkQuery(sort: LinkSort.site))),
+    verify: (bloc) => expect((bloc.state as LinkListLoaded).siteCounts, {'e.com': 25}),
   );
 
   blocTest<LinkListBloc, LinkListState>(
@@ -136,9 +118,7 @@ void main() {
       bloc.add(const LinkListSearchChanged('piz'));
     },
     wait: const Duration(milliseconds: 400),
-    expect: () => [
-      isA<LinkListLoaded>().having((s) => s.query.search, 'search', 'piz'),
-    ],
+    expect: () => [isA<LinkListLoaded>().having((s) => s.query.search, 'search', 'piz')],
   );
 
   group('selection', () {
@@ -155,7 +135,9 @@ void main() {
       build: build,
       seed: loaded,
       act: (bloc) => bloc.add(const LinkListSelectionToggled('l1')),
-      expect: () => [loaded(isSelecting: true, selectedIds: {'l1'})],
+      expect: () => [
+        loaded(isSelecting: true, selectedIds: {'l1'}),
+      ],
     );
 
     blocTest<LinkListBloc, LinkListState>(
@@ -179,10 +161,7 @@ void main() {
       build: build,
       seed: () => loaded(isSelecting: true),
       act: (bloc) => bloc.add(const LinkListSelectAllRequested()),
-      verify: (bloc) => expect(
-        (bloc.state as LinkListLoaded).selectedIds,
-        all.map((l) => l.id).toSet(),
-      ),
+      verify: (bloc) => expect((bloc.state as LinkListLoaded).selectedIds, all.map((l) => l.id).toSet()),
     );
 
     blocTest<LinkListBloc, LinkListState>(
@@ -204,12 +183,8 @@ void main() {
     blocTest<LinkListBloc, LinkListState>(
       'bulk category and priority pass their value through',
       build: () {
-        when(
-          () => manager.addCategoryToLinks(any(), any()),
-        ).thenAnswer((_) async {});
-        when(
-          () => manager.setPriorityForLinks(any(), any()),
-        ).thenAnswer((_) async {});
+        when(() => manager.addCategoryToLinks(any(), any())).thenAnswer((_) async {});
+        when(() => manager.setPriorityForLinks(any(), any())).thenAnswer((_) async {});
         return build();
       },
       seed: () => loaded(isSelecting: true, selectedIds: {'l1'}),
@@ -236,10 +211,11 @@ void main() {
       await Future<void>.delayed(Duration.zero);
     },
     expect: () => [
-      isA<LinkListLoaded>()
-          .having((s) => s.total, 'total', 24)
-          .having((s) => s.links.length, 'links kept', 20)
-          .having((s) => s.selectedIds, 'selection', {'l1'}),
+      isA<LinkListLoaded>().having((s) => s.total, 'total', 24).having((s) => s.links.length, 'links kept', 20).having(
+        (s) => s.selectedIds,
+        'selection',
+        {'l1'},
+      ),
     ],
   );
 
@@ -263,9 +239,7 @@ void main() {
   blocTest<LinkListBloc, LinkListState>(
     'a failed sync still completes the indicator and reports the error',
     build: () {
-      when(
-        () => engine.requestSync(pull: true),
-      ).thenThrow(Exception('offline'));
+      when(() => engine.requestSync(pull: true)).thenThrow(Exception('offline'));
       return build();
     },
     seed: loaded,

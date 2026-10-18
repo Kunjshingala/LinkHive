@@ -1,0 +1,4 @@
+# Every text file uses LF line endings in the repo and in every working copy,
+# Windows included. Git detects binary files (images, fonts) by itself and
+# leaves them alone. See https://git-scm.com/docs/gitattributes.
+* text=auto eol=lf

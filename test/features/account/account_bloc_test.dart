@@ -24,11 +24,8 @@ void main() {
     late MockLinkRepository mockRepository;
     late MockAccountSessionService mockSession;
 
-    AccountBloc buildBloc() => AccountBloc(
-      authService: mockAuthService,
-      linkRepository: mockRepository,
-      sessionService: mockSession,
-    );
+    AccountBloc buildBloc() =>
+        AccountBloc(authService: mockAuthService, linkRepository: mockRepository, sessionService: mockSession);
 
     setUpAll(() async {
       setupFirebaseCoreMocks();
@@ -64,19 +61,12 @@ void main() {
       blocTest<AccountBloc, AccountState>(
         'signs out through the session service, then shows the account again',
         build: () {
-          when(
-            () => mockSession.signOut(confirmed: shown),
-          ).thenAnswer((_) async => SessionActionResult.completed);
+          when(() => mockSession.signOut(confirmed: shown)).thenAnswer((_) async => SessionActionResult.completed);
           return buildBloc();
         },
         skip: 1, // Skip auto-load AccountGuest
-        act: (bloc) =>
-            bloc.add(const AccountSignOutRequested(confirmed: shown)),
-        expect: () => [
-          const AccountLoading(),
-          const AccountSignedOut(),
-          guest,
-        ],
+        act: (bloc) => bloc.add(const AccountSignOutRequested(confirmed: shown)),
+        expect: () => [const AccountLoading(), const AccountSignedOut(), guest],
         verify: (_) {
           verify(() => mockSession.signOut(confirmed: shown)).called(1);
           verifyNever(() => mockAuthService.signOut());
@@ -92,34 +82,21 @@ void main() {
           return buildBloc();
         },
         skip: 1,
-        act: (bloc) =>
-            bloc.add(const AccountSignOutRequested(confirmed: shown)),
-        expect: () => [
-          const AccountLoading(),
-          const AccountNeedsReconfirmation(),
-          guest,
-        ],
+        act: (bloc) => bloc.add(const AccountSignOutRequested(confirmed: shown)),
+        expect: () => [const AccountLoading(), const AccountNeedsReconfirmation(), guest],
       );
 
       blocTest<AccountBloc, AccountState>(
         'reports a failed sign-out instead of saying it worked',
         build: () {
-          when(
-            () => mockSession.signOut(confirmed: shown),
-          ).thenThrow(Exception('Sign out failed'));
+          when(() => mockSession.signOut(confirmed: shown)).thenThrow(Exception('Sign out failed'));
           return buildBloc();
         },
         skip: 1,
-        act: (bloc) =>
-            bloc.add(const AccountSignOutRequested(confirmed: shown)),
-        expect: () => [
-          const AccountLoading(),
-          const AccountActionFailed(AccountAction.signOut),
-          guest,
-        ],
+        act: (bloc) => bloc.add(const AccountSignOutRequested(confirmed: shown)),
+        expect: () => [const AccountLoading(), const AccountActionFailed(AccountAction.signOut), guest],
       );
     });
-
 
     group('AccountWipeLocalRequested', () {
       const shown = UnsyncedSummary(changes: 2);
@@ -133,13 +110,8 @@ void main() {
           return buildBloc();
         },
         skip: 1,
-        act: (bloc) =>
-            bloc.add(const AccountWipeLocalRequested(confirmed: shown)),
-        expect: () => [
-          const AccountLoading(),
-          const AccountLocalWiped(),
-          guest,
-        ],
+        act: (bloc) => bloc.add(const AccountWipeLocalRequested(confirmed: shown)),
+        expect: () => [const AccountLoading(), const AccountLocalWiped(), guest],
         verify: (_) {
           verify(() => mockSession.wipeLocalData(confirmed: shown)).called(1);
         },
@@ -154,31 +126,19 @@ void main() {
           return buildBloc();
         },
         skip: 1,
-        act: (bloc) =>
-            bloc.add(const AccountWipeLocalRequested(confirmed: shown)),
-        expect: () => [
-          const AccountLoading(),
-          const AccountNeedsReconfirmation(),
-          guest,
-        ],
+        act: (bloc) => bloc.add(const AccountWipeLocalRequested(confirmed: shown)),
+        expect: () => [const AccountLoading(), const AccountNeedsReconfirmation(), guest],
       );
 
       blocTest<AccountBloc, AccountState>(
         'reports a failed wipe and shows the account again',
         build: () {
-          when(
-            () => mockSession.wipeLocalData(confirmed: shown),
-          ).thenThrow(StateError('disk full'));
+          when(() => mockSession.wipeLocalData(confirmed: shown)).thenThrow(StateError('disk full'));
           return buildBloc();
         },
         skip: 1,
-        act: (bloc) =>
-            bloc.add(const AccountWipeLocalRequested(confirmed: shown)),
-        expect: () => [
-          const AccountLoading(),
-          const AccountActionFailed(AccountAction.wipeLocal),
-          guest,
-        ],
+        act: (bloc) => bloc.add(const AccountWipeLocalRequested(confirmed: shown)),
+        expect: () => [const AccountLoading(), const AccountActionFailed(AccountAction.wipeLocal), guest],
       );
     });
 
@@ -194,31 +154,19 @@ void main() {
           return buildBloc();
         },
         skip: 1,
-        act: (bloc) =>
-            bloc.add(const AccountDeleteCloudDataRequested(confirmed: shown)),
-        expect: () => [
-          const AccountLoading(),
-          const AccountCloudDeleted(),
-          guest,
-        ],
+        act: (bloc) => bloc.add(const AccountDeleteCloudDataRequested(confirmed: shown)),
+        expect: () => [const AccountLoading(), const AccountCloudDeleted(), guest],
       );
 
       blocTest<AccountBloc, AccountState>(
         'reports a failed delete',
         build: () {
-          when(
-            () => mockSession.deleteCloudData(confirmed: shown),
-          ).thenThrow(StateError('offline'));
+          when(() => mockSession.deleteCloudData(confirmed: shown)).thenThrow(StateError('offline'));
           return buildBloc();
         },
         skip: 1,
-        act: (bloc) =>
-            bloc.add(const AccountDeleteCloudDataRequested(confirmed: shown)),
-        expect: () => [
-          const AccountLoading(),
-          const AccountActionFailed(AccountAction.deleteCloud),
-          guest,
-        ],
+        act: (bloc) => bloc.add(const AccountDeleteCloudDataRequested(confirmed: shown)),
+        expect: () => [const AccountLoading(), const AccountActionFailed(AccountAction.deleteCloud), guest],
       );
     });
 
@@ -226,9 +174,7 @@ void main() {
       blocTest<AccountBloc, AccountState>(
         'emits [AccountLoading, AccountError] when Google sign-in fails',
         build: () {
-          when(
-            () => mockAuthService.signInWithGoogle(),
-          ).thenThrow(Exception('Google sign-in cancelled'));
+          when(() => mockAuthService.signInWithGoogle()).thenThrow(Exception('Google sign-in cancelled'));
           return buildBloc();
         },
         skip: 1,
@@ -239,9 +185,7 @@ void main() {
       blocTest<AccountBloc, AccountState>(
         'emits AccountGuest after successful sign-in when currentUser is still null',
         build: () {
-          when(
-            () => mockAuthService.signInWithGoogle(),
-          ).thenAnswer((_) async => null);
+          when(() => mockAuthService.signInWithGoogle()).thenAnswer((_) async => null);
           return buildBloc();
         },
         skip: 1,

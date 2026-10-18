@@ -13,13 +13,8 @@ class CategoryModelAdapter extends TypeAdapter<CategoryModel> {
   @override
   CategoryModel read(BinaryReader reader) {
     final numOfFields = reader.readByte();
-    final fields = <int, dynamic>{
-      for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read(),
-    };
-    return CategoryModel(
-      id: fields[0] as String,
-      name: fields[1] as String,
-    );
+    final fields = <int, dynamic>{for (int i = 0; i < numOfFields; i++) reader.readByte(): reader.read()};
+    return CategoryModel(id: fields[0] as String, name: fields[1] as String);
   }
 
   @override
@@ -38,7 +33,5 @@ class CategoryModelAdapter extends TypeAdapter<CategoryModel> {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is CategoryModelAdapter &&
-          runtimeType == other.runtimeType &&
-          typeId == other.typeId;
+      other is CategoryModelAdapter && runtimeType == other.runtimeType && typeId == other.typeId;
 }

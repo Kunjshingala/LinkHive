@@ -7,12 +7,7 @@ import '../../links/manager/link_manager.dart';
 import '../../links/models/link_model.dart';
 
 class CategoryPickerState extends Equatable {
-  const CategoryPickerState({
-    required this.host,
-    required this.suggested,
-    required this.others,
-    this.picked,
-  });
+  const CategoryPickerState({required this.host, required this.suggested, required this.others, this.picked});
 
   /// The one site every selected link comes from, or empty when they differ.
   final String host;
@@ -26,12 +21,8 @@ class CategoryPickerState extends Equatable {
   /// The category the sheet will add; starts on the top suggestion.
   final String? picked;
 
-  CategoryPickerState copyWith({String? picked}) => CategoryPickerState(
-    host: host,
-    suggested: suggested,
-    others: others,
-    picked: picked ?? this.picked,
-  );
+  CategoryPickerState copyWith({String? picked}) =>
+      CategoryPickerState(host: host, suggested: suggested, others: others, picked: picked ?? this.picked);
 
   @override
   List<Object?> get props => [host, suggested, others, picked];
@@ -40,20 +31,11 @@ class CategoryPickerState extends Equatable {
 /// Drives the bulk "Add a category" sheet: suggests categories from the site
 /// when every selected link comes from the same one.
 class CategoryPickerCubit extends Cubit<CategoryPickerState> {
-  CategoryPickerCubit({
-    required LinkManager manager,
-    required Iterable<String> selectedIds,
-  }) : super(_initial(manager, selectedIds));
+  CategoryPickerCubit({required LinkManager manager, required Iterable<String> selectedIds})
+    : super(_initial(manager, selectedIds));
 
-  static CategoryPickerState _initial(
-    LinkManager manager,
-    Iterable<String> selectedIds,
-  ) {
-    final hosts = selectedIds
-        .map(manager.linkById)
-        .whereType<LinkModel>()
-        .map((l) => sourceHost(l.url))
-        .toSet();
+  static CategoryPickerState _initial(LinkManager manager, Iterable<String> selectedIds) {
+    final hosts = selectedIds.map(manager.linkById).whereType<LinkModel>().map((l) => sourceHost(l.url)).toSet();
     final host = hosts.length == 1 ? hosts.single : '';
     final suggested = CategorySuggester.suggest(
       host: host,
@@ -62,10 +44,7 @@ class CategoryPickerCubit extends Cubit<CategoryPickerState> {
     return CategoryPickerState(
       host: host,
       suggested: suggested,
-      others: manager
-          .categoryOptions()
-          .where((name) => !suggested.contains(name))
-          .toList(),
+      others: manager.categoryOptions().where((name) => !suggested.contains(name)).toList(),
       picked: suggested.isEmpty ? null : suggested.first,
     );
   }

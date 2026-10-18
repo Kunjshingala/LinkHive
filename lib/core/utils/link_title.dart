@@ -3,8 +3,7 @@
 ///
 /// Used everywhere a link's name is drawn (LinkCard, Today, Up Next, the
 /// home-screen widget) so they all agree.
-String displayTitle(String title, String url) =>
-    title.isNotEmpty ? title : fallbackTitle(url);
+String displayTitle(String title, String url) => title.isNotEmpty ? title : fallbackTitle(url);
 
 /// A readable label derived from [url] alone, e.g.
 /// `https://www.linkedin.com/in/kunjshingala09?utm_source=share` →
@@ -34,10 +33,7 @@ String fallbackTitle(String url) {
   final segments = uri.pathSegments.where((s) => s.isNotEmpty).toList();
   if (segments.isEmpty) return host;
 
-  final slug = segments.lastWhere(
-    (s) => s.contains('-'),
-    orElse: () => segments.last,
-  );
+  final slug = segments.lastWhere((s) => s.contains('-'), orElse: () => segments.last);
   final name = slug.replaceAll(RegExp(r'[-_]+'), ' ').trim();
   return name.isEmpty ? host : '$name · $host';
 }

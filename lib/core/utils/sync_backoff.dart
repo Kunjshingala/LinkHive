@@ -9,9 +9,7 @@ class SyncBackoff {
     if (attemptCount <= 0) return Duration.zero;
 
     final exponent = attemptCount > 16 ? 16 : attemptCount - 1;
-    final delay = Duration(
-      milliseconds: baseDelay.inMilliseconds * (1 << exponent),
-    );
+    final delay = Duration(milliseconds: baseDelay.inMilliseconds * (1 << exponent));
     return delay > maxDelay ? maxDelay : delay;
   }
 }

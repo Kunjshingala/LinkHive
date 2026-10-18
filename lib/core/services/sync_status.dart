@@ -56,11 +56,7 @@ enum SyncFailure {
 
 /// What has not reached the cloud yet.
 class UnsyncedSummary extends Equatable {
-  const UnsyncedSummary({
-    this.changes = 0,
-    this.failedChanges = 0,
-    this.conflicts = 0,
-  });
+  const UnsyncedSummary({this.changes = 0, this.failedChanges = 0, this.conflicts = 0});
 
   /// Queued writes: links and categories created, edited or deleted here.
   final int changes;
@@ -75,8 +71,7 @@ class UnsyncedSummary extends Equatable {
 
   /// True if there is more unsynced work here than in [other], for example a
   /// link saved after the user was shown [other].
-  bool hasMoreThan(UnsyncedSummary other) =>
-      changes > other.changes || conflicts > other.conflicts;
+  bool hasMoreThan(UnsyncedSummary other) => changes > other.changes || conflicts > other.conflicts;
 
   @override
   List<Object?> get props => [changes, failedChanges, conflicts];
@@ -107,15 +102,8 @@ class SyncSnapshot extends Equatable {
   final SyncFailure? failure;
 
   /// What would be lost if the phone were wiped now, as the user saw it.
-  UnsyncedSummary get unsynced =>
-      UnsyncedSummary(changes: pendingChanges, conflicts: conflicts);
+  UnsyncedSummary get unsynced => UnsyncedSummary(changes: pendingChanges, conflicts: conflicts);
 
   @override
-  List<Object?> get props => [
-    status,
-    pendingChanges,
-    conflicts,
-    lastSyncedAt,
-    failure,
-  ];
+  List<Object?> get props => [status, pendingChanges, conflicts, lastSyncedAt, failure];
 }

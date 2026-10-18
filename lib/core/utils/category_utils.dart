@@ -4,7 +4,16 @@ import '../extensions/context_extension.dart';
 class CategoryUtils {
   /// The built-in / suggested category keys shared across the whole app.
   /// Add or remove entries here to update every screen at once.
-  static const List<String> suggestedCategories = ['Watch', 'Read', 'Shop', 'Recipes', 'Travel', 'Learn', 'Work', 'Ideas'];
+  static const List<String> suggestedCategories = [
+    'Watch',
+    'Read',
+    'Shop',
+    'Recipes',
+    'Travel',
+    'Learn',
+    'Work',
+    'Ideas',
+  ];
 
   /// Built-in keys from before the 2026-10 redesign. No longer offered for new
   /// links, but links saved with them keep a translated label, and the

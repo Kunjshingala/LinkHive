@@ -31,9 +31,7 @@ void main() {
   String? currentUid;
 
   setUpAll(() async {
-    hiveDirectory = await Directory.systemTemp.createTemp(
-      'linkhive-accounts-test-',
-    );
+    hiveDirectory = await Directory.systemTemp.createTemp('linkhive-accounts-test-');
     Hive.init(hiveDirectory.path);
     Hive.registerAdapter(LinkModelAdapter());
     Hive.registerAdapter(CategoryModelAdapter());
@@ -65,25 +63,16 @@ void main() {
     currentUid = null;
     cloud = FakeFirebaseFirestoreService();
     repository = LinkRepository(hiveHelper: HiveHelper());
-    cloudSync = CloudSyncService(
-      firebaseService: cloud,
-      store: repository,
-      uidProvider: () => currentUid,
-    );
+    cloudSync = CloudSyncService(firebaseService: cloud, store: repository, uidProvider: () => currentUid);
   });
 
   tearDown(() => Hive.close());
   tearDownAll(() => hiveDirectory.delete(recursive: true));
 
-  LinkModel link(String id, {int createdAt = 100}) => LinkModel(
-    id: id,
-    url: 'https://example.com/$id',
-    title: id,
-    createdAt: createdAt,
-  );
+  LinkModel link(String id, {int createdAt = 100}) =>
+      LinkModel(id: id, url: 'https://example.com/$id', title: id, createdAt: createdAt);
 
-  List<String> localIds() =>
-      (repository.queryLinks(limit: 100).map((l) => l.id).toList()..sort());
+  List<String> localIds() => (repository.queryLinks(limit: 100).map((l) => l.id).toList()..sort());
 
   test('guest links merge into the first account that syncs', () async {
     cloud.seedLink(accountA, link('a-1'), syncedAt: 1000);
@@ -95,45 +84,35 @@ void main() {
     await cloudSync.pull();
 
     expect(localIds(), ['a-1', 'guest-1', 'guest-2']);
-    expect(cloud.linksOf(accountA).map((l) => l.id).toSet(), {
-      'a-1',
-      'guest-1',
-      'guest-2',
-    });
+    expect(cloud.linksOf(accountA).map((l) => l.id).toSet(), {'a-1', 'guest-1', 'guest-2'});
   });
 
-  test(
-    'switching accounts without a wipe still shows the new account\'s older links (#7)',
-    () async {
-      cloud.seedLink(accountA, link('a-1'), syncedAt: 1000);
-      cloud.seedLink(accountB, link('b-1'), syncedAt: 1000);
-      cloud.seedLink(accountB, link('b-2'), syncedAt: 2000);
+  test('switching accounts without a wipe still shows the new account\'s older links (#7)', () async {
+    cloud.seedLink(accountA, link('a-1'), syncedAt: 1000);
+    cloud.seedLink(accountB, link('b-1'), syncedAt: 1000);
+    cloud.seedLink(accountB, link('b-2'), syncedAt: 2000);
 
-      currentUid = accountA;
-      await cloudSync.pull(); // the cursor is now "just now"
-      currentUid = accountB; // sign-out cleared nothing
-      await cloudSync.pull();
+    currentUid = accountA;
+    await cloudSync.pull(); // the cursor is now "just now"
+    currentUid = accountB; // sign-out cleared nothing
+    await cloudSync.pull();
 
-      expect(localIds(), ['b-1', 'b-2']);
-    },
-  );
+    expect(localIds(), ['b-1', 'b-2']);
+  });
 
-  test(
-    'another account\'s queued delete is not pushed into the new account (#8)',
-    () async {
-      cloud.seedLink(accountA, link('a-1'), syncedAt: 1000);
+  test('another account\'s queued delete is not pushed into the new account (#8)', () async {
+    cloud.seedLink(accountA, link('a-1'), syncedAt: 1000);
 
-      currentUid = accountA;
-      await cloudSync.pull();
-      currentUid = null; // signed out, nothing wiped
-      await repository.deleteLink('a-1'); // queues a delete operation
-      currentUid = accountB;
-      await cloudSync.push();
+    currentUid = accountA;
+    await cloudSync.pull();
+    currentUid = null; // signed out, nothing wiped
+    await repository.deleteLink('a-1'); // queues a delete operation
+    currentUid = accountB;
+    await cloudSync.push();
 
-      expect(cloud.deletedLinkIdsOf(accountB), isEmpty);
-      expect(cloud.linksOf(accountA).map((l) => l.id), ['a-1']);
-    },
-  );
+    expect(cloud.deletedLinkIdsOf(accountB), isEmpty);
+    expect(cloud.linksOf(accountA).map((l) => l.id), ['a-1']);
+  });
 
   group('a wipe while a sync is waiting on the cloud', () {
     /// Holds the first call to [method] open until `release` is called.
@@ -198,31 +177,25 @@ void main() {
   });
 
   group('what the sync status reports', () {
-    test(
-      'counts queued writes and the ones that failed their last attempt',
-      () async {
-        currentUid = accountA;
-        await repository.addLink(link('a-1'));
-        await repository.addLink(link('a-2'));
-        var saves = 0;
-        cloud.onCall = (method, uid) async {
-          if (method == 'saveLink' && ++saves == 2) {
-            throw FirebaseException(
-              plugin: 'cloud_firestore',
-              code: 'unavailable',
-            );
-          }
-        };
+    test('counts queued writes and the ones that failed their last attempt', () async {
+      currentUid = accountA;
+      await repository.addLink(link('a-1'));
+      await repository.addLink(link('a-2'));
+      var saves = 0;
+      cloud.onCall = (method, uid) async {
+        if (method == 'saveLink' && ++saves == 2) {
+          throw FirebaseException(plugin: 'cloud_firestore', code: 'unavailable');
+        }
+      };
 
-        await cloudSync.push();
+      await cloudSync.push();
 
-        final summary = repository.unsyncedSummary();
-        expect(summary.changes, 1);
-        expect(summary.failedChanges, 1);
-        expect(summary.conflicts, 0);
-        expect(cloudSync.lastFailure, SyncFailure.unavailable);
-      },
-    );
+      final summary = repository.unsyncedSummary();
+      expect(summary.changes, 1);
+      expect(summary.failedChanges, 1);
+      expect(summary.conflicts, 0);
+      expect(cloudSync.lastFailure, SyncFailure.unavailable);
+    });
 
     test('a push that starts clears the last failure', () async {
       currentUid = accountA;
@@ -251,22 +224,18 @@ void main() {
   group('owner check', () {
     Object? setting(String key) => Hive.box(HiveConstants.settingsBox).get(key);
 
-    test(
-      'an install from before owners were recorded resets a stale cursor once',
-      () async {
-        cloud.seedLink(accountA, link('a-1'), syncedAt: 1000);
-        await Hive.box(HiveConstants.settingsBox).put(
-          HiveConstants.lastPulledAtKey,
-          DateTime.now().toUtc().millisecondsSinceEpoch,
-        );
+    test('an install from before owners were recorded resets a stale cursor once', () async {
+      cloud.seedLink(accountA, link('a-1'), syncedAt: 1000);
+      await Hive.box(
+        HiveConstants.settingsBox,
+      ).put(HiveConstants.lastPulledAtKey, DateTime.now().toUtc().millisecondsSinceEpoch);
 
-        currentUid = accountA;
-        await cloudSync.pull();
+      currentUid = accountA;
+      await cloudSync.pull();
 
-        expect(localIds(), ['a-1']);
-        expect(setting(HiveConstants.ownerUidKey), accountA);
-      },
-    );
+      expect(localIds(), ['a-1']);
+      expect(setting(HiveConstants.ownerUidKey), accountA);
+    });
 
     test('the same account keeps using the incremental pull', () async {
       final calls = <String>[];
@@ -281,21 +250,18 @@ void main() {
       expect(calls, isNot(contains('fetchLinks')));
     });
 
-    test(
-      'a different owner is wiped: links, queue and cursor go, the new uid owns the phone',
-      () async {
-        currentUid = accountA;
-        await repository.addLink(link('a-local'));
-        await cloudSync.pull();
-        expect(repository.pendingSyncOperations, isNotEmpty);
+    test('a different owner is wiped: links, queue and cursor go, the new uid owns the phone', () async {
+      currentUid = accountA;
+      await repository.addLink(link('a-local'));
+      await cloudSync.pull();
+      expect(repository.pendingSyncOperations, isNotEmpty);
 
-        currentUid = accountB;
-        await cloudSync.pull();
+      currentUid = accountB;
+      await cloudSync.pull();
 
-        expect(localIds(), isEmpty);
-        expect(repository.pendingSyncOperations, isEmpty);
-        expect(setting(HiveConstants.ownerUidKey), accountB);
-      },
-    );
+      expect(localIds(), isEmpty);
+      expect(repository.pendingSyncOperations, isEmpty);
+      expect(setting(HiveConstants.ownerUidKey), accountB);
+    });
   });
 }

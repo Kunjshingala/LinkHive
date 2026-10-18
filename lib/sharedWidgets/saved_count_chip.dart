@@ -31,10 +31,7 @@ class SavedCountChip extends StatelessWidget {
         ),
         child: Text(
           context.l10n.todaySavedCount(count),
-          style: AppTypography.caption.copyWith(
-            color: AppColors.black,
-            fontWeight: FontWeight.w600,
-          ),
+          style: AppTypography.caption.copyWith(color: AppColors.black, fontWeight: FontWeight.w600),
         ),
       ),
     );

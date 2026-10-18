@@ -33,8 +33,7 @@ class AppLocalizationsHi extends AppLocalizations {
   String get homeEmptyStateTitle => 'अभी तक कोई लिंक नहीं!';
 
   @override
-  String get homeEmptyStateSubtitle =>
-      'अपना पहला वेब लिंक सहेज कर शुरुआत करें।';
+  String get homeEmptyStateSubtitle => 'अपना पहला वेब लिंक सहेज कर शुरुआत करें।';
 
   @override
   String get addLinkButton => 'लिंक जोड़ें';
@@ -163,8 +162,7 @@ class AppLocalizationsHi extends AppLocalizations {
   String get inboxEmptyTitle => 'इनबॉक्स खाली है';
 
   @override
-  String get inboxEmptySubtitle =>
-      'जल्दी में सहेजे गए लिंक यहाँ आते हैं। विवरण जोड़कर उन्हें व्यवस्थित करें।';
+  String get inboxEmptySubtitle => 'जल्दी में सहेजे गए लिंक यहाँ आते हैं। विवरण जोड़कर उन्हें व्यवस्थित करें।';
 
   @override
   String get todayTitle => 'आज';
@@ -209,12 +207,10 @@ class AppLocalizationsHi extends AppLocalizations {
   String get accountTitle => 'प्रोफ़ाइल';
 
   @override
-  String get accountSignInPromo =>
-      'अपने लिंक का बैकअप लेने के लिए साइन इन करें';
+  String get accountSignInPromo => 'अपने लिंक का बैकअप लेने के लिए साइन इन करें';
 
   @override
-  String get accountSignInDesc =>
-      'अपने संग्रह को सुरक्षित रखें और सभी उपकरणों पर सिंक करें।';
+  String get accountSignInDesc => 'अपने संग्रह को सुरक्षित रखें और सभी उपकरणों पर सिंक करें।';
 
   @override
   String get accountStatLocal => 'केवल स्थानीय';
@@ -258,8 +254,7 @@ class AppLocalizationsHi extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other:
-          '$count बदलाव अभी सिंक नहीं हुए हैं। अभी साइन आउट करने पर वे खो जाएँगे।',
+      other: '$count बदलाव अभी सिंक नहीं हुए हैं। अभी साइन आउट करने पर वे खो जाएँगे।',
       one: '1 बदलाव अभी सिंक नहीं हुआ है। अभी साइन आउट करने पर वह खो जाएगा।',
     );
     return '$_temp0';
@@ -270,10 +265,8 @@ class AppLocalizationsHi extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other:
-          '$count बदलाव सिंक हो रहे हैं। उनके पूरा होने तक रुकें, या साइन आउट करके उन्हें खो दें।',
-      one:
-          '1 बदलाव सिंक हो रहा है। उसके पूरा होने तक रुकें, या साइन आउट करके उसे खो दें।',
+      other: '$count बदलाव सिंक हो रहे हैं। उनके पूरा होने तक रुकें, या साइन आउट करके उन्हें खो दें।',
+      one: '1 बदलाव सिंक हो रहा है। उसके पूरा होने तक रुकें, या साइन आउट करके उसे खो दें।',
     );
     return '$_temp0';
   }
@@ -283,10 +276,8 @@ class AppLocalizationsHi extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other:
-          '$count बदलाव इंटरनेट का इंतज़ार कर रहे हैं। अभी साइन आउट करने पर वे खो जाएँगे।',
-      one:
-          '1 बदलाव इंटरनेट का इंतज़ार कर रहा है। अभी साइन आउट करने पर वह खो जाएगा।',
+      other: '$count बदलाव इंटरनेट का इंतज़ार कर रहे हैं। अभी साइन आउट करने पर वे खो जाएँगे।',
+      one: '1 बदलाव इंटरनेट का इंतज़ार कर रहा है। अभी साइन आउट करने पर वह खो जाएगा।',
     );
     return '$_temp0';
   }
@@ -296,10 +287,8 @@ class AppLocalizationsHi extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other:
-          '$count बदलाव सिंक नहीं हो सके। फिर कोशिश करें, या साइन आउट करके उन्हें खो दें।',
-      one:
-          '1 बदलाव सिंक नहीं हो सका। फिर कोशिश करें, या साइन आउट करके उसे खो दें।',
+      other: '$count बदलाव सिंक नहीं हो सके। फिर कोशिश करें, या साइन आउट करके उन्हें खो दें।',
+      one: '1 बदलाव सिंक नहीं हो सका। फिर कोशिश करें, या साइन आउट करके उसे खो दें।',
     );
     return '$_temp0';
   }
@@ -315,12 +304,10 @@ class AppLocalizationsHi extends AppLocalizations {
   String get accountSignOutAnyway => 'फिर भी साइन आउट करें';
 
   @override
-  String get accountSignedOutSuccess =>
-      'साइन आउट हो गया। इस फ़ोन की कॉपी साफ़ कर दी गई।';
+  String get accountSignedOutSuccess => 'साइन आउट हो गया। इस फ़ोन की कॉपी साफ़ कर दी गई।';
 
   @override
-  String get accountSignOutError =>
-      'साइन आउट नहीं हो सका। कृपया फिर कोशिश करें।';
+  String get accountSignOutError => 'साइन आउट नहीं हो सका। कृपया फिर कोशिश करें।';
 
   @override
   String get authWelcome => 'वापसी पर स्वागत है!';
@@ -435,8 +422,7 @@ class AppLocalizationsHi extends AppLocalizations {
   String get accountSyncStatusFailed => 'सिंक विफल';
 
   @override
-  String get accountSyncStatusConflict =>
-      'विरोधों पर ध्यान देने की आवश्यकता है';
+  String get accountSyncStatusConflict => 'विरोधों पर ध्यान देने की आवश्यकता है';
 
   @override
   String get accountSyncStatusWaiting => 'इंटरनेट का इंतज़ार';
@@ -492,12 +478,10 @@ class AppLocalizationsHi extends AppLocalizations {
   String get accountSyncFailureTimeout => 'क्लाउड ने समय पर जवाब नहीं दिया।';
 
   @override
-  String get accountSyncFailurePermission =>
-      'इस खाते को सिंक करने की अनुमति नहीं है।';
+  String get accountSyncFailurePermission => 'इस खाते को सिंक करने की अनुमति नहीं है।';
 
   @override
-  String get accountSyncFailureUnavailable =>
-      'अभी क्लाउड तक पहुँचा नहीं जा सकता।';
+  String get accountSyncFailureUnavailable => 'अभी क्लाउड तक पहुँचा नहीं जा सकता।';
 
   @override
   String get accountSyncFailureUnknown => 'सिंक करते समय कुछ गड़बड़ हो गई।';
@@ -539,8 +523,7 @@ class AppLocalizationsHi extends AppLocalizations {
   String get accountDelete => 'हटाएं';
 
   @override
-  String get accountDeleteSuccess =>
-      'स्थानीय डेटा हटा दिया गया। पुनरारंभ या सिंक करें।';
+  String get accountDeleteSuccess => 'स्थानीय डेटा हटा दिया गया। पुनरारंभ या सिंक करें।';
 
   @override
   String get accountDeleteFail => 'स्थानीय डेटा साफ़ करने में विफल।';
@@ -560,8 +543,7 @@ class AppLocalizationsHi extends AppLocalizations {
           'यह आपके खाते में सहेजे गए $count लिंक को हमेशा के लिए हटा देगा और इस फ़ोन को खाली कर देगा। इसे वापस नहीं किया जा सकता।',
       one:
           'यह आपके खाते में सहेजे गए 1 लिंक को हमेशा के लिए हटा देगा और इस फ़ोन को खाली कर देगा। इसे वापस नहीं किया जा सकता।',
-      zero:
-          'आपके खाते में कोई लिंक सहेजा नहीं गया है। इससे केवल यह फ़ोन खाली होगा।',
+      zero: 'आपके खाते में कोई लिंक सहेजा नहीं गया है। इससे केवल यह फ़ोन खाली होगा।',
     );
     return '$_temp0';
   }
@@ -573,12 +555,10 @@ class AppLocalizationsHi extends AppLocalizations {
   String get accountDeleteCloudSuccess => 'क्लाउड डेटा हटा दिया गया';
 
   @override
-  String get accountDeleteCloudFail =>
-      'क्लाउड डेटा नहीं हटाया जा सका। फिर से कोशिश करें।';
+  String get accountDeleteCloudFail => 'क्लाउड डेटा नहीं हटाया जा सका। फिर से कोशिश करें।';
 
   @override
-  String get accountActionReconfirm =>
-      'पुष्टि करते समय कुछ बदल गया। कृपया फिर से कोशिश करें।';
+  String get accountActionReconfirm => 'पुष्टि करते समय कुछ बदल गया। कृपया फिर से कोशिश करें।';
 
   @override
   String get langEnglish => 'अंग्रेज़ी';
@@ -596,12 +576,10 @@ class AppLocalizationsHi extends AppLocalizations {
   String get authErrUserNotFound => 'उस ईमेल के लिए कोई उपयोगकर्ता नहीं मिला।';
 
   @override
-  String get authErrWrongPassword =>
-      'उस उपयोगकर्ता के लिए गलत पासवर्ड दर्ज किया गया है।';
+  String get authErrWrongPassword => 'उस उपयोगकर्ता के लिए गलत पासवर्ड दर्ज किया गया है।';
 
   @override
-  String get authErrEmailAlreadyInUse =>
-      'उस ईमेल के लिए खाता पहले से मौजूद है।';
+  String get authErrEmailAlreadyInUse => 'उस ईमेल के लिए खाता पहले से मौजूद है।';
 
   @override
   String get authErrWeakPassword => 'दिए गए पासवर्ड बहुत कमजोर है।';
@@ -610,8 +588,7 @@ class AppLocalizationsHi extends AppLocalizations {
   String get authErrInvalidEmail => 'ईमेल पता अमान्य है।';
 
   @override
-  String get authErrInvalidCredential =>
-      'ईमेल या पासवर्ड गलत है। कृपया पुनः प्रयास करें।';
+  String get authErrInvalidCredential => 'ईमेल या पासवर्ड गलत है। कृपया पुनः प्रयास करें।';
 
   @override
   String authErrDefault(Object message) {
@@ -619,8 +596,7 @@ class AppLocalizationsHi extends AppLocalizations {
   }
 
   @override
-  String get authErrGoogleUnavailable =>
-      'Google साइन-इन अभी उपलब्ध नहीं है। कृपया अपने ईमेल से साइन इन करें।';
+  String get authErrGoogleUnavailable => 'Google साइन-इन अभी उपलब्ध नहीं है। कृपया अपने ईमेल से साइन इन करें।';
 
   @override
   String get newCategoryTitle => 'नई श्रेणी';
@@ -632,8 +608,7 @@ class AppLocalizationsHi extends AppLocalizations {
   String get newCategoryAdd => 'जोड़ें';
 
   @override
-  String get deleteCategoryConfirm =>
-      'यह श्रेणी हटाएं? सहेजे गए लिंक में टैग रहेगा लेकिन यह फ़िल्टर में नहीं दिखेगा।';
+  String get deleteCategoryConfirm => 'यह श्रेणी हटाएं? सहेजे गए लिंक में टैग रहेगा लेकिन यह फ़िल्टर में नहीं दिखेगा।';
 
   @override
   String get linkEditLabel => 'संपादित करें';
@@ -666,8 +641,7 @@ class AppLocalizationsHi extends AppLocalizations {
   }
 
   @override
-  String get sharedAnotherVersion =>
-      'इस लिंक का एक और संस्करण सहेजा गया, यह \"आज\" में वापस आएगा';
+  String get sharedAnotherVersion => 'इस लिंक का एक और संस्करण सहेजा गया, यह \"आज\" में वापस आएगा';
 
   @override
   String addAlreadySavedKept(String date) {
@@ -688,11 +662,7 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String todaySavedCount(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count× सहेजा गया',
-    );
+    String _temp0 = intl.Intl.pluralLogic(count, locale: localeName, other: '$count× सहेजा गया');
     return '$_temp0';
   }
 
@@ -721,12 +691,7 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String libraryLinkCount(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count लिंक',
-      one: '1 लिंक',
-    );
+    String _temp0 = intl.Intl.pluralLogic(count, locale: localeName, other: '$count लिंक', one: '1 लिंक');
     return '$_temp0';
   }
 
@@ -782,12 +747,7 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String bulkDeleteTitle(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count लिंक हटाएँ?',
-      one: '1 लिंक हटाएँ?',
-    );
+    String _temp0 = intl.Intl.pluralLogic(count, locale: localeName, other: '$count लिंक हटाएँ?', one: '1 लिंक हटाएँ?');
     return '$_temp0';
   }
 
@@ -826,12 +786,7 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String sourceSheetCount(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count साइट',
-      one: '1 साइट',
-    );
+    String _temp0 = intl.Intl.pluralLogic(count, locale: localeName, other: '$count साइट', one: '1 साइट');
     return '$_temp0';
   }
 
@@ -863,8 +818,7 @@ class AppLocalizationsHi extends AppLocalizations {
   String get linkShare => 'शेयर करें';
 
   @override
-  String get conflictsEmpty =>
-      'किसी कॉन्फ़्लिक्ट पर ध्यान देने की ज़रूरत नहीं है।';
+  String get conflictsEmpty => 'किसी कॉन्फ़्लिक्ट पर ध्यान देने की ज़रूरत नहीं है।';
 
   @override
   String get conflictDeletedInCloud => 'क्लाउड में हटा दिया गया';
@@ -894,15 +848,13 @@ class AppLocalizationsHi extends AppLocalizations {
   String get notificationTitle => 'लिंक आपका इंतज़ार कर रहे हैं';
 
   @override
-  String get notificationBody =>
-      'आपने कुछ ऐसा सेव किया है जो दोबारा देखने लायक है — एक देखने के लिए टैप करें।';
+  String get notificationBody => 'आपने कुछ ऐसा सेव किया है जो दोबारा देखने लायक है — एक देखने के लिए टैप करें।';
 
   @override
   String get notificationChannelName => 'दैनिक रिमाइंडर';
 
   @override
-  String get notificationChannelDescription =>
-      'सेव किए गए लिंक को देखने के लिए रोज़ एक रिमाइंडर';
+  String get notificationChannelDescription => 'सेव किए गए लिंक को देखने के लिए रोज़ एक रिमाइंडर';
 
   @override
   String get widgetTodaysPick => 'आज का लिंक';

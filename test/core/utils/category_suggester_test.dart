@@ -7,9 +7,7 @@ void main() {
       CategorySuggester.suggest(host: host, history: history);
 
   test('your history beats the built-in map', () {
-    expect(suggest('youtube.com', const [NamedCount('Recipes', 6)]), [
-      'Recipes',
-    ]);
+    expect(suggest('youtube.com', const [NamedCount('Recipes', 6)]), ['Recipes']);
   });
 
   test('history keeps its order and is capped', () {
