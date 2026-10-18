@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:internet_connection_checker_plus/internet_connection_checker_plus.dart';
+import 'package:link_hive/core/services/cloud_sync_service.dart';
 import 'package:link_hive/core/services/sync_engine.dart';
 import 'package:link_hive/core/services/sync_service.dart';
 import 'package:link_hive/core/services/sync_status.dart';
@@ -11,11 +12,14 @@ import 'package:mocktail/mocktail.dart';
 
 class MockLinkRepository extends Mock implements LinkRepository {}
 
+class MockCloudSyncService extends Mock implements CloudSyncService {}
+
 class MockUser extends Mock implements User {}
 
 void main() {
   group('SyncService', () {
     late MockLinkRepository repository;
+    late MockCloudSyncService cloudSync;
     late SyncEngine engine;
     late StreamController<InternetStatus> connectivity;
     late SyncService syncService;
@@ -28,20 +32,23 @@ void main() {
       signedIn = true;
       hasInternet = true;
       repository = MockLinkRepository();
+      cloudSync = MockCloudSyncService();
       when(
         () => repository.unsyncedSummary(),
       ).thenReturn(const UnsyncedSummary(changes: 2));
-      when(() => repository.lastFailure).thenReturn(null);
+      when(() => cloudSync.lastFailure).thenReturn(null);
       when(() => repository.lastPulledAt).thenReturn(null);
-      when(() => repository.syncPendingLinks()).thenAnswer((_) async {});
-      when(() => repository.pullFromCloud()).thenAnswer((_) async {});
+      when(() => cloudSync.push()).thenAnswer((_) async {});
+      when(
+        () => cloudSync.pull(full: any(named: 'full')),
+      ).thenAnswer((_) async {});
       engine = SyncEngine(
+        cloudSync: cloudSync,
         repository: repository,
         isAuthenticated: () => signedIn,
       );
       connectivity = StreamController<InternetStatus>.broadcast();
       syncService = SyncService(
-        linkRepository: repository,
         syncEngine: engine,
         connectivityChanges: connectivity.stream,
         hasInternetAccess: () async => hasInternet,
@@ -80,12 +87,12 @@ void main() {
     test('starts a sync when the connection returns', () async {
       syncService.startListening();
       await pump();
-      clearInteractions(repository); // the pull started at launch
+      clearInteractions(cloudSync); // the pull started at launch
 
       connectivity.add(InternetStatus.connected);
       await pump();
 
-      verify(() => repository.syncPendingLinks()).called(1);
+      verify(() => cloudSync.push()).called(1);
     });
 
     test('learns at start that the phone is offline', () async {
@@ -101,7 +108,6 @@ void main() {
       'keeps assuming the phone is online if the first check fails',
       () async {
         final failing = SyncService(
-          linkRepository: repository,
           syncEngine: engine,
           connectivityChanges: connectivity.stream,
           hasInternetAccess: () async => throw Exception('no probe'),
@@ -118,7 +124,7 @@ void main() {
     );
 
     test('a background sync that fails is handled, not thrown', () async {
-      when(() => repository.syncPendingLinks()).thenThrow(Exception('boom'));
+      when(() => cloudSync.push()).thenThrow(Exception('boom'));
       final unhandled = <Object>[];
 
       await runZonedGuarded(() async {

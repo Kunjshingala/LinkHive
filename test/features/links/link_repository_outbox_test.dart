@@ -5,19 +5,13 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:link_hive/core/constants/hive_constants.dart';
 import 'package:link_hive/core/models/sync_operation.dart';
 import 'package:link_hive/core/models/sync_tombstone.dart';
-import 'package:link_hive/core/services/firebase_firestore_service.dart';
 import 'package:link_hive/core/utils/hive_helper.dart';
 import 'package:link_hive/features/links/models/category_model.dart';
 import 'package:link_hive/features/links/models/link_model.dart';
 import 'package:link_hive/features/links/repository/link_repository.dart';
-import 'package:mocktail/mocktail.dart';
-
-class MockFirebaseFirestoreService extends Mock
-    implements FirebaseFirestoreService {}
 
 void main() {
   late Directory hiveDirectory;
-  late MockFirebaseFirestoreService firebaseService;
   late LinkRepository repository;
 
   setUpAll(() async {
@@ -51,11 +45,7 @@ void main() {
       Hive.box<SyncTombstone>(HiveConstants.syncTombstonesBox).clear(),
     ]);
 
-    firebaseService = MockFirebaseFirestoreService();
-    repository = LinkRepository(
-      firebaseService: firebaseService,
-      hiveHelper: HiveHelper(),
-    );
+    repository = LinkRepository(hiveHelper: HiveHelper());
   });
 
   tearDown(() => Hive.close());
@@ -102,10 +92,7 @@ void main() {
     await Hive.close();
     await openBoxes();
 
-    final restartedRepository = LinkRepository(
-      firebaseService: firebaseService,
-      hiveHelper: HiveHelper(),
-    );
+    final restartedRepository = LinkRepository(hiveHelper: HiveHelper());
     expect(restartedRepository.queryLinks(limit: 10), hasLength(1));
     expect(restartedRepository.pendingSyncOperations, hasLength(1));
     expect(restartedRepository.pendingSyncOperations.single.entityId, link.id);

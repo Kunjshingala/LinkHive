@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:link_hive/core/services/account_session_service.dart';
 import 'package:link_hive/core/services/auth_service.dart';
+import 'package:link_hive/core/services/cloud_sync_service.dart';
 import 'package:link_hive/core/services/sync_control.dart';
 import 'package:link_hive/core/services/sync_status.dart';
 import 'package:link_hive/features/links/repository/local_data_store.dart';
@@ -14,10 +15,13 @@ class MockSyncControl extends Mock implements SyncControl {}
 
 class MockLocalDataStore extends Mock implements LocalDataStore {}
 
+class MockRemoteDataStore extends Mock implements RemoteDataStore {}
+
 void main() {
   late MockAuthService auth;
   late MockSyncControl sync;
   late MockLocalDataStore store;
+  late MockRemoteDataStore remote;
   late AccountSessionService session;
   late UnsyncedSummary current;
 
@@ -25,17 +29,19 @@ void main() {
     auth = MockAuthService();
     sync = MockSyncControl();
     store = MockLocalDataStore();
+    remote = MockRemoteDataStore();
     current = const UnsyncedSummary();
     when(() => store.unsyncedSummary()).thenAnswer((_) => current);
     when(() => store.isWipePending).thenReturn(false);
     when(() => store.setWipePending(any())).thenAnswer((_) async {});
     when(() => store.clearLocalData()).thenAnswer((_) async {});
-    when(() => store.clearRemoteData()).thenAnswer((_) async {});
+    when(() => remote.clearRemoteData()).thenAnswer((_) async {});
     when(() => auth.signOut()).thenAnswer((_) async {});
     session = AccountSessionService(
       authService: auth,
       sync: sync,
       store: store,
+      remote: remote,
     );
   });
 
@@ -53,7 +59,7 @@ void main() {
         () => store.setWipePending(false),
         () => sync.resume(),
       ]);
-      verifyNever(() => store.clearRemoteData());
+      verifyNever(() => remote.clearRemoteData());
     });
 
     test(
@@ -63,7 +69,7 @@ void main() {
 
         verifyInOrder([
           () => store.setWipePending(true),
-          () => store.clearRemoteData(),
+          () => remote.clearRemoteData(),
           () => store.clearLocalData(),
           () => auth.signOut(),
         ]);
@@ -193,7 +199,7 @@ void main() {
         verifyInOrder([
           () => sync.pause(),
           () => store.setWipePending(true),
-          () => store.clearRemoteData(),
+          () => remote.clearRemoteData(),
           () => store.clearLocalData(),
           () => store.setWipePending(false),
           () => sync.resume(),
@@ -210,12 +216,12 @@ void main() {
       );
 
       expect(result, SessionActionResult.needsReconfirmation);
-      verifyNever(() => store.clearRemoteData());
+      verifyNever(() => remote.clearRemoteData());
       verifyNever(() => store.clearLocalData());
     });
 
     test('does not touch the phone when the cloud delete fails', () async {
-      when(() => store.clearRemoteData()).thenThrow(StateError('offline'));
+      when(() => remote.clearRemoteData()).thenThrow(StateError('offline'));
 
       await expectLater(
         session.deleteCloudData(confirmed: current),

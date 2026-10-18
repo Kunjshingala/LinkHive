@@ -5,16 +5,11 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:link_hive/core/constants/hive_constants.dart';
 import 'package:link_hive/core/models/sync_operation.dart';
 import 'package:link_hive/core/models/sync_tombstone.dart';
-import 'package:link_hive/core/services/firebase_firestore_service.dart';
 import 'package:link_hive/core/utils/hive_helper.dart';
 import 'package:link_hive/features/links/models/category_model.dart';
 import 'package:link_hive/features/links/models/link_model.dart';
 import 'package:link_hive/features/links/models/link_query.dart';
 import 'package:link_hive/features/links/repository/link_repository.dart';
-import 'package:mocktail/mocktail.dart';
-
-class MockFirebaseFirestoreService extends Mock
-    implements FirebaseFirestoreService {}
 
 /// The Library queries and bulk writes against real Hive boxes.
 void main() {
@@ -42,10 +37,7 @@ void main() {
     await Hive.box<SyncOperation>(HiveConstants.syncOperationsBox).clear();
     await Hive.box<SyncTombstone>(HiveConstants.syncTombstonesBox).clear();
 
-    repository = LinkRepository(
-      firebaseService: MockFirebaseFirestoreService(),
-      hiveHelper: HiveHelper(),
-    );
+    repository = LinkRepository(hiveHelper: HiveHelper());
   });
 
   tearDown(() => Hive.close());

@@ -19,7 +19,7 @@ part 'link_list_state.dart';
 /// made elsewhere show up without a spinner.
 class LinkListBloc extends Bloc<LinkListEvent, LinkListState> {
   final LinkManager _manager;
-  final SyncEngine? _syncEngine;
+  final SyncEngine _syncEngine;
 
   /// Subscription to the links box. Cancelled in [close].
   late final StreamSubscription<void> _boxSubscription;
@@ -29,7 +29,7 @@ class LinkListBloc extends Bloc<LinkListEvent, LinkListState> {
   /// Shortest time the refresh spinner shows, so a fast sync doesn't flicker.
   static const _minRefreshDuration = Duration(milliseconds: 500);
 
-  LinkListBloc({required LinkManager manager, SyncEngine? syncEngine})
+  LinkListBloc({required LinkManager manager, required SyncEngine syncEngine})
     : _manager = manager,
       _syncEngine = syncEngine,
       super(const LinkListInitial()) {
@@ -191,14 +191,8 @@ class LinkListBloc extends Bloc<LinkListEvent, LinkListState> {
   ) async {
     final startedAt = DateTime.now();
     try {
-      // Push and pull stay one serialized operation when the engine is wired.
-      final engine = _syncEngine;
-      if (engine != null) {
-        await engine.requestSync(pull: true);
-      } else {
-        await _manager.syncPendingLinks();
-        await _manager.pullFromCloud();
-      }
+      // Through the engine, so it never overlaps another sync.
+      await _syncEngine.requestSync(pull: true);
       final current = state;
       if (current is LinkListLoaded) {
         _emitReloaded(emit, current);

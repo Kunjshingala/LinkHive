@@ -8,6 +8,7 @@ import 'package:link_hive/core/constants/hive_constants.dart';
 import 'package:link_hive/core/models/conflict_record.dart';
 import 'package:link_hive/core/models/sync_operation.dart';
 import 'package:link_hive/core/models/sync_tombstone.dart';
+import 'package:link_hive/core/services/cloud_sync_service.dart';
 import 'package:link_hive/core/utils/hive_helper.dart';
 import 'package:link_hive/features/links/models/category_model.dart';
 import 'package:link_hive/features/links/models/link_model.dart';
@@ -26,6 +27,7 @@ void main() {
   late FakeFirebaseFirestoreService cloud;
   late _GatedHiveHelper hiveHelper;
   late LinkRepository repository;
+  late CloudSyncService cloudSync;
 
   setUpAll(() async {
     hiveDirectory = await Directory.systemTemp.createTemp(
@@ -61,9 +63,10 @@ void main() {
 
     cloud = FakeFirebaseFirestoreService();
     hiveHelper = _GatedHiveHelper();
-    repository = LinkRepository(
+    repository = LinkRepository(hiveHelper: hiveHelper);
+    cloudSync = CloudSyncService(
       firebaseService: cloud,
-      hiveHelper: hiveHelper,
+      store: repository,
       uidProvider: () => uid,
     );
   });
@@ -107,7 +110,7 @@ void main() {
       await repository.addLink(link('a-1'));
       final hold = holdCall('saveLink');
 
-      final push = repository.syncPendingLinks();
+      final push = cloudSync.push();
       await hold.reached;
       await repository.updateLink(
         repository.getLinkById('a-1')!.copyWith(title: 'v2'),
@@ -121,7 +124,7 @@ void main() {
       expect(cloud.linksOf(uid).single.title, 'v1');
 
       cloud.onCall = null;
-      await repository.syncPendingLinks();
+      await cloudSync.push();
 
       expect(cloud.linksOf(uid).single.title, 'v2');
       expect(repository.pendingSyncOperations, isEmpty);
@@ -135,7 +138,7 @@ void main() {
         await repository.addLink(link('a-1'));
         final hold = holdCall('saveLink');
 
-        final push = repository.syncPendingLinks();
+        final push = cloudSync.push();
         await hold.reached;
         await repository.deleteLink('a-1');
         hold.release();
@@ -143,7 +146,7 @@ void main() {
 
         expect(repository.getLinkById('a-1'), isNull);
         cloud.onCall = null;
-        await repository.syncPendingLinks();
+        await cloudSync.push();
 
         expect(cloud.linksOf(uid), isEmpty);
         expect(cloud.deletedLinkIdsOf(uid), {'a-1'});
@@ -161,7 +164,7 @@ void main() {
         ),
       );
 
-      final push = repository.syncPendingLinks();
+      final push = cloudSync.push();
       await hold.reached;
       await repository.updateLink(
         repository.getLinkById('a-1')!.copyWith(title: 'v2'),
@@ -182,7 +185,7 @@ void main() {
       () async {
         await repository.addLink(link('a-1'));
 
-        await repository.syncPendingLinks();
+        await cloudSync.push();
 
         expect(repository.getLinkById('a-1')!.isSynced, isTrue);
         expect(repository.pendingSyncOperations, isEmpty);
@@ -201,7 +204,7 @@ void main() {
         link('m-1').copyWith(description: 'd1'),
         syncedAt: 1000,
       );
-      await repository.pullFromCloud();
+      await cloudSync.pull();
       final synced = repository.getLinkById('m-1')!;
       await Hive.box<LinkModel>(
         HiveConstants.linksBox,
@@ -214,7 +217,7 @@ void main() {
       );
 
       final baseWrite = hiveHelper.holdBasePut('m-1');
-      final pull = repository.pullFromCloud();
+      final pull = cloudSync.pull();
       await baseWrite.reached;
       // The merged link is on the phone now; the user edits it.
       final merged = repository.getLinkById('m-1')!;

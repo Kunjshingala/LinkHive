@@ -122,7 +122,7 @@ class AccountBloc extends Bloc<AccountEvent, AccountState> {
       final user = FirebaseAuth.instance.currentUser;
 
       // Sync any links the user saved while browsing as a guest.
-      // We fire-and-forget here — failures are logged inside syncPendingLinks.
+      // We fire-and-forget here — failures are logged inside CloudSyncService.
 
       final (total, synced, unsynced) = _linkRepository.getLinkStats();
       if (user != null) {

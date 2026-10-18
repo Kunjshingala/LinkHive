@@ -8,6 +8,7 @@ import 'package:link_hive/core/models/conflict_record.dart';
 import 'package:link_hive/core/models/sync_operation.dart';
 import 'package:link_hive/core/models/sync_tombstone.dart';
 import 'package:link_hive/core/services/account_session_service.dart';
+import 'package:link_hive/core/services/cloud_sync_service.dart';
 import 'package:link_hive/core/services/auth_service.dart';
 import 'package:link_hive/core/services/sync_engine.dart';
 import 'package:link_hive/core/utils/hive_helper.dart';
@@ -69,12 +70,14 @@ void main() {
 
     currentUid = null;
     cloud = FakeFirebaseFirestoreService();
-    repository = LinkRepository(
+    repository = LinkRepository(hiveHelper: HiveHelper());
+    final cloudSync = CloudSyncService(
       firebaseService: cloud,
-      hiveHelper: HiveHelper(),
+      store: repository,
       uidProvider: () => currentUid,
     );
     engine = SyncEngine(
+      cloudSync: cloudSync,
       repository: repository,
       isAuthenticated: () => currentUid != null,
     );
@@ -84,6 +87,7 @@ void main() {
       authService: auth,
       sync: engine,
       store: repository,
+      remote: cloudSync,
     );
   });
 

@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:link_hive/core/services/cloud_sync_service.dart';
 import 'package:link_hive/core/services/sync_engine.dart';
 import 'package:link_hive/core/services/sync_status.dart';
 import 'package:link_hive/features/links/repository/link_repository.dart';
@@ -13,23 +14,31 @@ import 'package:mocktail/mocktail.dart';
 
 class MockLinkRepository extends Mock implements LinkRepository {}
 
+class MockCloudSyncService extends Mock implements CloudSyncService {}
+
 void main() {
   late MockLinkRepository repository;
+  late MockCloudSyncService cloudSync;
   late StreamController<BoxEvent> queueChanges;
   late UnsyncedSummary summary;
   late SyncEngine engine;
 
   setUp(() {
     repository = MockLinkRepository();
+    cloudSync = MockCloudSyncService();
     queueChanges = StreamController<BoxEvent>.broadcast();
     summary = const UnsyncedSummary();
     when(() => repository.unsyncedSummary()).thenAnswer((_) => summary);
-    when(() => repository.lastFailure).thenReturn(null);
+    when(() => cloudSync.lastFailure).thenReturn(null);
     when(() => repository.lastPulledAt).thenReturn(null);
     when(
       () => repository.watchSyncOperations(),
     ).thenAnswer((_) => queueChanges.stream);
-    engine = SyncEngine(repository: repository, isAuthenticated: () => true);
+    engine = SyncEngine(
+      cloudSync: cloudSync,
+      repository: repository,
+      isAuthenticated: () => true,
+    );
   });
 
   tearDown(() async {
@@ -53,7 +62,7 @@ void main() {
     final states = <SyncStatusState>[];
     final subscription = bloc.stream.listen(states.add);
 
-    when(() => repository.syncPendingLinks()).thenAnswer((_) async {});
+    when(() => cloudSync.push()).thenAnswer((_) async {});
     await engine.requestSync();
     await Future<void>.delayed(Duration.zero);
 

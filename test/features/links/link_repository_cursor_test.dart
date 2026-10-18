@@ -7,6 +7,7 @@ import 'package:link_hive/core/models/conflict_record.dart';
 import 'package:link_hive/core/models/sync_operation.dart';
 import 'package:link_hive/core/models/sync_tombstone.dart';
 import 'package:link_hive/core/services/firebase_firestore_service.dart';
+import 'package:link_hive/core/services/cloud_sync_service.dart';
 import 'package:link_hive/core/utils/hive_helper.dart';
 import 'package:link_hive/features/links/models/category_model.dart';
 import 'package:link_hive/features/links/models/link_model.dart';
@@ -20,6 +21,7 @@ void main() {
   late Directory hiveDirectory;
   late MockFirebaseFirestoreService firebaseService;
   late LinkRepository repository;
+  late CloudSyncService cloudSync;
 
   const baseLink = LinkModel(
     id: 'link-1',
@@ -92,9 +94,10 @@ void main() {
       'user-1',
     );
     firebaseService = MockFirebaseFirestoreService();
-    repository = LinkRepository(
+    repository = LinkRepository(hiveHelper: HiveHelper());
+    cloudSync = CloudSyncService(
       firebaseService: firebaseService,
-      hiveHelper: HiveHelper(),
+      store: repository,
       uidProvider: () => 'user-1',
     );
   });
@@ -108,7 +111,7 @@ void main() {
     ).thenAnswer((_) async => [baseLink]);
     stubEmptyPull();
 
-    await repository.pullFromCloud();
+    await cloudSync.pull();
 
     verify(() => firebaseService.fetchLinks('user-1')).called(1);
     verifyNever(() => firebaseService.fetchLinksSince(any(), any()));
@@ -121,7 +124,7 @@ void main() {
     stubEmptyPull();
 
     final before = DateTime.now().toUtc().millisecondsSinceEpoch;
-    await repository.pullFromCloud();
+    await cloudSync.pull();
     final after = DateTime.now().toUtc().millisecondsSinceEpoch;
 
     final saved =
@@ -146,7 +149,7 @@ void main() {
       ).thenAnswer((_) async => []);
       stubEmptyPull();
 
-      await repository.pullFromCloud();
+      await cloudSync.pull();
 
       verify(
         () => firebaseService.fetchLinksSince('user-1', expectedSince),
@@ -196,7 +199,7 @@ void main() {
     ).thenAnswer((_) async => [cloudUpdated]);
     stubEmptyPull();
 
-    await repository.pullFromCloud();
+    await cloudSync.pull();
 
     // Local title should now reflect device B's edit (no local changes to
     // conflict with).
@@ -236,7 +239,7 @@ void main() {
       ),
     ).thenAnswer((_) async => []);
 
-    await repository.pullFromCloud();
+    await cloudSync.pull();
 
     expect(repository.queryLinks(limit: 10), isEmpty);
   });
@@ -256,7 +259,7 @@ void main() {
     ).thenAnswer((_) async => []);
     stubEmptyPull();
 
-    await repository.pullFromCloud();
+    await cloudSync.pull();
 
     verify(
       () => firebaseService.fetchDeletedLinksSince('user-1', expectedSince),
@@ -278,7 +281,7 @@ void main() {
       ).thenAnswer((_) async => []);
       stubEmptyPull();
 
-      await repository.pullFromCloud();
+      await cloudSync.pull();
 
       verify(
         () => firebaseService.fetchDeletedCategoriesSince(
@@ -308,7 +311,7 @@ void main() {
       ).thenAnswer((_) async => [linkAtBoundary]);
       stubEmptyPull();
 
-      await repository.pullFromCloud();
+      await cloudSync.pull();
 
       expect(
         repository.queryLinks(limit: 10).any((l) => l.id == 'boundary-link'),

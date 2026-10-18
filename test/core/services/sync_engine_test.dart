@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:link_hive/core/services/cloud_sync_service.dart';
 import 'package:link_hive/core/services/sync_engine.dart';
 import 'package:link_hive/core/services/sync_status.dart';
 import 'package:link_hive/features/links/repository/link_repository.dart';
@@ -9,74 +10,78 @@ import 'package:mocktail/mocktail.dart';
 
 class MockLinkRepository extends Mock implements LinkRepository {}
 
+class MockCloudSyncService extends Mock implements CloudSyncService {}
+
 void main() {
   late MockLinkRepository repository;
+  late MockCloudSyncService cloudSync;
   late UnsyncedSummary summary;
   late SyncFailure? repositoryFailure;
 
-  SyncEngine buildEngine({bool authenticated = true}) =>
-      SyncEngine(repository: repository, isAuthenticated: () => authenticated);
+  SyncEngine buildEngine({bool authenticated = true}) => SyncEngine(
+    cloudSync: cloudSync,
+    repository: repository,
+    isAuthenticated: () => authenticated,
+  );
 
   setUp(() {
     repository = MockLinkRepository();
+    cloudSync = MockCloudSyncService();
     summary = const UnsyncedSummary();
     repositoryFailure = null;
     when(() => repository.unsyncedSummary()).thenAnswer((_) => summary);
-    when(() => repository.lastFailure).thenAnswer((_) => repositoryFailure);
+    when(() => cloudSync.lastFailure).thenAnswer((_) => repositoryFailure);
     when(() => repository.lastPulledAt).thenReturn(null);
   });
 
-  test('collapses concurrent requests into one repository sync', () async {
+  test('collapses concurrent requests into one cloud sync', () async {
     final syncCompleter = Completer<void>();
-    when(
-      () => repository.syncPendingLinks(),
-    ).thenAnswer((_) => syncCompleter.future);
+    when(() => cloudSync.push()).thenAnswer((_) => syncCompleter.future);
     final engine = buildEngine();
 
     final first = engine.requestSync();
     final second = engine.requestSync();
 
     expect(identical(first, second), isTrue);
-    verify(() => repository.syncPendingLinks()).called(1);
+    verify(() => cloudSync.push()).called(1);
 
     syncCompleter.complete();
     await Future.wait([first, second]);
   });
 
   test('does not perform cloud work when disabled', () async {
-    when(() => repository.syncPendingLinks()).thenAnswer((_) async {});
+    when(() => cloudSync.push()).thenAnswer((_) async {});
     final engine = buildEngine();
     engine.setCloudWorkEnabled(false);
 
     await engine.requestSync();
 
-    verifyNever(() => repository.syncPendingLinks());
+    verifyNever(() => cloudSync.push());
   });
 
   test('does not perform cloud work when unauthenticated', () async {
-    when(() => repository.syncPendingLinks()).thenAnswer((_) async {});
+    when(() => cloudSync.push()).thenAnswer((_) async {});
     final engine = buildEngine(authenticated: false);
 
     await engine.requestSync();
 
-    verifyNever(() => repository.syncPendingLinks());
+    verifyNever(() => cloudSync.push());
   });
 
   test('runs pull after push when requested', () async {
-    when(() => repository.syncPendingLinks()).thenAnswer((_) async {});
-    when(() => repository.pullFromCloud()).thenAnswer((_) async {});
+    when(() => cloudSync.push()).thenAnswer((_) async {});
+    when(
+      () => cloudSync.pull(full: any(named: 'full')),
+    ).thenAnswer((_) async {});
     final engine = buildEngine();
 
     await engine.requestSync(pull: true);
 
-    verifyInOrder([
-      () => repository.syncPendingLinks(),
-      () => repository.pullFromCloud(),
-    ]);
+    verifyInOrder([() => cloudSync.push(), () => cloudSync.pull(full: false)]);
   });
 
   test('reports idle after a successful run', () async {
-    when(() => repository.syncPendingLinks()).thenAnswer((_) async {});
+    when(() => cloudSync.push()).thenAnswer((_) async {});
     final engine = buildEngine();
 
     await engine.requestSync();
@@ -85,8 +90,8 @@ void main() {
     await engine.dispose();
   });
 
-  test('reports failed when the repository sync throws', () async {
-    when(() => repository.syncPendingLinks()).thenThrow(Exception('offline'));
+  test('reports failed when the cloud sync throws', () async {
+    when(() => cloudSync.push()).thenThrow(Exception('offline'));
     final engine = buildEngine();
 
     await expectLater(engine.requestSync(), throwsException);
@@ -103,10 +108,12 @@ void main() {
     setUp(() {
       firstPush = Completer<void>();
       var pushes = 0;
-      when(() => repository.syncPendingLinks()).thenAnswer(
+      when(() => cloudSync.push()).thenAnswer(
         (_) => ++pushes == 1 ? firstPush.future : Future<void>.value(),
       );
-      when(() => repository.pullFromCloud()).thenAnswer((_) async {});
+      when(
+        () => cloudSync.pull(full: any(named: 'full')),
+      ).thenAnswer((_) async {});
       engine = buildEngine();
     });
 
@@ -114,13 +121,13 @@ void main() {
       final push = engine.requestSync();
       final pull = engine.requestSync(pull: true);
 
-      verifyNever(() => repository.pullFromCloud());
+      verifyNever(() => cloudSync.pull(full: any(named: 'full')));
 
       firstPush.complete();
       await Future.wait([push, pull]);
 
-      verify(() => repository.pullFromCloud()).called(1);
-      verify(() => repository.syncPendingLinks()).called(2);
+      verify(() => cloudSync.pull(full: any(named: 'full'))).called(1);
+      verify(() => cloudSync.push()).called(2);
     });
 
     test('is shared by every pull requested meanwhile', () async {
@@ -133,7 +140,7 @@ void main() {
       firstPush.complete();
       await Future.wait([push, pullA, pullB]);
 
-      verify(() => repository.pullFromCloud()).called(1);
+      verify(() => cloudSync.pull(full: any(named: 'full'))).called(1);
     });
 
     test('still runs when the push-only run failed', () async {
@@ -144,14 +151,16 @@ void main() {
       await expectLater(push, throwsException);
       await pull;
 
-      verify(() => repository.pullFromCloud()).called(1);
+      verify(() => cloudSync.pull(full: any(named: 'full'))).called(1);
     });
   });
 
   test('a pull requested during a pull shares that run', () async {
     final pullRun = Completer<void>();
-    when(() => repository.syncPendingLinks()).thenAnswer((_) async {});
-    when(() => repository.pullFromCloud()).thenAnswer((_) => pullRun.future);
+    when(() => cloudSync.push()).thenAnswer((_) async {});
+    when(
+      () => cloudSync.pull(full: any(named: 'full')),
+    ).thenAnswer((_) => pullRun.future);
     final engine = buildEngine();
 
     final first = engine.requestSync(pull: true);
@@ -161,26 +170,26 @@ void main() {
     expect(identical(first, second), isTrue);
     pullRun.complete();
     await first;
-    verify(() => repository.pullFromCloud()).called(1);
+    verify(() => cloudSync.pull(full: any(named: 'full'))).called(1);
   });
 
   group('pause', () {
     test('refuses new runs until resume', () async {
-      when(() => repository.syncPendingLinks()).thenAnswer((_) async {});
+      when(() => cloudSync.push()).thenAnswer((_) async {});
       final engine = buildEngine();
 
       engine.pause();
       await engine.requestSync();
-      verifyNever(() => repository.syncPendingLinks());
+      verifyNever(() => cloudSync.push());
 
       engine.resume();
       await engine.requestSync();
-      verify(() => repository.syncPendingLinks()).called(1);
+      verify(() => cloudSync.push()).called(1);
     });
 
     test('does not stop a run that is already going', () async {
       final push = Completer<void>();
-      when(() => repository.syncPendingLinks()).thenAnswer((_) => push.future);
+      when(() => cloudSync.push()).thenAnswer((_) => push.future);
       final engine = buildEngine();
 
       final run = engine.requestSync();
@@ -188,27 +197,26 @@ void main() {
       push.complete();
 
       await run;
-      verify(() => repository.syncPendingLinks()).called(1);
+      verify(() => cloudSync.push()).called(1);
     });
   });
 
   group('full resync', () {
     setUp(() {
-      when(() => repository.syncPendingLinks()).thenAnswer((_) async {});
-      when(() => repository.pullFromCloud()).thenAnswer((_) async {});
-      when(() => repository.resetPullCursor()).thenAnswer((_) async {});
+      when(() => cloudSync.push()).thenAnswer((_) async {});
+      when(
+        () => cloudSync.pull(full: any(named: 'full')),
+      ).thenAnswer((_) async {});
     });
 
+    // The cursor itself is forgotten inside the pull run, behind the wipe
+    // guard (see cloud_sync_service_test); the engine asks for a full pull.
     test('forgets the cursor right before pulling, after the push', () async {
       final engine = buildEngine();
 
       await engine.requestFullResync();
 
-      verifyInOrder([
-        () => repository.syncPendingLinks(),
-        () => repository.resetPullCursor(),
-        () => repository.pullFromCloud(),
-      ]);
+      verifyInOrder([() => cloudSync.push(), () => cloudSync.pull(full: true)]);
     });
 
     test('a normal pull leaves the cursor alone', () async {
@@ -216,7 +224,7 @@ void main() {
 
       await engine.requestSync(pull: true);
 
-      verifyNever(() => repository.resetPullCursor());
+      verifyNever(() => cloudSync.pull(full: true));
     });
 
     test('waits for a run that is going, so its cursor is not written back '
@@ -224,25 +232,24 @@ void main() {
       final push = Completer<void>();
       var pushes = 0;
       when(
-        () => repository.syncPendingLinks(),
+        () => cloudSync.push(),
       ).thenAnswer((_) => ++pushes == 1 ? push.future : Future<void>.value());
       final engine = buildEngine();
 
       final running = engine.requestSync();
       final full = engine.requestFullResync();
       await Future<void>.delayed(Duration.zero);
-      verifyNever(() => repository.resetPullCursor());
+      verifyNever(() => cloudSync.pull(full: true));
 
       push.complete();
       await Future.wait([running, full]);
 
-      verify(() => repository.resetPullCursor()).called(1);
-      verify(() => repository.pullFromCloud()).called(1);
+      verify(() => cloudSync.pull(full: true)).called(1);
     });
 
     test('still runs when the run it waited for failed', () async {
       var pushes = 0;
-      when(() => repository.syncPendingLinks()).thenAnswer(
+      when(() => cloudSync.push()).thenAnswer(
         (_) async => ++pushes == 1 ? throw Exception('offline') : null,
       );
       final engine = buildEngine();
@@ -252,7 +259,7 @@ void main() {
       await expectLater(running, throwsException);
       await full;
 
-      verify(() => repository.pullFromCloud()).called(1);
+      verify(() => cloudSync.pull(full: any(named: 'full'))).called(1);
     });
 
     test('does nothing when paused or signed out', () async {
@@ -260,8 +267,7 @@ void main() {
       await paused.requestFullResync();
       await buildEngine(authenticated: false).requestFullResync();
 
-      verifyNever(() => repository.resetPullCursor());
-      verifyNever(() => repository.pullFromCloud());
+      verifyNever(() => cloudSync.pull(full: any(named: 'full')));
     });
   });
 
@@ -271,7 +277,7 @@ void main() {
 
     setUp(() {
       push = Completer<void>();
-      when(() => repository.syncPendingLinks()).thenAnswer((_) => push.future);
+      when(() => cloudSync.push()).thenAnswer((_) => push.future);
       engine = buildEngine();
     });
 

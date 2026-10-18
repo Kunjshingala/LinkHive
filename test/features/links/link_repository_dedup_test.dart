@@ -5,15 +5,10 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:link_hive/core/constants/hive_constants.dart';
 import 'package:link_hive/core/models/sync_operation.dart';
 import 'package:link_hive/core/models/sync_tombstone.dart';
-import 'package:link_hive/core/services/firebase_firestore_service.dart';
 import 'package:link_hive/core/utils/hive_helper.dart';
 import 'package:link_hive/features/links/models/category_model.dart';
 import 'package:link_hive/features/links/models/link_model.dart';
 import 'package:link_hive/features/links/repository/link_repository.dart';
-import 'package:mocktail/mocktail.dart';
-
-class MockFirebaseFirestoreService extends Mock
-    implements FirebaseFirestoreService {}
 
 /// findByCanonicalUrl against real Hive boxes: the lookup saveOrMerge relies
 /// on. Manager tests mock the repository, so they can't prove this part.
@@ -40,10 +35,7 @@ void main() {
     await Hive.box<LinkModel>(HiveConstants.linksBox).clear();
     await Hive.box<SyncOperation>(HiveConstants.syncOperationsBox).clear();
 
-    repository = LinkRepository(
-      firebaseService: MockFirebaseFirestoreService(),
-      hiveHelper: HiveHelper(),
-    );
+    repository = LinkRepository(hiveHelper: HiveHelper());
   });
 
   tearDown(() => Hive.close());

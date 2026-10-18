@@ -1,6 +1,7 @@
 import '../../features/links/repository/local_data_store.dart';
 import '../utils/utils.dart';
 import 'auth_service.dart';
+import 'cloud_sync_service.dart';
 import 'sync_control.dart';
 import 'sync_status.dart';
 
@@ -36,13 +37,16 @@ class AccountSessionService {
     required AuthService authService,
     required SyncControl sync,
     required LocalDataStore store,
+    required RemoteDataStore remote,
   }) : _authService = authService,
        _sync = sync,
-       _store = store;
+       _store = store,
+       _remote = remote;
 
   final AuthService _authService;
   final SyncControl _sync;
   final LocalDataStore _store;
+  final RemoteDataStore _remote;
 
   /// What a sign-out or wipe right now would lose.
   UnsyncedSummary unsyncedSummary() => _store.unsyncedSummary();
@@ -117,7 +121,7 @@ class AccountSessionService {
     _sync.pause();
     try {
       await _store.setWipePending(true);
-      if (clearRemote) await _store.clearRemoteData();
+      if (clearRemote) await _remote.clearRemoteData();
       await _store.clearLocalData();
       if (signOut) await _authService.signOut();
       await _store.setWipePending(false);

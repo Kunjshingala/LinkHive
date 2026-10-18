@@ -4,12 +4,17 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:rxdart/rxdart.dart';
 
 import '../../features/links/repository/link_repository.dart';
+import 'cloud_sync_service.dart';
 import 'sync_control.dart';
 import 'sync_status.dart';
 
 /// Serializes cloud sync requests so only one push/pull run is active at once,
 /// and reports what is really happening as a [SyncSnapshot].
+///
+/// [CloudSyncService] does the push and pull; [LinkRepository] tells what is
+/// still queued and when the last pull finished.
 class SyncEngine implements SyncControl {
+  final CloudSyncService _cloudSync;
   final LinkRepository _repository;
   final bool Function() _isAuthenticated;
 
@@ -28,9 +33,11 @@ class SyncEngine implements SyncControl {
       StreamController<SyncSnapshot>.broadcast();
 
   SyncEngine({
+    required CloudSyncService cloudSync,
     required LinkRepository repository,
     bool Function()? isAuthenticated,
-  }) : _repository = repository,
+  }) : _cloudSync = cloudSync,
+       _repository = repository,
        _isAuthenticated =
            isAuthenticated ?? (() => FirebaseAuth.instance.currentUser != null);
 
@@ -47,8 +54,8 @@ class SyncEngine implements SyncControl {
   }
 
   /// Refuses new sync runs until [resume], for example while the phone is
-  /// being wiped. A run that is already going keeps going; the repository's
-  /// wipe guard stops its local writes.
+  /// being wiped. A run that is already going keeps going; the store's wipe
+  /// guard stops its local writes.
   @override
   void pause() {
     _paused = true;
@@ -65,7 +72,7 @@ class SyncEngine implements SyncControl {
   @override
   SyncSnapshot get snapshot {
     final summary = _repository.unsyncedSummary();
-    final failure = _runFailure ?? _repository.lastFailure;
+    final failure = _runFailure ?? _cloudSync.lastFailure;
     final hasFailure = failure != null || summary.failedChanges > 0;
     final status = _statusFor(summary, hasFailure: hasFailure);
     return SyncSnapshot(
@@ -163,11 +170,8 @@ class SyncEngine implements SyncControl {
     _runFailure = null;
     _emit();
     try {
-      await _repository.syncPendingLinks();
-      if (pull) {
-        if (fullPull) await _repository.resetPullCursor();
-        await _repository.pullFromCloud();
-      }
+      await _cloudSync.push();
+      if (pull) await _cloudSync.pull(full: fullPull);
     } catch (error) {
       _runFailure = SyncFailure.fromError(error);
       rethrow;

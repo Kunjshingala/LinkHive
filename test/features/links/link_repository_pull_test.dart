@@ -7,6 +7,7 @@ import 'package:link_hive/core/models/conflict_record.dart';
 import 'package:link_hive/core/models/sync_operation.dart';
 import 'package:link_hive/core/models/sync_tombstone.dart';
 import 'package:link_hive/core/services/firebase_firestore_service.dart';
+import 'package:link_hive/core/services/cloud_sync_service.dart';
 import 'package:link_hive/core/utils/hive_helper.dart';
 import 'package:link_hive/features/links/models/category_model.dart';
 import 'package:link_hive/features/links/models/link_model.dart';
@@ -20,6 +21,7 @@ void main() {
   late Directory hiveDirectory;
   late MockFirebaseFirestoreService firebaseService;
   late LinkRepository repository;
+  late CloudSyncService cloudSync;
 
   const cloudLink = LinkModel(
     id: 'cloud-link',
@@ -66,9 +68,10 @@ void main() {
       Hive.box<ConflictRecord>(HiveConstants.conflictRecordsBox).clear(),
     ]);
     firebaseService = MockFirebaseFirestoreService();
-    repository = LinkRepository(
+    repository = LinkRepository(hiveHelper: HiveHelper());
+    cloudSync = CloudSyncService(
       firebaseService: firebaseService,
-      hiveHelper: HiveHelper(),
+      store: repository,
       uidProvider: () => 'user-1',
     );
   });
@@ -93,7 +96,7 @@ void main() {
       ).thenAnswer((_) async => []);
 
       await repository.clearLocalData();
-      await repository.pullFromCloud();
+      await cloudSync.pull();
 
       expect(repository.queryLinks(limit: 10).single.id, cloudLink.id);
       expect(repository.getCategories().single.id, cloudCategory.id);
@@ -125,7 +128,7 @@ void main() {
       () => firebaseService.fetchDeletedCategories('user-1'),
     ).thenAnswer((_) async => []);
 
-    await repository.pullFromCloud();
+    await cloudSync.pull();
 
     expect(repository.queryLinks(limit: 10).single.title, 'Local title');
     expect(repository.conflicts.single.conflictingFields, ['title']);
@@ -159,7 +162,7 @@ void main() {
         () => firebaseService.fetchDeletedCategories('user-1'),
       ).thenAnswer((_) async => []);
 
-      await repository.pullFromCloud();
+      await cloudSync.pull();
 
       expect(repository.conflicts.single.linkId, base.id);
       expect(repository.conflicts.single.conflictingFields, ['title']);
@@ -190,7 +193,7 @@ void main() {
         () => firebaseService.fetchDeletedCategories('user-1'),
       ).thenAnswer((_) async => []);
 
-      await repository.pullFromCloud();
+      await cloudSync.pull();
 
       expect(repository.queryLinks(limit: 10), isEmpty);
     },
@@ -223,7 +226,7 @@ void main() {
         () => firebaseService.fetchDeletedCategories('user-1'),
       ).thenAnswer((_) async => []);
 
-      await repository.pullFromCloud();
+      await cloudSync.pull();
       final conflict = repository.conflicts.single;
       await repository.resolveConflictKeepLocal(conflict.conflictId);
 
