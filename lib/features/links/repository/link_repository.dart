@@ -629,12 +629,15 @@ class LinkRepository implements LocalDataStore {
       );
       await _syncOperationsBox.put(operation.operationId, processingOperation);
       try {
-        await _syncOperation(uid, processingOperation, generation);
+        await _syncOperation(uid, processingOperation);
         if (!_isCurrentRun(generation)) return;
-        await _syncOperationsBox.delete(processingOperation.operationId);
+        await _finishPushed(processingOperation);
       } catch (e) {
         if (!_isCurrentRun(generation)) return;
         _lastFailure = SyncFailure.fromError(e);
+        // A change queued while this upload waited replaced the operation;
+        // writing the failed one back would drop that newer change.
+        if (!_isStillInFlight(processingOperation)) continue;
         final attemptCount = processingOperation.attemptCount + 1;
         final retryAt =
             now + SyncBackoff.delayForAttempt(attemptCount).inMilliseconds;
@@ -686,11 +689,7 @@ class LinkRepository implements LocalDataStore {
   /// Why the last push attempt failed, or null if none did since it started.
   SyncFailure? get lastFailure => _lastFailure;
 
-  Future<void> _syncOperation(
-    String uid,
-    SyncOperation operation,
-    int generation,
-  ) async {
+  Future<void> _syncOperation(String uid, SyncOperation operation) async {
     if (operation.entityType == SyncOperation.linkEntity) {
       if (operation.operationType == SyncOperation.delete) {
         await _firebaseService.deleteLink(uid, operation.entityId);
@@ -706,10 +705,6 @@ class LinkRepository implements LocalDataStore {
       } else {
         await _firebaseService.updateLink(uid, link);
       }
-      if (!_isCurrentRun(generation)) return;
-      final syncedLink = link.copyWith(isSynced: true);
-      await _linksBox.put(syncedLink.id, syncedLink);
-      await _baseLinksBox.put(syncedLink.id, syncedLink);
       return;
     }
 
@@ -725,6 +720,52 @@ class LinkRepository implements LocalDataStore {
       }
     }
   }
+
+  /// Records locally that [operation] reached the cloud.
+  ///
+  /// The queued operation can change while its upload waits: an edit replaces
+  /// its payload, and deleting an entity whose create was queued removes it.
+  /// That newer change must not be lost, so it stays queued, the local link is
+  /// left alone, and only the base learns what the cloud now holds.
+  Future<void> _finishPushed(SyncOperation operation) async {
+    final pushedLink =
+        operation.entityType == SyncOperation.linkEntity &&
+            operation.operationType != SyncOperation.delete
+        ? LinkModel.fromFirestore(
+            operation.entityId,
+            operation.payload,
+          ).copyWith(isSynced: true)
+        : null;
+
+    if (_isStillInFlight(operation)) {
+      if (pushedLink != null) {
+        await _linksBox.put(pushedLink.id, pushedLink);
+        await _baseLinksBox.put(pushedLink.id, pushedLink);
+      }
+      await _syncOperationsBox.delete(operation.operationId);
+      return;
+    }
+
+    if (pushedLink != null && _linksBox.containsKey(pushedLink.id)) {
+      await _baseLinksBox.put(pushedLink.id, pushedLink);
+    } else if (operation.operationType != SyncOperation.delete &&
+        !_hasPendingOperation(operation.entityType, operation.entityId) &&
+        _hasLocalTombstone(operation.entityType, operation.entityId)) {
+      // Deleted while its create was uploading: the cloud has it now.
+      await _enqueueOperation(
+        entityType: operation.entityType,
+        entityId: operation.entityId,
+        operationType: SyncOperation.delete,
+        payload: const {},
+      );
+    }
+  }
+
+  /// Whether [operation] is still the queued one, unchanged since its upload
+  /// started. `_enqueueOperation` resets a replaced operation to pending.
+  bool _isStillInFlight(SyncOperation operation) =>
+      _syncOperationsBox.get(operation.operationId)?.state ==
+      SyncOperation.processing;
 
   Future<void> _enqueueOperation({
     required String entityType,
@@ -900,7 +941,10 @@ class LinkRepository implements LocalDataStore {
       );
       await _linksBox.put(mergedLink.id, mergedLink);
       await _baseLinksBox.put(cloudLink.id, cloudLink);
-      if (!mergedLink.isSynced) {
+      // An edit made while these writes waited is newer than the merge and
+      // queued its own operation; queueing the merge would replace it.
+      if (!mergedLink.isSynced &&
+          identical(_linksBox.get(mergedLink.id), mergedLink)) {
         await _enqueueOperation(
           entityType: SyncOperation.linkEntity,
           entityId: mergedLink.id,
