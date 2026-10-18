@@ -1,4 +1,3 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:uuid/uuid.dart';
 
@@ -6,11 +5,8 @@ import '../../../core/constants/hive_constants.dart';
 import '../../../core/models/conflict_record.dart';
 import '../../../core/models/sync_operation.dart';
 import '../../../core/models/sync_tombstone.dart';
-import '../../../core/services/firebase_firestore_service.dart';
 import '../../../core/services/sync_status.dart';
 import '../../../core/utils/hive_helper.dart';
-import '../../../core/utils/sync_backoff.dart';
-import '../../../core/utils/sync_merge_helper.dart';
 import '../../../core/utils/url_canonical.dart';
 import '../../../core/utils/utils.dart';
 import '../../../core/utils/category_utils.dart';
@@ -23,21 +19,14 @@ import 'local_data_store.dart';
 /// Repository that manages all [LinkModel] and [CategoryModel] persistence.
 ///
 /// ## Offline-first Architecture
-/// Every read and write goes to the **local Hive boxes first**.
-/// Firestore is treated as an optional, best-effort sync layer.
-class LinkRepository implements LocalDataStore {
-  final FirebaseFirestoreService _firebaseService;
+/// Every read and write goes to the **local Hive boxes first**, and every
+/// write is queued in the outbox. `CloudSyncService` pushes the outbox and
+/// pulls from Firestore through the narrow [SyncStore] contract; this class
+/// never talks to the cloud.
+class LinkRepository implements LocalDataStore, SyncStore {
   final HiveHelper _hiveHelper;
-  final String? Function() _uidProvider;
 
-  LinkRepository({
-    required FirebaseFirestoreService firebaseService,
-    required HiveHelper hiveHelper,
-    String? Function()? uidProvider,
-  }) : _firebaseService = firebaseService,
-       _hiveHelper = hiveHelper,
-       _uidProvider =
-           uidProvider ?? (() => FirebaseAuth.instance.currentUser?.uid);
+  LinkRepository({required HiveHelper hiveHelper}) : _hiveHelper = hiveHelper;
 
   Box<LinkModel> get _linksBox => _hiveHelper.linksBox;
   Box<LinkModel> get _baseLinksBox => _hiveHelper.baseLinksBox;
@@ -51,18 +40,11 @@ class LinkRepository implements LocalDataStore {
 
   /// Counts the wipes done by [clearLocalData].
   ///
-  /// A sync run remembers the value when it starts and stops writing locally as
-  /// soon as it changes, so a push or pull that was still waiting on the cloud
-  /// when the phone was wiped cannot write the old account's data back.
+  /// A sync run holds the value it started with ([SyncRunToken]), and every
+  /// [SyncStore] write checks it, so a push or pull that was still waiting on
+  /// the cloud when the phone was wiped cannot write the old account's data
+  /// back.
   int _wipeGeneration = 0;
-
-  bool _isCurrentRun(int generation) => generation == _wipeGeneration;
-
-  /// Why the last attempt to push a queued write failed, or null if none did.
-  /// Reset when a push starts; lives in memory only.
-  SyncFailure? _lastFailure;
-
-  String? get _uid => _uidProvider();
 
   // ─── Link CRUD ─────────────────────────────────────────────────────────────
 
@@ -162,6 +144,7 @@ class LinkRepository implements LocalDataStore {
   /// Returns the locally stored link with [id], or null if it doesn't exist.
   /// Used by the share-intent instant-save flow to re-read a link before
   /// enriching it with background-fetched metadata.
+  @override
   LinkModel? getLinkById(String id) => _linksBox.get(id);
 
   /// The saved link that [url] is a duplicate of, or null.
@@ -573,89 +556,12 @@ class LinkRepository implements LocalDataStore {
     );
   }
 
-  // ─── Cloud Sync ────────────────────────────────────────────────────────────
+  // ─── Sync state ────────────────────────────────────────────────────────────
+  //
+  // Push, pull and merge live in CloudSyncService. This class keeps the outbox
+  // and gives that service the reads and guarded writes of [SyncStore].
 
-  /// Makes sure the local sync state belongs to [uid] before a sync run uses it.
-  ///
-  /// The device holds one account's data at a time, so each sync run starts
-  /// here (see `.ai/context/sync-contract.md`):
-  /// * same owner: nothing to do;
-  /// * no owner (a guest, or an install from before owners were recorded): keep
-  ///   the data, reset the pull cursor once so the first pull is a full fetch,
-  ///   and record [uid] as the owner;
-  /// * a different owner: the data and the queued operations are not [uid]'s,
-  ///   so wipe all sync state and record [uid] as the owner.
-  Future<void> claimOrResetFor(String uid) async {
-    final settings = _hiveHelper.settingsBox;
-    final owner = settings.get(HiveConstants.ownerUidKey) as String?;
-    if (owner == uid) return;
-
-    if (owner == null) {
-      await settings.delete(HiveConstants.lastPulledAtKey);
-    } else {
-      printLog(
-        tag: 'LinkRepository',
-        msg: 'Local data belongs to another account; wiping before sync',
-      );
-      await clearLocalData();
-    }
-    await settings.put(HiveConstants.ownerUidKey, uid);
-  }
-
-  Future<void> syncPendingLinks() async {
-    final uid = _uid;
-    if (uid == null) return;
-    await claimOrResetFor(uid);
-    final generation = _wipeGeneration;
-    _lastFailure = null;
-
-    final now = DateTime.now().toUtc().millisecondsSinceEpoch;
-    final operations =
-        _syncOperationsBox.values
-            .where(
-              (operation) =>
-                  (operation.state == SyncOperation.pending ||
-                      operation.state == SyncOperation.failed ||
-                      operation.state == SyncOperation.processing) &&
-                  operation.nextAttemptAt <= now,
-            )
-            .toList()
-          ..sort((a, b) => a.createdAt.compareTo(b.createdAt));
-
-    for (final operation in operations) {
-      if (!_isCurrentRun(generation)) return;
-      final processingOperation = operation.copyWith(
-        state: SyncOperation.processing,
-      );
-      await _syncOperationsBox.put(operation.operationId, processingOperation);
-      try {
-        await _syncOperation(uid, processingOperation);
-        if (!_isCurrentRun(generation)) return;
-        await _finishPushed(processingOperation);
-      } catch (e) {
-        if (!_isCurrentRun(generation)) return;
-        _lastFailure = SyncFailure.fromError(e);
-        // A change queued while this upload waited replaced the operation;
-        // writing the failed one back would drop that newer change.
-        if (!_isStillInFlight(processingOperation)) continue;
-        final attemptCount = processingOperation.attemptCount + 1;
-        final retryAt =
-            now + SyncBackoff.delayForAttempt(attemptCount).inMilliseconds;
-        await _syncOperationsBox.put(
-          processingOperation.operationId,
-          processingOperation.copyWith(
-            state: SyncOperation.failed,
-            attemptCount: attemptCount,
-            nextAttemptAt: retryAt,
-            lastError: e.toString(),
-          ),
-        );
-        printLog(tag: 'LinkRepository', msg: 'Syncing operation failed: $e');
-      }
-    }
-  }
-
-  /// Returns durable operations in creation order for the sync engine.
+  /// Returns durable operations in creation order.
   List<SyncOperation> get pendingSyncOperations =>
       _syncOperationsBox.values.toList()
         ..sort((a, b) => a.createdAt.compareTo(b.createdAt));
@@ -677,57 +583,101 @@ class LinkRepository implements LocalDataStore {
   /// Emits whenever the queue of unsynced writes changes.
   Stream<BoxEvent> watchSyncOperations() => _syncOperationsBox.watch();
 
-  /// When the last successful pull finished, in milliseconds since the epoch.
-  int? get lastPulledAt => _readCursor();
+  @override
+  int? get lastPulledAt =>
+      _hiveHelper.settingsBox.get(HiveConstants.lastPulledAtKey) as int?;
 
-  /// Forgets when the last pull finished, so the next pull fetches everything
-  /// again. Nothing on this phone is deleted: pulled links are merged in the
-  /// same way as on a first sync.
-  Future<void> resetPullCursor() =>
-      _hiveHelper.settingsBox.delete(HiveConstants.lastPulledAtKey);
+  @override
+  Future<SyncRunToken?> beginRun(String uid) async {
+    final settings = _hiveHelper.settingsBox;
+    var run = SyncRunToken(_wipeGeneration);
+    final owner = settings.get(HiveConstants.ownerUidKey) as String?;
+    if (owner == uid) return run;
 
-  /// Why the last push attempt failed, or null if none did since it started.
-  SyncFailure? get lastFailure => _lastFailure;
-
-  Future<void> _syncOperation(String uid, SyncOperation operation) async {
-    if (operation.entityType == SyncOperation.linkEntity) {
-      if (operation.operationType == SyncOperation.delete) {
-        await _firebaseService.deleteLink(uid, operation.entityId);
-        return;
-      }
-
-      final link = LinkModel.fromFirestore(
-        operation.entityId,
-        operation.payload,
+    if (owner == null) {
+      final reset = await _guarded(
+        run,
+        () => settings.delete(HiveConstants.lastPulledAtKey),
       );
-      if (operation.operationType == SyncOperation.create) {
-        await _firebaseService.saveLink(uid, link);
-      } else {
-        await _firebaseService.updateLink(uid, link);
-      }
-      return;
+      if (!reset) return null;
+    } else {
+      printLog(
+        tag: 'LinkRepository',
+        msg: 'Local data belongs to another account; wiping before sync',
+      );
+      await clearLocalData();
+      // This wipe moved the count by one; more means another wipe ran too.
+      if (_wipeGeneration != run.generation + 1) return null;
+      run = SyncRunToken(_wipeGeneration);
     }
-
-    if (operation.entityType == SyncOperation.categoryEntity) {
-      if (operation.operationType == SyncOperation.delete) {
-        await _firebaseService.deleteCategory(uid, operation.entityId);
-      } else {
-        final category = CategoryModel.fromFirestore(
-          operation.entityId,
-          operation.payload,
-        );
-        await _firebaseService.saveCategory(uid, category);
-      }
-    }
+    final claimed = await _guarded(
+      run,
+      () => settings.put(HiveConstants.ownerUidKey, uid),
+    );
+    return claimed ? run : null;
   }
 
-  /// Records locally that [operation] reached the cloud.
+  @override
+  bool isCurrentRun(SyncRunToken run) => run.generation == _wipeGeneration;
+
+  /// Starts [write] only if no wipe happened since [run] began.
   ///
+  /// The check and the start of the write are one synchronous step, and Hive
+  /// applies a box's writes in the order they start. So the write either
+  /// starts before a wipe's clear, which then removes it, or not at all.
+  Future<bool> _guarded(SyncRunToken run, Future<void> Function() write) async {
+    if (!isCurrentRun(run)) return false;
+    await write();
+    return true;
+  }
+
+  @override
+  List<SyncOperation> dueOperations(int nowMs) =>
+      _syncOperationsBox.values
+          .where(
+            (operation) =>
+                (operation.state == SyncOperation.pending ||
+                    operation.state == SyncOperation.failed ||
+                    operation.state == SyncOperation.processing) &&
+                operation.nextAttemptAt <= nowMs,
+          )
+          .toList()
+        ..sort((a, b) => a.createdAt.compareTo(b.createdAt));
+
+  /// `_enqueueOperation` resets a replaced operation to pending.
+  @override
+  bool isStillInFlight(SyncOperation operation) =>
+      _syncOperationsBox.get(operation.operationId)?.state ==
+      SyncOperation.processing;
+
+  @override
+  LinkModel? getBaseLinkById(String id) => _baseLinksBox.get(id);
+
+  @override
+  bool hasPendingOperation(String entityType, String entityId) =>
+      _syncOperationsBox.values.any(
+        (operation) =>
+            operation.entityType == entityType &&
+            operation.entityId == entityId,
+      );
+
+  @override
+  bool hasLocalTombstone(String entityType, String entityId) =>
+      _syncTombstonesBox.containsKey('$entityType:$entityId');
+
+  @override
+  Future<bool> putOperation(SyncRunToken run, SyncOperation operation) =>
+      _guarded(
+        run,
+        () => _syncOperationsBox.put(operation.operationId, operation),
+      );
+
   /// The queued operation can change while its upload waits: an edit replaces
   /// its payload, and deleting an entity whose create was queued removes it.
   /// That newer change must not be lost, so it stays queued, the local link is
   /// left alone, and only the base learns what the cloud now holds.
-  Future<void> _finishPushed(SyncOperation operation) async {
+  @override
+  Future<bool> finishPushed(SyncRunToken run, SyncOperation operation) async {
     final pushedLink =
         operation.entityType == SyncOperation.linkEntity &&
             operation.operationType != SyncOperation.delete
@@ -737,35 +687,135 @@ class LinkRepository implements LocalDataStore {
           ).copyWith(isSynced: true)
         : null;
 
-    if (_isStillInFlight(operation)) {
+    if (isStillInFlight(operation)) {
       if (pushedLink != null) {
-        await _linksBox.put(pushedLink.id, pushedLink);
-        await _baseLinksBox.put(pushedLink.id, pushedLink);
+        if (!await _guarded(
+              run,
+              () => _linksBox.put(pushedLink.id, pushedLink),
+            ) ||
+            !await _guarded(
+              run,
+              () => _baseLinksBox.put(pushedLink.id, pushedLink),
+            )) {
+          return false;
+        }
       }
-      await _syncOperationsBox.delete(operation.operationId);
-      return;
+      return _guarded(
+        run,
+        () => _syncOperationsBox.delete(operation.operationId),
+      );
     }
 
     if (pushedLink != null && _linksBox.containsKey(pushedLink.id)) {
-      await _baseLinksBox.put(pushedLink.id, pushedLink);
-    } else if (operation.operationType != SyncOperation.delete &&
-        !_hasPendingOperation(operation.entityType, operation.entityId) &&
-        _hasLocalTombstone(operation.entityType, operation.entityId)) {
+      return _guarded(run, () => _baseLinksBox.put(pushedLink.id, pushedLink));
+    }
+    if (operation.operationType != SyncOperation.delete &&
+        !hasPendingOperation(operation.entityType, operation.entityId) &&
+        hasLocalTombstone(operation.entityType, operation.entityId)) {
       // Deleted while its create was uploading: the cloud has it now.
-      await _enqueueOperation(
-        entityType: operation.entityType,
-        entityId: operation.entityId,
-        operationType: SyncOperation.delete,
-        payload: const {},
+      return _guarded(
+        run,
+        () => _enqueueOperation(
+          entityType: operation.entityType,
+          entityId: operation.entityId,
+          operationType: SyncOperation.delete,
+          payload: const {},
+        ),
       );
     }
+    return isCurrentRun(run);
   }
 
-  /// Whether [operation] is still the queued one, unchanged since its upload
-  /// started. `_enqueueOperation` resets a replaced operation to pending.
-  bool _isStillInFlight(SyncOperation operation) =>
-      _syncOperationsBox.get(operation.operationId)?.state ==
-      SyncOperation.processing;
+  @override
+  Future<bool> putCloudLink(SyncRunToken run, LinkModel cloudLink) async =>
+      await _guarded(run, () => _linksBox.put(cloudLink.id, cloudLink)) &&
+      await _guarded(run, () => _baseLinksBox.put(cloudLink.id, cloudLink));
+
+  @override
+  Future<bool> applyMerge(
+    SyncRunToken run,
+    LinkModel merged,
+    LinkModel cloudLink,
+  ) async {
+    if (!await _guarded(run, () => _linksBox.put(merged.id, merged)) ||
+        !await _guarded(
+          run,
+          () => _baseLinksBox.put(cloudLink.id, cloudLink),
+        )) {
+      return false;
+    }
+    // An edit made while these writes waited is newer than the merge and
+    // queued its own operation; queueing the merge would replace it.
+    if (merged.isSynced || !identical(_linksBox.get(merged.id), merged)) {
+      return isCurrentRun(run);
+    }
+    return _guarded(
+      run,
+      () => _enqueueOperation(
+        entityType: SyncOperation.linkEntity,
+        entityId: merged.id,
+        operationType: SyncOperation.update,
+        payload: merged.toSyncPayload(),
+      ),
+    );
+  }
+
+  @override
+  Future<bool> removeLink(SyncRunToken run, String id) async =>
+      await _guarded(run, () => _linksBox.delete(id)) &&
+      await _guarded(run, () => _baseLinksBox.delete(id));
+
+  @override
+  Future<bool> removeBaseLink(SyncRunToken run, String id) =>
+      _guarded(run, () => _baseLinksBox.delete(id));
+
+  @override
+  Future<bool> saveConflict(
+    SyncRunToken run, {
+    required String linkId,
+    required LinkModel base,
+    required LinkModel local,
+    required LinkModel? cloud,
+    required List<String> fields,
+  }) async {
+    final conflict = ConflictRecord(
+      conflictId: '$linkId:${fields.join(',')}',
+      linkId: linkId,
+      conflictingFields: fields,
+      baseVersion: base.toSyncPayload(),
+      localVersion: local.toSyncPayload(),
+      cloudVersion: cloud?.toSyncPayload(),
+      createdAt: DateTime.now().toUtc().millisecondsSinceEpoch,
+    );
+    return await _guarded(
+          run,
+          () => _conflictRecordsBox.put(conflict.conflictId, conflict),
+        ) &&
+        await _guarded(run, () => _conflictLinksBox.put(linkId, local));
+  }
+
+  @override
+  Future<bool> putCategory(SyncRunToken run, CategoryModel category) =>
+      _guarded(run, () => _categoriesBox.put(category.id, category));
+
+  @override
+  Future<bool> removeCategory(SyncRunToken run, String id) =>
+      _guarded(run, () => _categoriesBox.delete(id));
+
+  /// Nothing on this phone is deleted: pulled links are merged in the same way
+  /// as on a first sync.
+  @override
+  Future<bool> resetPullCursor(SyncRunToken run) => _guarded(
+    run,
+    () => _hiveHelper.settingsBox.delete(HiveConstants.lastPulledAtKey),
+  );
+
+  @override
+  Future<bool> writePullCursor(SyncRunToken run, int timestampMs) => _guarded(
+    run,
+    () =>
+        _hiveHelper.settingsBox.put(HiveConstants.lastPulledAtKey, timestampMs),
+  );
 
   Future<void> _enqueueOperation({
     required String entityType,
@@ -815,185 +865,6 @@ class LinkRepository implements LocalDataStore {
 
     await _syncOperationsBox.put(operation.operationId, operation);
   }
-
-  // 60-second overlap so records written near the cursor boundary are never
-  // missed due to clock skew between the client and Firestore servers.
-  static const int _pullOverlapMs = 60 * 1000;
-
-  /// Fetches remote records and reconciles them against local state.
-  ///
-  /// Uses an incremental cursor strategy: the first pull fetches all records;
-  /// subsequent pulls fetch only records whose [FirebaseConstants.linkSyncedAt]
-  /// is within the overlap window of the previous pull time.
-  Future<void> pullFromCloud() async {
-    final uid = _uid;
-    if (uid == null) return;
-    await claimOrResetFor(uid);
-    final generation = _wipeGeneration;
-
-    // Snapshot the current time before querying so any record written to
-    // Firestore during this pull is caught by the next pull's overlap window.
-    final newCursor = DateTime.now().toUtc().millisecondsSinceEpoch;
-
-    final cursor = _readCursor();
-    final List<LinkModel> cloudLinks;
-    if (cursor == null) {
-      cloudLinks = await _firebaseService.fetchLinks(uid);
-    } else {
-      cloudLinks = await _firebaseService.fetchLinksSince(
-        uid,
-        cursor - _pullOverlapMs,
-      );
-    }
-
-    final List<String> deletedIds;
-    if (cursor == null) {
-      deletedIds = await _firebaseService.fetchDeletedLinks(uid);
-    } else {
-      deletedIds = await _firebaseService.fetchDeletedLinksSince(
-        uid,
-        cursor - _pullOverlapMs,
-      );
-    }
-
-    for (final delId in deletedIds) {
-      if (!_isCurrentRun(generation)) return;
-      if (_hasLocalTombstone(SyncOperation.linkEntity, delId)) continue;
-
-      final localLink = _linksBox.get(delId);
-      final baseLink = _baseLinksBox.get(delId);
-      if (localLink == null) {
-        await _baseLinksBox.delete(delId);
-        continue;
-      }
-
-      if (_hasPendingOperation(SyncOperation.linkEntity, delId) ||
-          (baseLink != null &&
-              SyncMergeHelper.hasLocalEdits(baseLink, localLink))) {
-        await _saveConflict(
-          linkId: delId,
-          base: baseLink ?? localLink,
-          local: localLink,
-          cloud: null,
-          fields: const ['delete'],
-        );
-        continue;
-      }
-
-      await _linksBox.delete(delId);
-      await _baseLinksBox.delete(delId);
-    }
-
-    for (final cloudLink in cloudLinks) {
-      if (!_isCurrentRun(generation)) return;
-      if (_hasLocalTombstone(SyncOperation.linkEntity, cloudLink.id)) {
-        continue;
-      }
-
-      final localLink = _linksBox.get(cloudLink.id);
-      final baseLink = _baseLinksBox.get(cloudLink.id);
-      if (_hasPendingOperation(SyncOperation.linkEntity, cloudLink.id)) {
-        if (localLink != null && baseLink != null) {
-          final pendingConflicts = SyncMergeHelper.conflictingFields(
-            base: baseLink,
-            local: localLink,
-            cloud: cloudLink,
-          );
-          if (pendingConflicts.isNotEmpty) {
-            await _saveConflict(
-              linkId: cloudLink.id,
-              base: baseLink,
-              local: localLink,
-              cloud: cloudLink,
-              fields: pendingConflicts,
-            );
-          }
-        }
-        continue;
-      }
-
-      if (localLink == null || baseLink == null) {
-        await _linksBox.put(cloudLink.id, cloudLink);
-        await _baseLinksBox.put(cloudLink.id, cloudLink);
-        continue;
-      }
-
-      final conflicts = SyncMergeHelper.conflictingFields(
-        base: baseLink,
-        local: localLink,
-        cloud: cloudLink,
-      );
-      if (conflicts.isNotEmpty) {
-        await _saveConflict(
-          linkId: cloudLink.id,
-          base: baseLink,
-          local: localLink,
-          cloud: cloudLink,
-          fields: conflicts,
-        );
-        continue;
-      }
-
-      final mergedLink = SyncMergeHelper.merge(
-        base: baseLink,
-        local: localLink,
-        cloud: cloudLink,
-      );
-      await _linksBox.put(mergedLink.id, mergedLink);
-      await _baseLinksBox.put(cloudLink.id, cloudLink);
-      // An edit made while these writes waited is newer than the merge and
-      // queued its own operation; queueing the merge would replace it.
-      if (!mergedLink.isSynced &&
-          identical(_linksBox.get(mergedLink.id), mergedLink)) {
-        await _enqueueOperation(
-          entityType: SyncOperation.linkEntity,
-          entityId: mergedLink.id,
-          operationType: SyncOperation.update,
-          payload: mergedLink.toSyncPayload(),
-        );
-      }
-    }
-
-    final cloudCategories = await _firebaseService.fetchCategories(uid);
-    for (final category in cloudCategories) {
-      if (!_isCurrentRun(generation)) return;
-      if (_hasLocalTombstone(SyncOperation.categoryEntity, category.id) ||
-          _hasPendingOperation(SyncOperation.categoryEntity, category.id)) {
-        continue;
-      }
-      await _categoriesBox.put(category.id, category);
-    }
-
-    final List<String> deletedCategoryIds;
-    if (cursor == null) {
-      deletedCategoryIds = await _firebaseService.fetchDeletedCategories(uid);
-    } else {
-      deletedCategoryIds = await _firebaseService.fetchDeletedCategoriesSince(
-        uid,
-        cursor - _pullOverlapMs,
-      );
-    }
-    for (final categoryId in deletedCategoryIds) {
-      if (!_isCurrentRun(generation)) return;
-      if (_hasLocalTombstone(SyncOperation.categoryEntity, categoryId) ||
-          _hasPendingOperation(SyncOperation.categoryEntity, categoryId)) {
-        continue;
-      }
-      await _categoriesBox.delete(categoryId);
-    }
-
-    // Advance the pull cursor only after all reconciliation succeeds, and not
-    // at all if the phone was wiped meanwhile: that cursor would belong to
-    // data that is gone.
-    if (!_isCurrentRun(generation)) return;
-    await _writeCursor(newCursor);
-  }
-
-  int? _readCursor() =>
-      _hiveHelper.settingsBox.get(HiveConstants.lastPulledAtKey) as int?;
-
-  Future<void> _writeCursor(int tsMs) =>
-      _hiveHelper.settingsBox.put(HiveConstants.lastPulledAtKey, tsMs);
 
   /// Returns unresolved conflicts for presentation and later user resolution.
   List<ConflictRecord> get conflicts => _conflictRecordsBox.values
@@ -1050,16 +921,6 @@ class LinkRepository implements LocalDataStore {
     await _conflictRecordsBox.delete(conflictId);
   }
 
-  bool _hasPendingOperation(String entityType, String entityId) =>
-      _syncOperationsBox.values.any(
-        (operation) =>
-            operation.entityType == entityType &&
-            operation.entityId == entityId,
-      );
-
-  bool _hasLocalTombstone(String entityType, String entityId) =>
-      _syncTombstonesBox.containsKey('$entityType:$entityId');
-
   LinkModel _linkFromPayload(Map<String, dynamic> payload) =>
       LinkModel.fromFirestore(payload['id'] as String, payload);
 
@@ -1075,26 +936,6 @@ class LinkRepository implements LocalDataStore {
     for (final operationId in operationIds) {
       await _syncOperationsBox.delete(operationId);
     }
-  }
-
-  Future<void> _saveConflict({
-    required String linkId,
-    required LinkModel base,
-    required LinkModel local,
-    required LinkModel? cloud,
-    required List<String> fields,
-  }) async {
-    final conflict = ConflictRecord(
-      conflictId: '$linkId:${fields.join(',')}',
-      linkId: linkId,
-      conflictingFields: fields,
-      baseVersion: base.toSyncPayload(),
-      localVersion: local.toSyncPayload(),
-      cloudVersion: cloud?.toSyncPayload(),
-      createdAt: DateTime.now().toUtc().millisecondsSinceEpoch,
-    );
-    await _conflictRecordsBox.put(conflict.conflictId, conflict);
-    await _conflictLinksBox.put(linkId, local);
   }
 
   @override
@@ -1114,13 +955,6 @@ class LinkRepository implements LocalDataStore {
     await _hiveHelper.settingsBox.delete(HiveConstants.lastPulledAtKey);
     await _hiveHelper.settingsBox.delete(HiveConstants.ownerUidKey);
     printLog(tag: 'LinkRepository', msg: 'Cleared local data');
-  }
-
-  @override
-  Future<void> clearRemoteData() async {
-    if (_uid == null) return;
-    await _firebaseService.clearUserData(_uid!);
-    printLog(tag: 'LinkRepository', msg: 'Cleared remote data for uid=$_uid');
   }
 
   @override

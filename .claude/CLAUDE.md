@@ -43,7 +43,8 @@ bloc/
 
 - **Local:** Hive boxes (`linksBox`, `categoriesBox`, `settingsBox`) via `HiveHelper`
 - **Cloud:** Firestore at `/users/{uid}/links` and `/users/{uid}/categories` via `FirebaseFirestoreService`
-- **Repository:** `LinkRepository` — offline-first, Hive writes immediately, Firestore sync on connectivity
+- **Repository:** `LinkRepository` — offline-first local store plus the sync outbox; Hive writes immediately; never calls Firestore
+- **Cloud sync:** `CloudSyncService` — push, pull and merge; the only Firestore user for links and categories; writes to the phone only through `SyncStore` (wipe-guarded)
 - **Background sync:** `SyncService` listens for connectivity changes
 
 ### API / Services (`lib/core/services/`)
@@ -53,6 +54,7 @@ bloc/
 | `AuthService` | Firebase Auth wrapper (email/password + Google) |
 | `FirebaseFirestoreService` | Firestore CRUD, always scoped to `/users/{uid}/` |
 | `LinkMetadataService` | OG + Twitter metadata scraper; platform-aware IO/Web fetcher |
+| `CloudSyncService` | Push, pull and merge for one run; `RemoteDataStore` (delete cloud data) |
 | `SyncEngine` | Serializes push/pull; emits `SyncStatus` stream (idle/syncing/failed/conflict) |
 | `SyncService` | Watches connectivity + `authStateChanges()`; triggers `SyncEngine`; 5-min periodic timer |
 | `ReceiveSharedIntent` | OS share-sheet listener; extracts URL; opens AddLink screen via GoRouter |
@@ -65,6 +67,7 @@ locator<FirebaseFirestoreService>()
 locator<HiveHelper>()
 locator<LinkMetadataService>()
 locator<LinkRepository>()
+locator<CloudSyncService>()
 locator<SyncEngine>()
 locator<SyncService>()
 locator<ReceiveSharedIntent>()

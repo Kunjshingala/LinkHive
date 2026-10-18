@@ -31,7 +31,7 @@ part 'link_model.g.dart';
 ///   syncedAt  = null
 ///       │
 ///       ▼
-/// [LinkRepository.addLink / syncPendingLinks pushes to Firestore]
+/// [LinkRepository.addLink queues it; CloudSyncService.push sends it]
 ///   isSynced  = true
 ///   syncedAt  = FieldValue.serverTimestamp() (written server-side)
 ///       │
@@ -109,8 +109,7 @@ class LinkModel {
   /// `true` once the link has been successfully pushed to Firestore.
   ///
   /// Used by:
-  /// - [LinkRepository.syncPendingLinks] to identify which links still need
-  ///   to be uploaded.
+  /// - `LinkRepository.getLinkStats` to count links not yet uploaded.
   /// - [LinkCard] to show a "cloud_off" badge for unsynced links.
   @HiveField(9)
   final bool isSynced;

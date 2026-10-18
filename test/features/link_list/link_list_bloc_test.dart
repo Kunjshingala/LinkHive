@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:link_hive/core/services/sync_engine.dart';
 import 'package:link_hive/features/link_list/bloc/link_list_bloc.dart';
 import 'package:link_hive/features/links/manager/link_manager.dart';
 import 'package:link_hive/features/links/models/link_model.dart';
@@ -10,8 +11,11 @@ import 'package:mocktail/mocktail.dart';
 
 class MockLinkManager extends Mock implements LinkManager {}
 
+class MockSyncEngine extends Mock implements SyncEngine {}
+
 void main() {
   late MockLinkManager manager;
+  late MockSyncEngine engine;
   late StreamController<BoxEvent> changes;
 
   LinkModel link(String id, {bool isRead = false}) => LinkModel(
@@ -65,6 +69,7 @@ void main() {
 
   setUp(() {
     manager = MockLinkManager();
+    engine = MockSyncEngine();
     changes = StreamController<BoxEvent>.broadcast();
     when(() => manager.watchLinks()).thenAnswer((_) => changes.stream);
     when(() => manager.getLibraryStats()).thenReturn(stats);
@@ -77,7 +82,7 @@ void main() {
 
   tearDown(() => changes.close());
 
-  LinkListBloc build() => LinkListBloc(manager: manager);
+  LinkListBloc build() => LinkListBloc(manager: manager, syncEngine: engine);
 
   blocTest<LinkListBloc, LinkListState>(
     'load emits Loading then the first page with the chip counts',
@@ -241,8 +246,7 @@ void main() {
   blocTest<LinkListBloc, LinkListState>(
     'pull-to-refresh pushes, pulls and completes the indicator',
     build: () {
-      when(() => manager.syncPendingLinks()).thenAnswer((_) async {});
-      when(() => manager.pullFromCloud()).thenAnswer((_) async {});
+      when(() => engine.requestSync(pull: true)).thenAnswer((_) async {});
       return build();
     },
     seed: loaded,
@@ -252,15 +256,16 @@ void main() {
       await completer.future;
     },
     verify: (_) {
-      verify(() => manager.syncPendingLinks()).called(1);
-      verify(() => manager.pullFromCloud()).called(1);
+      verify(() => engine.requestSync(pull: true)).called(1);
     },
   );
 
   blocTest<LinkListBloc, LinkListState>(
     'a failed sync still completes the indicator and reports the error',
     build: () {
-      when(() => manager.syncPendingLinks()).thenThrow(Exception('offline'));
+      when(
+        () => engine.requestSync(pull: true),
+      ).thenThrow(Exception('offline'));
       return build();
     },
     seed: loaded,

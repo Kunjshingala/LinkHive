@@ -2,8 +2,9 @@
 
 What the sync layer guarantees and who is responsible for it. Written for issues
 #7 (cloud links missing after login) and #8 (local sync state not tied to an
-account). Read this before changing `LinkRepository`, `SyncEngine`,
-`SyncService` or the sign-out flow.
+account), and kept current by #9 (push, pull and merge moved to
+`CloudSyncService`). Read this before changing `LinkRepository`,
+`CloudSyncService`, `SyncEngine`, `SyncService` or the sign-out flow.
 
 ## The one rule
 
@@ -20,7 +21,7 @@ that merged into it on first sign-in.
 | Outbox | The sync operations box: pending, processing and failed writes waiting for the cloud. |
 | Sync state | Links, base links, categories, outbox, tombstones, conflicts and the cursor. Theme and locale are device preferences, not sync state. |
 | Wipe | Clearing all sync state. Every wipe goes through `AccountSessionService`. |
-| Generation | A counter in `LinkRepository` that every wipe increments. A sync run stops writing locally when it changed. |
+| Generation | A counter in `LinkRepository` that every wipe increments. A sync run holds the value it began with (`SyncRunToken`); every `SyncStore` write checks it right before writing and refuses once it changed. |
 
 ## Invariants
 
@@ -40,7 +41,9 @@ that merged into it on first sign-in.
 |---|---|
 | `AccountSessionService` | Sequences sign-out and every other wipe, owns wipe-pending recovery at start, counts unsynced work for the sheet. |
 | `SyncControl` (implemented by `SyncEngine`) | Serializes runs, refuses new runs while a wipe is in progress, derives the shown status from run state, connectivity and pending count. |
-| `LocalDataStore` (implemented by `LinkRepository`) | Local data, the outbox, `claimOrResetFor(uid)`, the generation guard, `clearLocalData()`, `unsyncedSummary()`. |
+| `LocalDataStore` (implemented by `LinkRepository`) | What the session needs locally: `clearLocalData()`, `unsyncedSummary()`, the wipe-pending marker. |
+| `SyncStore` (implemented by `LinkRepository`) | What a sync run may touch locally: `beginRun(uid)` (the owner check, guarded), reads, and writes that each check the run's generation right before writing. The only way sync writes to the phone. |
+| `CloudSyncService` | Push, pull and merge for one run; the only class that calls `FirebaseFirestoreService`. Implements `RemoteDataStore` (`clearRemoteData()`) for the session. |
 | `FirebaseFirestoreService` | Talks to Firestore. Every call has a 30 s timeout. |
 | `SyncService` | Connectivity, the 5-minute timer and app lifecycle. Tells the engine when the connection changes. |
 
@@ -49,14 +52,17 @@ that merged into it on first sign-in.
 ### Every sync run
 
 ```
- syncPendingLinks / pullFromCloud
+ CloudSyncService.push / pull(full?)
    uid = signed-in user, none -> return
-   claimOrResetFor(uid)
+   run = store.beginRun(uid)          token taken before the owner check
      owner == uid   -> continue
      owner == null  -> reset cursor once, keep data, owner = uid
-     owner != uid   -> wipe all sync state, owner = uid
-   capture generation, then push / pull
-   before any local write after an await: generation changed -> stop
+     owner != uid   -> wipe all sync state, re-take the token, owner = uid
+     a wipe meanwhile -> null, stop (no owner written)
+   full pull: forget the cursor (guarded)
+   push / pull; every local write goes through a SyncStore write
+     that checks the token right before it starts: changed -> false, stop
+   a stopped run logs "Run stopped: local data was wiped"
 ```
 
 All pull entry points end here: cold start, the auth listener, app resume,
@@ -124,8 +130,9 @@ peach conflict.
 | Sign-out call fails after the wipe | Still signed in with an empty phone; the next pull refills it. |
 | Update on a phone that already holds a stale cursor and no owner | The first sync resets the cursor once (full pull). |
 | Google or Firebase sign-out error | Logged; sign-out continues. |
+| A link is edited or deleted while its upload waits (#12) | The newer change stays queued and the phone keeps it; only the base learns what the cloud got. A delete during a create upload queues a cloud delete. |
+| "Delete cloud data" fails or the app dies during it | Known gap: the next launch finishes only the local wipe, and leftover cloud data syncs back. Tracked in `TODOS.md`. |
 
 ## Not in this contract
 
-Extracting push, pull and merge out of `LinkRepository` (planned, tracked in
-`TODOS.md`). Per-account storage. Multi-account switching without signing out.
+Per-account storage. Multi-account switching without signing out.

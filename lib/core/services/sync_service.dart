@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:internet_connection_checker_plus/internet_connection_checker_plus.dart';
 
-import '../../features/links/repository/link_repository.dart';
 import '../utils/utils.dart';
 import 'sync_engine.dart';
 
@@ -29,13 +28,12 @@ class SyncService {
   /// The optional stream and function parameters replace the real connectivity
   /// and Firebase Auth sources, so the service can be tested without them.
   SyncService({
-    required LinkRepository linkRepository,
-    SyncEngine? syncEngine,
+    required SyncEngine syncEngine,
     Stream<InternetStatus>? connectivityChanges,
     Future<bool> Function()? hasInternetAccess,
     Stream<User?>? authChanges,
     User? Function()? currentUser,
-  }) : _syncEngine = syncEngine ?? SyncEngine(repository: linkRepository),
+  }) : _syncEngine = syncEngine,
        _connectivityChanges = connectivityChanges,
        _hasInternetAccess = hasInternetAccess,
        _authChanges = authChanges,

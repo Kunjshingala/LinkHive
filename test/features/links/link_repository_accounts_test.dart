@@ -9,6 +9,7 @@ import 'package:link_hive/core/models/conflict_record.dart';
 import 'package:link_hive/core/models/sync_operation.dart';
 import 'package:link_hive/core/models/sync_tombstone.dart';
 import 'package:link_hive/core/services/sync_status.dart';
+import 'package:link_hive/core/services/cloud_sync_service.dart';
 import 'package:link_hive/core/utils/hive_helper.dart';
 import 'package:link_hive/features/links/models/category_model.dart';
 import 'package:link_hive/features/links/models/link_model.dart';
@@ -26,6 +27,7 @@ void main() {
   late Directory hiveDirectory;
   late FakeFirebaseFirestoreService cloud;
   late LinkRepository repository;
+  late CloudSyncService cloudSync;
   String? currentUid;
 
   setUpAll(() async {
@@ -62,9 +64,10 @@ void main() {
 
     currentUid = null;
     cloud = FakeFirebaseFirestoreService();
-    repository = LinkRepository(
+    repository = LinkRepository(hiveHelper: HiveHelper());
+    cloudSync = CloudSyncService(
       firebaseService: cloud,
-      hiveHelper: HiveHelper(),
+      store: repository,
       uidProvider: () => currentUid,
     );
   });
@@ -88,8 +91,8 @@ void main() {
     await repository.addLink(link('guest-2'));
 
     currentUid = accountA;
-    await repository.syncPendingLinks();
-    await repository.pullFromCloud();
+    await cloudSync.push();
+    await cloudSync.pull();
 
     expect(localIds(), ['a-1', 'guest-1', 'guest-2']);
     expect(cloud.linksOf(accountA).map((l) => l.id).toSet(), {
@@ -107,9 +110,9 @@ void main() {
       cloud.seedLink(accountB, link('b-2'), syncedAt: 2000);
 
       currentUid = accountA;
-      await repository.pullFromCloud(); // the cursor is now "just now"
+      await cloudSync.pull(); // the cursor is now "just now"
       currentUid = accountB; // sign-out cleared nothing
-      await repository.pullFromCloud();
+      await cloudSync.pull();
 
       expect(localIds(), ['b-1', 'b-2']);
     },
@@ -121,11 +124,11 @@ void main() {
       cloud.seedLink(accountA, link('a-1'), syncedAt: 1000);
 
       currentUid = accountA;
-      await repository.pullFromCloud();
+      await cloudSync.pull();
       currentUid = null; // signed out, nothing wiped
       await repository.deleteLink('a-1'); // queues a delete operation
       currentUid = accountB;
-      await repository.syncPendingLinks();
+      await cloudSync.push();
 
       expect(cloud.deletedLinkIdsOf(accountB), isEmpty);
       expect(cloud.linksOf(accountA).map((l) => l.id), ['a-1']);
@@ -152,7 +155,7 @@ void main() {
       await repository.addLink(link('a-1'));
       final hold = holdCall('saveLink');
 
-      final push = repository.syncPendingLinks();
+      final push = cloudSync.push();
       await hold.reached;
       await repository.clearLocalData();
       hold.release();
@@ -167,7 +170,7 @@ void main() {
       currentUid = accountA;
       final hold = holdCall('fetchLinks');
 
-      final pull = repository.pullFromCloud();
+      final pull = cloudSync.pull();
       await hold.reached;
       await repository.clearLocalData();
       hold.release();
@@ -183,7 +186,7 @@ void main() {
       currentUid = accountA;
       final hold = holdCall('fetchCategories');
 
-      final pull = repository.pullFromCloud(); // links are already written here
+      final pull = cloudSync.pull(); // links are already written here
       await hold.reached;
       await repository.clearLocalData();
       hold.release();
@@ -211,13 +214,13 @@ void main() {
           }
         };
 
-        await repository.syncPendingLinks();
+        await cloudSync.push();
 
         final summary = repository.unsyncedSummary();
         expect(summary.changes, 1);
         expect(summary.failedChanges, 1);
         expect(summary.conflicts, 0);
-        expect(repository.lastFailure, SyncFailure.unavailable);
+        expect(cloudSync.lastFailure, SyncFailure.unavailable);
       },
     );
 
@@ -225,13 +228,13 @@ void main() {
       currentUid = accountA;
       await repository.addLink(link('a-1'));
       cloud.onCall = (method, uid) async => throw TimeoutException('slow');
-      await repository.syncPendingLinks();
-      expect(repository.lastFailure, SyncFailure.timeout);
+      await cloudSync.push();
+      expect(cloudSync.lastFailure, SyncFailure.timeout);
 
       cloud.onCall = null;
-      await repository.syncPendingLinks(); // the retry is not due yet
+      await cloudSync.push(); // the retry is not due yet
 
-      expect(repository.lastFailure, isNull);
+      expect(cloudSync.lastFailure, isNull);
       expect(repository.unsyncedSummary().failedChanges, 1);
     });
 
@@ -239,7 +242,7 @@ void main() {
       currentUid = accountA;
       expect(repository.lastPulledAt, isNull);
 
-      await repository.pullFromCloud();
+      await cloudSync.pull();
 
       expect(repository.lastPulledAt, isNotNull);
     });
@@ -258,7 +261,7 @@ void main() {
         );
 
         currentUid = accountA;
-        await repository.pullFromCloud();
+        await cloudSync.pull();
 
         expect(localIds(), ['a-1']);
         expect(setting(HiveConstants.ownerUidKey), accountA);
@@ -270,9 +273,9 @@ void main() {
       cloud.onCall = (method, uid) async => calls.add(method);
 
       currentUid = accountA;
-      await repository.pullFromCloud();
+      await cloudSync.pull();
       calls.clear();
-      await repository.pullFromCloud();
+      await cloudSync.pull();
 
       expect(calls, contains('fetchLinksSince'));
       expect(calls, isNot(contains('fetchLinks')));
@@ -283,11 +286,11 @@ void main() {
       () async {
         currentUid = accountA;
         await repository.addLink(link('a-local'));
-        await repository.pullFromCloud();
+        await cloudSync.pull();
         expect(repository.pendingSyncOperations, isNotEmpty);
 
         currentUid = accountB;
-        await repository.pullFromCloud();
+        await cloudSync.pull();
 
         expect(localIds(), isEmpty);
         expect(repository.pendingSyncOperations, isEmpty);

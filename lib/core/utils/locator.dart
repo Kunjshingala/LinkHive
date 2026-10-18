@@ -4,6 +4,7 @@ import '../../features/links/manager/link_manager.dart';
 import '../../features/links/repository/link_repository.dart';
 import '../services/account_session_service.dart';
 import '../services/auth_service.dart';
+import '../services/cloud_sync_service.dart';
 import '../services/firebase_firestore_service.dart';
 import '../services/link_metadata_service.dart';
 import '../services/home_widget_service.dart';
@@ -48,9 +49,14 @@ void setupLocator() {
 
   // ─── Repository ─────────────────────────────────────────────────
   locator.registerLazySingleton<LinkRepository>(
-    () => LinkRepository(
+    () => LinkRepository(hiveHelper: locator<HiveHelper>()),
+  );
+
+  // ─── Cloud sync (push, pull, merge; the only Firestore user) ────
+  locator.registerLazySingleton<CloudSyncService>(
+    () => CloudSyncService(
       firebaseService: locator<FirebaseFirestoreService>(),
-      hiveHelper: locator<HiveHelper>(),
+      store: locator<LinkRepository>(),
     ),
   );
 
@@ -63,7 +69,10 @@ void setupLocator() {
   );
 
   locator.registerLazySingleton<SyncEngine>(
-    () => SyncEngine(repository: locator<LinkRepository>()),
+    () => SyncEngine(
+      cloudSync: locator<CloudSyncService>(),
+      repository: locator<LinkRepository>(),
+    ),
   );
 
   // ─── Account session (sign-out and wipes) ───────────────────────
@@ -74,14 +83,12 @@ void setupLocator() {
       authService: locator<AuthService>(),
       sync: locator<SyncEngine>(),
       store: locator<LinkRepository>(),
+      remote: locator<CloudSyncService>(),
     ),
   );
 
-  // ─── Sync service (depends on repository) ───────────────────────
+  // ─── Sync service (depends on the engine) ───────────────────────
   locator.registerLazySingleton<SyncService>(
-    () => SyncService(
-      linkRepository: locator<LinkRepository>(),
-      syncEngine: locator<SyncEngine>(),
-    ),
+    () => SyncService(syncEngine: locator<SyncEngine>()),
   );
 }

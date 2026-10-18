@@ -40,17 +40,21 @@ Fix only the causes the diagnosis actually finds.
 
 ## Sync
 
-### Extract push, pull and merge out of `LinkRepository`
+### Retry a failed or interrupted "Delete cloud data"
 
-**What:** Move `syncPendingLinks`, `pullFromCloud`, the merge and conflict logic into their own sync class, and leave `LinkRepository` as the local store plus the outbox.
+**What:** Persist a "cloud delete pending" phase next to the wipe marker and retry the cloud delete at launch, or tell the user it failed, before finishing the local wipe.
 
-**Why:** `link_repository.dart` is about 1000 lines and mixes local persistence, queries, the outbox, tombstones, conflicts, the pull cursor and the cloud sync. The account-lifecycle fix (#7, #8) had to add owner and generation logic to it.
+**Why:** `recoverInterruptedWipe` only finishes the local wipe. After a failed or killed cloud delete, the phone is wiped, the marker is cleared, and leftover cloud links sync back. The user believes the cloud copy is gone.
 
-**Context:** Deferred from the account-lifecycle plan so the fix could land first. Do it after the new fake-cloud scenario tests exist; they make a behavior-preserving move safe. The contract is in `.ai/context/sync-contract.md`. The session service already talks to the repository and engine through `SyncControl` and `LocalDataStore`, so the move should not change them.
+**Pros:** "Delete cloud data" keeps its promise under a bad network.
 
-**Effort:** L
-**Priority:** P3
-**Depends on:** The account-lifecycle fix (#7, #8) and its tests
+**Cons:** One more persisted state and a launch-time network call.
+
+**Context:** Found by Codex in the issue #9 eng review (2026-10-17). See `_wipe` and `recoverInterruptedWipe` in `lib/core/services/account_session_service.dart`, and invariant 6 in `.ai/context/sync-contract.md`. The cloud delete now goes through `RemoteDataStore` (`CloudSyncService`).
+
+**Effort:** human M / CC S
+**Priority:** P2
+**Depends on:** None
 
 ## Design
 
@@ -67,5 +71,7 @@ Fix only the causes the diagnosis actually finds.
 **Depends on:** None
 
 ## Completed
+
+- **Extract push, pull and merge out of `LinkRepository`** (#9, `refactor/extract-cloud-sync`): `CloudSyncService` does push, pull and merge and is the only Firestore user; `LinkRepository` keeps local storage and the outbox, and its `SyncStore` writes check the wipe guard right before every write.
 
 - **Adopt the Anek + Readex Pro typeface** (2026-10-09, `feat/ui-redesign`): static weights 400 to 800 in `assets/fonts/`, OFL licenses in `assets/licenses/` registered in `main.dart`.

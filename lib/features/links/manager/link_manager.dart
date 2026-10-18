@@ -157,16 +157,6 @@ class LinkManager {
 
   Future<void> deleteCategory(String id) => _repository.deleteCategory(id);
 
-  // ─── Sync triggers ──────────────────────────────────────────────────────
-  //
-  // The user-initiated ones only (pull to refresh). The scheduled and
-  // connectivity-driven paths live in SyncService and talk to the repository
-  // directly.
-
-  Future<void> syncPendingLinks() => _repository.syncPendingLinks();
-
-  Future<void> pullFromCloud() => _repository.pullFromCloud();
-
   /// Opens [link] and records it as consumed.
   ///
   /// Marks the link read and resurfaced *before* launching, so a backgrounded
