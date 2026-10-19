@@ -1,0 +1,295 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cloud delete retry</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anek+Latin:wght@500;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* Tokens from DESIGN.md (light theme, as built) */
+:root {
+  --ink: #1E1E1E; --page: #ECE2D5; --surface: #FFFFFF; --muted: #F3F4F6;
+  --text: #1E1E1E; --text2: #4B5563; --text3: #9CA3AF; --border: #1E1E1E;
+  --mint: #B5E4CA; --peach: #FFDAB9; --sky: #BBE4FB; --rose: #FFD1DC; --lemon: #FDF0A6;
+  --error: #EF4444;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Anek Latin', system-ui, sans-serif; background: var(--page); color: var(--text); padding: 32px 16px 64px; }
+.wrap { max-width: 1560px; margin: 0 auto; }
+h1 { font-size: 34px; font-weight: 800; letter-spacing: -1px; line-height: 1.1; }
+.lead { font-size: 15px; font-weight: 500; color: var(--text2); margin: 10px 0 0; max-width: 820px; line-height: 1.5; }
+.option { margin-top: 40px; }
+.option > h2 { font-size: 22px; font-weight: 700; letter-spacing: -.5px; display: flex; align-items: center; gap: 10px; }
+.option > h2 .tag { font-size: 13px; font-weight: 700; border: 2px solid var(--ink); border-radius: 8px; padding: 2px 9px; background: var(--lemon); }
+.option > p { font-size: 14px; color: var(--text2); margin-top: 6px; max-width: 820px; line-height: 1.5; }
+.row { display: flex; flex-wrap: wrap; gap: 28px; margin-top: 18px; }
+.shot { width: 360px; max-width: 100%; }
+.shot h3 { font-size: 16px; font-weight: 700; margin-bottom: 4px; }
+.shot .sub { font-size: 13px; color: var(--text2); margin-bottom: 10px; min-height: 38px; line-height: 1.45; }
+
+/* Phone */
+.phone { width: 360px; max-width: 100%; height: 640px; border: 3px solid var(--ink); border-radius: 40px; background: var(--surface);
+  overflow: hidden; position: relative; display: flex; flex-direction: column; box-shadow: 6px 6px 0 var(--ink); }
+.status { height: 34px; padding: 0 26px; display: flex; justify-content: space-between; align-items: center; font-size: 13px; font-weight: 700; flex: none; }
+.appbar { height: 64px; flex: none; display: flex; align-items: center; gap: 12px; padding: 0 20px; }
+.appbar .btn { width: 44px; height: 44px; border: 2px solid var(--border); border-radius: 100px; background: var(--surface); box-shadow: 4px 4px 0 var(--mint); display: grid; place-items: center; }
+.appbar b { font-size: 20px; font-weight: 800; letter-spacing: -.3px; }
+.body { padding: 4px 20px 20px; display: flex; flex-direction: column; gap: 0; overflow: hidden; }
+.unchanged { border: 2px dashed var(--text3); border-radius: 16px; color: var(--text3); font-size: 12px; font-weight: 700; letter-spacing: .5px;
+  text-align: center; padding: 14px 10px; margin-bottom: 24px; }
+
+/* Sync status tile: 16 radius, 2px outline, hard shadow (4,4) in the state color */
+.tile { position: relative; margin-bottom: 32px; }
+.tile .shadow { position: absolute; inset: 0; transform: translate(4px, 4px); border: 2px solid var(--border); border-radius: 16px; }
+.tile .face { position: relative; background: var(--surface); border: 2px solid var(--border); border-radius: 16px; padding: 16px; }
+.tile .head { display: flex; gap: 8px; align-items: flex-start; }
+.tile .head b { font-size: 16px; font-weight: 700; letter-spacing: -.1px; line-height: 1.4; display: block; }
+.tile .head .d { font-size: 11px; font-weight: 700; letter-spacing: .5px; line-height: 1.4; color: var(--text2); margin-top: 4px; }
+.pill { margin-top: 16px; height: 44px; border: 2px solid var(--border); border-radius: 100px; background: var(--surface); box-shadow: 4px 4px 0 var(--mint);
+  display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 15px; font-weight: 700; }
+.pill.small { margin-top: 10px; height: 36px; width: max-content; padding: 0 16px; font-size: 13px; box-shadow: 3px 3px 0 var(--mint); }
+.pill.busy { color: var(--text2); }
+.spinner { width: 16px; height: 16px; border: 2px solid var(--text3); border-top-color: var(--ink); border-radius: 50%; animation: spin .8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.label { font-size: 20px; font-weight: 700; letter-spacing: -.3px; margin-bottom: 16px; }
+/* Settings card: 20 radius, 2px outline, mint shadow, 2px ink dividers */
+.card { position: relative; }
+.card .shadow { position: absolute; inset: 0; transform: translate(4px, 5px); background: var(--mint); border: 2px solid var(--border); border-radius: 20px; }
+.card .face { position: relative; background: var(--surface); border: 2px solid var(--border); border-radius: 20px; overflow: hidden; }
+.item { display: flex; align-items: center; gap: 14px; padding: 8px 16px; min-height: 56px; border-top: 2px solid var(--border); }
+.item:first-child { border-top: 0; }
+.lead-ic { width: 36px; height: 36px; flex: none; border: 2px solid var(--border); border-radius: 50%; background: var(--muted); display: grid; place-items: center; box-shadow: 3px 3px 0 var(--mint); }
+.lead-ic.err { background: var(--error); color: #fff; }
+.item .t { flex: 1; min-width: 0; font-size: 16px; font-weight: 700; }
+.item .t.err { color: var(--error); }
+.item .t small { display: block; font-size: 11px; font-weight: 700; letter-spacing: .5px; color: var(--text2); margin-top: 2px; line-height: 1.4; }
+.item .tr { display: flex; align-items: center; gap: 4px; font-size: 13px; font-weight: 600; color: var(--text); white-space: nowrap; }
+.item.tall { align-items: flex-start; padding-top: 12px; padding-bottom: 12px; }
+.badge { font-size: 11px; font-weight: 700; letter-spacing: .5px; border: 2px solid var(--border); border-radius: 100px; padding: 1px 8px; background: var(--lemon); }
+.badge.rose { background: var(--rose); }
+.badge.sky { background: var(--sky); }
+
+/* Snackbar: 16 radius, outline, no shadow, 32px circular badge */
+.snack { position: absolute; left: 16px; right: 16px; bottom: 20px; background: var(--ink); color: #fff; border: 2px solid var(--border); border-radius: 16px;
+  padding: 12px 14px; display: flex; gap: 12px; align-items: center; font-size: 15px; font-weight: 600; }
+.snack .b { width: 32px; height: 32px; border-radius: 50%; background: var(--mint); color: var(--ink); display: grid; place-items: center; flex: none; }
+
+svg.i { width: 24px; height: 24px; fill: currentColor; flex: none; }
+svg.i.sm { width: 20px; height: 20px; }
+.notes { margin-top: 14px; padding-left: 18px; font-size: 13px; color: var(--text2); line-height: 1.6; max-width: 820px; }
+</style>
+</head>
+<body>
+<!-- Material icons (the app uses Icons.*_rounded from the same family) -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-back" viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></symbol>
+  <symbol id="i-lang" viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zm6.93 6h-2.95a15.65 15.65 0 0 0-1.38-3.56A8.03 8.03 0 0 1 18.92 8zM12 4.04c.83 1.2 1.48 2.53 1.91 3.96h-3.82c.43-1.43 1.08-2.76 1.91-3.96zM4.26 14C4.1 13.36 4 12.69 4 12s.1-1.36.26-2h3.38c-.08.66-.14 1.32-.14 2s.06 1.34.14 2H4.26zm.82 2h2.95c.32 1.25.78 2.45 1.38 3.56A7.99 7.99 0 0 1 5.08 16zm2.95-8H5.08a7.99 7.99 0 0 1 4.33-3.56A15.65 15.65 0 0 0 8.03 8zM12 19.96c-.83-1.2-1.48-2.53-1.91-3.96h3.82c-.43 1.43-1.08 2.76-1.91 3.96zM14.34 14H9.66c-.09-.66-.16-1.32-.16-2s.07-1.35.16-2h4.68c.09.65.16 1.32.16 2s-.07 1.34-.16 2zm.25 5.56c.6-1.11 1.06-2.31 1.38-3.56h2.95a8.03 8.03 0 0 1-4.33 3.56zM16.36 14c.08-.66.14-1.32.14-2s-.06-1.34-.14-2h3.38c.16.64.26 1.31.26 2s-.1 1.36-.26 2h-3.38z"/></symbol>
+  <symbol id="i-palette" viewBox="0 0 24 24"><path d="M12 3a9 9 0 0 0 0 18c.83 0 1.5-.67 1.5-1.5 0-.39-.15-.74-.39-1.01-.23-.26-.38-.61-.38-.99 0-.83.67-1.5 1.5-1.5H16c2.76 0 5-2.24 5-5 0-4.42-4.03-8-9-8zm-5.5 9a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm3-4a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm5 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm3 4a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z"/></symbol>
+  <symbol id="i-sync" viewBox="0 0 24 24"><path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46A7.93 7.93 0 0 0 20 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74A7.93 7.93 0 0 0 4 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z"/></symbol>
+  <symbol id="i-delete" viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zm2.46-7.12l1.41-1.41L12 12.59l2.12-2.12 1.41 1.41L13.41 14l2.12 2.12-1.41 1.41L12 15.41l-2.12 2.12-1.41-1.41L10.59 14l-2.13-2.12zM15.5 4l-1-1h-5l-1 1H5v2h14V4z"/></symbol>
+  <symbol id="i-cloudoff" viewBox="0 0 24 24"><path d="M19.35 10.04A7.49 7.49 0 0 0 12 4c-1.48 0-2.85.43-4.01 1.17l1.46 1.46A5.497 5.497 0 0 1 17.5 11v.5H19c1.66 0 3 1.34 3 3 0 1.13-.64 2.11-1.56 2.62l1.45 1.45C23.16 17.65 24 16.17 24 14.5c0-2.64-2.05-4.78-4.65-4.96zM3 5.27l2.75 2.74C2.56 8.15 0 10.77 0 14c0 3.31 2.69 6 6 6h11.73l2 2L21 20.73 4.27 4 3 5.27zM7.73 10l8 8H6c-2.21 0-4-1.79-4-4s1.79-4 4-4h1.73z"/></symbol>
+  <symbol id="i-logout" viewBox="0 0 24 24"><path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/></symbol>
+  <symbol id="i-chev" viewBox="0 0 24 24"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></symbol>
+  <symbol id="i-refresh" viewBox="0 0 24 24"><path d="M17.65 6.35A7.958 7.958 0 0 0 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08A5.99 5.99 0 0 1 12 18c-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></symbol>
+  <symbol id="i-done" viewBox="0 0 24 24"><path d="M19.35 10.04A7.49 7.49 0 0 0 12 4C9.11 4 6.6 5.64 5.35 8.04A5.994 5.994 0 0 0 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM10 17l-3.5-3.5 1.41-1.41L10 14.17 15.18 9l1.41 1.41L10 17z"/></symbol>
+  <symbol id="i-wifioff" viewBox="0 0 24 24"><path d="M23.64 7c-.45-.34-4.93-4-11.64-4-1.5 0-2.89.19-4.15.48L18.18 13.8 23.64 7zm-6.6 8.22L3.27 1.44 2 2.72l2.05 2.06C1.91 5.76.59 6.82.36 7l11.63 14.49.01.01.01-.01 3.9-4.86 3.32 3.32 1.27-1.27-3.46-3.46z"/></symbol>
+  <symbol id="i-sweep" viewBox="0 0 24 24"><path d="M15 16h4v2h-4zm0-8h7v2h-7zm0 4h6v2h-6zM3 18c0 1.1.9 2 2 2h6c1.1 0 2-.9 2-2V8H3v10zM14 5h-3l-1-1H6L5 5H2v2h12z"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></symbol>
+</svg>
+
+<div class="wrap">
+  <h1>Cloud delete: when it doesn't finish</h1>
+  <p class="lead">Account screen, light theme. Approved behavior: the phone is emptied first, then the cloud part is deleted and retried
+    (at launch, when the internet returns, and on Try again) until it's done. Sync stays off for this account until then.
+    Pick option A or B for where the status and Try again live. Profile and stats above are unchanged.</p>
+
+  <!-- ─────────────────────────── Option A ─────────────────────────── -->
+  <section class="option">
+    <h2><span class="tag">A</span> Tile-led: the sync tile carries the status and Try again</h2>
+    <p>Same pattern as today's "Sync failed + Retry". The Delete Cloud Data row only shows a short "Not finished" badge; tapping it does the same as Try again.</p>
+    <div class="row">
+
+      <div class="shot">
+        <h3>1. Deleting</h3>
+        <p class="sub">Right after you confirm, online. Phone is already empty.</p>
+        <div class="phone">
+          <div class="status"><span>9:41</span><span>●●●</span></div>
+          <div class="appbar"><div class="btn"><svg class="i"><use href="#i-back"/></svg></div><b>Account</b></div>
+          <div class="body">
+            <div class="unchanged">PROFILE + STATS (UNCHANGED)</div>
+            <div class="tile"><div class="shadow" style="background:var(--sky)"></div><div class="face">
+              <div class="head"><svg class="i"><use href="#i-sweep"/></svg><div><b>Deleting cloud data…</b><div class="d">Sync is off until it's done.</div></div></div>
+            </div></div>
+            <div class="label">Settings</div>
+            <div class="card"><div class="shadow"></div><div class="face">
+              <div class="item"><div class="lead-ic"><svg class="i sm"><use href="#i-sync"/></svg></div><div class="t">Sync Data</div><div class="tr"><svg class="i"><use href="#i-chev"/></svg></div></div>
+              <div class="item"><div class="lead-ic"><svg class="i sm"><use href="#i-delete"/></svg></div><div class="t">Delete Local Data</div><div class="tr"><svg class="i"><use href="#i-chev"/></svg></div></div>
+              <div class="item"><div class="lead-ic"><svg class="i sm"><use href="#i-cloudoff"/></svg></div><div class="t">Delete Cloud Data</div><div class="tr"><span class="badge sky">Deleting…</span></div></div>
+              <div class="item"><div class="lead-ic err"><svg class="i sm"><use href="#i-logout"/></svg></div><div class="t err">Sign Out</div><div class="tr"><svg class="i"><use href="#i-chev"/></svg></div></div>
+            </div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="shot">
+        <h3>2. Not finished, offline</h3>
+        <p class="sub">The internet dropped, or the app was closed mid-way. Finishes by itself when back online.</p>
+        <div class="phone">
+          <div class="status"><span>9:41</span><span>●●●</span></div>
+          <div class="appbar"><div class="btn"><svg class="i"><use href="#i-back"/></svg></div><b>Account</b></div>
+          <div class="body">
+            <div class="unchanged">PROFILE + STATS (UNCHANGED)</div>
+            <div class="tile"><div class="shadow" style="background:var(--lemon)"></div><div class="face">
+              <div class="head"><svg class="i"><use href="#i-wifioff"/></svg><div><b>Cloud delete not finished</b><div class="d">It will finish when you're online. Sync is off until then.</div></div></div>
+              <div class="pill"><svg class="i sm"><use href="#i-refresh"/></svg>Try again</div>
+            </div></div>
+            <div class="label">Settings</div>
+            <div class="card"><div class="shadow"></div><div class="face">
+              <div class="item"><div class="lead-ic"><svg class="i sm"><use href="#i-sync"/></svg></div><div class="t">Sync Data</div><div class="tr"><svg class="i"><use href="#i-chev"/></svg></div></div>
+              <div class="item"><div class="lead-ic"><svg class="i sm"><use href="#i-delete"/></svg></div><div class="t">Delete Local Data</div><div class="tr"><svg class="i"><use href="#i-chev"/></svg></div></div>
+              <div class="item"><div class="lead-ic"><svg class="i sm"><use href="#i-cloudoff"/></svg></div><div class="t">Delete Cloud Data</div><div class="tr"><span class="badge">Not finished</span></div></div>
+              <div class="item"><div class="lead-ic err"><svg class="i sm"><use href="#i-logout"/></svg></div><div class="t err">Sign Out</div><div class="tr"><svg class="i"><use href="#i-chev"/></svg></div></div>
+            </div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="shot">
+        <h3>3. Not finished, online but failing</h3>
+        <p class="sub">The cloud answered with an error. Reason comes from the existing sync failure texts.</p>
+        <div class="phone">
+          <div class="status"><span>9:41</span><span>●●●</span></div>
+          <div class="appbar"><div class="btn"><svg class="i"><use href="#i-back"/></svg></div><b>Account</b></div>
+          <div class="body">
+            <div class="unchanged">PROFILE + STATS (UNCHANGED)</div>
+            <div class="tile"><div class="shadow" style="background:var(--rose)"></div><div class="face">
+              <div class="head"><svg class="i"><use href="#i-cloudoff"/></svg><div><b>Cloud delete not finished</b><div class="d">The cloud did not answer in time.</div><div class="d">It will try again by itself. Sync is off until then.</div></div></div>
+              <div class="pill"><svg class="i sm"><use href="#i-refresh"/></svg>Try again</div>
+            </div></div>
+            <div class="label">Settings</div>
+            <div class="card"><div class="shadow"></div><div class="face">
+              <div class="item"><div class="lead-ic"><svg class="i sm"><use href="#i-sync"/></svg></div><div class="t">Sync Data</div><div class="tr"><svg class="i"><use href="#i-chev"/></svg></div></div>
+              <div class="item"><div class="lead-ic"><svg class="i sm"><use href="#i-delete"/></svg></div><div class="t">Delete Local Data</div><div class="tr"><svg class="i"><use href="#i-chev"/></svg></div></div>
+              <div class="item"><div class="lead-ic"><svg class="i sm"><use href="#i-cloudoff"/></svg></div><div class="t">Delete Cloud Data</div><div class="tr"><span class="badge rose">Not finished</span></div></div>
+              <div class="item"><div class="lead-ic err"><svg class="i sm"><use href="#i-logout"/></svg></div><div class="t err">Sign Out</div><div class="tr"><svg class="i"><use href="#i-chev"/></svg></div></div>
+            </div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── Option B ─────────────────────────── -->
+  <section class="option">
+    <h2><span class="tag">B</span> Row-led: the Delete Cloud Data row carries the status and Try again</h2>
+    <p>The status sits next to the action it belongs to. The sync tile only says sync is paused and why.</p>
+    <div class="row">
+
+      <div class="shot">
+        <h3>1. Deleting</h3>
+        <p class="sub">Right after you confirm, online. Phone is already empty.</p>
+        <div class="phone">
+          <div class="status"><span>9:41</span><span>●●●</span></div>
+          <div class="appbar"><div class="btn"><svg class="i"><use href="#i-back"/></svg></div><b>Account</b></div>
+          <div class="body">
+            <div class="unchanged">PROFILE + STATS (UNCHANGED)</div>
+            <div class="tile"><div class="shadow" style="background:var(--sky)"></div><div class="face">
+              <div class="head"><svg class="i"><use href="#i-sync"/></svg><div><b>Sync paused</b><div class="d">Your cloud data is being deleted.</div></div></div>
+            </div></div>
+            <div class="label">Settings</div>
+            <div class="card"><div class="shadow"></div><div class="face">
+              <div class="item"><div class="lead-ic"><svg class="i sm"><use href="#i-sync"/></svg></div><div class="t">Sync Data</div><div class="tr"><svg class="i"><use href="#i-chev"/></svg></div></div>
+              <div class="item"><div class="lead-ic"><svg class="i sm"><use href="#i-delete"/></svg></div><div class="t">Delete Local Data</div><div class="tr"><svg class="i"><use href="#i-chev"/></svg></div></div>
+              <div class="item tall"><div class="lead-ic"><svg class="i sm"><use href="#i-cloudoff"/></svg></div><div class="t">Delete Cloud Data<small>Deleting…</small><div class="pill small busy"><span class="spinner"></span>Deleting</div></div></div>
+              <div class="item"><div class="lead-ic err"><svg class="i sm"><use href="#i-logout"/></svg></div><div class="t err">Sign Out</div><div class="tr"><svg class="i"><use href="#i-chev"/></svg></div></div>
+            </div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="shot">
+        <h3>2. Not finished, offline</h3>
+        <p class="sub">The internet dropped, or the app was closed mid-way. Finishes by itself when back online.</p>
+        <div class="phone">
+          <div class="status"><span>9:41</span><span>●●●</span></div>
+          <div class="appbar"><div class="btn"><svg class="i"><use href="#i-back"/></svg></div><b>Account</b></div>
+          <div class="body">
+            <div class="unchanged">PROFILE + STATS (UNCHANGED)</div>
+            <div class="tile"><div class="shadow" style="background:var(--lemon)"></div><div class="face">
+              <div class="head"><svg class="i"><use href="#i-wifioff"/></svg><div><b>Sync paused</b><div class="d">Until your cloud data is deleted.</div></div></div>
+            </div></div>
+            <div class="label">Settings</div>
+            <div class="card"><div class="shadow"></div><div class="face">
+              <div class="item"><div class="lead-ic"><svg class="i sm"><use href="#i-sync"/></svg></div><div class="t">Sync Data</div><div class="tr"><svg class="i"><use href="#i-chev"/></svg></div></div>
+              <div class="item"><div class="lead-ic"><svg class="i sm"><use href="#i-delete"/></svg></div><div class="t">Delete Local Data</div><div class="tr"><svg class="i"><use href="#i-chev"/></svg></div></div>
+              <div class="item tall"><div class="lead-ic"><svg class="i sm"><use href="#i-cloudoff"/></svg></div><div class="t">Delete Cloud Data<small>Not finished yet. It will finish when you're online.</small><div class="pill small"><svg class="i sm"><use href="#i-refresh"/></svg>Try again</div></div></div>
+              <div class="item"><div class="lead-ic err"><svg class="i sm"><use href="#i-logout"/></svg></div><div class="t err">Sign Out</div><div class="tr"><svg class="i"><use href="#i-chev"/></svg></div></div>
+            </div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="shot">
+        <h3>3. Not finished, online but failing</h3>
+        <p class="sub">The cloud answered with an error. Reason comes from the existing sync failure texts.</p>
+        <div class="phone">
+          <div class="status"><span>9:41</span><span>●●●</span></div>
+          <div class="appbar"><div class="btn"><svg class="i"><use href="#i-back"/></svg></div><b>Account</b></div>
+          <div class="body">
+            <div class="unchanged">PROFILE + STATS (UNCHANGED)</div>
+            <div class="tile"><div class="shadow" style="background:var(--rose)"></div><div class="face">
+              <div class="head"><svg class="i"><use href="#i-cloudoff"/></svg><div><b>Sync paused</b><div class="d">Until your cloud data is deleted.</div></div></div>
+            </div></div>
+            <div class="label">Settings</div>
+            <div class="card"><div class="shadow"></div><div class="face">
+              <div class="item"><div class="lead-ic"><svg class="i sm"><use href="#i-sync"/></svg></div><div class="t">Sync Data</div><div class="tr"><svg class="i"><use href="#i-chev"/></svg></div></div>
+              <div class="item"><div class="lead-ic"><svg class="i sm"><use href="#i-delete"/></svg></div><div class="t">Delete Local Data</div><div class="tr"><svg class="i"><use href="#i-chev"/></svg></div></div>
+              <div class="item tall"><div class="lead-ic"><svg class="i sm"><use href="#i-cloudoff"/></svg></div><div class="t">Delete Cloud Data<small>Not finished: the cloud did not answer in time. It will try again by itself.</small><div class="pill small"><svg class="i sm"><use href="#i-refresh"/></svg>Try again</div></div></div>
+              <div class="item"><div class="lead-ic err"><svg class="i sm"><use href="#i-logout"/></svg></div><div class="t err">Sign Out</div><div class="tr"><svg class="i"><use href="#i-chev"/></svg></div></div>
+            </div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────── Shared ─────────────────────────── -->
+  <section class="option">
+    <h2><span class="tag">A + B</span> When it's done</h2>
+    <p>Same for both options: the existing "Cloud data deleted" snackbar, the tile goes back to normal, and sync turns back on.</p>
+    <div class="row">
+      <div class="shot">
+        <h3>4. Done</h3>
+        <p class="sub">The cloud part finished (right away, or later when back online).</p>
+        <div class="phone">
+          <div class="status"><span>9:41</span><span>●●●</span></div>
+          <div class="appbar"><div class="btn"><svg class="i"><use href="#i-back"/></svg></div><b>Account</b></div>
+          <div class="body">
+            <div class="unchanged">PROFILE + STATS (UNCHANGED)</div>
+            <div class="tile"><div class="shadow" style="background:var(--mint)"></div><div class="face">
+              <div class="head"><svg class="i"><use href="#i-done"/></svg><div><b>Ready to sync</b><div class="d">Not synced yet</div></div></div>
+            </div></div>
+            <div class="label">Settings</div>
+            <div class="card"><div class="shadow"></div><div class="face">
+              <div class="item"><div class="lead-ic"><svg class="i sm"><use href="#i-sync"/></svg></div><div class="t">Sync Data</div><div class="tr"><svg class="i"><use href="#i-chev"/></svg></div></div>
+              <div class="item"><div class="lead-ic"><svg class="i sm"><use href="#i-delete"/></svg></div><div class="t">Delete Local Data</div><div class="tr"><svg class="i"><use href="#i-chev"/></svg></div></div>
+              <div class="item"><div class="lead-ic"><svg class="i sm"><use href="#i-cloudoff"/></svg></div><div class="t">Delete Cloud Data</div><div class="tr"><svg class="i"><use href="#i-chev"/></svg></div></div>
+              <div class="item"><div class="lead-ic err"><svg class="i sm"><use href="#i-logout"/></svg></div><div class="t err">Sign Out</div><div class="tr"><svg class="i"><use href="#i-chev"/></svg></div></div>
+            </div></div>
+          </div>
+          <div class="snack"><div class="b"><svg class="i sm"><use href="#i-check"/></svg></div>Cloud data deleted</div>
+        </div>
+      </div>
+    </div>
+    <ul class="notes">
+      <li>All text goes into the 4 ARB files (en, hi, gu, ar) and is checked at 1.3x text size; Arabic mirrors the row layout.</li>
+      <li>Shadow colors follow the existing tile rule: sky while working, lemon waiting for internet, rose on an error, mint when fine. No purple.</li>
+      <li>Dark theme follows the same layout with the existing dark tokens.</li>
+    </ul>
+  </section>
+</div>
+</body>
+</html>

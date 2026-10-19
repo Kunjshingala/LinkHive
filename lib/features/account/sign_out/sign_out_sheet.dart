@@ -120,7 +120,8 @@ class _SignOutSheet extends StatelessWidget {
       SyncStatus.syncing => l10n.accountSignOutSyncing(count),
       SyncStatus.waitingForInternet => l10n.accountSignOutWaiting(count),
       SyncStatus.failed => l10n.accountSignOutFailed(count),
-      SyncStatus.idle || SyncStatus.conflict => l10n.accountSignOutPending(count),
+      // Changes saved after a cloud delete wait until it finishes.
+      SyncStatus.idle || SyncStatus.conflict || SyncStatus.cloudDeletePending => l10n.accountSignOutPending(count),
     };
   }
 }

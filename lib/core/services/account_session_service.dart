@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import '../../features/links/repository/local_data_store.dart';
 import '../utils/utils.dart';
 import 'auth_service.dart';
@@ -14,6 +16,10 @@ enum SessionActionResult {
   /// saved while the confirmation was open. Nothing was changed: show the
   /// current state and ask again.
   needsReconfirmation,
+
+  /// "Delete cloud data": the phone's copy is gone and the cloud delete has
+  /// started. It finishes in the background, retried by every sync run.
+  cloudDeleteStarted,
 }
 
 /// Sequences every change of whose data is on this phone: signing out, and the
@@ -89,8 +95,12 @@ class AccountSessionService {
   ///
   /// The phone's copy goes too: kept alone, it would no longer match the
   /// cloud, and edits to it would fail to sync.
-  Future<SessionActionResult> deleteCloudData({required UnsyncedSummary confirmed}) {
-    return _wipe(confirmed: confirmed, clearRemote: true, signOut: false);
+  Future<SessionActionResult> deleteCloudData({required UnsyncedSummary confirmed}) async {
+    final result = await _wipe(confirmed: confirmed, clearRemote: true, signOut: false);
+    if (result != SessionActionResult.completed) return result;
+    // The cloud part runs as a sync, so it is retried until it finishes.
+    unawaited(requestSync());
+    return SessionActionResult.cloudDeleteStarted;
   }
 
   /// Finishes a wipe that was interrupted, for example by the app being
@@ -114,7 +124,7 @@ class AccountSessionService {
     _sync.pause();
     try {
       await _store.setWipePending(true);
-      if (clearRemote) await _remote.clearRemoteData();
+      if (clearRemote) await _remote.markCloudDeletePending();
       await _store.clearLocalData();
       if (signOut) await _authService.signOut();
       await _store.setWipePending(false);

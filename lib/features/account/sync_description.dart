@@ -28,6 +28,14 @@ SyncDescription describeSync(BuildContext context, SyncSnapshot snapshot) {
 
 (String, IconData) _titleAndIcon(AppLocalizations l10n, SyncSnapshot snapshot) {
   return switch (snapshot.status) {
+    SyncStatus.cloudDeletePending when snapshot.running => (
+      l10n.accountSyncStatusDeletingCloud,
+      Icons.delete_sweep_rounded,
+    ),
+    SyncStatus.cloudDeletePending => (
+      l10n.accountSyncStatusCloudDeleteUnfinished,
+      snapshot.online ? Icons.cloud_off_rounded : Icons.wifi_off_rounded,
+    ),
     SyncStatus.conflict => (l10n.accountSyncStatusConflict, Icons.warning_amber_rounded),
     SyncStatus.failed => (l10n.accountSyncStatusFailed, Icons.cloud_off_rounded),
     SyncStatus.waitingForInternet => (l10n.accountSyncStatusWaiting, Icons.wifi_off_rounded),
@@ -42,11 +50,21 @@ List<String> _details(BuildContext context, SyncSnapshot snapshot) {
   final l10n = context.l10n;
   final pending = snapshot.pendingChanges;
 
+  // An unfinished cloud delete replaces everything else the tile would say:
+  // nothing syncs until it is done.
+  if (snapshot.status == SyncStatus.cloudDeletePending) {
+    if (snapshot.running) return [l10n.accountSyncDeletingCloudDetail];
+    if (!snapshot.online) return [l10n.accountSyncCloudDeleteOfflineDetail];
+    final failure = snapshot.failure;
+    return [if (failure != null) _failureText(l10n, failure), l10n.accountSyncCloudDeleteRetryDetail];
+  }
+
   final now = switch (snapshot.status) {
     SyncStatus.conflict => l10n.accountSyncConflictDetail(snapshot.conflicts),
     SyncStatus.failed => _failureText(l10n, snapshot.failure),
     SyncStatus.waitingForInternet => l10n.accountSyncWaitingDetail(pending),
     SyncStatus.syncing || SyncStatus.idle => pending > 0 ? l10n.accountSyncPendingDetail(pending) : null,
+    SyncStatus.cloudDeletePending => null, // handled above
   };
 
   final syncedAt = snapshot.lastSyncedAt;

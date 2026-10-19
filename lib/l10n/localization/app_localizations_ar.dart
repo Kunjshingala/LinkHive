@@ -454,6 +454,27 @@ class AppLocalizationsAr extends AppLocalizations {
   String get accountSyncNever => 'لم تتم المزامنة بعد';
 
   @override
+  String get accountSyncStatusDeletingCloud => 'جارٍ حذف بيانات السحابة…';
+
+  @override
+  String get accountSyncDeletingCloudDetail => 'المزامنة متوقفة حتى ينتهي الحذف.';
+
+  @override
+  String get accountSyncStatusCloudDeleteUnfinished => 'لم يكتمل حذف بيانات السحابة';
+
+  @override
+  String get accountSyncCloudDeleteOfflineDetail => 'سيكتمل عند عودة الإنترنت. المزامنة متوقفة حتى ذلك الحين.';
+
+  @override
+  String get accountSyncCloudDeleteRetryDetail => 'سيحاول مرة أخرى تلقائيًا. المزامنة متوقفة حتى ذلك الحين.';
+
+  @override
+  String get accountDeleteCloudBadgeDeleting => 'جارٍ الحذف…';
+
+  @override
+  String get accountDeleteCloudBadgeUnfinished => 'لم يكتمل';
+
+  @override
   String accountSyncPendingDetail(num count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,

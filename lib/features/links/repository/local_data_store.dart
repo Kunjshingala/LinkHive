@@ -72,6 +72,15 @@ abstract interface class SyncStore {
   /// When the last successful pull finished, in milliseconds since the epoch.
   int? get lastPulledAt;
 
+  // ─── Unfinished cloud delete ──────────────────────────────────────────────
+  //
+  // Not sync state of a run: it outlives wipes and is not guarded.
+
+  /// The uid whose "Delete cloud data" has not finished, or null.
+  String? get cloudDeletePendingFor;
+
+  Future<void> setCloudDeletePendingFor(String? uid);
+
   // ─── Guarded writes ───────────────────────────────────────────────────────
 
   Future<bool> putOperation(SyncRunToken run, SyncOperation operation);

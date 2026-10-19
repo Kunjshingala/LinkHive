@@ -33,6 +33,7 @@ void main() {
       hasInternet = true;
       repository = MockLinkRepository();
       cloudSync = MockCloudSyncService();
+      when(() => cloudSync.isCloudDeletePending).thenReturn(false);
       when(() => repository.unsyncedSummary()).thenReturn(const UnsyncedSummary(changes: 2));
       when(() => cloudSync.lastFailure).thenReturn(null);
       when(() => repository.lastPulledAt).thenReturn(null);

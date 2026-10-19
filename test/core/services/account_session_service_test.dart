@@ -35,7 +35,8 @@ void main() {
     when(() => store.isWipePending).thenReturn(false);
     when(() => store.setWipePending(any())).thenAnswer((_) async {});
     when(() => store.clearLocalData()).thenAnswer((_) async {});
-    when(() => remote.clearRemoteData()).thenAnswer((_) async {});
+    when(() => remote.markCloudDeletePending()).thenAnswer((_) async {});
+    when(() => sync.requestSync()).thenAnswer((_) async {});
     when(() => auth.signOut()).thenAnswer((_) async {});
     session = AccountSessionService(authService: auth, sync: sync, store: store, remote: remote);
   });
@@ -54,15 +55,15 @@ void main() {
         () => store.setWipePending(false),
         () => sync.resume(),
       ]);
-      verifyNever(() => remote.clearRemoteData());
+      verifyNever(() => remote.markCloudDeletePending());
     });
 
-    test('deletes the cloud data after the marker and before the wipe', () async {
+    test('marks the cloud delete after the marker and before the wipe', () async {
       await session.signOut(confirmed: current, clearRemote: true);
 
       verifyInOrder([
         () => store.setWipePending(true),
-        () => remote.clearRemoteData(),
+        () => remote.markCloudDeletePending(),
         () => store.clearLocalData(),
         () => auth.signOut(),
       ]);
@@ -158,17 +159,18 @@ void main() {
   });
 
   group('deleteCloudData', () {
-    test('deletes the cloud data and the phone\'s copy, and stays signed in', () async {
+    test('empties the phone, then starts the cloud delete as a sync, and stays signed in', () async {
       final result = await session.deleteCloudData(confirmed: current);
 
-      expect(result, SessionActionResult.completed);
+      expect(result, SessionActionResult.cloudDeleteStarted);
       verifyInOrder([
         () => sync.pause(),
         () => store.setWipePending(true),
-        () => remote.clearRemoteData(),
+        () => remote.markCloudDeletePending(),
         () => store.clearLocalData(),
         () => store.setWipePending(false),
         () => sync.resume(),
+        () => sync.requestSync(),
       ]);
       verifyNever(() => auth.signOut());
     });
@@ -179,16 +181,17 @@ void main() {
       final result = await session.deleteCloudData(confirmed: const UnsyncedSummary());
 
       expect(result, SessionActionResult.needsReconfirmation);
-      verifyNever(() => remote.clearRemoteData());
+      verifyNever(() => remote.markCloudDeletePending());
       verifyNever(() => store.clearLocalData());
     });
 
-    test('does not touch the phone when the cloud delete fails', () async {
-      when(() => remote.clearRemoteData()).thenThrow(StateError('offline'));
+    test('a failed phone wipe keeps the marker and does not start the cloud delete', () async {
+      when(() => store.clearLocalData()).thenThrow(StateError('disk'));
 
       await expectLater(session.deleteCloudData(confirmed: current), throwsA(isA<StateError>()));
 
-      verifyNever(() => store.clearLocalData());
+      verifyNever(() => store.setWipePending(false));
+      verifyNever(() => sync.requestSync());
       verify(() => sync.resume()).called(1);
     });
   });

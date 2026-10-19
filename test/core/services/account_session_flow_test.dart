@@ -11,6 +11,7 @@ import 'package:link_hive/core/services/account_session_service.dart';
 import 'package:link_hive/core/services/cloud_sync_service.dart';
 import 'package:link_hive/core/services/auth_service.dart';
 import 'package:link_hive/core/services/sync_engine.dart';
+import 'package:link_hive/core/services/sync_status.dart';
 import 'package:link_hive/core/utils/hive_helper.dart';
 import 'package:link_hive/features/links/models/category_model.dart';
 import 'package:link_hive/features/links/models/link_model.dart';
@@ -227,14 +228,68 @@ void main() {
     await signIn(accountA);
 
     final result = await session.deleteCloudData(confirmed: repository.unsyncedSummary());
+    expect(result, SessionActionResult.cloudDeleteStarted);
+    expect(localIds(), isEmpty); // the phone goes first
+    await engine.requestSync(); // the cloud part runs as the sync it started
 
-    expect(result, SessionActionResult.completed);
     expect(currentUid, accountA);
-    expect(localIds(), isEmpty);
     expect(cloudIds(accountA), isEmpty);
     expect(cloudIds(accountB), ['b-1']); // another account is untouched
+    expect(engine.snapshot.status, isNot(SyncStatus.cloudDeletePending));
     await engine.requestSync(pull: true);
     expect(localIds(), isEmpty); // nothing comes back: it is gone for good
+  });
+
+  test('a cloud delete that fails stays pending, blocks sync, and finishes on a later sync', () async {
+    cloud.seedLink(accountA, link('a-1'), syncedAt: 1000);
+    await signIn(accountA);
+    cloud.onCall = (method, uid) async {
+      if (method == 'clearUserData') throw TimeoutException('offline');
+    };
+
+    await session.deleteCloudData(confirmed: repository.unsyncedSummary());
+    await expectLater(engine.requestSync(), throwsA(isA<TimeoutException>()));
+
+    expect(localIds(), isEmpty);
+    expect(cloudIds(accountA), ['a-1']);
+    expect(engine.snapshot.status, SyncStatus.cloudDeletePending);
+    expect(engine.snapshot.failure, SyncFailure.timeout);
+    await repository.addLink(link('a-new')); // saved after the delete
+    await expectLater(engine.requestSync(pull: true), throwsA(isA<TimeoutException>()));
+    expect(localIds(), ['a-new']); // the pull brought nothing back
+    expect(cloudIds(accountA), ['a-1']); // and the new link was not sent yet
+
+    cloud.onCall = null; // back online
+    await engine.requestSync();
+
+    expect(cloudIds(accountA), ['a-new']);
+    expect(engine.snapshot.status, isNot(SyncStatus.cloudDeletePending));
+  });
+
+  test('an unfinished cloud delete waits for its own account while another one syncs', () async {
+    cloud.seedLink(accountA, link('a-1'), syncedAt: 1000);
+    cloud.seedLink(accountB, link('b-1'), syncedAt: 1000);
+    await signIn(accountA);
+    cloud.onCall = (method, uid) async {
+      if (method == 'clearUserData') throw TimeoutException('offline');
+    };
+    await session.deleteCloudData(confirmed: repository.unsyncedSummary());
+    await expectLater(engine.requestSync(), throwsA(isA<TimeoutException>()));
+    cloud.onCall = null;
+
+    await session.signOut(confirmed: repository.unsyncedSummary());
+    await signIn(accountB);
+
+    expect(localIds(), ['b-1']); // account B syncs normally
+    expect(engine.snapshot.status, isNot(SyncStatus.cloudDeletePending));
+    expect(cloudIds(accountA), ['a-1']); // A's delete waits for A
+
+    await session.signOut(confirmed: repository.unsyncedSummary());
+    await signIn(accountA);
+
+    expect(cloudIds(accountA), isEmpty);
+    expect(localIds(), isEmpty);
+    expect(cloudIds(accountB), ['b-1']);
   });
 
   test('a full resync brings back a cloud link the normal sync skipped', () async {

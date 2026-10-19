@@ -180,4 +180,49 @@ void main() {
     final button = tester.getSize(find.byType(NeoBrutalistButton));
     expect(button.height, greaterThanOrEqualTo(44));
   });
+
+  group('an unfinished cloud delete', () {
+    testWidgets('while deleting: sky, says so, and offers no Retry', (tester) async {
+      await pumpCard(tester, const SyncSnapshot(status: SyncStatus.cloudDeletePending, running: true));
+
+      expect(find.text('Deleting cloud data…'), findsOneWidget);
+      expect(find.text("Sync is off until it's done."), findsOneWidget);
+      expect(find.text('Retry'), findsNothing);
+      expect(shadowOf(AppColors.shadowSky), findsOneWidget);
+    });
+
+    testWidgets('offline: lemon, finishes when back online, with Retry', (tester) async {
+      await pumpCard(
+        tester,
+        const SyncSnapshot(status: SyncStatus.cloudDeletePending, online: false, failure: SyncFailure.timeout),
+      );
+
+      expect(find.text('Cloud delete not finished'), findsOneWidget);
+      expect(find.text('It will finish when you are back online. Sync is off until then.'), findsOneWidget);
+      expect(find.text('The cloud did not answer in time.'), findsNothing); // offline is not a failure
+      expect(shadowOf(AppColors.shadowLemon), findsOneWidget);
+      await tester.tap(find.text('Retry'));
+      expect(retries, 1);
+    });
+
+    testWidgets('online after an error: rose, with the reason and Retry', (tester) async {
+      await pumpCard(tester, const SyncSnapshot(status: SyncStatus.cloudDeletePending, failure: SyncFailure.timeout));
+
+      expect(find.text('Cloud delete not finished'), findsOneWidget);
+      expect(find.text('The cloud did not answer in time.'), findsOneWidget);
+      expect(find.text('It will try again by itself. Sync is off until then.'), findsOneWidget);
+      expect(shadowOf(AppColors.shadowRose), findsOneWidget);
+      expect(find.text('Retry'), findsOneWidget);
+    });
+
+    testWidgets('fits at 1.3x text size', (tester) async {
+      await pumpCard(
+        tester,
+        const SyncSnapshot(status: SyncStatus.cloudDeletePending, failure: SyncFailure.unavailable),
+        textScale: 1.3,
+      );
+
+      expect(tester.takeException(), isNull);
+    });
+  });
 }

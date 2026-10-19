@@ -5,7 +5,8 @@ import 'package:firebase_core/firebase_core.dart';
 
 /// High-level state exposed by the sync engine for UI and diagnostics.
 ///
-/// Precedence when several apply: [conflict] first. Offline, it is
+/// Precedence when several apply: [cloudDeletePending] first, then [conflict].
+/// Offline, it is
 /// [waitingForInternet] when changes are pending, otherwise [idle]. Online, it
 /// is [syncing] while a run is active, otherwise [failed] after a failure,
 /// otherwise [idle].
@@ -24,6 +25,11 @@ enum SyncStatus {
 
   /// Local and cloud edits collided and need the user's decision.
   conflict,
+
+  /// "Delete cloud data" for this account has not finished. Nothing else syncs
+  /// until it does; every sync run tries to finish it first. See
+  /// [SyncSnapshot.running], [SyncSnapshot.online] and [SyncSnapshot.failure].
+  cloudDeletePending,
 }
 
 /// Why a sync attempt failed, in terms the UI can explain to the user.
@@ -85,6 +91,8 @@ class SyncSnapshot extends Equatable {
     this.conflicts = 0,
     this.lastSyncedAt,
     this.failure,
+    this.running = false,
+    this.online = true,
   });
 
   final SyncStatus status;
@@ -98,12 +106,19 @@ class SyncSnapshot extends Equatable {
   /// When the last successful pull finished, in milliseconds since the epoch.
   final int? lastSyncedAt;
 
-  /// Set only while [status] is [SyncStatus.failed].
+  /// Set while [status] is [SyncStatus.failed], and for
+  /// [SyncStatus.cloudDeletePending] when its last attempt failed.
   final SyncFailure? failure;
+
+  /// A sync run is going right now.
+  final bool running;
+
+  /// The phone can reach the internet, as far as the engine knows.
+  final bool online;
 
   /// What would be lost if the phone were wiped now, as the user saw it.
   UnsyncedSummary get unsynced => UnsyncedSummary(changes: pendingChanges, conflicts: conflicts);
 
   @override
-  List<Object?> get props => [status, pendingChanges, conflicts, lastSyncedAt, failure];
+  List<Object?> get props => [status, pendingChanges, conflicts, lastSyncedAt, failure, running, online];
 }

@@ -442,6 +442,27 @@ class AppLocalizationsHi extends AppLocalizations {
   String get accountSyncNever => 'अभी तक सिंक नहीं हुआ';
 
   @override
+  String get accountSyncStatusDeletingCloud => 'क्लाउड डेटा हटाया जा रहा है…';
+
+  @override
+  String get accountSyncDeletingCloudDetail => 'पूरा होने तक सिंक बंद है।';
+
+  @override
+  String get accountSyncStatusCloudDeleteUnfinished => 'क्लाउड डेटा हटाना पूरा नहीं हुआ';
+
+  @override
+  String get accountSyncCloudDeleteOfflineDetail => 'इंटरनेट वापस आने पर यह पूरा हो जाएगा। तब तक सिंक बंद है।';
+
+  @override
+  String get accountSyncCloudDeleteRetryDetail => 'यह अपने आप फिर से कोशिश करेगा। तब तक सिंक बंद है।';
+
+  @override
+  String get accountDeleteCloudBadgeDeleting => 'हटाया जा रहा है…';
+
+  @override
+  String get accountDeleteCloudBadgeUnfinished => 'पूरा नहीं हुआ';
+
+  @override
   String accountSyncPendingDetail(num count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,

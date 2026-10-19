@@ -78,7 +78,14 @@ class SyncEngine implements SyncControl {
       pendingChanges: summary.changes,
       conflicts: summary.conflicts,
       lastSyncedAt: _repository.lastPulledAt,
-      failure: status == SyncStatus.failed ? (failure ?? SyncFailure.unknown) : null,
+      failure: switch (status) {
+        SyncStatus.failed => failure ?? SyncFailure.unknown,
+        // Only the run's own failure: that is the cloud delete failing.
+        SyncStatus.cloudDeletePending => _runFailure,
+        _ => null,
+      },
+      running: _running,
+      online: _online,
     );
   }
 
@@ -89,6 +96,7 @@ class SyncEngine implements SyncControl {
       Rx.merge<Object?>([_changes.stream, _repository.watchSyncOperations()]).map((_) => snapshot).distinct();
 
   SyncStatus _statusFor(UnsyncedSummary summary, {required bool hasFailure}) {
+    if (_cloudSync.isCloudDeletePending) return SyncStatus.cloudDeletePending;
     if (summary.conflicts > 0) return SyncStatus.conflict;
     // Offline is a state of its own, never a failure and never "syncing".
     if (!_online) {

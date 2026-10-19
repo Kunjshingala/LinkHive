@@ -26,6 +26,7 @@ void main() {
   setUp(() {
     repository = MockLinkRepository();
     cloudSync = MockCloudSyncService();
+    when(() => cloudSync.isCloudDeletePending).thenReturn(false);
     queueChanges = StreamController<BoxEvent>.broadcast();
     summary = const UnsyncedSummary();
     when(() => repository.unsyncedSummary()).thenAnswer((_) => summary);

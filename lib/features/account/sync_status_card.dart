@@ -43,18 +43,29 @@ class SyncStatusCard extends StatelessWidget {
           title: description.title,
           details: description.details,
           shadowColor: _shadowFor(snapshot),
-          onRetry: snapshot.status == SyncStatus.failed ? onRetry : null,
+          onRetry: _canRetry(snapshot) ? onRetry : null,
         );
       },
     );
   }
 }
 
+/// Retry after a failed sync, and for an unfinished cloud delete that is not
+/// running right now.
+bool _canRetry(SyncSnapshot snapshot) => switch (snapshot.status) {
+  SyncStatus.failed => true,
+  SyncStatus.cloudDeletePending => !snapshot.running,
+  _ => false,
+};
+
 /// The hard shadow says the state at a glance: mint for in sync, sky while
 /// syncing, lemon for waiting, rose for failed, peach for a conflict. Never
 /// purple, which is reserved for "it came back".
 Color _shadowFor(SyncSnapshot snapshot) {
   return switch (snapshot.status) {
+    SyncStatus.cloudDeletePending when snapshot.running => AppColors.shadowSky,
+    SyncStatus.cloudDeletePending when snapshot.online && snapshot.failure != null => AppColors.shadowRose,
+    SyncStatus.cloudDeletePending => AppColors.shadowLemon,
     SyncStatus.conflict => AppColors.shadowPeach,
     SyncStatus.failed => AppColors.shadowRose,
     SyncStatus.waitingForInternet => AppColors.shadowLemon,
