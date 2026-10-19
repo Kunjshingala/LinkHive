@@ -57,9 +57,10 @@ class AccountLocalWiped extends AccountState {
   const AccountLocalWiped();
 }
 
-/// The account's cloud data and this phone's copy were deleted.
-class AccountCloudDeleted extends AccountState {
-  const AccountCloudDeleted();
+/// This phone's copy was deleted and the cloud delete started. It finishes in
+/// the background; the sync status shows how it is going.
+class AccountCloudDeleteStarted extends AccountState {
+  const AccountCloudDeleteStarted();
 }
 
 /// There is more unsynced work than the user was shown, so nothing was changed.

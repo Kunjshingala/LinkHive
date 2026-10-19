@@ -844,6 +844,14 @@ class LinkRepository implements LocalDataStore, SyncStore {
       ? _hiveHelper.settingsBox.put(HiveConstants.wipePendingKey, true)
       : _hiveHelper.settingsBox.delete(HiveConstants.wipePendingKey);
 
+  @override
+  String? get cloudDeletePendingFor => _hiveHelper.settingsBox.get(HiveConstants.cloudDeletePendingUidKey) as String?;
+
+  @override
+  Future<void> setCloudDeletePendingFor(String? uid) => uid != null
+      ? _hiveHelper.settingsBox.put(HiveConstants.cloudDeletePendingUidKey, uid)
+      : _hiveHelper.settingsBox.delete(HiveConstants.cloudDeletePendingUidKey);
+
   (int total, int synced, int unsynced) getLinkStats() {
     final all = _linksBox.values;
     final total = all.length;

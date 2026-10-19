@@ -16,7 +16,10 @@ import '../../core/utils/navigation/route.dart';
 import '../../core/utils/utils.dart';
 import '../../features/links/repository/link_repository.dart';
 import '../../features/sync/bloc/sync_status_bloc.dart';
+import '../../features/sync/bloc/sync_status_state.dart';
 import '../../core/services/sync_engine.dart';
+import '../../core/services/sync_status.dart';
+import '../../core/theme/app_typography.dart';
 import '../../l10n/localization/app_localizations.dart';
 import '../../sharedWidgets/common_app_bar.dart';
 import '../../sharedWidgets/confirmation_bottom_sheet.dart';
@@ -55,6 +58,21 @@ class _AccountScreenContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // "Cloud data deleted" when an unfinished cloud delete finishes, now or
+    // later. Not when it only stops showing because the account signed out.
+    return BlocListener<SyncStatusBloc, SyncStatusState>(
+      listenWhen: (previous, current) =>
+          previous.status == SyncStatus.cloudDeletePending && current.status != SyncStatus.cloudDeletePending,
+      listener: (context, _) {
+        if (context.read<AccountBloc>().state is AccountAuthenticated) {
+          showSnackBar(context.l10n.accountDeleteCloudSuccess);
+        }
+      },
+      child: _buildAccount(context),
+    );
+  }
+
+  Widget _buildAccount(BuildContext context) {
     return BlocConsumer<AccountBloc, AccountState>(
       listener: (context, state) {
         if (state is AccountError) {
@@ -64,8 +82,6 @@ class _AccountScreenContent extends StatelessWidget {
           context.goNamed(MyRouteName.homeScreen);
         } else if (state is AccountLocalWiped) {
           showSnackBar(context.l10n.accountDeleteSuccess);
-        } else if (state is AccountCloudDeleted) {
-          showSnackBar(context.l10n.accountDeleteCloudSuccess);
         } else if (state is AccountNeedsReconfirmation) {
           showSnackBar(context.l10n.accountActionReconfirm);
         } else if (state is AccountActionFailed) {
@@ -108,7 +124,9 @@ class _AccountScreenContent extends StatelessWidget {
                 // ─── Settings Section ─────────────────────────────────
                 Text(context.l10n.accountSettings, style: Theme.of(context).textTheme.titleLarge!),
                 SizedBox(height: AppSpacing.md),
-                _SettingsList(state: state),
+                BlocBuilder<SyncStatusBloc, SyncStatusState>(
+                  builder: (context, sync) => _SettingsList(state: state, sync: sync.snapshot),
+                ),
               ],
             ),
           ),
@@ -275,7 +293,10 @@ class _StatCard extends StatelessWidget {
 class _SettingsList extends StatelessWidget {
   final AccountState state;
 
-  const _SettingsList({required this.state});
+  /// Decides the Delete Cloud Data row's badge and what tapping it does.
+  final SyncSnapshot sync;
+
+  const _SettingsList({required this.state, required this.sync});
 
   @override
   Widget build(BuildContext context) {
@@ -365,7 +386,9 @@ class _SettingsList extends StatelessWidget {
                   ),
                 ),
                 title: Text(label, style: Theme.of(context).textTheme.titleSmall!.copyWith(color: titleColor)),
-                trailing: subtitle.isEmpty
+                trailing: item == AccountItem.deleteCloudData && sync.status == SyncStatus.cloudDeletePending
+                    ? _CloudDeleteBadge(sync: sync)
+                    : subtitle.isEmpty
                     ? Icon(Icons.chevron_right_rounded, size: 24, color: Theme.of(context).colorScheme.onSurface)
                     : Row(
                         mainAxisSize: MainAxisSize.min,
@@ -460,6 +483,11 @@ class _SettingsList extends StatelessWidget {
         break;
 
       case AccountItem.deleteCloudData:
+        // Already asked for and not finished: tapping it is Retry.
+        if (sync.status == SyncStatus.cloudDeletePending) {
+          if (!sync.running) locator<SyncService>().requestSyncInBackground(pull: true);
+          break;
+        }
         final shown = locator<AccountSessionService>().unsyncedSummary();
         final linkCount = locator<LinkRepository>().getLinkStats().$1;
         final l10n = context.l10n;
@@ -508,5 +536,33 @@ class _SettingsList extends StatelessWidget {
       default:
         return code.toUpperCase();
     }
+  }
+}
+
+/// The Delete Cloud Data row's state while a cloud delete is unfinished. Same
+/// colors as the sync tile: sky while deleting, rose after an error online,
+/// lemon while waiting. Pastel fill, so the text and outline stay ink.
+class _CloudDeleteBadge extends StatelessWidget {
+  const _CloudDeleteBadge({required this.sync});
+
+  final SyncSnapshot sync;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = context.l10n;
+    final (label, fill) = sync.running
+        ? (l10n.accountDeleteCloudBadgeDeleting, AppColors.shadowSky)
+        : sync.online && sync.failure != null
+        ? (l10n.accountDeleteCloudBadgeUnfinished, AppColors.shadowRose)
+        : (l10n.accountDeleteCloudBadgeUnfinished, AppColors.shadowLemon);
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: AppSpacing.xs / 2),
+      decoration: BoxDecoration(
+        color: fill,
+        borderRadius: BorderRadius.circular(AppSpacing.radiusFull),
+        border: Border.all(color: AppColors.black, width: 2),
+      ),
+      child: Text(label, style: AppTypography.caption.copyWith(color: AppColors.black)),
+    );
   }
 }

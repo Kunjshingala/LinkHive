@@ -15,8 +15,13 @@ import 'sync_status.dart';
 /// A narrow contract, so the session reaches nothing else of the sync layer.
 /// [CloudSyncService] implements it.
 abstract interface class RemoteDataStore {
-  /// Deletes the signed-in account's data from the cloud. Irreversible.
-  Future<void> clearRemoteData();
+  /// Records that the signed-in account's cloud data must be deleted.
+  /// Irreversible once it runs.
+  ///
+  /// The delete itself runs as part of the next sync for that account, and of
+  /// every one after it until it finishes, so a dropped connection or a killed
+  /// app only delays it. Nothing else syncs for that account meanwhile.
+  Future<void> markCloudDeletePending();
 }
 
 /// The only class that talks to Firestore for links and categories: pushes
@@ -51,10 +56,21 @@ class CloudSyncService implements RemoteDataStore {
   /// Why the last push attempt failed, or null if none did since it started.
   SyncFailure? get lastFailure => _lastFailure;
 
+  /// True while a "Delete cloud data" for the signed-in account has not
+  /// finished. Another account's unfinished delete waits for that account.
+  bool get isCloudDeletePending {
+    final uid = _uidProvider();
+    return uid != null && _store.cloudDeletePendingFor == uid;
+  }
+
   /// Sends the queued writes to the cloud, oldest first.
+  ///
+  /// An unfinished cloud delete for this account runs first; if it fails, this
+  /// throws and nothing else is sent, so no old data reaches the cloud again.
   Future<void> push() async {
     final uid = _uidProvider();
     if (uid == null) return;
+    if (_store.cloudDeletePendingFor == uid) await _finishCloudDelete(uid);
     if (!await _push(uid)) _logStopped();
   }
 
@@ -63,17 +79,24 @@ class CloudSyncService implements RemoteDataStore {
   /// Uses an incremental cursor: the first pull fetches everything; later
   /// pulls fetch only records synced within the overlap window of the last
   /// pull. [full] forgets the cursor first, to fetch everything again.
+  /// Skipped while a cloud delete for this account has not finished.
   Future<void> pull({bool full = false}) async {
     final uid = _uidProvider();
     if (uid == null) return;
+    if (_store.cloudDeletePendingFor == uid) return;
     if (!await _pull(uid, full: full)) _logStopped();
   }
 
   @override
-  Future<void> clearRemoteData() async {
+  Future<void> markCloudDeletePending() async {
     final uid = _uidProvider();
     if (uid == null) return;
+    await _store.setCloudDeletePendingFor(uid);
+  }
+
+  Future<void> _finishCloudDelete(String uid) async {
     await _firebaseService.clearUserData(uid);
+    if (_store.cloudDeletePendingFor == uid) await _store.setCloudDeletePendingFor(null);
     printLog(tag: _tag, msg: 'Cleared remote data for uid=$uid');
   }
 

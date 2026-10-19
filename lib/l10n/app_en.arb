@@ -144,6 +144,13 @@
     "placeholders": { "time": { "type": "String" } }
   },
   "accountSyncNever": "Not synced yet",
+  "accountSyncStatusDeletingCloud": "Deleting cloud data…",
+  "accountSyncDeletingCloudDetail": "Sync is off until it's done.",
+  "accountSyncStatusCloudDeleteUnfinished": "Cloud delete not finished",
+  "accountSyncCloudDeleteOfflineDetail": "It will finish when you are back online. Sync is off until then.",
+  "accountSyncCloudDeleteRetryDetail": "It will try again by itself. Sync is off until then.",
+  "accountDeleteCloudBadgeDeleting": "Deleting…",
+  "accountDeleteCloudBadgeUnfinished": "Not finished",
   "accountSyncPendingDetail": "{count, plural, =1{1 change has not reached the cloud yet.} other{{count} changes have not reached the cloud yet.}}",
   "accountSyncWaitingDetail": "{count, plural, =1{1 change will sync when you are back online.} other{{count} changes will sync when you are back online.}}",
   "accountSyncConflictDetail": "{count, plural, =1{1 edit needs your decision.} other{{count} edits need your decision.}}",

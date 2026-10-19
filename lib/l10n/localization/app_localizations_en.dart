@@ -442,6 +442,27 @@ class AppLocalizationsEn extends AppLocalizations {
   String get accountSyncNever => 'Not synced yet';
 
   @override
+  String get accountSyncStatusDeletingCloud => 'Deleting cloud data…';
+
+  @override
+  String get accountSyncDeletingCloudDetail => 'Sync is off until it\'s done.';
+
+  @override
+  String get accountSyncStatusCloudDeleteUnfinished => 'Cloud delete not finished';
+
+  @override
+  String get accountSyncCloudDeleteOfflineDetail => 'It will finish when you are back online. Sync is off until then.';
+
+  @override
+  String get accountSyncCloudDeleteRetryDetail => 'It will try again by itself. Sync is off until then.';
+
+  @override
+  String get accountDeleteCloudBadgeDeleting => 'Deleting…';
+
+  @override
+  String get accountDeleteCloudBadgeUnfinished => 'Not finished';
+
+  @override
   String accountSyncPendingDetail(num count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,

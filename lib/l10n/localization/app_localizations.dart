@@ -886,6 +886,48 @@ abstract class AppLocalizations {
   /// **'Not synced yet'**
   String get accountSyncNever;
 
+  /// No description provided for @accountSyncStatusDeletingCloud.
+  ///
+  /// In en, this message translates to:
+  /// **'Deleting cloud data…'**
+  String get accountSyncStatusDeletingCloud;
+
+  /// No description provided for @accountSyncDeletingCloudDetail.
+  ///
+  /// In en, this message translates to:
+  /// **'Sync is off until it\'s done.'**
+  String get accountSyncDeletingCloudDetail;
+
+  /// No description provided for @accountSyncStatusCloudDeleteUnfinished.
+  ///
+  /// In en, this message translates to:
+  /// **'Cloud delete not finished'**
+  String get accountSyncStatusCloudDeleteUnfinished;
+
+  /// No description provided for @accountSyncCloudDeleteOfflineDetail.
+  ///
+  /// In en, this message translates to:
+  /// **'It will finish when you are back online. Sync is off until then.'**
+  String get accountSyncCloudDeleteOfflineDetail;
+
+  /// No description provided for @accountSyncCloudDeleteRetryDetail.
+  ///
+  /// In en, this message translates to:
+  /// **'It will try again by itself. Sync is off until then.'**
+  String get accountSyncCloudDeleteRetryDetail;
+
+  /// No description provided for @accountDeleteCloudBadgeDeleting.
+  ///
+  /// In en, this message translates to:
+  /// **'Deleting…'**
+  String get accountDeleteCloudBadgeDeleting;
+
+  /// No description provided for @accountDeleteCloudBadgeUnfinished.
+  ///
+  /// In en, this message translates to:
+  /// **'Not finished'**
+  String get accountDeleteCloudBadgeUnfinished;
+
   /// No description provided for @accountSyncPendingDetail.
   ///
   /// In en, this message translates to:

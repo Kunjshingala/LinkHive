@@ -442,6 +442,28 @@ class AppLocalizationsGu extends AppLocalizations {
   String get accountSyncNever => 'હજુ સમન્વય થયો નથી';
 
   @override
+  String get accountSyncStatusDeletingCloud => 'ક્લાઉડ ડેટા કાઢી રહ્યા છીએ…';
+
+  @override
+  String get accountSyncDeletingCloudDetail => 'પૂરું થાય ત્યાં સુધી સમન્વય બંધ છે.';
+
+  @override
+  String get accountSyncStatusCloudDeleteUnfinished => 'ક્લાઉડ ડેટા કાઢવાનું પૂરું થયું નથી';
+
+  @override
+  String get accountSyncCloudDeleteOfflineDetail =>
+      'ઇન્ટરનેટ પાછું આવશે ત્યારે તે પૂરું થશે. ત્યાં સુધી સમન્વય બંધ છે.';
+
+  @override
+  String get accountSyncCloudDeleteRetryDetail => 'તે જાતે ફરી પ્રયાસ કરશે. ત્યાં સુધી સમન્વય બંધ છે.';
+
+  @override
+  String get accountDeleteCloudBadgeDeleting => 'કાઢી રહ્યા છીએ…';
+
+  @override
+  String get accountDeleteCloudBadgeUnfinished => 'પૂરું થયું નથી';
+
+  @override
   String accountSyncPendingDetail(num count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,

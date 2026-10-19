@@ -146,16 +146,16 @@ void main() {
       const shown = UnsyncedSummary();
 
       blocTest<AccountBloc, AccountState>(
-        'deletes the cloud data through the session service',
+        'starts the cloud delete through the session service',
         build: () {
           when(
             () => mockSession.deleteCloudData(confirmed: shown),
-          ).thenAnswer((_) async => SessionActionResult.completed);
+          ).thenAnswer((_) async => SessionActionResult.cloudDeleteStarted);
           return buildBloc();
         },
         skip: 1,
         act: (bloc) => bloc.add(const AccountDeleteCloudDataRequested(confirmed: shown)),
-        expect: () => [const AccountLoading(), const AccountCloudDeleted(), guest],
+        expect: () => [const AccountLoading(), const AccountCloudDeleteStarted(), guest],
       );
 
       blocTest<AccountBloc, AccountState>(

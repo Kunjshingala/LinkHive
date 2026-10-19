@@ -22,4 +22,8 @@ class HiveConstants {
   /// Set while the phone is being wiped, so an interrupted wipe is finished at
   /// the next launch.
   static const String wipePendingKey = 'wipe_pending';
+
+  /// The uid whose "Delete cloud data" has not finished yet. Survives a wipe:
+  /// the next sync for that account finishes the delete first.
+  static const String cloudDeletePendingUidKey = 'cloud_delete_pending_uid';
 }

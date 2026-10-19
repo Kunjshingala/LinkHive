@@ -38,24 +38,6 @@ Fix only the causes the diagnosis actually finds.
 **Priority:** P3
 **Depends on:** None
 
-## Sync
-
-### Retry a failed or interrupted "Delete cloud data"
-
-**What:** Persist a "cloud delete pending" phase next to the wipe marker and retry the cloud delete at launch, or tell the user it failed, before finishing the local wipe.
-
-**Why:** `recoverInterruptedWipe` only finishes the local wipe. After a failed or killed cloud delete, the phone is wiped, the marker is cleared, and leftover cloud links sync back. The user believes the cloud copy is gone.
-
-**Pros:** "Delete cloud data" keeps its promise under a bad network.
-
-**Cons:** One more persisted state and a launch-time network call.
-
-**Context:** Found by Codex in the issue #9 eng review (2026-10-17). See `_wipe` and `recoverInterruptedWipe` in `lib/core/services/account_session_service.dart`, and invariant 6 in `.ai/context/sync-contract.md`. The cloud delete now goes through `RemoteDataStore` (`CloudSyncService`).
-
-**Effort:** human M / CC S
-**Priority:** P2
-**Depends on:** None
-
 ## Design
 
 ### Condensed Anek for titles and numbers
@@ -71,6 +53,8 @@ Fix only the causes the diagnosis actually finds.
 **Depends on:** None
 
 ## Completed
+
+- **Retry a failed or interrupted "Delete cloud data"** (`fix/cloud-delete-retry`): the phone is emptied first, the delete stays pending for that account and every sync finishes it before anything else; the Account tile shows deleting / waiting for internet / error with Retry. Preview: `docs/designs/preview/cloud-delete-retry.html`.
 
 - **Extract push, pull and merge out of `LinkRepository`** (#9, `refactor/extract-cloud-sync`): `CloudSyncService` does push, pull and merge and is the only Firestore user; `LinkRepository` keeps local storage and the outbox, and its `SyncStore` writes check the wipe guard right before every write.
 

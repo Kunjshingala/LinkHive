@@ -85,6 +85,22 @@ conflict), otherwise "Cancel". "Sign out anyway" hands back exactly the counts
 the user was shown. The sheet only reports; `AccountBloc` runs the sign-out
 through `AccountSessionService`.
 
+### Delete cloud data
+
+```
+ confirm -> same wipe path as above, with "cloud delete pending for <uid>" recorded
+            after the marker and before the wipe (it survives the wipe)
+   phone emptied first; the sheet does not wait for the cloud
+   the cloud part runs as a sync: every push for <uid> finishes it first,
+     and pulls are skipped until it is done, so nothing old comes back
+   fails or the app dies -> still pending; retried at launch, when the
+     internet returns, on the 5-minute timer and on Retry
+   another account signed in -> it waits for <uid>; that account syncs normally
+   done -> pending cleared, sync resumes, "Cloud data deleted"
+ status: cloudDeletePending wins over every other state (tile: sky deleting,
+   lemon waiting for internet, rose after an error; Retry when not running)
+```
+
 "Delete local data" and "Delete cloud data" use the same wipe path. Deleting
 cloud data is its own row with its own confirmation and is never part of
 sign-out.
@@ -131,7 +147,7 @@ peach conflict.
 | Update on a phone that already holds a stale cursor and no owner | The first sync resets the cursor once (full pull). |
 | Google or Firebase sign-out error | Logged; sign-out continues. |
 | A link is edited or deleted while its upload waits (#12) | The newer change stays queued and the phone keeps it; only the base learns what the cloud got. A delete during a create upload queues a cloud delete. |
-| "Delete cloud data" fails or the app dies during it | Known gap: the next launch finishes only the local wipe, and leftover cloud data syncs back. Tracked in `TODOS.md`. |
+| "Delete cloud data" fails or the app dies during it | The phone is already empty; the delete stays pending for that account and every sync finishes it first. Nothing syncs for that account until then, so leftover cloud data never comes back. |
 
 ## Not in this contract
 

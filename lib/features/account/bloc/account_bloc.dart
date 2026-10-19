@@ -55,7 +55,7 @@ class AccountBloc extends Bloc<AccountEvent, AccountState> {
       emit,
       action: AccountAction.deleteCloud,
       run: () => _sessionService.deleteCloudData(confirmed: event.confirmed),
-      done: const AccountCloudDeleted(),
+      done: const AccountCloudDeleteStarted(),
     );
   }
 
@@ -70,7 +70,10 @@ class AccountBloc extends Bloc<AccountEvent, AccountState> {
     emit(const AccountLoading());
     try {
       final result = await run();
-      emit(result == SessionActionResult.completed ? done : const AccountNeedsReconfirmation());
+      emit(switch (result) {
+        SessionActionResult.completed || SessionActionResult.cloudDeleteStarted => done,
+        SessionActionResult.needsReconfirmation => const AccountNeedsReconfirmation(),
+      });
     } catch (error) {
       printLog(tag: 'AccountBloc', msg: '$action failed: $error');
       emit(AccountActionFailed(action));

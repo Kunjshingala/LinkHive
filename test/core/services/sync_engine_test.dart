@@ -24,6 +24,7 @@ void main() {
   setUp(() {
     repository = MockLinkRepository();
     cloudSync = MockCloudSyncService();
+    when(() => cloudSync.isCloudDeletePending).thenReturn(false);
     summary = const UnsyncedSummary();
     repositoryFailure = null;
     when(() => repository.unsyncedSummary()).thenAnswer((_) => summary);
